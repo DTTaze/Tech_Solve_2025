@@ -14,7 +14,7 @@ const createNewUser = async (email, password, username) => {
   const connection = await mysql.createConnection({
     host: "localhost",
     user: "root",
-    database: "studyenglish",
+    database: "techsolve25",
     Promise: bluebird,
   });
   const [rows, fields] = await connection.execute(
@@ -27,7 +27,7 @@ const getUserList = async () => {
   const connection = await mysql.createConnection({
     host: "localhost",
     user: "root",
-    database: "studyenglish",
+    database: "techsolve25",
     Promise: bluebird,
   });
   try {
@@ -42,7 +42,7 @@ const deleteUser = async (id) => {
   const connection = await mysql.createConnection({
     host: "localhost",
     user: "root",
-    database: "studyenglish",
+    database: "techsolve25",
     Promise: bluebird,
   });
   try {
@@ -60,7 +60,7 @@ const getUserByID = async (id) => {
   const connection = await mysql.createConnection({
     host: "localhost",
     user: "root",
-    database: "studyenglish",
+    database: "techsolve25",
     Promise: bluebird,
   });
   try {
