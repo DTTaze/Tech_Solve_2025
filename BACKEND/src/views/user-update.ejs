@@ -13,11 +13,11 @@
     <div class="container">
       <div class="row">
         <div class="edit-user-infor-container">
-          <form method="post" action="/users/update-user">
+          <form method="post" action="/users/user-update">
             <div class="mt-3">
               <h3>Update user</h3>
             </div>
-            <input hidden value="<%= userData.id %>" name="id">
+            <input hidden value="<%= userData.id %>" name="id" />
             <div class="mb-3 col-6">
               <label for="email" class="form-label">Email address</label>
               <input

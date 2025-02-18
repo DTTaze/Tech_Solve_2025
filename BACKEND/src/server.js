@@ -13,8 +13,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 initWebRoutes(app);
-let port = process.env.PORT || 8080;
 
-app.listen(port, () => {
-  console.log("run succeed " + port);
+app.listen(PORT, () => {
+  console.log("run succeed " + PORT);
 });

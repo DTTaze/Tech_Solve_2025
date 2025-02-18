@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import mysql from "mysql2/promise";
 import bluebird from "bluebird";
-
 const salt = bcrypt.genSaltSync(10);
 
 const hashUserPassword = (password) => {
@@ -12,9 +11,10 @@ const hashUserPassword = (password) => {
 const createNewUser = async (email, password, username) => {
   let hashPassword = hashUserPassword(password);
   const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "techsolve25",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     Promise: bluebird,
   });
   const [rows, fields] = await connection.execute(
@@ -25,9 +25,9 @@ const createNewUser = async (email, password, username) => {
 
 const getUserList = async () => {
   const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "techsolve25",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_NAME,
     Promise: bluebird,
   });
   try {
@@ -40,9 +40,9 @@ const getUserList = async () => {
 
 const deleteUser = async (id) => {
   const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "techsolve25",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_NAME,
     Promise: bluebird,
   });
   try {
@@ -58,9 +58,9 @@ const deleteUser = async (id) => {
 
 const getUserByID = async (id) => {
   const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    database: "techsolve25",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_NAME,
     Promise: bluebird,
   });
   try {
@@ -73,10 +73,27 @@ const getUserByID = async (id) => {
     console.log("check error ", e);
   }
 };
-
+const updateUserInfor = async (email, username, id) => {
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_NAME,
+    Promise: bluebird,
+  });
+  try {
+    const [rows, fields] = await connection.execute(
+      "UPDATE users SET email=?, username=? WHERE id=?",
+      [email, username, id]
+    );
+    return rows;
+  } catch (e) {
+    console.log("check error ", e);
+  }
+};
 module.exports = {
   createNewUser,
   getUserList,
   deleteUser,
   getUserByID,
+  updateUserInfor,
 };

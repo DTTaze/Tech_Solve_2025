@@ -31,10 +31,19 @@ const getUpdateUserPage = async (req, res) => {
   }
   return res.render("user-update.ejs", { userData });
 };
+
+const handleUpdateUser = async (req, res) => {
+  let email = req.body.email;
+  let username = req.body.username;
+  let id = req.body.id;
+  await userService.updateUserInfor(email, username, id);
+  return res.redirect("/user");
+};
 module.exports = {
   handleHome,
   handleUserPage,
   handleCreateNewUser,
   handleDeleteUser,
   getUpdateUserPage,
+  handleUpdateUser,
 };

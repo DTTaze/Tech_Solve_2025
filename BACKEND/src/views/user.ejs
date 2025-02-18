@@ -74,9 +74,13 @@
                 <td><%= item.email %></td>
                 <td><%= item.username %></td>
                 <td>
-                  <a class="btn btn-warning" href="/update-user/<%= item.id %>">
-                    Edit
-                  </a>
+                  <form
+                    style="display: inline"
+                    action="/update-user/<%= item.id %>"
+                    method="post"
+                  >
+                    <button class="btn btn-warning" type="submit">Edit</button>
+                  </form>
                   <form
                     style="display: inline"
                     action="/delete-user/<%= item.id %>"
