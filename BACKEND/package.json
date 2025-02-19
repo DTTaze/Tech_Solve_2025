@@ -1,0 +1,35 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --exec ./node_modules/.bin/babel-node src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DTTaze/Tech_Solve_2025.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DTTaze/Tech_Solve_2025/issues"
+  },
+  "homepage": "https://github.com/DTTaze/Tech_Solve_2025#readme",
+  "dependencies": {
+    "@babel/core": "7.26.0",
+    "@babel/node": "7.26.0",
+    "@babel/preset-env": "7.26.0",
+    "bcryptjs": "2.4.3",
+    "bluebird": "3.7.2",
+    "body-parser": "1.19.1",
+    "dotenv": "10.0.0",
+    "ejs": "3.1.6",
+    "express": "4.17.2",
+    "mysql2": "2.3.3",
+    "nodemon": "3.1.7",
+    "sequelize": "6.37.5",
+    "sequelize-cli": "6.6.2"
+  }
+}
