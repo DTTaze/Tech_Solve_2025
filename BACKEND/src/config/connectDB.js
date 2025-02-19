@@ -9,6 +9,7 @@ const sequelize = new Sequelize(
     dialect: "mysql",
   }
 );
+
 const connection = async () => {
   try {
     await sequelize.authenticate();

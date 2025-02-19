@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "server.js",
   "scripts": {
@@ -28,6 +29,7 @@
     "ejs": "3.1.6",
     "express": "4.17.2",
     "mysql2": "2.3.3",
+    "nodejs-docker": "^0.1.2",
     "nodemon": "3.1.7",
     "sequelize": "6.37.5",
     "sequelize-cli": "6.6.2"

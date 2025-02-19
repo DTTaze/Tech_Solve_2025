@@ -1,4 +1,4 @@
-import userService from "../service/userService";
+import userService from "../service/userService.js";
 
 const handleHome = (req, res) => {
   return res.render("home.ejs");
@@ -39,11 +39,21 @@ const handleUpdateUser = async (req, res) => {
   await userService.updateUserInfor(email, username, id);
   return res.redirect("/user");
 };
-module.exports = {
+const homeController = {
   handleHome,
   handleUserPage,
   handleCreateNewUser,
   handleDeleteUser,
   getUpdateUserPage,
   handleUpdateUser,
-};
+}
+export default homeController;
+
+// module.exports = {
+//   handleHome,
+//   handleUserPage,
+//   handleCreateNewUser,
+//   handleDeleteUser,
+//   getUpdateUserPage,
+//   handleUpdateUser,
+// };

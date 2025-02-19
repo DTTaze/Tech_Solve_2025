@@ -90,10 +90,20 @@ const updateUserInfor = async (email, username, id) => {
     console.log("check error ", e);
   }
 };
-module.exports = {
+const userService = {
   createNewUser,
   getUserList,
   deleteUser,
   getUserByID,
   updateUserInfor,
 };
+
+export default userService;
+
+// module.exports = {
+//   createNewUser,
+//   getUserList,
+//   deleteUser,
+//   getUserByID,
+//   updateUserInfor,
+// };
