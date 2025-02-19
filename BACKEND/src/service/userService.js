@@ -1,6 +1,6 @@
-import bcrypt from "bcryptjs";
-import mysql from "mysql2/promise";
-import bluebird from "bluebird";
+const bcrypt = require("bcryptjs");
+const mysql = require("mysql2/promise");
+const bluebird = require("bluebird");
 const salt = bcrypt.genSaltSync(10);
 
 const hashUserPassword = (password) => {
@@ -90,20 +90,10 @@ const updateUserInfor = async (email, username, id) => {
     console.log("check error ", e);
   }
 };
-const userService = {
+module.exports = {
   createNewUser,
   getUserList,
   deleteUser,
   getUserByID,
   updateUserInfor,
 };
-
-export default userService;
-
-// module.exports = {
-//   createNewUser,
-//   getUserList,
-//   deleteUser,
-//   getUserByID,
-//   updateUserInfor,
-// };

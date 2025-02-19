@@ -1,10 +1,8 @@
-import express from "express";
-import configViewEngine from "./config/viewEngine.js";
-import initWebRoutes from "./routes/web.js";
-// require("dotenv").config();
-import "dotenv/config";
-
-import bodyParser from "body-parser";
+const express = require("express");
+const configViewEngine = require("./config/viewEngine.js");
+const initWebRoutes = require("./routes/web.js");
+require("dotenv").config();
+const bodyParser = require("body-parser");
 
 const app = express();
 const PORT = process.env.PORT || 8080;

@@ -1,12 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec ./node_modules/.bin/babel-node src/server.js"
+    "start": "nodemon --exec ./node_modules/.bin/babel-node src/server.js",
+    "migrate": "npx sequelize-cli db:migrate",
+    "seed": "npx sequelize-cli db:seed:all"
   },
   "repository": {
     "type": "git",
@@ -33,5 +34,6 @@
     "nodemon": "3.1.7",
     "sequelize": "6.37.5",
     "sequelize-cli": "6.6.2"
-  }
+  },
+  "devDependencies": {}
 }
