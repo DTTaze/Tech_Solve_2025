@@ -1,22 +1,41 @@
+
 # TECHSOLVE 2025
 
-## How to Run the Project
+A brief description of what this project does and who it's for
 
-1. **Install dependencies:**
 
-   ```sh
-   npm install
-   ```
+## Installation
 
-2. **Run the development server:**
+Install this project with npm
 
-   ```sh
-   npm start
-   ```
+```bash
+  cd .\BACKEND\
+  npm install
+```
+    
+## Environment Variables
 
-3. **Open your browser and navigate to:**
+To run this project, you will need to add the following environment variables to your .env file, copy the .env.example file and change these properties
 
-   ```
-   http://localhost:6060
+`NODE_ENV = development`
 
-   ```
+`DB_HOST = mysql`
+
+`DB_NAME = techsolve25`
+
+
+## Deployment
+
+**To run this project in localhost**
+
+```bash
+  cd .\BACKEND\
+  npm run start
+```
+**To run this project with docker**
+
+```bash
+  cd .\BACKEND\
+  npm run dockerup
+```
+**Open your browser and navigate to: http://localhost:6060**
