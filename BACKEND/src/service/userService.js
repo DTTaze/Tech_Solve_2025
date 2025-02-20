@@ -1,6 +1,6 @@
-const bcrypt = require("bcryptjs");
-const mysql = require("mysql2/promise");
-const bluebird = require("bluebird");
+import bcrypt from "bcryptjs";
+import mysql from "mysql2/promise";
+import bluebird from "bluebird";
 const salt = bcrypt.genSaltSync(10);
 
 const hashUserPassword = (password) => {

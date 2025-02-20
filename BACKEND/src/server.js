@@ -1,8 +1,8 @@
-const express = require("express");
-const configViewEngine = require("./config/viewEngine.js");
-const initWebRoutes = require("./routes/web.js");
+import express from "express";
+import configViewEngine from "./config/viewEngine";
+import initWebRoutes from "./routes/web";
 require("dotenv").config();
-const bodyParser = require("body-parser");
+import bodyParser from "body-parser";
 
 const app = express();
 const PORT = process.env.PORT || 8080;

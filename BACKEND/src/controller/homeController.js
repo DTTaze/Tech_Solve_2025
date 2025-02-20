@@ -1,4 +1,5 @@
-const userService = require("../service/userService.js");
+import userService from "../service/userService";
+
 const handleHome = (req, res) => {
   return res.render("home.ejs");
 };

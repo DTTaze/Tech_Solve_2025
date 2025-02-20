@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 6060
 
 # Chạy ứng dụng
-CMD ["npx", "babel-node", "src/server.js"]
+CMD ["npm", "start"]

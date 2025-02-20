@@ -21,7 +21,7 @@ services:
     volumes:
       - ./BACKEND:/app
     working_dir: /app
-    command: ["node", "src/server.js"]
+    command: ["npm", "start"]
 
   mysql:
     image: mysql:latest
