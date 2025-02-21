@@ -3,10 +3,16 @@
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
-const process = require("process");
+// const process = require("process");
 const basename = path.basename(__filename);
+
+const envPath = path.resolve(__dirname, "../../../.env");
+require("dotenv").config({ path: envPath });
+
 const env = process.env.NODE_ENV || "development";
-const config = require(__dirname + "/../../config/config.json")[env];
+const configPath = path.resolve(__dirname, "../config/config.js");
+const config = require(configPath)[env];
+
 const db = {};
 
 let sequelize;

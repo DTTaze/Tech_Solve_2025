@@ -4,16 +4,21 @@ const userService = require("../service/userService");
 const path = require("path");
 const envPath = path.resolve(__dirname, "../../../.env");
 require("dotenv").config({ path: envPath });
+
+console.log("envPath = ", envPath);
+console.log("clientID = ", process.env.GOOGLE_CLIENT_ID);
+console.log("clientSecret = ", process.env.GOOGLE_CLIENT_SECRET);
+console.log("callbackURL = ", process.env.GOOGLE_CALLBACK_URL);
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:6060/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log("Google Profile:", profile); // Debug profile
         const user = await userService.findOrCreateUser(profile);
         return done(null, user);
       } catch (error) {

@@ -5,12 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: backend_container
     restart: always
+    env_file:
+      - .env            
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       DB_HOST: mysql
       DB_PORT: ${DB_PORT}
-      DB_USER: root               # Sử dụng root cho backend
+      DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
     ports:
