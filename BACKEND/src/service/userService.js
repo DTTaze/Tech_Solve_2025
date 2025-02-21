@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import mysql from "mysql2/promise";
 import bluebird from "bluebird";
+import { User } from "../models/user.js";
 const salt = bcrypt.genSaltSync(10);
 
 const hashUserPassword = (password) => {
@@ -73,6 +74,7 @@ const getUserByID = async (id) => {
     console.log("check error ", e);
   }
 };
+
 const updateUserInfor = async (email, username, id) => {
   const connection = await mysql.createConnection({
     host: process.env.DB_HOST,
@@ -90,10 +92,25 @@ const updateUserInfor = async (email, username, id) => {
     console.log("check error ", e);
   }
 };
+
+const findOrCreateUser = async (profile) => {
+  let user = await User.findOne({ where: { email: profile.emails[0].value } });
+
+  if (!user) {
+    user = await User.create({
+      email: profile.emails[0].value,
+      name: profile.displayName,
+    });
+  }
+
+  return user;
+};
+
 module.exports = {
   createNewUser,
   getUserList,
   deleteUser,
   getUserByID,
   updateUserInfor,
+  findOrCreateUser,
 };
