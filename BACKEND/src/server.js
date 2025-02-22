@@ -5,11 +5,13 @@ const session = require("express-session");
 const passport = require("passport");
 import bodyParser from "body-parser";
 import connection from "./config/connectDB";
-require("dotenv").config();
+const path = require("path");
+const envPath = path.resolve(__dirname, "../../../.env");
+require("dotenv").config({ path: envPath });
 require("../src/config/passport");
 
 const app = express();
-const PORT = process.env.LC_PORT || 4040;
+const PORT = process.env.PORT || 4040;
 configViewEngine(app);
 
 app.use(bodyParser.json());
