@@ -1,3 +1,4 @@
+console.log("passport.js");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const userService = require("../service/userService");
@@ -20,7 +21,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log("profile = ", profile);
+        // console.log("profile = ", profile);
         const user = await userService.findOrCreateUser(profile);
         return done(null, user);
       } catch (error) {

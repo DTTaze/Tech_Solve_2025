@@ -104,6 +104,7 @@ const findOrCreateUser = async (profile) => {
       googleId: profile.id,
       email: profile.emails[0].value,
       username: profile.displayName,
+      password: null
     });
   }
 
