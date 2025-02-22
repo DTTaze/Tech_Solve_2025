@@ -5,12 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: backend_container
     restart: always
+    env_file:
+      - .env            
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       DB_HOST: mysql
-      DB_PORT: ${DB_PORT}
-      DB_USER: root               # Sử dụng root cho backend
+      DB_PORT: 3306
+      DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
     ports:
@@ -27,8 +29,8 @@ services:
     container_name: mysql_container
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  # Thiết lập mật khẩu cho root
-      MYSQL_DATABASE: ${DB_NAME}           # Tạo database nếu chưa có
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  
+      MYSQL_DATABASE: ${DB_NAME}        
     ports:
       - "${DB_PORT}:3306"
     volumes:
@@ -40,7 +42,7 @@ services:
     restart: always
     environment:
       PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  # Đăng nhập bằng root
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  
     ports:
       - "8080:80"
 
