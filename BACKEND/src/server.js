@@ -5,8 +5,7 @@ require("dotenv").config();
 import bodyParser from "body-parser";
 
 const app = express();
-const PORT = process.env.PORT || 8080;
-
+const PORT = process.env.LC_PORT || 4040;
 configViewEngine(app);
 
 app.use(bodyParser.json());
