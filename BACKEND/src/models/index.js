@@ -1,5 +1,5 @@
 "use strict";
-
+console.log("models/index.js");
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
@@ -10,15 +10,18 @@ const envPath = path.resolve(__dirname, "../../../.env");
 require("dotenv").config({ path: envPath });
 
 const env = process.env.NODE_ENV || "development";
-const configPath = path.resolve(__dirname, "../config/config.js");
+const configPath = path.resolve(__dirname, "../config/config.json");
 const config = require(configPath)[env];
 
 const db = {};
 
 let sequelize;
 if (config.use_env_variable) {
+  console.log("config.use_env_variable = ", config.use_env_variable);
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
+  console.log("config.database = ", config.database);
+  console.log("config.username = ", config.username);
   sequelize = new Sequelize(
     config.database,
     config.username,

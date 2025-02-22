@@ -29,8 +29,8 @@ services:
     container_name: mysql_container
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  # Thiết lập mật khẩu cho root
-      MYSQL_DATABASE: ${DB_NAME}           # Tạo database nếu chưa có
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  
+      MYSQL_DATABASE: ${DB_NAME}        
     ports:
       - "${DB_PORT}:3306"
     volumes:
@@ -42,7 +42,7 @@ services:
     restart: always
     environment:
       PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  # Đăng nhập bằng root
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}  
     ports:
       - "8080:80"
 

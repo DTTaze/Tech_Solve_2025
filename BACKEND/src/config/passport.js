@@ -5,6 +5,7 @@ const path = require("path");
 const envPath = path.resolve(__dirname, "../../../.env");
 require("dotenv").config({ path: envPath });
 
+console.log("passport.js");
 console.log("envPath = ", envPath);
 console.log("clientID = ", process.env.GOOGLE_CLIENT_ID);
 console.log("clientSecret = ", process.env.GOOGLE_CLIENT_SECRET);
@@ -19,6 +20,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        console.log("profile = ", profile);
         const user = await userService.findOrCreateUser(profile);
         return done(null, user);
       } catch (error) {
@@ -33,8 +35,8 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (id, done) => {
-  const user = await userService.getUserById(id);
+  const user = await userService.getUserByID(id);
   done(null, user);
 });
 
-module.exports = passport; // Dùng CommonJS export
+module.exports = passport; 

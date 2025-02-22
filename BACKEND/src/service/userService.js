@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import mysql from "mysql2/promise";
-import bluebird from "bluebird";
+const { Op } = require('sequelize');
+
 // import User from "../models/user.js";
 import db from "../models/index.js";
 const User = db.User;
@@ -12,101 +12,104 @@ const hashUserPassword = (password) => {
 };
 
 const createNewUser = async (email, password, username) => {
-  let hashPassword = hashUserPassword(password);
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    Promise: bluebird,
-  });
-  const [rows, fields] = await connection.execute(
-    "INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
-    [email, hashPassword, username]
-  );
-};
-
-const getUserList = async () => {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    Promise: bluebird,
-  });
   try {
-    const [rows, fields] = await connection.execute("SELECT * FROM users");
-    return rows;
+    const hashPassword = bcrypt.hashSync(password, 10);
+
+    const newUser = await User.create({
+      email: email,
+      password: hashPassword,
+      username: username,
+    });
+
+    console.log("User created:", newUser.toJSON());
+
+    return newUser;
+
+  } catch (error) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      console.error("Error: Email already exists.");
+    } else {
+      console.error("Error creating user:", error);
+    }
+  }
+};
+const getUserList = async () => {
+  try {
+    const users = await User.findAll();
+    return users;
   } catch (e) {
-    console.log("check error ", e);
+    console.log("Error fetching users:", e);
   }
 };
 
 const deleteUser = async (id) => {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    Promise: bluebird,
-  });
   try {
-    const [rows, fields] = await connection.execute(
-      "DELETE FROM users WHERE id=?",
-      [id]
-    );
-    return rows;
+    const result = await User.destroy({
+      where: { id: id },
+    });
+    if (result === 0) {
+      console.log("User not found.");
+    } else {
+      console.log("User deleted successfully.");
+    }
+    return result;
   } catch (e) {
-    console.log("check error ", e);
+    console.log("Error deleting user:", e);
   }
 };
 
 const getUserByID = async (id) => {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    Promise: bluebird,
-  });
   try {
-    const [rows, fields] = await connection.execute(
-      "SELECT * FROM users WHERE id=?",
-      [id]
-    );
-    return rows;
+    const user = await User.findOne({
+      where: { id: id },
+    });
+    if (!user) {
+      console.log("User not found.");
+    }
+    return user;
   } catch (e) {
-    console.log("check error ", e);
+    console.log("Error fetching user:", e);
   }
 };
 
 const updateUserInfor = async (email, username, id) => {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    Promise: bluebird,
-  });
   try {
-    const [rows, fields] = await connection.execute(
-      "UPDATE users SET email=?, username=? WHERE id=?",
-      [email, username, id]
+    const [updatedRows] = await User.update(
+      { email: email, username: username },
+      { where: { id: id } }
     );
-    return rows;
+    if (updatedRows === 0) {
+      console.log("No user updated. Check if ID exists.");
+    } else {
+      console.log("User updated successfully.");
+    }
+    return updatedRows;
   } catch (e) {
-    console.log("check error ", e);
+    console.log("Error updating user:", e);
   }
 };
 
 const findOrCreateUser = async (profile) => {
-  let user = await User.findOne({ where: { email: profile.emails[0].value } });
+  let user = await User.findOne({
+    where: {
+      [Op.or]: [
+        { email: profile.emails[0].value },
+        { googleId: profile.id }
+      ]
+    }
+  });
 
   if (!user) {
     user = await User.create({
+      googleId: profile.id,
       email: profile.emails[0].value,
-      name: profile.displayName,
+      username: profile.displayName,
     });
   }
 
   return user;
 };
+
 
 module.exports = {
   createNewUser,
