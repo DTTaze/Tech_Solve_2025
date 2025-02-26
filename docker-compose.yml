@@ -6,7 +6,7 @@ services:
     container_name: backend_container
     restart: always
     env_file:
-      - .env            
+      - BACKEND/.env            
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}

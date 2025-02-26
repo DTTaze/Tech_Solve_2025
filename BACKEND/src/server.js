@@ -5,9 +5,8 @@ const session = require("express-session");
 const passport = require("passport");
 import bodyParser from "body-parser";
 import connection from "./config/connectDB";
-const path = require("path");
-const envPath = path.resolve(__dirname, "../../../.env");
-require("dotenv").config({ path: envPath });
+import { sequelize } from "./models";
+require("dotenv").config();
 require("../src/config/passport");
 
 const app = express();
@@ -22,8 +21,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 initWebRoutes(app);
-connection(); 
+connection();
 app.listen(PORT, () => {
   console.log(`Server đang chạy tại: http://localhost:${PORT}`);
   console.log(`Đăng nhập bằng Google: http://localhost:${PORT}/auth/google`);
 });
+try {
+  sequelize.sync();
+  console.log("thanh cong");
+} catch (e) {
+  console.log(e);
+}

@@ -1,13 +1,12 @@
-console.log("passport.js");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const userService = require("../service/userService");
-const path = require("path");
-const envPath = path.resolve(__dirname, "../../../.env");
-require("dotenv").config({ path: envPath });
+// const path = require("path");
+// const envPath = path.resolve(__dirname, "../../../.env");
+require("dotenv").config();
 
 console.log("passport.js");
-console.log("envPath = ", envPath);
+// console.log("envPath = ", envPath);
 console.log("clientID = ", process.env.GOOGLE_CLIENT_ID);
 console.log("clientSecret = ", process.env.GOOGLE_CLIENT_SECRET);
 console.log("callbackURL = ", process.env.GOOGLE_CALLBACK_URL);
@@ -21,7 +20,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // console.log("profile = ", profile);
+        console.log(accessToken);
         const user = await userService.findOrCreateUser(profile);
         return done(null, user);
       } catch (error) {
@@ -40,4 +39,4 @@ passport.deserializeUser(async (id, done) => {
   done(null, user);
 });
 
-module.exports = passport; 
+module.exports = passport;
