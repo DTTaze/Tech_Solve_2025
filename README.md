@@ -13,7 +13,7 @@ A brief description of what this project does and who it's for
 
 2. Setup secret files
    - Create `config.json` which is based on `config.json.example` in folder config
-   - Create `.env` which is based on `config.json.example` in folder BACKEND
+   - Create `.env` which is based on `.env.example` in folder BACKEND
 3. Create a project on google console cloud
 ## Environment Variables
 
