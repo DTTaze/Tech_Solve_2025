@@ -21,8 +21,30 @@ services:
       - mysql
     volumes:
       - ./BACKEND:/app
+      - /app/node_modules
     working_dir: /app
     command: ["npm", "start"]
+
+  frontend:
+    build:
+      context: ./FRONTEND
+      dockerfile: Dockerfile
+    container_name: frontend_container
+    restart: always
+    env_file:
+      - FRONTEND/.env            
+    environment:
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: true
+    ports:
+      - "5173:5173"
+    depends_on:
+      - mysql
+    volumes:
+      - ./FRONTEND:/app
+      - /app/node_modules
+    working_dir: /app
+    command: ["npm", "run", "dev", "--", "--host"]
 
   mysql:
     image: mysql:latest
