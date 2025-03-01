@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-const { Op } = require('sequelize');
+const { Op } = require("sequelize");
 
 // import User from "../models/user.js";
 import db from "../models/index.js";
@@ -24,7 +24,6 @@ const createNewUser = async (email, password, username) => {
     console.log("User created:", newUser.toJSON());
 
     return newUser;
-
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
       console.error("Error: Email already exists.");
@@ -72,31 +71,32 @@ const getUserByID = async (id) => {
   }
 };
 
-const updateUserInfor = async (email, username, id) => {
-  try {
-    const [updatedRows] = await User.update(
-      { email: email, username: username },
-      { where: { id: id } }
-    );
-    if (updatedRows === 0) {
-      console.log("No user updated. Check if ID exists.");
-    } else {
-      console.log("User updated successfully.");
+let updateUserInfor = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await User.findOne({
+        where: { id: data.id },
+      });
+      if (user) {
+        user.username = data.username;
+        user.email = data.email;
+        await user.save();
+        let allUsers = await User.findAll();
+        resolve(allUsers);
+      } else {
+        resolve();
+      }
+    } catch (e) {
+      console.log(e);
     }
-    return updatedRows;
-  } catch (e) {
-    console.log("Error updating user:", e);
-  }
+  });
 };
 
 const findOrCreateUser = async (profile) => {
   let user = await User.findOne({
     where: {
-      [Op.or]: [
-        { email: profile.emails[0].value },
-        { googleId: profile.id }
-      ]
-    }
+      [Op.or]: [{ email: profile.emails[0].value }, { googleId: profile.id }],
+    },
   });
 
   if (!user) {
@@ -104,13 +104,12 @@ const findOrCreateUser = async (profile) => {
       googleId: profile.id,
       email: profile.emails[0].value,
       username: profile.displayName,
-      password: null
+      password: null,
     });
   }
 
   return user;
 };
-
 
 module.exports = {
   createNewUser,
