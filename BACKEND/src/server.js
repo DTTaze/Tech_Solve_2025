@@ -8,22 +8,19 @@ import connection from "./config/connectDB";
 import { sequelize } from "./models";
 require("dotenv").config();
 require("../src/config/passport");
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 4040;
-app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", process.env.URL_REACT);
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With,content-type"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  next();
-});
+app.use(
+  cors({
+    origin: process.env.URL_REACT || "http://localhost:5173",
+    methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["X-Requested-With", "Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
 configViewEngine(app);
 
 app.use(bodyParser.json());
