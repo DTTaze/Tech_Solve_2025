@@ -1,0 +1,244 @@
+* {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+.section {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    display: flex;
+}
+
+.theme {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+}
+
+.theme header {
+    width: 35%;
+    position: absolute;
+    top: 25%;
+    left: 2%;
+    font-size: 50px;
+    z-index: 2;
+}
+
+.theme.active {
+    opacity: 1;
+}
+
+.header--h1 {
+    color: #0a6d24;
+}
+
+.header--h2 {
+    color: #1c4825;
+}
+
+.hero header p {
+    margin-top: 30px;
+    font-size: 25px;
+}
+
+.hero .background {
+    position: absolute;
+    right: 0px;
+    height: 100%;
+    width: 100%;
+}
+
+.hero .background img {
+    position: absolute;
+    right: 0px;
+    height: 100%;
+}
+
+.section.about-us {
+    justify-content: center;
+    align-items: center;
+}
+
+.section.about-us div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.section.about-us .theme-1 {
+    height: 100%;
+    width: 100%;
+}
+
+.section.about-us .theme-1 img {
+    height: 50%;
+    border-radius: 100px 0px;
+}
+
+.section.about-us .theme-2 {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.section.about-us .theme-2 h1 {
+    margin-bottom: 50px;
+    color: #0c4645;
+    font-size: 50px;
+}
+
+.section.about-us .theme-3 {
+    height: 100%;
+    width: 100%;
+}
+
+.section.about-us .theme-3 img {
+    height: 50%;
+    width: 60%;
+    border-radius: 0px 100px 0px 100px; 
+}
+
+.environmental-issues {
+    flex-direction: column;
+    align-items: center;
+}
+
+.environmental-issues header {
+    display: flex;
+    justify-content: center;
+}
+
+.environmental-issues--container {
+    margin-top: 20px;
+    display: grid;
+    width: 50%;
+    height: 70%;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr)); 
+    gap: 30px;
+}
+.environmental-issues--container p {
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bolder;
+}
+
+.environmental-issues--container img {
+    width: 100%;
+    height: 100%;
+    max-height: 200px; 
+    object-fit: cover;
+    border-radius: 20px;
+    display: block;
+}
+
+.rebuild-restore {
+    flex-direction: column;
+    align-items: center;
+    height: 200vh;
+    overflow: hidden;
+}
+
+.rebuild-restore header {
+    width: 50%;
+    text-align: center;
+}
+
+.rebuild-restore .achive {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.rebuild-restore .achive img {
+    position: absolute;
+    height: 100%;
+}
+
+.rebuild-restore .container {
+    position: absolute;
+    height: 100%;
+    z-index: 5;
+    right: 0px;
+    bottom: 0px;
+    width: 35%;
+    height: 60%;
+    background-color: #eeffdb;
+    border-radius: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+
+.rebuild-restore .container h2 {
+    font-size: 50px;
+}
+
+.rebuild-restore .container p {
+    font-size: 20px;
+}
+
+.rebuild-restore .container button {
+    padding: 20px;
+    border: none;
+    background-color: rgb(221, 254, 164);
+    border-radius: 20px;
+}
+
+.rebuild-restore .vision {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.rebuild-restore .vision .container {
+    position: absolute;
+    height: 100%;
+    z-index: 5;
+    left: 0px;
+    bottom: 0px;
+    width: 35%;
+    height: 60%;
+    background-color: #ebfdff;
+    border-radius: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+
+.rebuild-restore .vision img {
+    position: absolute;
+    z-index: 2;
+    right: 0px;
+    bottom: 0px;
+    height: 100%;
+    width: 70%;
+}
+
+.rebuild-restore .vision .container button {
+    background-color: #b1ebf3;
+    padding: 20px;
+}
+
+
+
+
+
+
+
+
+
+
+
