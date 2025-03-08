@@ -1,10 +1,12 @@
+require("dotenv").config();
 import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
 
 import db from "../models/index.js";
 const User = db.User;
-const salt = bcrypt.genSaltSync(10);
 
+const salt = bcrypt.genSaltSync(10);
+const jwt = require("jsonwebtoken");
 const createNewUser = async (email, password, username) => {
   try {
     const hashPassword = bcrypt.hashSync(password, salt);
@@ -44,7 +46,20 @@ const loginUser = async (email, password) => {
         };
       } else {
         //create an access token
-        return "create an access token";
+        const payload = {
+          email: user.email,
+          username: user.username,
+        };
+        const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
+          expiresIn: process.env.JWT_EXPIRE,
+        });
+        return {
+          access_token,
+          user: {
+            email: user.email,
+            username: user.username,
+          },
+        };
       }
     }
   } catch (error) {
