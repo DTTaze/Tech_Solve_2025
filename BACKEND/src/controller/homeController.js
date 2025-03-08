@@ -10,11 +10,12 @@ const handleUserPage = async (req, res) => {
 };
 
 const handleCreateNewUser = (req, res) => {
+  let data = req.body;
   let email = req.body.email;
   let password = req.body.password;
   let username = req.body.username;
   userService.createNewUser(email, password, username);
-  return res.redirect("/user");
+  return res.status(200).json({ message: "Create new user success", data });
 };
 
 const handleDeleteUser = async (req, res) => {
@@ -47,7 +48,7 @@ const getUpdateUserPage = async (req, res) => {
 
 let handleUpdateUser = async (req, res) => {
   let data = req.body;
-  console.log(req.body.id)
+  console.log(req.body.id);
   await userService.updateUserInfor(data);
   return res.redirect("/user");
 };

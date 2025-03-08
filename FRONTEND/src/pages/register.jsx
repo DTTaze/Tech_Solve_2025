@@ -1,23 +1,22 @@
 import React from "react";
-import { Button, Checkbox, Form, Input, notification } from "antd";
+import { Button, Form, Input } from "antd";
 import { createUserApi } from "../utils/api";
-
+import { useNavigate } from "react-router-dom";
 const RegisterPage = () => {
+  const navigate = useNavigate();
   const onFinish = async (values) => {
     const { username, email, password } = values;
     const res = await createUserApi(username, email, password);
-    if (res) {
-      notification.success({
-        message: "Create user",
-        description: "Success",
-      });
-    } else {
-      notification.error({
-        message: "Create user",
-        description: "Failed",
-      });
+    try {
+      if (res) {
+        console.log("Success:", res);
+        navigate("/login");
+      } else {
+        console.log("Create user failed");
+      }
+    } catch (e) {
+      console.log(e);
     }
-    console.log("Success:", res);
   };
   return (
     <div style={{ margin: 50 }}>
