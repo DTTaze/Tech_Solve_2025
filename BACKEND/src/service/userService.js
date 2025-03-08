@@ -1,19 +1,13 @@
 import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
 
-// import User from "../models/user.js";
 import db from "../models/index.js";
 const User = db.User;
 const salt = bcrypt.genSaltSync(10);
 
-const hashUserPassword = (password) => {
-  let hashPassword = bcrypt.hashSync(password, salt);
-  return hashPassword;
-};
-
 const createNewUser = async (email, password, username) => {
   try {
-    const hashPassword = bcrypt.hashSync(password, 10);
+    const hashPassword = bcrypt.hashSync(password, salt);
 
     const newUser = await User.create({
       email: email,
@@ -32,6 +26,32 @@ const createNewUser = async (email, password, username) => {
     }
   }
 };
+
+const loginUser = async (email, password) => {
+  try {
+    const user = await User.findOne({ where: { email: email } });
+    if (!user) {
+      return {
+        EC: 1,
+        EM: "email/pass ko hop le",
+      };
+    } else {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return {
+          EC: 2,
+          EM: "email/pass ko hop le",
+        };
+      } else {
+        //create an access token
+        return "create an access token";
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getUserList = async () => {
   try {
     const users = await User.findAll();
@@ -118,4 +138,5 @@ module.exports = {
   getUserByID,
   updateUserInfor,
   findOrCreateUser,
+  loginUser,
 };

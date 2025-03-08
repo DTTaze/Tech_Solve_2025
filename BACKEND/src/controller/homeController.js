@@ -9,13 +9,21 @@ const handleUserPage = async (req, res) => {
   return res.render("user.ejs", { userList });
 };
 
-const handleCreateNewUser = (req, res) => {
-  let data = req.body;
+const handleCreateNewUser = async (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
   let username = req.body.username;
-  userService.createNewUser(email, password, username);
+  let data = await userService.createNewUser(email, password, username);
   return res.status(200).json({ message: "Create new user success", data });
+};
+
+const handleLoginUser = async (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+  console.log(password)
+  // let username = req.body.username;
+  let data = await userService.loginUser(email, password);
+  return res.status(200).json(data);
 };
 
 const handleDeleteUser = async (req, res) => {
@@ -23,17 +31,6 @@ const handleDeleteUser = async (req, res) => {
   return res.redirect("/user");
 };
 
-// const getUpdateUserPage = async (req, res) => {
-//   let id = req.params.id;
-//   let user = await userService.getUserByID(id);
-//   console.log(user)
-//   let userData = {};
-//   if (user && user.length > 0) {
-//     userData = user[0];
-//   }
-//   console.log(userData)
-//   return res.render("user-update.ejs", { userData });
-// };
 const getUpdateUserPage = async (req, res) => {
   let id = req.params.id;
   let user = await userService.getUserByID(id);
@@ -60,4 +57,5 @@ module.exports = {
   handleDeleteUser,
   getUpdateUserPage,
   handleUpdateUser,
+  handleLoginUser,
 };
