@@ -1,0 +1,265 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5rem;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.header--contents {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    padding: 10px;
+}
+
+.header--logo {
+    margin-right: 10px;
+    font-size: 30px;
+}
+
+.logo--name {
+    font-size: 30px;
+    font-weight: bolder;
+}
+
+.header--buttons {
+    z-index: 1;
+    display: flex;
+}
+
+.header--underlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-color: #059212;
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(.645, .045, .355, 1);
+}
+
+.header--sticky .header--underlay {
+    transform: translateY(0);
+}
+
+.header--buttons button {
+    border: none;
+    padding: 20px;
+    background-color: transparent;
+    font-weight: bolder;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header--buttons button:hover {
+    cursor: pointer;
+    user-select: none;
+    background-color: darkgray;
+}
+
+.section.hero {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+.section.hero header {
+    position: absolute;
+    top: 35%;
+    left: 5%;
+    font-size: 35px;
+    width: 35%;
+    z-index: 2;
+    color:#059212;
+}
+
+.section.hero .container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.section.hero .container img {
+    position: absolute;
+    width: 50%;
+    right: 5%;
+    top: 15%;
+    border-radius: 20px;
+}
+
+.section.task {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.section.task header {
+    position: absolute;
+    width: 35%;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: 25%;
+    right: 5%;
+}
+
+.section.task header h2 {
+    color: #1F7D53;
+    font-size: 30px;
+}
+
+.section.task header p {
+    font-size: 20px;
+}
+
+.section.task button {
+    width: 40%;
+    padding: 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: large;
+    font-weight: bolder;
+    background-color: #5CB338;
+}
+
+.section.task button:hover {
+    cursor: pointer;
+    user-select: none;
+}
+
+.section.task .background {
+    position: absolute;
+    width: 40%;
+    height: 70%;
+    top: 10%;
+    left: 10%;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.section.market {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.section.market header {
+    position: absolute;
+    width: 40%;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: 25%;
+    left: 5%;
+}
+
+.section.market header h2 {
+    color: #1F7D53;
+    font-size: 30px;
+}
+
+.section.market header p {
+    font-size: 20px;
+}
+
+.section.market button {
+    width: 40%;
+    padding: 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: large;
+    font-weight: bolder;
+    background-color: #5CB338;
+}
+
+.section.market button:hover {
+    cursor: pointer;
+    user-select: none;
+}
+
+.section.market .background {
+    position: absolute;
+    width: 40%;
+    height: 70%;
+    top: 10%;
+    right: 5%;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.section.connect {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.section.connect header {
+    position: absolute;
+    width: 35%;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: 25%;
+    right: 5%;
+}
+
+.section.connect header h2 {
+    color: #1F7D53;
+    font-size: 30px;
+}
+
+.section.connect header p {
+    font-size: 20px;
+}
+
+.section.connect button {
+    width: 40%;
+    padding: 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: large;
+    font-weight: bolder;
+    background-color: #5CB338;
+}
+
+.section.connect button:hover {
+    cursor: pointer;
+    user-select: none;
+}
+
+.section.connect .background {
+    position: absolute;
+    width: 40%;
+    height: 70%;
+    top: 10%;
+    left: 10%;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
