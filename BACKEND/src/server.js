@@ -1,6 +1,6 @@
 import express from "express";
 import configViewEngine from "./config/viewEngine";
-import initWebRoutes from "./routes/web";
+import initWebRoutes from "./routes/api";
 const session = require("express-session");
 const passport = require("passport");
 import bodyParser from "body-parser";
@@ -11,6 +11,19 @@ require("../src/config/passport");
 
 const app = express();
 const PORT = process.env.PORT || 4040;
+app.use(function (req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", process.env.URL_REACT);
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
+});
 configViewEngine(app);
 
 app.use(bodyParser.json());
