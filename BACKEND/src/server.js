@@ -27,7 +27,7 @@ app.listen(PORT, () => {
   console.log(`Đăng nhập bằng Google: http://localhost:${PORT}/auth/google`);
 });
 try {
-  sequelize.sync();
+  sequelize.sync(); //can fix autosync db
   console.log("thanh cong");
 } catch (e) {
   console.log(e);
