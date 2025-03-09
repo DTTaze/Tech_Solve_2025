@@ -11,9 +11,9 @@ const oauthController = {
       req.logIn(user, (err) => {
         if (err) return next(err);
 
-        console.log("Authenticated User:", user);
+        req.session.user = user; // Lưu user vào session
 
-        return res.json(user); 
+        return res.redirect("/profile"); // Chuyển hướng đến Profile
       });
     })(req, res, next);
   },
