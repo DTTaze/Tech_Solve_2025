@@ -67,7 +67,9 @@ const loginUser = async (email, password) => {
 
 const getUserList = async () => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: { exclude: ["password"] },
+    });
     return users;
   } catch (e) {
     console.log("Error fetching users:", e);
