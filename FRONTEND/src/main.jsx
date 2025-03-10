@@ -6,6 +6,9 @@ import UserPage from "./pages/user.jsx";
 import App from "./App.jsx";
 import HomePage from "./pages/home.jsx";
 import LoginPage from "./pages/login.jsx";
+import { AuthWrapper } from "../components/layout/auth.context.jsx";
+// import "antd/dist/reset.css";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -32,7 +35,8 @@ const router = createBrowserRouter([
 ]);
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <App /> */}
-    <RouterProvider router={router} />
+    <AuthWrapper>
+      <RouterProvider router={router} />
+    </AuthWrapper>
   </StrictMode>
 );

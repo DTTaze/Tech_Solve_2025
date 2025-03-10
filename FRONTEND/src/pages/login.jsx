@@ -1,9 +1,11 @@
-import React from "react";
-import { Button, Form, Input } from "antd";
+import React, { useContext } from "react";
+import { Button, Form, Input,notification } from "antd";
 import { loginUserApi } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../components/layout/auth.context";
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setAuth } = useContext(AuthContext);
   const onFinish = async (values) => {
     const { email, password } = values;
 
@@ -12,7 +14,17 @@ const LoginPage = () => {
     try {
       if (res && res.EC === 0) {
         localStorage.setItem("access_token", res.access_token);
-        console.log("Login Success:", res);
+        notification.success({
+          message: "Login Success",
+          description: "Đã đăng nhập thành công"
+        });
+        setAuth({
+          isAuthenticated: true,
+          user: {
+            email: res?.user?.email ?? "",
+            username: res?.user?.username ?? "",
+          },
+        });
         navigate("/");
       } else {
         console.log(res?.EM ?? "error");

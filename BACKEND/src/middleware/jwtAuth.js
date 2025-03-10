@@ -2,8 +2,16 @@ import jwt from "jsonwebtoken";
 require("dotenv").config();
 
 const jwtAuth = (req, res, next) => {
-  const white_lists = ["/", "/api/auth/login", "/api/auth/register"];
-  if (white_lists.find((item) => item === req.originalUrl)) {
+  const white_lists = [
+    "/",
+    "/api/auth/login",
+    "/api/auth/register",
+    "/auth/google",
+    "/auth/google/callback",
+    "/profile" //temp
+  ];
+  console.log(req.originalUrl);
+  if (white_lists.includes(req.path)) {
     next();
   } else {
     if (req.headers.authorization && req.headers) {
