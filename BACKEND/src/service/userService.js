@@ -1,3 +1,4 @@
+console.log("\x1b[33m%s\x1b[0m", "/service/userService");
 require("dotenv").config();
 import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
@@ -72,7 +73,7 @@ const getUserList = async () => {
     });
     return users;
   } catch (e) {
-    console.log("Error fetching users:", e);
+    console.log("\x1b[31m%s\x1b[0m","Error fetching users:", e);
     return null;
   }
 };
@@ -83,13 +84,13 @@ const deleteUser = async (id) => {
       where: { id: id },
     });
     if (result === 0) {
-      console.log("User not found.");
+      console.log("\x1b[31m%s\x1b[0m","User not found.");
     } else {
       console.log("User deleted successfully.");
     }
     return result;
   } catch (e) {
-    console.log("Error deleting user:", e);
+    console.log("\x1b[31m%s\x1b[0m","Error deleting user:", e);
   }
 };
 
@@ -99,11 +100,11 @@ const getUserByID = async (id) => {
       where: { id: id },
     });
     if (!user) {
-      console.log("User not found.");
+      console.log("\x1b[31m%s\x1b[0m","User not found.");
     }
     return user;
   } catch (e) {
-    console.log("Error fetching user:", e);
+    console.log("\x1b[31m%s\x1b[0m","Error fetching user:", e);
   }
 };
 

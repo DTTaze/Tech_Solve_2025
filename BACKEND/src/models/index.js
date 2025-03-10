@@ -1,5 +1,5 @@
 "use strict";
-console.log("models/index.js");
+console.log("\x1b[33m%s\x1b[0m","models/index.js");
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
