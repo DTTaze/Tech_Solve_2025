@@ -5,12 +5,7 @@ const userService = require("../service/userService");
 // const envPath = path.resolve(__dirname, "../../../.env");
 require("dotenv").config();
 
-console.log("passport.js");
-// console.log("envPath = ", envPath);
-console.log("clientID = ", process.env.GOOGLE_CLIENT_ID);
-console.log("clientSecret = ", process.env.GOOGLE_CLIENT_SECRET);
-console.log("callbackURL = ", process.env.GOOGLE_CALLBACK_URL);
-
+console.log("\x1b[33m%s\x1b[0m","config/passport.js");
 passport.use(
   new GoogleStrategy(
     {
