@@ -2,31 +2,28 @@ console.log("\x1b[33m%s\x1b[0m", "/service/userService");
 require("dotenv").config();
 import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
-
 import db from "../models/index.js";
 const User = db.User;
-
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
+
 const createNewUser = async (email, password, username) => {
   try {
+    const user = await User.findOne({ where: { email: email } });
+    if (user) {
+      console.log("user is already existed");
+      return null;
+    }
     const hashPassword = bcrypt.hashSync(password, salt);
-
     const newUser = await User.create({
       email: email,
       password: hashPassword,
       username: username,
     });
-
-    console.log("User created:", newUser.toJSON());
-
     return newUser;
   } catch (error) {
-    if (error.name === "SequelizeUniqueConstraintError") {
-      console.error("\x1b[31m%s\x1b[0m","Error: Email already exists.");
-    } else {
-      console.error("\x1b[31m%s\x1b[0m","Error creating user:", error);
-    }
+    console.log(error);
+    return null;
   }
 };
 
@@ -71,10 +68,13 @@ const loginUser = async (email, password) => {
 
 const getUserList = async () => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: { exclude: ["password"] },
+    });
     return users;
   } catch (e) {
     console.log("\x1b[31m%s\x1b[0m","Error fetching users:", e);
+    return null;
   }
 };
 
