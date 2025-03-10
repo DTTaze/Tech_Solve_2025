@@ -2,10 +2,12 @@ import express from "express";
 import homeController from "../controller/homeController";
 import oauthController from "../controller/oauthController";
 import userController from "../controller/userController";
+import jwtAuth from "../middleware/jwtAuth";
 
 const router = express.Router();
 
 const initWebRoutes = (app) => {
+  router.all("*", jwtAuth);
   router.get("/", homeController.handleHome);
 
   router.get("/api/users", userController.handleUserPage);
