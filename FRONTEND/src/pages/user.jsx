@@ -8,7 +8,7 @@ const UserPage = () => {
       const res = await getUserApi();
       if (!res?.message) {
         setDataSource(res);
-      }else{
+      } else {
         notification.error({
           message: "Unauthorized",
         });
@@ -34,7 +34,7 @@ const UserPage = () => {
 
   return (
     <div style={{ padding: 50 }}>
-      <Table bordered dataSource={dataSource} columns={columns} rowKey={"id"}/>;
+      <Table bordered dataSource={dataSource} columns={columns} rowKey={"id"} />
     </div>
   );
 };

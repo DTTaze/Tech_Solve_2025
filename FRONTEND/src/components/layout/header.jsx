@@ -35,7 +35,7 @@ const Header = () => {
                     onClick={() => {
                       localStorage.clear("access_token");
                       setCurrent("home");
-                      notification.error({message: "Logout success"});
+                      notification.error({ message: "Logout success" });
                       setAuth({
                         isAuthenticated: false,
                         user: {
@@ -70,7 +70,10 @@ const Header = () => {
     <Menu
       onClick={onClick}
       selectedKeys={[current]}
-      mode="horizontal"
+      style={{ width: 256 }}
+      defaultSelectedKeys={["1"]}
+      defaultOpenKeys={["sub1"]}
+      mode="inline"
       items={items}
     />
   );

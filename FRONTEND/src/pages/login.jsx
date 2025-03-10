@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
-import { Button, Form, Input,notification } from "antd";
+import { Button, Form, Input, notification } from "antd";
 import { loginUserApi } from "../utils/api";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../components/layout/auth.context";
+import { AuthContext } from "../components/layout/auth.context";
 const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useContext(AuthContext);
@@ -16,7 +16,7 @@ const LoginPage = () => {
         localStorage.setItem("access_token", res.access_token);
         notification.success({
           message: "Login Success",
-          description: "Đã đăng nhập thành công"
+          description: "Đã đăng nhập thành công",
         });
         setAuth({
           isAuthenticated: true,
