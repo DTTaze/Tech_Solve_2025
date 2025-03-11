@@ -4,7 +4,7 @@ import homeController from "../controller/homeController";
 import oauthController from "../controller/oauthController";
 
 import videoController from "../controller/videoController";
-import profileController from "../controller/profileController"; 
+import profileController from "../controller/profileController";
 
 import userController from "../controller/userController";
 import jwtAuth from "../middleware/jwtAuth";
@@ -21,7 +21,7 @@ const initWebRoutes = (app) => {
   router.post("/delete-user/:id", userController.handleDeleteUser);
   router.post("/update-user/:id", userController.getUpdateUserPage);
   router.post("/users/user-update", userController.handleUpdateUser);
-
+  router.get("/api/account", userController.getAccount);
   // Google Auth
   router.get("/auth/google", oauthController.googleAuth);
   router.get("/auth/google/callback", oauthController.googleAuthCallback);

@@ -1,5 +1,9 @@
 import userService from "../service/userService";
 
+const getAccount = async (req, res) => {
+  return res.status(200).json(req.user);
+};
+
 const handleUserPage = async (req, res) => {
   let data = await userService.getUserList();
   //   return res.render("user.ejs", { userList });
@@ -54,4 +58,5 @@ module.exports = {
   getUpdateUserPage,
   handleUpdateUser,
   handleLoginUser,
+  getAccount,
 };

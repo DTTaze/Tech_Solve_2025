@@ -1,5 +1,5 @@
 const { Video } = require("../models");
-console.log("\x1b[33m%s\x1b[0m", "/controller/profileController");
+
 const handleProfilePage = async (req, res) => {
   if (!req.session.user) {
     return res.redirect("/"); // Nếu chưa đăng nhập, quay lại trang chủ
