@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Calenda from "./Calenda";
-import Ranking from "./Chart_rank";
+import Calenda from "./calendar.jsx"
+import Ranking from "./chartRank.jsx";
 import "./Mission.css";
 import images from "./photo.jsx";
-import {motion} from 'framer-motion'
+// import {motion} from 'framer-motion'
 import { Button } from 'antd';
 import { Footer } from "antd/es/layout/layout.js";
 
