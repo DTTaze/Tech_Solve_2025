@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Calenda from "./calendar.jsx";
 import Ranking from "./chartRank.jsx";
-import "./Mission.css";
+import "./mission.css";
 import images from "./photo.jsx";
 import { motion } from "framer-motion";
 import { Button } from "antd";
