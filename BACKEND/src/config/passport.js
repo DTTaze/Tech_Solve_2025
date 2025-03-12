@@ -1,11 +1,8 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const userService = require("../service/userService");
-// const path = require("path");
-// const envPath = path.resolve(__dirname, "../../../.env");
 require("dotenv").config();
 
-console.log("\x1b[33m%s\x1b[0m","config/passport.js");
 passport.use(
   new GoogleStrategy(
     {
