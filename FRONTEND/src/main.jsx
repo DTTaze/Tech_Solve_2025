@@ -7,7 +7,7 @@ import App from "./App.jsx";
 import HomePage from "./pages/home.jsx";
 import LoginPage from "./pages/login.jsx";
 import { AuthWrapper } from "./components/layout/auth.context.jsx";
-import Mission from "./pages/mission.jsx";
+import Mission from "../src/pages/mission.jsx";
 
 const router = createBrowserRouter([
   {
