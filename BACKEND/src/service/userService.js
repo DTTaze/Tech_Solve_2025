@@ -1,43 +1,79 @@
+require("dotenv").config();
 import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
-
-// import User from "../models/user.js";
 import db from "../models/index.js";
 const User = db.User;
 const salt = bcrypt.genSaltSync(10);
-
-const hashUserPassword = (password) => {
-  let hashPassword = bcrypt.hashSync(password, salt);
-  return hashPassword;
-};
+const jwt = require("jsonwebtoken");
 
 const createNewUser = async (email, password, username) => {
   try {
-    const hashPassword = bcrypt.hashSync(password, 10);
-
+    const user = await User.findOne({ where: { email: email } });
+    if (user) {
+      console.log("user is already existed");
+      return null;
+    }
+    const hashPassword = bcrypt.hashSync(password, salt);
     const newUser = await User.create({
       email: email,
       password: hashPassword,
       username: username,
     });
-
-    console.log("User created:", newUser.toJSON());
-
     return newUser;
   } catch (error) {
-    if (error.name === "SequelizeUniqueConstraintError") {
-      console.error("Error: Email already exists.");
-    } else {
-      console.error("Error creating user:", error);
-    }
+    console.log(error);
+    return null;
   }
 };
+
+const loginUser = async (email, password) => {
+  try {
+    const user = await User.findOne({ where: { email: email } });
+    if (!user) {
+      return {
+        EC: 1,
+        EM: "email/pass ko hop le",
+      };
+    } else {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return {
+          EC: 2,
+          EM: "email/pass ko hop le",
+        };
+      } else {
+        //create an access token
+        const payload = {
+          email: user.email,
+          username: user.username,
+        };
+        const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
+          expiresIn: process.env.JWT_EXPIRE,
+        });
+        return {
+          EC: 0,
+          access_token,
+          user: {
+            email: user.email,
+            username: user.username,
+          },
+        };
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getUserList = async () => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: { exclude: ["password"] },
+    });
     return users;
   } catch (e) {
-    console.log("Error fetching users:", e);
+    console.log("\x1b[31m%s\x1b[0m", "Error fetching users:", e);
+    return null;
   }
 };
 
@@ -47,13 +83,13 @@ const deleteUser = async (id) => {
       where: { id: id },
     });
     if (result === 0) {
-      console.log("User not found.");
+      console.log("\x1b[31m%s\x1b[0m", "User not found.");
     } else {
       console.log("User deleted successfully.");
     }
     return result;
   } catch (e) {
-    console.log("Error deleting user:", e);
+    console.log("\x1b[31m%s\x1b[0m", "Error deleting user:", e);
   }
 };
 
@@ -63,11 +99,11 @@ const getUserByID = async (id) => {
       where: { id: id },
     });
     if (!user) {
-      console.log("User not found.");
+      console.log("\x1b[31m%s\x1b[0m", "User not found.");
     }
     return user;
   } catch (e) {
-    console.log("Error fetching user:", e);
+    console.log("\x1b[31m%s\x1b[0m", "Error fetching user:", e);
   }
 };
 
@@ -118,4 +154,5 @@ module.exports = {
   getUserByID,
   updateUserInfor,
   findOrCreateUser,
+  loginUser,
 };

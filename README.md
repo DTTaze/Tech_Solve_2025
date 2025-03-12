@@ -1,6 +1,6 @@
 # TECHSOLVE 2025
 
-A brief description of what this project does and who it's for
+Protect the environment
 
 ## Installation
 
@@ -11,28 +11,45 @@ A brief description of what this project does and who it's for
   npm install
 ```
 
+```bash
+  cd .\FRONTEND\
+  npm install
+```
+
 2. Setup secret files
    - Create `config.json` which is based on `config.json.example` in folder config
    - Create `.env` which is based on `.env.example` in folder BACKEND
 3. Create a project on google console cloud
+
 ## Environment Variables
 
-To run this project, you will need to add the following environment variables to your .env file, copy the .env.example file and change these properties
-
-`NODE_ENV = development`
-
-`DB_HOST = mysql`
-
-`DB_NAME = techsolve25`
+To run this project, you will need to copy `.env.example` and config it to match with your setting. Finally, change its name to `.env`
 
 ## Deployment
 
-**To deploy this project with docker**
-You need to open docker first, then check your current path and go to BACKEND if you are in TECHSOLVE_2025
+<h4>To deploy this project with docker</h4>
+<h5>You need to open docker first</h5>
+Then check your current path and go to BACKEND if you are in TECHSOLVE_2025
 
 ```bash
   cd .\BACKEND\
   npm run dockerup
 ```
+<h4>To deploy this project in localhost</h4>
 
-**Open your browser and navigate to: http://localhost:6060**
+**FRONTEND**
+```bash
+  cd .\FRONTEND\
+  npm run dev
+```
+**BACKEND**
+
+```bash
+  cd .\BACKEND\
+  npm start
+```
+
+**Open your browser and navigate to:**
+[FRONTEND](http://localhost:5173)
+[BACKEND](http://localhost:6060)
+[DATABASE](http://localhost:8080)

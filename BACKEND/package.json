@@ -9,7 +9,7 @@
     "migrate": "npx sequelize-cli db:migrate",
     "seed": "npx sequelize-cli db:seed:all",
     "dockerup": "docker-compose down && docker-compose up -d --build",
-    "duu" : "docker compose down && docker compose up -d --build"
+    "duu": "docker compose down && docker compose up -d --build"
   },
   "repository": {
     "type": "git",
@@ -28,12 +28,14 @@
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
     "body-parser": "1.19.1",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^10.0.0",
     "ejs": "3.1.6",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "googleapis": "^144.0.0",
+    "jsonwebtoken": "9.0.2",
     "mysql2": "2.3.3",
     "nodejs-docker": "^0.1.2",
     "nodemon": "3.1.7",
@@ -42,5 +44,7 @@
     "sequelize": "6.37.5",
     "sequelize-cli": "6.6.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.9"
+  }
 }
