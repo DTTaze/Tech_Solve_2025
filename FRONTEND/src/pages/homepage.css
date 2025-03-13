@@ -2,7 +2,6 @@
     margin: 0;
     padding: 0;
     font-family: 'Roboto', sans-serif;
-    box-sizing: border-box;
 }
 
 html {
@@ -14,7 +13,7 @@ html {
     top: 0;
     left: 0;
     width: 100%;
-    height: 5rem;
+    height: 2rem;
     z-index: 10;
     display: flex;
     justify-content: space-between;
@@ -42,6 +41,7 @@ html {
 .header--buttons {
     z-index: 1;
     display: flex;
+    margin-right: 20px;
 }
 
 .header--underlay {
@@ -51,7 +51,7 @@ html {
     width: 100%;
     height: 100%;
     z-index: 0;
-    background-color: #059212;
+    background-color: #16C47F;
     transform: translateY(-100%);
     transition: transform 0.3s cubic-bezier(.645, .045, .355, 1);
 }
@@ -78,14 +78,14 @@ html {
 }
 
 .section.hero {
-    height: 100vh;
+    height:90vh;
     width: 100vw;
     position: relative;
 }
 
 .section.hero header {
     position: absolute;
-    top: 35%;
+    top: 40%;
     left: 5%;
     font-size: 35px;
     width: 35%;
@@ -99,22 +99,34 @@ html {
     position: relative;
 }
 
-.section.hero .container img {
+.hero .container img {
     position: absolute;
     width: 50%;
+    height: 70%;
+    object-fit: cover;
     right: 5%;
     top: 15%;
     border-radius: 20px;
+    transition: opacity 1s ease-in-out;
+    opacity: 0;
 }
 
-.section.task {
+.hero .container img.active {
+    opacity: 1;
+}
+
+.hero header h2 {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.task {
     position: relative;
     width: 100vw;
-    height: 100vh;
+    height: 90vh;
     overflow: hidden;
 }
 
-.section.task header {
+.task header {
     position: absolute;
     width: 35%;
     height: 40%;
@@ -123,18 +135,24 @@ html {
     justify-content: space-between;
     top: 25%;
     right: 5%;
+    transform: translateX(100vw);
+    transition: transform 1s;
 }
 
-.section.task header h2 {
+.task.active header {
+    transform: translateX(0);
+}
+
+.task header h2 {
     color: #1F7D53;
     font-size: 30px;
 }
 
-.section.task header p {
+.task header p {
     font-size: 20px;
 }
 
-.section.task button {
+.task button {
     width: 40%;
     padding: 20px;
     border-radius: 20px;
@@ -144,12 +162,14 @@ html {
     background-color: #5CB338;
 }
 
-.section.task button:hover {
+.task button:hover {
     cursor: pointer;
     user-select: none;
+    transition: color 0.5s;
+    color: white;
 }
 
-.section.task .background {
+.task .background {
     position: absolute;
     width: 40%;
     height: 70%;
@@ -157,12 +177,18 @@ html {
     left: 10%;
     overflow: hidden;
     border-radius: 20px;
+    transform: translateX(-100vw);
+    transition: transform 1s;
+}
+
+.task.active .background {
+    transform: translateX(0);
 }
 
 .section.market {
     position: relative;
     width: 100vw;
-    height: 100vh;
+    height: 90vh;
     overflow: hidden;
 }
 
@@ -175,6 +201,12 @@ html {
     justify-content: space-between;
     top: 25%;
     left: 5%;
+    transform: translateX(-100vw);
+    transition: transform 1s;
+}
+
+.section.market.active header {
+    transform: translateX(0);
 }
 
 .section.market header h2 {
@@ -199,6 +231,8 @@ html {
 .section.market button:hover {
     cursor: pointer;
     user-select: none;
+    transition: color 0.5s;
+    color: white;
 }
 
 .section.market .background {
@@ -209,12 +243,18 @@ html {
     right: 5%;
     overflow: hidden;
     border-radius: 20px;
+    transform: translateX(100vw);
+    transition: transform 1s;
+}
+
+.section.market.active .background {
+    transform: translateX(0);
 }
 
 .section.connect {
     position: relative;
     width: 100vw;
-    height: 100vh;
+    height: 90vh;
     overflow: hidden;
 }
 
@@ -227,6 +267,12 @@ html {
     justify-content: space-between;
     top: 25%;
     right: 5%;
+    transform: translateX(100vw);
+    transition: transform 1s;
+}
+
+.section.connect.active header {
+    transform: translateX(0);
 }
 
 .section.connect header h2 {
@@ -251,6 +297,8 @@ html {
 .section.connect button:hover {
     cursor: pointer;
     user-select: none;
+    transition: color 0.5s;
+    color: white;
 }
 
 .section.connect .background {
@@ -261,5 +309,22 @@ html {
     left: 10%;
     overflow: hidden;
     border-radius: 20px;
+    transform: translateX(-100vw);
+    transition: transform 1s;
+    object-fit: cover;
+}
+
+.section.connect.active .background {
+    transform: translateX(0);
+}
+
+footer {
+    height: 25vh;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
 }
 

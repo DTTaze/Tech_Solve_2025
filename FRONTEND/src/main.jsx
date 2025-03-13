@@ -8,6 +8,7 @@ import HomePage from "./pages/home.jsx";
 import LoginPage from "./pages/login.jsx";
 import { AuthWrapper } from "./components/layout/auth.context.jsx";
 import Mission from "./Mission.jsx";
+// import Header from "./components/header.jsx";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
 ]);
 createRoot(document.getElementById("root")).render(
   <StrictMode>
+    {/* <Header></Header> */}
     <Mission />
     <AuthWrapper>
       <RouterProvider router={router} />
