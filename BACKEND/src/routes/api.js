@@ -8,11 +8,13 @@ import profileController from "../controller/profileController";
 
 import userController from "../controller/userController";
 import jwtAuth from "../middleware/jwtAuth";
+import responseFormatter from "../middleware/responseFormatter";
 
 const router = express.Router();
 
 const initWebRoutes = (app) => {
   // router.all("*", jwtAuth);
+  router.all("*", responseFormatter);
   router.get("/", homeController.handleHome);
 
   router.post("/auth/register", userController.handleCreateNewUser);
@@ -21,10 +23,9 @@ const initWebRoutes = (app) => {
   router.get("/auth/login/google/callback", oauthController.googleAuthCallback);
 
   router.get("/users", userController.handleUserPage);
-  router.post("/delete-user/:id", userController.handleDeleteUser);
-  router.post("/update-user/:id", userController.getUpdateUserPage);
-  router.post("/users/user-update", userController.handleUpdateUser);
-  router.get("/api/account", userController.getAccount);
+  router.get("/users/:id", userController.handleGetUser);
+  router.put("/users/:id", userController.handleUpdateUser);
+  router.delete("/users/:id", userController.handleDeleteUser);
 
   // Profile route
   router.get("/profile", profileController.handleProfilePage);
@@ -32,7 +33,7 @@ const initWebRoutes = (app) => {
   // Video routes
   router.post("/video/add", videoController.addVideo);
   router.get("/video/list", videoController.getVideos);
-
+  
   return app.use("/api", router);
 };
 
