@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const jwtAuth = (req, res, next) => {
@@ -36,4 +36,4 @@ const jwtAuth = (req, res, next) => {
     }
   }
 };
-module.exports = jwtAuth;
+export default jwtAuth;

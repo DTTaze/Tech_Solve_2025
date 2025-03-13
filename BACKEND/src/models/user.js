@@ -1,6 +1,5 @@
 "use strict";
 const { Model } = require("sequelize");
-console.log("\x1b[33m%s\x1b[0m","models/user.js");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**

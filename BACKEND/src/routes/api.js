@@ -1,41 +1,28 @@
-console.log("\x1b[33m%s\x1b[0m", "/routes/api.js");
 import express from "express";
-import homeController from "../controller/homeController";
-const oauthController = require("../controller/oauthController");
-const imageController = require("../controller/imageController");
-const videoController = require("../controller/videoController");
-// import profileController from "../controller/profileController";
-const uploadImage = require("../middleware/uploadImage");
-const uploadVideo = require("../middleware/uploadVideo");
-const userController = require("../controller/userController");
+import authRoutes from "../routes/authRoutes.js";
+import userRoutes from "../routes/userRoutes.js";
+import taskRoutes from "../routes/taskRoutes.js";
+import itemRoutes from "../routes/itemRoutes.js";
+import videoRoutes from "../routes/videoRoutes.js";
+import imageRoutes from "../routes/imageRoutes.js";
 import jwtAuth from "../middleware/jwtAuth";
 import responseFormatter from "../middleware/responseFormatter";
+import homeController from "../controller/homeController.js";
 
 const router = express.Router();
 
 const initWebRoutes = (app) => {
-  // router.all("*", jwtAuth);
-  router.all("*", responseFormatter);
+  // app.use(jwtAuth);
+  app.use(responseFormatter);
+
   router.get("/", homeController.handleHome);
 
-  router.post("/auth/register", userController.handleCreateNewUser);
-  router.post("/auth/login", userController.handleLoginUser);
-  router.get("/auth/login/google", oauthController.googleAuth);
-  router.get("/auth/login/google/callback", oauthController.googleAuthCallback);
-
-  router.get("/users", userController.handleUserPage);
-  router.get("/users/:id", userController.handleGetUser);
-  router.put("/users/:id", userController.handleUpdateUser);
-  router.delete("/users/:id", userController.handleDeleteUser);
-
-  // Profile route
-  // router.get("/profile", profileController.handleProfilePage);
-
-  // Video routes
-  router.post("/video/upload", uploadVideo.single('video'), videoController.uploadVideo);
-
-  // Images routes
-  router.post("/image/upload", uploadImage.single('image'),imageController.uploadImage);
+  app.use("/api/auth", authRoutes);
+  app.use("/api/users", userRoutes);
+  app.use("/api/tasks", taskRoutes);
+  app.use("/api/items", itemRoutes);
+  app.use("/api/video", videoRoutes);
+  app.use("/api/image", imageRoutes);
 
   return app.use("/api", router);
 };
