@@ -1,4 +1,4 @@
-import userService from "../service/userService";
+const userService = require("../service/userService");
 
 const getAccount = async (req, res) => {
   return res.status(200).json(req.user);
