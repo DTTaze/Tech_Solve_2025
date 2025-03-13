@@ -1,4 +1,4 @@
-const passport = require("passport");
+const passport = require("../config/passport"); // Đường dẫn tới passport.js
 
 const googleAuth = async (req, res, next) => {
   passport.authenticate("google", { scope: ["profile", "email"] })(
@@ -20,7 +20,7 @@ const googleAuthCallback = async (req, res, next) => {
   })(req, res, next);
 };
 
-export default {
+module.exports = {
   googleAuth,
   googleAuthCallback,
 };
