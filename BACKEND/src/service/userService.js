@@ -1,7 +1,7 @@
 require("dotenv").config();
 import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
-import db from "../models/index.js";
+const db = require("../models/index.js");
 const User = db.User;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
