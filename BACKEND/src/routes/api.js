@@ -12,19 +12,19 @@ import jwtAuth from "../middleware/jwtAuth";
 const router = express.Router();
 
 const initWebRoutes = (app) => {
-  router.all("*", jwtAuth);
+  // router.all("*", jwtAuth);
   router.get("/", homeController.handleHome);
 
-  router.get("/api/users", userController.handleUserPage);
-  router.post("/api/auth/register", userController.handleCreateNewUser);
-  router.post("/api/auth/login", userController.handleLoginUser);
+  router.post("/auth/register", userController.handleCreateNewUser);
+  router.post("/auth/login", userController.handleLoginUser);
+  router.get("/auth/login/google", oauthController.googleAuth);
+  router.get("/auth/login/google/callback", oauthController.googleAuthCallback);
+
+  router.get("/users", userController.handleUserPage);
   router.post("/delete-user/:id", userController.handleDeleteUser);
   router.post("/update-user/:id", userController.getUpdateUserPage);
   router.post("/users/user-update", userController.handleUpdateUser);
   router.get("/api/account", userController.getAccount);
-  // Google Auth
-  router.get("/auth/google", oauthController.googleAuth);
-  router.get("/auth/google/callback", oauthController.googleAuthCallback);
 
   // Profile route
   router.get("/profile", profileController.handleProfilePage);
@@ -33,7 +33,7 @@ const initWebRoutes = (app) => {
   router.post("/video/add", videoController.addVideo);
   router.get("/video/list", videoController.getVideos);
 
-  return app.use("/", router);
+  return app.use("/api", router);
 };
 
 export default initWebRoutes;

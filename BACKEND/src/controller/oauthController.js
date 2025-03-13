@@ -1,22 +1,26 @@
 const passport = require("passport");
 
-const oauthController = {
-  googleAuth: passport.authenticate("google", { scope: ["profile", "email"] }),
-
-  googleAuthCallback: (req, res, next) => {
-    passport.authenticate("google", { failureRedirect: "/" }, (err, user) => {
-      if (err) return next(err);
-      if (!user) return res.redirect("/");
-
-      req.logIn(user, (err) => {
-        if (err) return next(err);
-
-        req.session.user = user; // Lưu user vào session
-
-        return res.redirect("/profile"); // Chuyển hướng đến Profile
-      });
-    })(req, res, next);
-  },
+const googleAuth = async (req, res, next) => {
+  passport.authenticate("google", { scope: ["profile", "email"] })(
+    req,
+    res,
+    next
+  );
 };
 
-module.exports = oauthController;
+const googleAuthCallback = async (req, res, next) => {
+  passport.authenticate("google", { failureRedirect: "/" }, (err, user) => {
+    if (err) return next(err);
+    if (!user)
+      return res.status(401).json({ message: "Authentication failed" });
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      return res.status(200).json({ message: "Authentication success" });
+    });
+  })(req, res, next);
+};
+
+export default {
+  googleAuth,
+  googleAuthCallback,
+};

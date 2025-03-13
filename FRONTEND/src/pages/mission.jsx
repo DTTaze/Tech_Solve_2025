@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import Calenda from "./Calenda";
-import Ranking from "./Chart_rank";
-import "./Mission.css";
+import Calenda from "./calendar.jsx";
+import Ranking from "./chartRank.jsx";
+import "./mission.css";
 import images from "./photo.jsx";
-import {motion} from 'framer-motion'
-import { Button } from 'antd';
+import { motion } from "framer-motion";
+import { Button } from "antd";
 import { Footer } from "antd/es/layout/layout.js";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
@@ -92,8 +92,6 @@ function Mission() {
     );
   };
 
-  
-
   const HeroSection = () => {
     const scrollToNextSection = () => {
       const nextSection = document.getElementById("day-mission");
@@ -102,46 +100,48 @@ function Mission() {
       }
     };
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1}}
+        animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${images.anh_trong_cay_gpt})`,
+        style={{
+          backgroundImage: `url(${images.anh_trong_cay_gpt})`,
           height: "600px",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          borderRadius: '10px' }}
+          borderRadius: "10px",
+        }}
       >
-         <motion.h1
+        <motion.h1
           initial={{ opacity: 0, y: 10, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 10, filter: "blur(0px)"}}
+          animate={{ opacity: 1, y: 10, filter: "blur(0px)" }}
           transition={{ delay: 0.5, duration: 1 }}
           className="text-overlay"
-          style={{top:'3%'}}
+          style={{ top: "3%" }}
         >
           HÀNH ĐỘNG XANH...
         </motion.h1>
         <motion.h1
           initial={{ opacity: 0, y: 15, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 15, filter: "blur(0px)"}}
+          animate={{ opacity: 1, y: 15, filter: "blur(0px)" }}
           transition={{ delay: 1.5, duration: 1 }}
           className="text-overlay"
-          style={{top:'10%', left:'15%',fontStyle: 'italic' }}
+          style={{ top: "10%", left: "15%", fontStyle: "italic" }}
         >
           ...TƯƠNG LAI XANH
         </motion.h1>
-        <motion.button 
-          type="primary" 
-          shape="round" 
-          size={'large'} 
+        <motion.button
+          type="primary"
+          shape="round"
+          size={"large"}
           initial={{ opacity: 0, x: 50, y: 120, filter: "blur(10px)" }}
-          animate={{ opacity: 1, x: 50, y: 120, filter: "blur(0px)"}}
+          animate={{ opacity: 1, x: 50, y: 120, filter: "blur(0px)" }}
           transition={{ delay: 2.0, duration: 1 }}
           className="btn-try-now"
           onClick={scrollToNextSection}
-          >
-            THAM GIA NGAY
+        >
+          THAM GIA NGAY
         </motion.button>
       </motion.div>
     );
@@ -168,9 +168,9 @@ function Mission() {
   return (
     <div className="Mission_rank_container">
       <div className="section_hero">
-        <HeroSection/>
+        <HeroSection />
       </div>
-      <div id = 'day-mission' className="day_mission_container">
+      <div id="day-mission" className="day_mission_container">
         <div className="header">
           <h1>nhiệm vụ hàng ngày</h1>
         </div>
@@ -188,7 +188,6 @@ function Mission() {
                   />
                 </button>
               ))}
-
             </div>
           </div>
           <div className="item2">
@@ -222,19 +221,27 @@ function Mission() {
         </div>
         {totalTasks > TaskPerPage && (
           <div className="pagination">
-            <button onClick={goToPreviousPage} disabled={CurrentPage === 1} className="pagination-button">
-                &lt;
+            <button
+              onClick={goToPreviousPage}
+              disabled={CurrentPage === 1}
+              className="pagination-button"
+            >
+              &lt;
             </button>
-            <span>{CurrentPage} of {totalPages}</span>
-            <button onClick={goToNextPage} disabled={CurrentPage === totalPages} className='pagination-button'>
-                &gt;
+            <span>
+              {CurrentPage} of {totalPages}
+            </span>
+            <button
+              onClick={goToNextPage}
+              disabled={CurrentPage === totalPages}
+              className="pagination-button"
+            >
+              &gt;
             </button>
           </div>
-          )}
+        )}
         <div>
-          <Footer className="footer">
-            Liên hệ: 012345678
-          </Footer>
+          <Footer className="footer">Liên hệ: 012345678</Footer>
         </div>
       </div>
     </div>

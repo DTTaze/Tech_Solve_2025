@@ -6,7 +6,7 @@ services:
     container_name: backend_container
     restart: always
     env_file:
-      - BACKEND/.env
+      - ./BACKEND/.env
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
@@ -32,7 +32,7 @@ services:
     container_name: frontend_container
     restart: always
     env_file:
-      - FRONTEND/.env
+      - ./FRONTEND/.env
     environment:
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: true
@@ -50,6 +50,8 @@ services:
     image: mysql:latest
     container_name: mysql_container
     restart: always
+    env_file:
+      - ./BACKEND/.env  
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -63,6 +65,8 @@ services:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin_container
     restart: always
+    env_file:
+      - ./BACKEND/.env
     environment:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
