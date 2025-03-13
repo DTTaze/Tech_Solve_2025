@@ -28,11 +28,12 @@ const initWebRoutes = (app) => {
   router.put("/users/:id", userController.handleUpdateUser);
   router.delete("/users/:id", userController.handleDeleteUser);
 
-  // Profile route
-  // router.get("/profile", profileController.handleProfilePage);
-
   // Video routes
   router.post("/video/upload", uploadVideo.single('video'), videoController.uploadVideo);
+  router.get("/videos", videoController.getAllVideos);
+  router.get("/video/:id", videoController.getVideoById);
+  router.put("/video/:id", uploadVideo.single('video'), videoController.updateVideo);
+  router.delete("/video/:id", videoController.deleteVideo);
 
   // Images routes
   router.post("/image/upload", uploadImage.single('image'),imageController.uploadImage);
