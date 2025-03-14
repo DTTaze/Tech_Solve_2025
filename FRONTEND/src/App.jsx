@@ -1,5 +1,4 @@
 import { useContext, useEffect } from "react";
-import Header from "./components/header";
 import { Outlet } from "react-router-dom";
 import { AuthContext } from "./components/layout/auth.context";
 import axios from "./utils/axios.customize";
@@ -38,7 +37,6 @@ function App() {
         </div>
       ) : (
         <>
-          <Header />
           <Outlet />
         </>
       )}

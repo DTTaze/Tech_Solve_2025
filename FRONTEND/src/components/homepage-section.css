@@ -1,0 +1,183 @@
+.section.hero {
+    height:90vh;
+    width: 100vw;
+    position: relative;
+}
+
+.section.hero header {
+    position: absolute;
+    top: 40%;
+    left: 5%;
+    font-size: 35px;
+    width: 35%;
+    z-index: 2;
+    color:#059212;
+}
+
+.section.hero .container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.hero .container img {
+    position: absolute;
+    width: 50%;
+    height: 70%;
+    object-fit: cover;
+    right: 5%;
+    top: 15%;
+    border-radius: 20px;
+    transition: opacity 1s ease-in-out;
+    opacity: 0;
+}
+
+.hero .container img.active {
+    opacity: 1;
+}
+
+.hero header h2 {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.section-left {
+    position: relative;
+    width: 100vw;
+    height: 90vh;
+    overflow: hidden;
+}
+
+.section-left header {
+    position: absolute;
+    width: 35%;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: 25%;
+    right: 5%;
+    transform: translateX(100vw);
+    transition: transform 1s;
+}
+
+.section-left.active header {
+    transform: translateX(0);
+}
+
+.section-left header h2 {
+    color: #1F7D53;
+    font-size: 30px;
+}
+
+.section-left header p {
+    font-size: 20px;
+}
+
+.section-left button {
+    width: 40%;
+    padding: 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: large;
+    font-weight: bolder;
+    background-color: #5CB338;
+}
+
+.section-left button:hover {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.5s;
+    color: white;
+}
+
+.section-left .background {
+    position: absolute;
+    width: 40%;
+    height: 70%;
+    top: 10%;
+    left: 10%;
+    overflow: hidden;
+    border-radius: 20px;
+    transform: translateX(-100vw);
+    transition: transform 1s;
+}
+
+.section-left.active .background {
+    transform: translateX(0);
+}
+
+.section-right {
+    position: relative;
+    width: 100vw;
+    height: 90vh;
+    overflow: hidden;
+}
+
+.section-right header {
+    position: absolute;
+    width: 40%;
+    height: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    top: 25%;
+    left: 5%;
+    transform: translateX(-100vw);
+    transition: transform 1s;
+}
+
+.section-right.active header {
+    transform: translateX(0);
+}
+
+.section-right header h2 {
+    color: #1F7D53;
+    font-size: 30px;
+}
+
+.section-right header p {
+    font-size: 20px;
+}
+
+.section-right button {
+    width: 40%;
+    padding: 20px;
+    border-radius: 20px;
+    border: none;
+    font-size: large;
+    font-weight: bolder;
+    background-color: #5CB338;
+}
+
+.section-right button:hover {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.5s;
+    color: white;
+}
+
+.section-right .background {
+    position: absolute;
+    width: 40%;
+    height: 70%;
+    top: 10%;
+    right: 5%;
+    overflow: hidden;
+    border-radius: 20px;
+    transform: translateX(100vw);
+    transition: transform 1s;
+}
+
+.section-right.active .background {
+    transform: translateX(0);
+}
+
+footer {
+    height: 25vh;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+}
