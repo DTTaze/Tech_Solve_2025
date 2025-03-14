@@ -20,7 +20,7 @@ const initWebRoutes = (app) => {
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);
   app.use("/api/tasks", taskRoutes);
-  app.use("/api/items", itemRoutes);
+  // app.use("/api/items", itemRoutes);
   app.use("/api/videos", videoRoutes);
   // app.use("/api/images", imageRoutes);
 

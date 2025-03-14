@@ -6,8 +6,9 @@ const User = db.User;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 
-const createNewUser = async (email, password, username) => {
+const createUser = async (data) => {
   try {
+    let { email, password, username } = data;
     const user = await User.findOne({ where: { email: email } });
     if (user) {
       throw new Error("User already exists");
@@ -25,8 +26,9 @@ const createNewUser = async (email, password, username) => {
   }
 };
 
-const loginUser = async (email, password) => {
+const loginUser = async (data) => {
   try {
+    let { email, password } = data;
     const user = await User.findOne({ where: { email: email } });
     if (!user) {
       throw new Error("Invalid email or password");
@@ -59,7 +61,7 @@ const loginUser = async (email, password) => {
   }
 };
 
-const getUserList = async () => {
+const getAllUsers = async () => {
   try {
     const users = await User.findAll({
       attributes: { exclude: ["password"] },
@@ -98,15 +100,16 @@ const getUserByID = async (id) => {
   }
 };
 
-const updateUserInfor = async (data) => {
+const updateUser = async (id, data) => {
   try {
-    let user = await User.findOne({ where: { id: data.id } });
+    let { username, email } = data;
+    let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
     }
 
-    user.username = data.username;
-    user.email = data.email;
+    user.username = username;
+    user.email = email;
     await user.save();
 
     return await User.findAll();
@@ -117,20 +120,17 @@ const updateUserInfor = async (data) => {
 
 const findOrCreateUser = async (profile) => {
   try {
-    let user = await User.findOne({
+    const [user] = await User.findOrCreate({
       where: {
         [Op.or]: [{ email: profile.emails[0].value }, { googleId: profile.id }],
       },
-    });
-
-    if (!user) {
-      user = await User.create({
+      defaults: {
         googleId: profile.id,
         email: profile.emails[0].value,
         username: profile.displayName,
         password: null,
-      });
-    }
+      },
+    });
 
     return user;
   } catch (error) {
@@ -139,11 +139,11 @@ const findOrCreateUser = async (profile) => {
 };
 
 module.exports = {
-  createNewUser,
-  getUserList,
+  createUser,
+  getAllUsers,
   deleteUser,
   getUserByID,
-  updateUserInfor,
+  updateUser,
   findOrCreateUser,
   loginUser,
 };

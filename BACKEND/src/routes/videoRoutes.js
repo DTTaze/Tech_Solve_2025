@@ -7,15 +7,15 @@ const router = express.Router();
 router.post(
   "/upload",
   uploadVideo.single("video"),
-  videoController.uploadVideo
+  videoController.handleUploadVideo
 );
-router.get("/", videoController.getAllVideos);
-router.get("/:id", videoController.getVideoById);
+router.get("/", videoController.handleGetAllVideos);
+router.get("/:id", videoController.handleGetVideoById);
 router.put(
   "/:id",
   uploadVideo.single("video"),
-  videoController.updateVideo
+  videoController.handleUpdateVideo
 );
-router.delete("/:id", videoController.deleteVideo);
+router.delete("/:id", videoController.handleDeleteVideo);
 
 export default router;

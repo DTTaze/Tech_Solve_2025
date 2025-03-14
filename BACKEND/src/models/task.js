@@ -14,24 +14,23 @@ module.exports = (sequelize, DataTypes) => {
 
   Task.init(
     {
-    //   googleId: {
-    //     type: DataTypes.STRING,
-    //     allowNull: true,
-    //     unique: true,
-    //   },
-    //   email: {
-    //     type: DataTypes.STRING,
-    //     allowNull: false,
-    //     unique: true,
-    //   },
-    //   password: {
-    //     type: DataTypes.STRING,
-    //     allowNull: true,
-    //   },
-    //   username: {
-    //     type: DataTypes.STRING,
-    //     allowNull: false,
-    //   },
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      coins: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
     },
     {
       sequelize,
@@ -39,6 +38,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Tasks",
     }
   );
-  
+
   return Task;
 };
