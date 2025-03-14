@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import Calenda from "./calendar.jsx";
-import Ranking from "./chartRank.jsx";
+import Calenda from "../components/calendar.jsx";
+import Ranking from "../components/chartRank.jsx";
 import "./mission.css";
-import images from "./photo.jsx";
-import { motion } from "framer-motion";
-import { Button } from "antd";
+import images from "../components/photo.jsx";
 import { Footer } from "antd/es/layout/layout.js";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */

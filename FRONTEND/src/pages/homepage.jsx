@@ -1,4 +1,4 @@
-import HomepageHeader from "../components/homepage-header";
+import HomepageHeader from "../components/header";
 import HomepageSection from "../components/homepage-section";
 import "../pages/homepage.css"
 
