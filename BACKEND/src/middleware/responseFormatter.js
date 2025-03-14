@@ -2,9 +2,9 @@ const responseFormatter = (req, res, next) => {
   res.warn = () => {
     console.log("test res warn");
   };
-  res.success = (message, data = null) => {
-    res.status(200).json({
-      status: 200,
+  res.success = (message, data = null, statusCode = 200) => {
+    res.status(statusCode).json({
+      status: statusCode,
       success: true,
       message,
       ...(data && { data }),
