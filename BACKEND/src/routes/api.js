@@ -21,17 +21,10 @@ const initWebRoutes = (app) => {
   app.use("/api/users", userRoutes);
   app.use("/api/tasks", taskRoutes);
   app.use("/api/items", itemRoutes);
-  app.use("/api/video", videoRoutes);
-  app.use("/api/image", imageRoutes);
-  // Video routes
-  router.post("/video/upload", uploadVideo.single('video'), videoController.uploadVideo);
-  router.get("/videos", videoController.getAllVideos);
-  router.get("/video/:id", videoController.getVideoById);
-  router.put("/video/:id", uploadVideo.single('video'), videoController.updateVideo);
-  router.delete("/video/:id", videoController.deleteVideo);
+  app.use("/api/videos", videoRoutes);
+  // app.use("/api/images", imageRoutes);
 
-  // Images routes
-  router.post("/image/upload", uploadImage.single('image'),imageController.uploadImage);
+  // router.post("/image/upload", uploadImage.single('image'),imageController.uploadImage);
 
   return app.use("/api", router);
 };

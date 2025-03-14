@@ -9,5 +9,13 @@ router.post(
   uploadVideo.single("video"),
   videoController.uploadVideo
 );
+router.get("/", videoController.getAllVideos);
+router.get("/:id", videoController.getVideoById);
+router.put(
+  "/:id",
+  uploadVideo.single("video"),
+  videoController.updateVideo
+);
+router.delete("/:id", videoController.deleteVideo);
 
 export default router;
