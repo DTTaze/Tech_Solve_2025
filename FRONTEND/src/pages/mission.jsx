@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import Calenda from "./calendar.jsx";
-import Ranking from "./chartRank.jsx";
+import Calenda from "../components/calendar.jsx";
+import Ranking from "../components/chartRank.jsx";
 import "./mission.css";
-import images from "./photo.jsx";
-import { motion } from "framer-motion";
-import { Button } from "antd";
+import images from "../components/photo.jsx";
 import { Footer } from "antd/es/layout/layout.js";
+import Header from "../components/header.jsx";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 
@@ -92,60 +91,7 @@ function Mission() {
     );
   };
 
-  const HeroSection = () => {
-    const scrollToNextSection = () => {
-      const nextSection = document.getElementById("day-mission");
-      if (nextSection) {
-        nextSection.scrollIntoView({ behavior: "smooth" });
-      }
-    };
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${images.anh_trong_cay_gpt})`,
-          height: "600px",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          borderRadius: "10px",
-        }}
-      >
-        <motion.h1
-          initial={{ opacity: 0, y: 10, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 10, filter: "blur(0px)" }}
-          transition={{ delay: 0.5, duration: 1 }}
-          className="text-overlay"
-          style={{ top: "3%" }}
-        >
-          HÀNH ĐỘNG XANH...
-        </motion.h1>
-        <motion.h1
-          initial={{ opacity: 0, y: 15, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 15, filter: "blur(0px)" }}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="text-overlay"
-          style={{ top: "10%", left: "15%", fontStyle: "italic" }}
-        >
-          ...TƯƠNG LAI XANH
-        </motion.h1>
-        <motion.button
-          type="primary"
-          shape="round"
-          size={"large"}
-          initial={{ opacity: 0, x: 50, y: 120, filter: "blur(10px)" }}
-          animate={{ opacity: 1, x: 50, y: 120, filter: "blur(0px)" }}
-          transition={{ delay: 2.0, duration: 1 }}
-          className="btn-try-now"
-          onClick={scrollToNextSection}
-        >
-          THAM GIA NGAY
-        </motion.button>
-      </motion.div>
-    );
-  };
+
 
   const [CurrentPage, setCurrentPage] = useState(1);
   const TaskPerPage = 3;
@@ -166,13 +112,13 @@ function Mission() {
   };
 
   return (
-    <div className="Mission_rank_container">
-      <div className="section_hero">
-        <HeroSection />
+    <div className="main-mission-container">
+      <div className="header">
+       <Header/>
       </div>
       <div id="day-mission" className="day_mission_container">
-        <div className="header">
-          <h1>nhiệm vụ hàng ngày</h1>
+        <div className="day-mission-header">
+          <h1 >NHIỆM VỤ HÀNG NGÀY</h1>
         </div>
         <div className="container">
           <div className="item1">
@@ -203,8 +149,8 @@ function Mission() {
         </div>
       </div>
       <div className="another-mission-container">
-        <div className="header">
-          <h1>nhiệm vụ khác</h1>
+        <div className="day-mission-header">
+          <h1>NHIỆM VỤ KHÁC</h1>
         </div>
         <div className="mission-container" style={{ width: "98%" }}>
           {currentTasks.map((item) => (

@@ -14,9 +14,13 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
+      // {
+      //   index: true,
+      //   element: <HomePage />,
+      // },
       {
         index: true,
-        element: <HomePage />,
+        element: <Mission/>,
       },
       {
         path: "user",
@@ -35,9 +39,10 @@ const router = createBrowserRouter([
 ]);
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <HomePage />
-    {/* <AuthWrapper>
+    {/* <HomePage /> */}
+    {/* <Mission/> */}
+    <AuthWrapper>
       <RouterProvider router={router} />
-    </AuthWrapper> */}
+    </AuthWrapper>
   </StrictMode>
 );

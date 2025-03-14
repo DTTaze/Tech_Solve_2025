@@ -42,7 +42,7 @@ function SectionHero() {
 }
 
 function SectionLeft({ imagePath, H2Text, PText, ButtonText }) {
-    const sectionRef = useRef(null); // Tạo ref để truy cập phần tử section
+    const sectionRef = useRef(null);
 
     useEffect(() => {
         const section = sectionRef.current;
@@ -61,7 +61,7 @@ function SectionLeft({ imagePath, H2Text, PText, ButtonText }) {
 
         observer.observe(section);
 
-        return () => observer.unobserve(section); // Cleanup khi component unmount
+        return () => observer.unobserve(section); 
     }, []);
 
     return (
@@ -145,7 +145,6 @@ function HomepageSection() {
         </>
     );
 }
-
 
 export { SectionHero, SectionLeft, SectionRight, Footer };
 export default HomepageSection; 
