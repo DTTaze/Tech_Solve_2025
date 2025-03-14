@@ -4,10 +4,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RegisterPage from "./pages/register.jsx";
 import UserPage from "./pages/user.jsx";
 import App from "./App.jsx";
-import HomePage from "./pages/home.jsx";
 import LoginPage from "./pages/login.jsx";
 import { AuthWrapper } from "./components/layout/auth.context.jsx";
 import Mission from "../src/pages/mission.jsx";
+import HomePage from "./pages/homepage.jsx"
 
 const router = createBrowserRouter([
   {
@@ -35,10 +35,9 @@ const router = createBrowserRouter([
 ]);
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <Header></Header> */}
-    <Mission />
-    <AuthWrapper>
+    <HomePage />
+    {/* <AuthWrapper>
       <RouterProvider router={router} />
-    </AuthWrapper>
+    </AuthWrapper> */}
   </StrictMode>
 );
