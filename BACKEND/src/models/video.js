@@ -15,19 +15,22 @@ module.exports = (sequelize, DataTypes) => {
       // Video.belongsTo(models.User, { foreignKey: "userId" });
     }
   }
-
   Video.init(
     {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      google_drive_id: {
+      url: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
-      google_drive_url: {
+      filename: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -42,6 +45,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Videos",
     }
   );
-
+  
   return Video;
 };

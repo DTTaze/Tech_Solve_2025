@@ -1,51 +1,92 @@
-console.log("\x1b[33m%s\x1b[0m", "videoController"); 
-const { Video } = require("../models");
+const videoService = require("../service/videoService");
 
-function getGoogleDriveID(url) {
-    const match = url.match(/(?:drive\.google\.com\/(?:file\/d\/|open\?id=))([^\/?]+)/);
-    return match ? match[1] : null;
-}
+// CREATE - Upload video
+const uploadVideo = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
 
-const addVideo = async (req, res) => {
-    try {
-    const { title, description, google_drive_url } = req.body;
-
-    if (!title || !description || !google_drive_url) {
-        return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const google_drive_id = getGoogleDriveID(google_drive_url);
-    if (!google_drive_id) {
-        return res.status(400).json({ message: "Invalid Google Drive URL" });
-    }
-
-    await Video.create({
-        title,
-        description,
-        google_drive_url,  
-        google_drive_id, 
-        userId: req.session.user.id, 
+  try {
+    const newVideo = await videoService.createVideo({
+      title: req.body.title,
+      url: req.file.path,
+      filename: req.file.filename,
+      userId: req.body.userId,
     });
 
-    res.redirect("/profile");
-    } catch (err) {
-    console.log("\x1b[31m%s\x1b[0m", "addVideo");     
-    console.error(err);
-    res.status(500).json({ message: "Internal Server Error" });
-    }
+    res.success("Upload video success", newVideo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// Lấy danh sách video
-const getVideos = async (req, res) => {
-    
-    try {
-        const videos = await Video.findAll();
-        res.status(200).json(videos);
-    } catch (error) {
-        console.log("\x1b[31m%s\x1b[0m", "getVideos"); 
-        console.error(error);
-        res.status(500).json({ message: "Lỗi server", error });
-    }
+// READ - Lấy danh sách video
+const getAllVideos = async (req, res) => {
+  try {
+    const videos = await videoService.getAllVideos();
+    res.json(videos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-export default { addVideo, getVideos };
+// READ - Lấy thông tin 1 video theo ID
+const getVideoById = async (req, res) => {
+  try {
+    const video = await videoService.getVideoById(req.params.id);
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+    res.json(video);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// UPDATE - Cập nhật video
+const updateVideo = async (req, res) => {
+  try {
+    const video = await videoService.getVideoById(req.params.id);
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    await videoService.updateVideo(req.params.id, {
+      title: req.body.title,
+      url: req.file.path,
+      filename: req.file.filename,
+    });
+
+    res.json(video);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// DELETE - Xóa video
+const deleteVideo = async (req, res) => {
+  try {
+    const video = await videoService.getVideoById(req.params.id);
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+
+    await videoService.deleteVideo(req.params.id);
+    res.json({ message: "Video deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Xuất các hàm để dùng trong route
+module.exports = {
+  uploadVideo,
+  getAllVideos,
+  getVideoById,
+  updateVideo,
+  deleteVideo,
+};
