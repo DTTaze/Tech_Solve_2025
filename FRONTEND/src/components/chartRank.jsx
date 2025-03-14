@@ -15,12 +15,13 @@ function Ranking () {
                 datasets : [
                     {
                         label: 'Top những người uy tín',
+                        borderRadius: 10,
                         backgroundColor : [
                             '#3e95cd',
                             '#8e5ea2',
                             '#3cba9f'
                         ],
-                        data : [4000, 2500, 1000]
+                        data : [2500, 4000, 1000]
                     }
                 ]
             }}
@@ -31,6 +32,7 @@ function Ranking () {
                     display: true,
                     text: 'Top nguoi choi trong ngay'
                 }
+                
             }}
             style={{height: '220px' }}
         />
