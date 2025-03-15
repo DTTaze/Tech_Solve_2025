@@ -1,35 +1,39 @@
-.section.hero {
-    height:90vh;
+.hero {
+    height: 90vh;
     width: 100vw;
-    position: relative;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
-.section.hero header {
-    position: absolute;
-    top: 40%;
-    left: 5%;
-    font-size: 35px;
-    width: 35%;
-    z-index: 2;
-    color:#059212;
-}
-
-.section.hero .container {
-    width: 100%;
+.hero header {
+    font-size: 40px;
+    width: 50%;
     height: 100%;
+    z-index: 1;
+    color:#059212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero .container {
     position: relative;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hero .container img {
-    position: absolute;
-    width: 50%;
+    width: 80%;
     height: 70%;
     object-fit: cover;
-    right: 5%;
-    top: 15%;
     border-radius: 20px;
-    transition: opacity 1s ease-in-out;
+    position: absolute;
     opacity: 0;
+    transition: opacity 1s ease-in-out;
 }
 
 .hero .container img.active {
@@ -41,21 +45,20 @@
 }
 
 .section-left {
-    position: relative;
     width: 100vw;
     height: 90vh;
     overflow: hidden;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 .section-left header {
-    position: absolute;
-    width: 35%;
-    height: 40%;
+    width: 40%;
+    height: 50%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    top: 25%;
-    right: 5%;
     transform: translateX(100vw);
     transition: transform 1s;
 }
@@ -74,28 +77,39 @@
 }
 
 .section-left button {
-    width: 40%;
-    padding: 20px;
-    border-radius: 20px;
-    border: none;
-    font-size: large;
+    width: 50%;
+    padding: 17px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: 0;
+    background-color: #65b444;
+    box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 15px;
+    transition: all 0.5s ease;
     font-weight: bolder;
-    background-color: #5CB338;
 }
 
 .section-left button:hover {
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.5s;
-    color: white;
+    letter-spacing: 3px;
+    background-color: #059212;
+    color: hsl(0, 0%, 100%);
+    box-shadow: #059212 0px 7px 29px 0px;
+}
+
+.section-left button:active {
+    letter-spacing: 3px;
+    background-color: #059212;
+    color: hsl(0, 0%, 100%);
+    box-shadow: #059212 0px 0px 0px 0px;
+    transform: translateY(10px);
+    transition: 100ms;
 }
 
 .section-left .background {
-    position: absolute;
     width: 40%;
-    height: 70%;
-    top: 10%;
-    left: 10%;
+    height: 80%;
     overflow: hidden;
     border-radius: 20px;
     transform: translateX(-100vw);
@@ -107,21 +121,20 @@
 }
 
 .section-right {
-    position: relative;
     width: 100vw;
     height: 90vh;
     overflow: hidden;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 .section-right header {
-    position: absolute;
-    width: 40%;
+    width: 35%;
     height: 40%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    top: 25%;
-    left: 5%;
     transform: translateX(-100vw);
     transition: transform 1s;
 }
@@ -140,28 +153,39 @@
 }
 
 .section-right button {
-    width: 40%;
-    padding: 20px;
-    border-radius: 20px;
-    border: none;
-    font-size: large;
+    width: 50%;
+    padding: 17px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: 0;
+    background-color: #65b444;
+    box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 15px;
+    transition: all 0.5s ease;
     font-weight: bolder;
-    background-color: #5CB338;
 }
 
 .section-right button:hover {
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.5s;
-    color: white;
+    letter-spacing: 3px;
+    background-color: #059212;
+    color: hsl(0, 0%, 100%);
+    box-shadow: #059212 0px 7px 29px 0px;
+}
+
+.section-right button:active {
+    letter-spacing: 3px;
+    background-color: #059212;
+    color: hsl(0, 0%, 100%);
+    box-shadow: #059212 0px 0px 0px 0px;
+    transform: translateY(10px);
+    transition: 100ms;
 }
 
 .section-right .background {
-    position: absolute;
     width: 40%;
     height: 70%;
-    top: 10%;
-    right: 5%;
     overflow: hidden;
     border-radius: 20px;
     transform: translateX(100vw);

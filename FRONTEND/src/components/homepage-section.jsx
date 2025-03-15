@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import "../components/homepage-section.css";
+
 
 function SectionHero() {
     const [index, setIndex] = useState(0);
@@ -19,13 +20,23 @@ function SectionHero() {
             setIndex((prevIndex) => (prevIndex + 1) % images.length);
         }, 3000);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, []);
+
+    const formattedTitle = useMemo(() => {
+        return titles[index].split(",").map((line, i, arr) => (
+            <span key={i}>
+                {line}
+                {i !== arr.length - 1 && ","} {/* Giữ dấu phẩy */}
+                {i !== arr.length - 1 && <br />} {/* Xuống dòng */}
+            </span>
+        ));
+    }, [index, titles]);
 
     return (
         <section className="section hero">
             <header>
-                <h2 id="heroTitle">{titles[index]}</h2>
+                <h2 id="heroTitle" className="fade-text">{formattedTitle}</h2>
             </header>
             <div className="container">
                 {images.map((src, i) => (
@@ -66,14 +77,14 @@ function SectionLeft({ imagePath, H2Text, PText, ButtonText }) {
 
     return (
         <section ref={sectionRef} className="section section-left">
+            <div className="background">
+                <img src={imagePath} alt="ảnh mô tả" />
+            </div>
             <header>
                 <h2>{H2Text}</h2>
                 <p>{PText}</p>
                 <button>{ButtonText}</button>
             </header>
-            <div className="background">
-                <img src={imagePath} alt="ảnh mô tả" />
-            </div>
         </section>
     );
 }
@@ -135,8 +146,8 @@ function HomepageSection() {
                 PText="Dùng điểm tích lũy để đổi lấy những sản phẩm bền vững, giúp bạn tiếp tục duy trì lối sống xanh và bảo vệ hành tinh."
                 ButtonText="Khám phá chợ trao đổi"
             />
-            <SectionLeft 
-                imagePath="../src/assets/photos/sai-gon-xanh.jpeg"
+            <SectionLeft className="Sai-gon-xanh"
+                imagePath="../src/assets/photos/hand-drawn-people-planting-a-tree.jpg"
                 H2Text="Kết Nối Cộng Đồng - Lan Tỏa Hành Động Xanh"
                 PText="Chia sẻ thành tích, tham gia thử thách cùng bạn bè và truyền cảm hứng đến cộng đồng. Mỗi hành động nhỏ tạo nên một phong trào lớn!"
                 ButtonText="Tham gia ngay"

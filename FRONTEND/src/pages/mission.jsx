@@ -4,6 +4,7 @@ import Ranking from "../components/chartRank.jsx";
 import "./mission.css";
 import images from "../components/photo.jsx";
 import { Footer } from "antd/es/layout/layout.js";
+import { motion } from "framer-motion";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 

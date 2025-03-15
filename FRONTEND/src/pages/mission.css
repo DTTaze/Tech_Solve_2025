@@ -59,20 +59,6 @@ body {
     background-color: 0; /* Nền mờ nếu muốn */
     padding: 10px;
     text-transform: uppercase;
-  }
-
-.header {
-    height: 40px;
-    color: #fff;
-    background-color: #5B913B;
-    border-radius: 6px ;
-    text-align: center;
-}
-
-.header h1{
-    margin: 0;
-    text-transform: uppercase;
-    font-weight: 600;
 }
 
 .section_hero img {

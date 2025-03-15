@@ -1,7 +1,10 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../components/header.css";
 
 function Header() {
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const handleScroll = () => {
       const header = document.querySelector(".header");
@@ -22,21 +25,19 @@ function Header() {
   }, []);
 
   return (
-    <div>
-      <header className="header">
-        <div className="header--contents">
-          <i className="fa-solid fa-flag header--logo"></i>
-          <span className="logo--name">Green Flag</span>
-        </div>
-        <div className="header--buttons">
-          <button>Nhiệm vụ</button>
-          <button>Chợ trao đổi</button>
-          <button>Đăng kí</button>
-          <button>Đăng nhập</button>
-        </div>
-        <div className="header--underlay"></div>
-      </header>
-    </div>
+    <header className="header">
+      <div className="header--contents">
+        <i className="fa-solid fa-flag header--logo"></i>
+        <span className="logo--name">Green Flag</span>
+      </div>
+      <div className="header--buttons">
+        <button onClick={() => navigate("/missions")}>Nhiệm vụ</button>
+        <button onClick={() => navigate("/market")}>Chợ trao đổi</button>
+        <button onClick={() => navigate("/register")}>Đăng kí</button>
+        <button onClick={() => navigate("/login")}>Đăng nhập</button>
+      </div>
+      <div className="header--underlay"></div>
+    </header>
   );
 }
 
