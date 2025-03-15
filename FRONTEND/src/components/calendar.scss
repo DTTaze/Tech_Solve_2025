@@ -2,9 +2,8 @@
 
 .calenda {
   border-radius: 6px;
-  border: solid 2px black;
-  height: 350px;
-  width: 500px;
+  border: solid 1px rgb(98, 97, 97);
+  height: 300px;
 }
 
 body {
@@ -17,7 +16,7 @@ body {
   align-items: center;
   padding: 12px;
   border-radius: 6px 6px 0 0;
-  background-color: #1abc9c;
+  background-color: #D99D81;
   color: #fff;
 }
 
@@ -60,7 +59,7 @@ body {
 
   &--today {
     border-radius: 99px;
-    background-color: #1abc9c;
-    color: #fff;
+    background-color: #FFE8B6;
+    color: #514e4e;
   }
 }

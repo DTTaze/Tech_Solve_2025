@@ -1,12 +1,12 @@
 import express from "express";
-import userController from "../controller/userController"; // Chưa có taskController nên tạm dùng userController
+import taskController from "../controller/taskController"; // Chưa có taskController nên tạm dùng userController
 
 const router = express.Router();
 
-router.post("/upload", userController.handleLoginUser);
-router.get("/", userController.handleUserPage);
-router.get("/:id", userController.handleGetUser);
-router.put("/:id", userController.handleUpdateUser);
-router.delete("/:id", userController.handleDeleteUser);
+router.post("/upload", taskController.handleCreateTask);
+router.get("/", taskController.handleGetAllTasks);
+router.get("/:id", taskController.handleGetTask);
+router.put("/:id", taskController.handleUpdateTask);
+router.delete("/:id", taskController.handleDeleteTask);
 
 export default router;

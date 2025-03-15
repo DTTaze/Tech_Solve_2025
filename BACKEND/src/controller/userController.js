@@ -1,19 +1,18 @@
 const userService = require("../service/userService");
 
-const handleUserPage = async (req, res) => {
+const handleGetAllUsers = async (req, res) => {
   try {
-    let data = await userService.getUserList();
-    return res.success("Get list of users success", data);
+    let result = await userService.getAllUsers();
+    return res.success("Get list of users success", result);
   } catch (error) {
     return res.error(500, "Failed to fetch user list", error.message);
   }
 };
 
-const handleCreateNewUser = async (req, res) => {
+const handleCreateUser = async (req, res) => {
   try {
-    let { email, password, username } = req.body;
-    let data = await userService.createNewUser(email, password, username);
-    return res.success("Create user success", data);
+    let result = await userService.createUser(req.body);
+    return res.success("Create user success", result);
   } catch (error) {
     return res.error(500, "Failed to create user", error.message);
   }
@@ -21,11 +20,10 @@ const handleCreateNewUser = async (req, res) => {
 
 const handleLoginUser = async (req, res) => {
   try {
-    let { email, password } = req.body;
-    let data = await userService.loginUser(email, password);
-    return res.success("Login success", data);
+    let result = await userService.loginUser(req.body);
+    return res.success("Login success", result);
   } catch (error) {
-    return res.error(401, "Login failed", error.message);
+    return res.error(401, "Failed to login user", error.message);
   }
 };
 
@@ -40,20 +38,16 @@ const handleDeleteUser = async (req, res) => {
 
 const handleGetUser = async (req, res) => {
   try {
-    let id = req.params.id;
-    let user = await userService.getUserByID(id);
-    return res.success("Get update user page", user);
+    let result = await userService.getUserByID(req.params.id);
+    return res.success("Get user by ID success", result);
   } catch (error) {
-    return res.error(500, "Failed to get user", error.message);
+    return res.error(500, "Failed to get user by ID", error.message);
   }
 };
 
 const handleUpdateUser = async (req, res) => {
   try {
-    let id = req.params.id;
-    let data = req.body;
-    data.id = id;
-    let result = await userService.updateUserInfor(data);
+    let result = await userService.updateUser(req.params.id, req.body);
     return res.success("Update user success", result);
   } catch (error) {
     return res.error(500, "Failed to update user", error.message);
@@ -61,8 +55,8 @@ const handleUpdateUser = async (req, res) => {
 };
 
 module.exports = {
-  handleUserPage,
-  handleCreateNewUser,
+  handleGetAllUsers,
+  handleCreateUser,
   handleDeleteUser,
   handleGetUser,
   handleUpdateUser,

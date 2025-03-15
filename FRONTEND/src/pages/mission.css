@@ -2,14 +2,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
-.section_hero {
-    width: 100%;
-    margin: 0%;
-    margin-bottom: 0%;
-    padding: 20px;
-    color: #4caf50;
-    
-}
+
 
 body {
     font-family:Roboto, sans-serif;
@@ -19,35 +12,6 @@ body {
 .footer {
     text-align: center;
 }
-
-.btn-try-now {
-    display: flex;
-    top:50%;
-    left:30%;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: #859F3D;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    transform: translate(-50%, -50%);
-    border: none;
-    border-radius: 50px; 
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-    box-shadow: 0 4px 8px rgba(106, 255, 0, 0.3);
-}
-
-.btn-try-now:hover {
-    background-color: #c1d87f;
-    transform: scale(1.05);
-}
-
-.btn-try-now:active {
-    background-color: #608200;
-    transform: scale(0.98);
-  }
 
 .text-overlay {
     position: absolute;
@@ -59,20 +23,37 @@ body {
     background-color: 0; /* Nền mờ nếu muốn */
     padding: 10px;
     text-transform: uppercase;
-}
-
-.section_hero img {
-    width: 100%; 
-    height: auto; 
-    object-fit: cover; 
-    max-width: 100vw; 
-    border-radius: 10px;
   }
 
-.day_mission_container {
-    padding: 20px;
-    width: 100%;
+.main-mission-container {
+    display: flex;
     gap: 5px;
+    justify-content: center;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    flex-direction: column;
+    align-items: center;
+}
+
+.day-mission-header {
+    display: flex;
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    height: 60px; /* Đảm bảo chiều cao đầy đủ */
+    text-align: center; /* Căn giữa nội dung văn bản */
+    color: #fff;
+    background-color: #5B913B;
+    border-radius: 6px ;
+    text-align: center;
+}
+
+.day_mission_container {
+    margin-top: 4%;
+    padding: 20px;
+    width: 80%;
+    gap: 5px;
+    background-color: #f9f9f9;
 } 
 
 .another-mission-container {
@@ -80,7 +61,7 @@ body {
     background-color: #f9f9f9;
     border-radius: 10px;
     margin: 20px 0;
-    width: 100%;
+    width: 80%;
     min-height: 450px;
 }
 
@@ -95,7 +76,7 @@ body {
     margin-bottom: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Hiệu ứng hover */
+    transition: transform 1.0s ease, box-shadow 1.0s ease; /* Hiệu ứng hover */
 }
 
 .Mission_rank_container {
@@ -104,6 +85,9 @@ body {
     gap: 5px;
     padding: 15px;
     border-radius: 10px;
+    padding-right: 30px;
+    padding-left: 30px;
+    background-color: #ffffff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
     transition: transform 0.2s ease, box-shadow 0.2s ease; /* Hiệu ứng hover */
 }
@@ -118,6 +102,7 @@ body {
 }
 .item2 {
     flex: 1;
+    width: 100%;
 }
 
 .task-container {
@@ -149,16 +134,20 @@ body {
    
 }
 
+
 .task-button {
-    border-left: 0px;
-    border-right: 0px;
-    border: solid 1px rgb(115, 126, 121);
+    
+    border: none;
     cursor: pointer;
+    background-color: #f9f9f9;
+    margin-bottom: 5px;
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out; 
 }
 
 .task-button:hover {
-    box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
-    transform: translateY(-1px);
+    background-color: #dfe2e0;
+    border-top-color: #388e3c;
+    border-bottom-color: #388e3c;
 }
 
 .progress-container {
