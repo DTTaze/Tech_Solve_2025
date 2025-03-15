@@ -10,12 +10,12 @@ router.post(
   videoController.handleUploadVideo
 );
 router.get("/", videoController.handleGetAllVideos);
-router.get("/:id", videoController.handleGetVideoById);
+router.get("/:idUser/:idVideo", videoController.handleGetVideoById);
 router.put(
   "/:id",
   uploadVideo.single("video"),
   videoController.handleUpdateVideo
 );
-router.delete("/:id", videoController.handleDeleteVideo);
+router.delete("/:idUser/:idVideo", videoController.handleDeleteVideo);
 
 export default router;
