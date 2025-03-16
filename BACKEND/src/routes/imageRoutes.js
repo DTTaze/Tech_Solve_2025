@@ -1,12 +1,12 @@
 import express from "express";
-import uploadImage from "../middlewares/uploadImage";
+import middlewareImage from "../middlewares/middlewareImage";
 import imageController from "../controllers/imageController";
 
 const router = express.Router();
 
 router.post(
   "/upload",
-  uploadImage.single("image"),
+  middlewareImage.single("image"),
   imageController.uploadImage
 );
 

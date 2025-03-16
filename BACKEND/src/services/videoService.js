@@ -115,29 +115,29 @@ const uploadAndCompressVideo = async (file, title, userId) => {
     const subDirs = ["compressed_videos", "temp_videos"];// Chỉ xóa file trong 2 thư mục này
 
     subDirs.forEach((dir) => {
-      const folderPath = path.join(uploadsDir, dir);
-      
-      fs.readdir(folderPath, (err, files) => {
-        if (err) {
-          console.error(`Error reading directory ${folderPath}:`, err);
-          return;
+    const folderPath = path.join(uploadsDir, dir);
+    
+    fs.readdir(folderPath, (err, files) => {
+      if (err) {
+        console.error(`Error reading directory ${folderPath}:`, err);
+        return;
+      }
+
+      files.forEach((file) => {
+        const filePath = path.join(folderPath, file);
+        const ext = path.extname(file).slice(1); 
+
+        if (allowedExtensions.includes(ext)) {
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              console.error("Error deleting file:", filePath, err);
+            } else {
+              console.log("Deleted file:", filePath);
+            }
+          });
         }
-
-        files.forEach((file) => {
-          const filePath = path.join(folderPath, file);
-          const ext = path.extname(file).slice(1); 
-
-          if (allowedExtensions.includes(ext)) {
-            fs.unlink(filePath, (err) => {
-              if (err) {
-                console.error("Error deleting file:", filePath, err);
-              } else {
-                console.log("Deleted file:", filePath);
-              }
-            });
-          }
-        });
       });
+    });
     });
 
 
@@ -189,17 +189,24 @@ const updateVideo = async (id, data) => {
     let { title, url, filename } = data;
     if (!id) throw new Error("Video ID is required");
 
-    if (!title && !url && !filename) {
-      throw new Error("At least one field (title, url, filename) must be provided");
-    }
-
     const video = await Video.findByPk(id);
     if (!video) throw new Error("Video not found");
 
-    await video.update({ title, url, filename });
+    if (url && video.url) {
+      const publicId = video.url.split("/").pop().split(".")[0]; 
+      await cloudinary.uploader.destroy(`videos/${publicId}`, { resource_type: "video" });
+    }
+
+    const updatedFields = {};
+    if (title) updatedFields.title = title;
+    if (url) updatedFields.url = url;
+    if (filename) updatedFields.filename = filename;
+
+    await video.update(updatedFields);
+
     return video;
-  } catch (e) {
-    throw new Error("Failed to update video");
+  } catch (error) {
+    throw new Error(error.message || "Failed to update video");
   }
 };
 
@@ -213,24 +220,33 @@ const deleteVideo = async (idUser, idVideo) => {
       throw new Error("Invalid User ID");
     }
 
-    if (!Number.isInteger(idVideo) || idVideo <= 0) {
-      idVideo = null;
+    const isValidIdVideo = Number.isInteger(idVideo) && idVideo > 0;
+    const condition = isValidIdVideo ? { id: idVideo, userId: idUser } : { userId: idUser };
+
+    const videos = isValidIdVideo
+      ? [await Video.findOne({ where: condition })]
+      : await Video.findAll({ where: condition });
+
+    if (!videos || videos.length === 0 || videos[0] === null) {
+      throw new Error("No videos found");
     }
 
-    const condition = idVideo ? { id: idVideo, userId: idUser } : { userId: idUser };
-
-    const videos = await Video.findAll({ where: condition });
-
-    if (!videos.length) throw new Error("No videos found");
+    for (const video of videos) {
+      if (video.videoUrl) {
+        const publicId = video.videoUrl.split("/").pop().split(".")[0]; 
+        await cloudinary.uploader.destroy(`videos/${publicId}`, { resource_type: "video" });
+      }
+    }
 
     await Video.destroy({ where: condition });
 
-    return { message: "Video(s) deleted successfully" };
+    return { message: `Deleted ${videos.length} video(s) successfully` };
   } catch (e) {
     console.error("Error deleting video:", e.message);
-    throw new Error("Failed to delete video");
+    throw new Error("Failed to delete video(s)");
   }
 };
+
 
 
 
