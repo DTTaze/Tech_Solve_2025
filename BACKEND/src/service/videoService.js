@@ -6,12 +6,54 @@ const db = require("../models/index.js");
 const cloudinary = require("../config/cloudinary.js");
 const Video = db.Video;
 
+const createVideo = async ({ title, url, filename, userId }) => {
+  try {
+    userId = Number(userId);
+
+    if (!title || !url || !filename || userId === undefined) {
+      throw new Error("Title, URL, filename, and userId are required");
+    }
+    if (typeof userId !== "number" || userId <= 0) {
+      throw new Error("Invalid userId");
+    }
+
+    console.log("Saving video to the database...");
+    const video = await Video.create({ title, url, filename, userId });
+    console.log("Video saved successfully.");
+
+    return video;
+  } catch (e) {
+    console.error("Error saving video:", e);
+    throw new Error("Failed to create video");
+  }
+};
+
 const uploadAndCompressVideo = async (file, title, userId) => {
   console.log("uploadAndCompressVideo", file, title, userId);
 
   const uploadsDir = path.join(__dirname, "../uploads");
-  const localPath = path.join(uploadsDir, "temp_" + file.filename);
-  const compressedPath = path.join(uploadsDir, "compressed_" + file.filename);
+  const compressedDir = path.join(uploadsDir, "compressed_videos");
+  const localDir = path.join(uploadsDir, "temp_videos");
+  const ext = path.extname(file.filename) || ".mp4"; 
+  const cleanFilename = path.basename(file.filename, ext);
+  // Tạo thư mục nếu chưa tồn tại
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  if (!fs.existsSync(compressedDir)) {
+    fs.mkdirSync(compressedDir, { recursive: true });
+  }
+  if (!fs.existsSync(localDir)) {
+    fs.mkdirSync(localDir, { recursive: true });
+  }
+
+  console.log("File:", file.filename, file.path);
+
+  const localPath = path.join(localDir, cleanFilename + ext);
+  const compressedPath = path.join(compressedDir, cleanFilename + "_compressed" + ext);
+
+  console.log("localPath", localPath);
+  console.log("compressedPath", compressedPath);
 
   try {
     // Step 1: Download the video file
@@ -37,8 +79,13 @@ const uploadAndCompressVideo = async (file, title, userId) => {
         .output(compressedPath)
         .videoCodec("libx264")
         .size("1280x720")
+        .on("start", (command) => console.log("FFmpeg command:", command))
+        .on("progress", (progress) => console.log("FFmpeg progress:", progress))
         .on("end", resolve)
-        .on("error", reject)
+        .on("error", (err) => {
+          console.error("FFmpeg error:", err);
+          reject(err);
+        })
         .run();
     });
 
@@ -63,27 +110,36 @@ const uploadAndCompressVideo = async (file, title, userId) => {
 
     await createVideo(videoData);
 
-    // Step 5: Delete the local files
+    // Step 5: Delete the local files after processing
     const allowedExtensions = ["mp4", "avi", "mkv", "mov"];
+    const subDirs = ["compressed_videos", "temp_videos"];// Chỉ xóa file trong 2 thư mục này
 
-    fs.readdir(uploadsDir, (err, files) => {
-      if (err) {
-        console.error("Error reading uploads directory:", err);
-        return;
-      }
-      files.forEach((file) => {
-        const ext = path.extname(file).slice(1); // Get the file extension without the dot Ex: mp4, avi, mkv, mov
-        if (allowedExtensions.includes(ext)) {
-          fs.unlink(path.join(uploadsDir, file), (err) => {
-            if (err) {
-              console.error("Error deleting file:", file, err);
-            } else {
-              console.log("Deleted file:", file);
-            }
-          });
+    subDirs.forEach((dir) => {
+      const folderPath = path.join(uploadsDir, dir);
+      
+      fs.readdir(folderPath, (err, files) => {
+        if (err) {
+          console.error(`Error reading directory ${folderPath}:`, err);
+          return;
         }
+
+        files.forEach((file) => {
+          const filePath = path.join(folderPath, file);
+          const ext = path.extname(file).slice(1); 
+
+          if (allowedExtensions.includes(ext)) {
+            fs.unlink(filePath, (err) => {
+              if (err) {
+                console.error("Error deleting file:", filePath, err);
+              } else {
+                console.log("Deleted file:", filePath);
+              }
+            });
+          }
+        });
       });
     });
+
 
     return videoData;
   } catch (error) {
