@@ -4,14 +4,13 @@ require("dotenv").config();
 const jwtAuth = (req, res, next) => {
   const white_lists = [
     "/",
-    "/api/auth/login",
-    "/api/auth/register",
+    "/auth/login",
+    "/auth/register",
     "/auth/google",
     "/auth/google/callback",
-    "/profile", //temp
   ];
   console.log(req.originalUrl);
-  if (white_lists.includes(req.path)) {
+  if (white_lists.find((item) => "/api" + item === req.originalUrl)) {
     next();
   } else {
     if (req.headers.authorization && req.headers) {
@@ -26,7 +25,7 @@ const jwtAuth = (req, res, next) => {
         next();
       } catch (e) {
         return res.status(401).json({
-          message: "token không hợp lệ/hết hạn",
+          message: "Token không hợp lệ/hết hạn",
         });
       }
     } else {

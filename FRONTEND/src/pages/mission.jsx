@@ -5,6 +5,7 @@ import "./mission.css";
 import images from "../components/photo.jsx";
 import { Footer } from "antd/es/layout/layout.js";
 import { motion } from "framer-motion";
+// import Header from "../components/header.jsx"
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 
@@ -114,7 +115,7 @@ function Mission() {
   return (
     <div className="main-mission-container">
       <div className="header">
-       <Header/>
+       {/* <Header/> */}
       </div>
       <div id="day-mission" className="day_mission_container">
         <div className="day-mission-header">

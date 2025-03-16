@@ -54,6 +54,9 @@ const handleUpdateUser = async (req, res) => {
   }
 };
 
+const handleGetProfile = async (req, res) => {
+  return res.status(200).json(req.user);
+};
 module.exports = {
   handleGetAllUsers,
   handleCreateUser,
@@ -61,4 +64,5 @@ module.exports = {
   handleGetUser,
   handleUpdateUser,
   handleLoginUser,
+  handleGetProfile,
 };

@@ -10,11 +10,11 @@ const LoginPage = () => {
   const onFinish = async (values) => {
     const { email, password } = values;
 
-    const res = await loginUserApi(email, password);
-    console.log(res);
     try {
-      if (res && res.EC === 0) {
-        localStorage.setItem("access_token", res.access_token);
+      const res = await loginUserApi(email, password);
+      if (res && res.data.EC === 0) {
+        localStorage.setItem("access_token", res.data.access_token);
+        console.log("Token saved:", localStorage.getItem("access_token"));
         notification.success({
           message: "Login Success",
           description: "Đã đăng nhập thành công",
@@ -22,13 +22,13 @@ const LoginPage = () => {
         setAuth({
           isAuthenticated: true,
           user: {
-            email: res?.user?.email ?? "",
-            username: res?.user?.username ?? "",
+            email: res.data?.user?.email ?? "",
+            username: res.data?.user?.username ?? "",
           },
         });
         navigate("/");
       } else {
-        console.log(res?.EM ?? "error");
+        console.log(res.data?.EM ?? "error");
       }
     } catch (e) {
       console.log(e);
@@ -82,9 +82,13 @@ const LoginPage = () => {
               </Button>
             </Form.Item>
           </Form>
-          <Link to={"/"}><ArrowLeftOutlined>Quay lại trang chủ</ArrowLeftOutlined></Link>
-          <Divider/>
-          <div style={{textAlign: "center"}}>Chưa có tài khoản? <Link to={"/register"}>Đăng ký tại đây</Link></div>
+          <Link to={"/"}>
+            <ArrowLeftOutlined>Quay lại trang chủ</ArrowLeftOutlined>
+          </Link>
+          <Divider />
+          <div style={{ textAlign: "center" }}>
+            Chưa có tài khoản? <Link to={"/register"}>Đăng ký tại đây</Link>
+          </div>
         </fieldset>
       </Col>
     </Row>

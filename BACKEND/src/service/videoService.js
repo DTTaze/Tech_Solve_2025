@@ -179,7 +179,6 @@ const deleteVideo = async (idUser, idVideo) => {
 
 
 module.exports = {
-  createVideo,
   uploadAndCompressVideo,
   getAllVideos,
   getVideoById,
