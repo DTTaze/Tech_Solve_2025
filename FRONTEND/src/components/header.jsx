@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../components/layout/auth.context"; 
-import "../components/header.css";
+import { AuthContext } from "../layouts/auth.context"; 
+import "../styles/components/header.scss";
 
 function Header() {
   const navigate = useNavigate();
