@@ -1,6 +1,6 @@
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../../config/cloudinary");
+const cloudinary = require("../config/cloudinary");
 
 // Cấu hình lưu video vào Cloudinary
 const storage = new CloudinaryStorage({
