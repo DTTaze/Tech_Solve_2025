@@ -1,6 +1,9 @@
 # Sử dụng image Node.js chính thức
 FROM node:18
 
+# Cài đặt FFmpeg
+RUN apt update && apt install -y ffmpeg
+
 # Đặt thư mục làm việc bên trong container
 WORKDIR /app
 
@@ -13,7 +16,7 @@ RUN npm install
 # Copy toàn bộ mã nguồn vào container
 COPY . .
 
-# Expose port 3000 (hoặc port bạn đang dùng)
+# Expose port 6060
 EXPOSE 6060
 
 # Chạy ứng dụng

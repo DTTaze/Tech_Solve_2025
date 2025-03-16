@@ -1,6 +1,6 @@
 import HomepageHeader from "../components/header";
 import HomepageSection from "../components/homepage-section";
-import "../pages/homepage.css"
+import "../styles/pages/homepage.scss"
 
 function Homepage() {
     return (

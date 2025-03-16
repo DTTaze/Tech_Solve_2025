@@ -5,9 +5,9 @@ import taskRoutes from "../routes/taskRoutes.js";
 import itemRoutes from "../routes/itemRoutes.js";
 import videoRoutes from "../routes/videoRoutes.js";
 import imageRoutes from "../routes/imageRoutes.js";
-import jwtAuth from "../middleware/jwtAuth";
-import responseFormatter from "../middleware/responseFormatter";
-import homeController from "../controller/homeController.js";
+import jwtAuth from "../middlewares/jwtAuth.js";
+import responseFormatter from "../middlewares/responseFormatter.js";
+import homeController from "../controllers/homeController.js";
 
 const router = express.Router();
 

@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import dayjs from 'dayjs'
 import range from "lodash-es/range"
-import './calendar.scss'
+import '../styles/components/calendar.scss'
 
 const weekDays = ['Sun','Mon', 'Tue', 'Wed', 'Thus', 'Fri', 'Sat']
 const todayObj = dayjs()
 
-const Calenda = () =>{
+const Calendar = () =>{
     const [dayObj, setdayobj] = useState(dayjs())
     const thisYear = dayObj.year()
     const thisMonth = dayObj.month()
@@ -77,4 +77,4 @@ const Calenda = () =>{
     )
 }
 
-export default Calenda
+export default Calendar;

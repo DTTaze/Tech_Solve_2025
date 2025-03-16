@@ -1,6 +1,6 @@
 import express from "express";
-import uploadImage from "../middleware/uploadImage";
-import imageController from "../controller/imageController";
+import uploadImage from "../middlewares/uploadImage";
+import imageController from "../controllers/imageController";
 
 const router = express.Router();
 

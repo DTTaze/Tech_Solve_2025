@@ -1,5 +1,5 @@
 import express from "express";
-import userController from "../controller/userController"; // Chưa có itemController nên tạm dùng userController
+import userController from "../controllers/userController"; // Chưa có itemController nên tạm dùng userController
 
 const router = express.Router();
 
