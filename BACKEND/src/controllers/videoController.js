@@ -1,4 +1,4 @@
-const videoService = require("../service/videoService");
+const videoService = require("../services/videoService");
 
 const handleUploadVideo = async (req, res) => {
   if (!req.file) {
@@ -6,13 +6,16 @@ const handleUploadVideo = async (req, res) => {
   }
 
   try {
-    let result = await videoService.uploadAndCompressVideo(req.file, req.body.title, req.body.userId);
+    let result = await videoService.uploadAndCompressVideo(
+      req.file,
+      req.body.title,
+      req.body.userId
+    );
     res.success("Upload video success", result);
   } catch (error) {
     res.error(500, "Failed to upload video", error.message);
   }
 };
-
 
 const handleGetAllVideos = async (req, res) => {
   try {
@@ -25,15 +28,19 @@ const handleGetAllVideos = async (req, res) => {
 
 const handleGetVideoById = async (req, res) => {
   try {
-
-    const result = await videoService.getVideoById(req.params.idUser, req.params.idVideo);
+    const result = await videoService.getVideoById(
+      req.params.idUser,
+      req.params.idVideo
+    );
     let temp;
-    return res.success(temp ? "Get video by ID success" : "Get all videos by user success", result);
+    return res.success(
+      temp ? "Get video by ID success" : "Get all videos by user success",
+      result
+    );
   } catch (error) {
     return res.error(500, "Failed to get video(s)", error.message);
   }
 };
-
 
 const handleUpdateVideo = async (req, res) => {
   try {
@@ -53,7 +60,10 @@ const handleUpdateVideo = async (req, res) => {
 
 const handleDeleteVideo = async (req, res) => {
   try {
-    let result = await videoService.deleteVideo(req.params.idUser,req.params.idVideo);
+    let result = await videoService.deleteVideo(
+      req.params.idUser,
+      req.params.idVideo
+    );
     return res.success("Delete video(s) success", result);
   } catch (error) {
     return res.error(500, "Failed to delete(s) video", error.message);

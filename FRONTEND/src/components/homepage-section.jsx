@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import "../components/homepage-section.css";
+import "../styles/components/homepage-section.scss";
 
 
 function SectionHero() {
@@ -10,9 +10,9 @@ function SectionHero() {
         "Bảo vệ động vật biển, bảo vệ chính chúng ta!"
     ];
     const images = [
-        "../src/assets/photos/pick-up-trash.jpg",
-        "../src/assets/photos/plant-a-tree.jpg",
-        "../src/assets/photos/turtle.jpg"
+        "../src/assets/images/pick-up-trash.jpg",
+        "../src/assets/images/plant-a-tree.jpg",
+        "../src/assets/images/turtle.jpg"
     ];
 
     useEffect(() => {
@@ -135,19 +135,19 @@ function HomepageSection() {
         <>
             <SectionHero/>
             <SectionLeft 
-                imagePath="../src/assets/photos/anh-tho.jpg"
+                imagePath="../src/assets/images/anh-tho.jpg"
                 H2Text="Hoàn thành nhiệm vụ, tích điểm xanh"
                 PText="Chọn nhiệm vụ phù hợp, hoàn thành thử thách xanh và nhận điểm thưởng. Càng nhiều nhiệm vụ hoàn thành, bạn càng đóng góp nhiều hơn cho hành tinh!"
                 ButtonText="Khám phá nhiệm vụ"
             />
             <SectionRight 
-                imagePath="../src/assets/photos/anh-tho.jpg"
+                imagePath="../src/assets/images/anh-tho.jpg"
                 H2Text="Chợ Trao Đổi - Biến Điểm Thành Hành Động"
                 PText="Dùng điểm tích lũy để đổi lấy những sản phẩm bền vững, giúp bạn tiếp tục duy trì lối sống xanh và bảo vệ hành tinh."
                 ButtonText="Khám phá chợ trao đổi"
             />
             <SectionLeft className="Sai-gon-xanh"
-                imagePath="../src/assets/photos/hand-drawn-people-planting-a-tree.jpg"
+                imagePath="../src/assets/images/hand-drawn-people-planting-a-tree.jpg"
                 H2Text="Kết Nối Cộng Đồng - Lan Tỏa Hành Động Xanh"
                 PText="Chia sẻ thành tích, tham gia thử thách cùng bạn bè và truyền cảm hứng đến cộng đồng. Mỗi hành động nhỏ tạo nên một phong trào lớn!"
                 ButtonText="Tham gia ngay"

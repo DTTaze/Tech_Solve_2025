@@ -1,10 +1,10 @@
 import { useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { AuthContext } from "./components/layout/auth.context";
+import { AuthContext } from "./layouts/auth.context";
 import axios from "./utils/axios.customize";
 import { Spin } from "antd";
-import Header from "./components/layout/header_test";
-import AdminHeader from "./components/layout/adminHeader";
+import Header from "./layouts/header_test";
+import AdminHeader from "./layouts/adminHeader";
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
   useEffect(() => {

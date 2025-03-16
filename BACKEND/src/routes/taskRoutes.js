@@ -1,5 +1,5 @@
 import express from "express";
-import taskController from "../controller/taskController"; // Chưa có taskController nên tạm dùng userController
+import taskController from "../controllers/taskController"; // Chưa có taskController nên tạm dùng userController
 
 const router = express.Router();
 

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import Calenda from "../components/calendar.jsx";
+import Calendar from "../components/calendar.jsx";
 import Ranking from "../components/chartRank.jsx";
-import "./mission.css";
+import "../styles/pages/mission.scss";
 import images from "../components/photo.jsx";
 import { Footer } from "antd/es/layout/layout.js";
 import { motion } from "framer-motion";
-// import Header from "../components/header.jsx"
+import Header from "../components/header.jsx"
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 
@@ -115,7 +115,7 @@ function Mission() {
   return (
     <div className="main-mission-container">
       <div className="header">
-       {/* <Header/> */}
+       <Header/>
       </div>
       <div id="day-mission" className="day_mission_container">
         <div className="day-mission-header">
@@ -140,7 +140,7 @@ function Mission() {
           <div className="item2">
             <div className="Mission_rank_container">
               <div>
-                <Calenda />
+                <Calendar />
               </div>
               <div>
                 <Ranking />
