@@ -3,9 +3,9 @@ import Calendar from "../components/calendar.jsx";
 import Ranking from "../components/chartRank.jsx";
 import "../styles/pages/mission.scss";
 import images from "../components/photo.jsx";
+import Header from "../components/header.jsx"
 import { Footer } from "antd/es/layout/layout.js";
 import { motion } from "framer-motion";
-import Header from "../components/header.jsx"
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 

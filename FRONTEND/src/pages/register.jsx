@@ -44,12 +44,12 @@ const RegisterPage = () => {
             layout="vertical"
           >
             <Form.Item
-              label="Username"
+              label="Tên tài khoản"
               name="username"
               rules={[
                 {
                   required: true,
-                  message: "Please input your username!",
+                  message: "Vui lòng điền tên !",
                 },
               ]}
             >
@@ -61,19 +61,44 @@ const RegisterPage = () => {
               rules={[
                 {
                   required: true,
-                  message: "Please input your email!",
+                  message: "Vui lòng nhập email!",
+                },
+                {
+                  type: "email",
+                  message: "Email không hợp lệ!",
                 },
               ]}
             >
               <Input />
             </Form.Item>
             <Form.Item
-              label="Password"
+              label="Số điện thoại"
+              name="phonenumber"
+              rules={[
+                { required: true, message: "Vui lòng nhập số điện thoại!" },
+                { pattern: /^0\d{9}$/, message: "Số điện thoại phải có 10 số và bắt đầu bằng 0!" }
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="CCCD"
+              name="CCCD"
+              rules={[
+                { required: true, message: "Vui lòng nhập CCCD!" },
+                { pattern: /^\d{12}$/, message: "CCCD phải có đúng 12 số!" }
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Mật khẩu"
               name="password"
               rules={[
                 {
                   required: true,
-                  message: "Please input your password!",
+                  message: "Vui lòng nhập mật khẩu!",
                 },
               ]}
             >

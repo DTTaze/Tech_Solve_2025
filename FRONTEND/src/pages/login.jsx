@@ -8,32 +8,45 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useContext(AuthContext);
   const onFinish = async (values) => {
-    const { email, password } = values;
-
     try {
+      const { email, password } = values;
       const res = await loginUserApi(email, password);
-      if (res && res.data.EC === 0) {
+      
+      if (!res || res.status !== 200) {
+        throw new Error("Lỗi đăng nhập: Không nhận được phản hồi từ server");
+      }
+  
+      if (res.data.EC === 0) {
         localStorage.setItem("access_token", res.data.access_token);
-        console.log("Token saved:", localStorage.getItem("access_token"));
         notification.success({
           message: "Login Success",
           description: "Đã đăng nhập thành công",
         });
+  
         setAuth({
           isAuthenticated: true,
           user: {
-            email: res.data?.user?.email ?? "",
-            username: res.data?.user?.username ?? "",
+            email: res.data.user?.email ?? "",
+            username: res.data.user?.username ?? "",
           },
         });
+  
         navigate("/");
       } else {
-        console.log(res.data?.EM ?? "error");
+        notification.error({
+          message: "Login Failed",
+          description: res.data.message || "Đăng nhập thất bại",
+        });
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      notification.error({
+        message: "Lỗi đăng nhập",
+        description: error.message || "Đã xảy ra lỗi, vui lòng thử lại!",
+      });
     }
   };
+  
   return (
     <Row justify={"center"} style={{ marginTop: "30px" }}>
       <Col xs={24} md={16} lg={8}>
