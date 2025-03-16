@@ -4,8 +4,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.jsx";
 import { AuthWrapper } from "./components/layout/auth.context.jsx";
 import HomePage from "./pages/homepage.jsx";
-import MissionPage from "./pages/mission.jsx"; 
-import UserPage from "./pages/user.jsx";
+import MissionPage from "./pages/mission.jsx";  
+import UserProfilePage from "./pages/user-profile.jsx"
 import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
 
@@ -14,17 +14,13 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      // {
-      //   index: true,
-      //   element: <HomePage />,
-      // },
       {
         index: true,
-        element: <Mission/>,
+        element: <HomePage />,
       },
       {
-        path: "user",
-        element: <UserPage />,
+        path: "profile",
+        element: <UserProfilePage />,
       },
       {
         path: "missions",
