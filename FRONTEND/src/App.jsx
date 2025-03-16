@@ -5,6 +5,7 @@ import axios from "./utils/axios.customize";
 import { Spin } from "antd";
 import Header from "./layouts/header_test";
 import AdminHeader from "./layouts/adminHeader";
+import UserHeader from "./layouts/userHeader";
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
   useEffect(() => {
@@ -41,6 +42,7 @@ function App() {
         <>
           {/* <Header /> */}
           {/* <AdminHeader /> */}
+          <UserHeader />
           <Outlet />
         </>
       )}
