@@ -5,7 +5,7 @@ const session = require("express-session");
 const passport = require("passport"); 
 import bodyParser from "body-parser";
 import connection from "./config/connectDB";
-import { sequelize } from "./models";
+const { sequelize } = require("./models");
 require("dotenv").config();
 require("../src/config/passport");
 import cors from "cors";
@@ -60,9 +60,11 @@ app.listen(PORT, () => {
 });
 
 // Đồng bộ database
-try {
-  sequelize.sync(); // Sync DB
-  console.log( "\x1b[32m%s\x1b[0m" ,"Database synchronized successfully, but not safe.");
-} catch (e) {
-  console.log("\x1b[31m%s\x1b[0m" , "Database synchronization failed.", e);
-}
+(async () => {
+  try {
+    await sequelize.sync(); // Sync DB
+    console.log("\x1b[32m%s\x1b[0m", "Database synchronized successfully, but not safe.");
+  } catch (e) {
+    console.log("\x1b[31m%s\x1b[0m", "Database synchronization failed.", e);
+  }
+})();
