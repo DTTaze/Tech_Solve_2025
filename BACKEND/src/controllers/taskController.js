@@ -14,7 +14,7 @@ const handleCreateTask = async (req, res) => {
     let result = await taskService.createTask(req.body);
     return res.success("Create task success", result);
   } catch (error) {
-    return res.error(500, "Failed to create task", error.message);
+    return res.error(500, "Failed to create task in controller", error.message);
   }
 };
 
