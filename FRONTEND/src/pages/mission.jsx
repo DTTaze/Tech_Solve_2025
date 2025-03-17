@@ -3,7 +3,7 @@ import Calendar from "../components/calendar.jsx";
 import Ranking from "../components/chartRank.jsx";
 import "../styles/pages/mission.scss";
 import images from "../components/photo.jsx";
-import Header from "../components/header.jsx"
+import Header from "../layouts/userHeader.jsx";
 import { Footer } from "antd/es/layout/layout.js";
 import { motion } from "framer-motion";
 
@@ -92,8 +92,6 @@ function Mission() {
     );
   };
 
-
-
   const [CurrentPage, setCurrentPage] = useState(1);
   const TaskPerPage = 3;
   const totalTasks = task_item.length;
@@ -115,11 +113,11 @@ function Mission() {
   return (
     <div className="main-mission-container">
       <div className="header">
-       <Header/>
+        <Header />
       </div>
       <div id="day-mission" className="day_mission_container">
         <div className="day-mission-header">
-          <h1 >NHIỆM VỤ HÀNG NGÀY</h1>
+          <h1>NHIỆM VỤ HÀNG NGÀY</h1>
         </div>
         <div className="container">
           <div className="item1">

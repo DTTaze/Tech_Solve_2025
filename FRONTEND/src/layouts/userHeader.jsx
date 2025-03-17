@@ -1,11 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../layouts/auth.context"; 
+import { AuthContext } from "./auth.context";
 import "../styles/components/header.scss";
 
 function Header() {
   const navigate = useNavigate();
-  const { auth, setAuth } = useContext(AuthContext); 
+  const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ function Header() {
 
   const handleProfileClick = () => {
     navigate("/profile");
-    setMenuOpen(false); 
+    setMenuOpen(false);
   };
 
   const handleLogout = () => {
@@ -51,10 +51,13 @@ function Header() {
 
   return (
     <header className="header">
-      <div className="header--contents"  onClick={() => {
+      <div
+        className="header--contents"
+        onClick={() => {
           navigate("/");
           window.scrollTo(0, 0);
-        }}>
+        }}
+      >
         <i className="fa-solid fa-flag header--logo"></i>
         <span className="logo--name">Green Flag</span>
       </div>
@@ -66,7 +69,9 @@ function Header() {
         {auth.isAuthenticated ? (
           <div className="user-profile" onClick={() => setMenuOpen(!menuOpen)}>
             <img
-              src={auth.user?.avatar || "../src/assets/photos/default-avatar.jpg"} 
+              src={
+                auth.user?.avatar || "../src/assets/photos/default-avatar.jpg"
+              }
               alt="Avatar"
               className="user-avatar"
             />
