@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+body {
+  font-family:Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.container-main-market {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-search {
+  display: flex;
+  justify-content: center; /* Căn giữa theo chiều ngang */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  height: 60px; /* Đảm bảo chiều cao đầy đủ */
+  text-align: center; /* Căn giữa nội dung văn bản */
+  background-color: #f9f9f9;
+  border-radius: 6px ;
+  margin-top: 4%;
+  text-align: center;
+}
+
+.container-search_bar {
+  width: 600px;
+}
+
+.section-products {
+  display: grid;
+}

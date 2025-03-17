@@ -8,6 +8,7 @@ import MissionPage from "./pages/mission.jsx";
 import UserProfilePage from "./pages/user-profile.jsx"
 import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
+import MarketPage from "./pages/market.jsx";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
         path: "missions",
         element: <MissionPage />,
       },
+      {
+        path: "market",
+        element: <MarketPage/>
+      }
     ],
   },
   {
