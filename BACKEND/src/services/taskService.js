@@ -4,7 +4,7 @@ const Task = db.Task;
 const createTask = async (data) => {
   try {
     let { title, description, coins } = data;
-
+    coins = Number(coins);
     if (!title || !description || coins === undefined) {
       throw new Error("Title, description, and coins are required");
     }
@@ -15,7 +15,7 @@ const createTask = async (data) => {
     let result = await Task.create({ title, description, coins });
     return result;
   } catch (e) {
-    throw new Error("Failed to create task");
+    throw e;
   }
 };
 
@@ -36,7 +36,7 @@ const getTaskById = async (id) => {
 
     return task;
   } catch (e) {
-    throw new Error("Failed to fetch task");
+    throw e;
   }
 };
 
@@ -62,7 +62,7 @@ const updateTask = async (id, data) => {
     await task.update({ title, description, coins });
     return task;
   } catch (e) {
-    throw new Error("Failed to update task");
+    throw e;
   }
 };
 
@@ -76,7 +76,7 @@ const deleteTask = async (id) => {
     await task.destroy();
     return { message: "Task deleted successfully" };
   } catch (e) {
-    throw new Error("Failed to delete task");
+    throw e;
   }
 };
 
