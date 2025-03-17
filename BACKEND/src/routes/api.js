@@ -13,7 +13,7 @@ import homeController from "../controllers/homeController.js";
 const router = express.Router();
 
 const initWebRoutes = (app) => {
-  app.use(jwtAuth);
+  // app.use(jwtAuth);
   app.use(responseFormatter);
 
   router.get("/", homeController.handleHome);
