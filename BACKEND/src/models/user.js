@@ -3,12 +3,7 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    static associate(models) {
-      User.belongsTo(models.Avatar, {
-        foreignKey: "avatarId",
-        as: "avatar",
-      });
-    }
+
   }
   User.init(
     {
@@ -35,8 +30,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      avatarId: {
-        type: DataTypes.INTEGER,
+      avatarURL: {
+        type: DataTypes.STRING,
         allowNull: true, 
       },
     },

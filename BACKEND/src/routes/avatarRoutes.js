@@ -8,11 +8,11 @@ router.post(
     middlewareAvatar.single("avatar"),
     avatarController.handleUploadAvatar);
 router.get("/", avatarController.handleGetAllAvatars);
-router.get("/:id", avatarController.handleGetAvatarById);
+router.get("/:idUser", avatarController.handleGetAvatarById);
 router.put(
-    "/:id",
+    "/:idUser",
     middlewareAvatar.single("avatar"),
     avatarController.handleUpdateAvatar);
-router.delete("/:id", avatarController.handleDeleteAvatar);
+router.delete("/:idUser", avatarController.handleDeleteAvatar);
 
 export default router;

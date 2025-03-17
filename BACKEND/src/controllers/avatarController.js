@@ -25,8 +25,8 @@ const handleGetAllAvatars = async (req, res) => {
 
 const handleGetAvatarById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const avatar = await avatarService.getAvatarById(id);
+    const { idUser } = req.params;
+    const avatar = await avatarService.getAvatarById(idUser);
     if (!avatar) {
       return res.status(404).json({ message: "Avatar not found" });
     }
@@ -38,9 +38,9 @@ const handleGetAvatarById = async (req, res) => {
 
 const handleUpdateAvatar = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { idUser } = req.params;
     const { file } = req;
-    const avatar = await avatarService.updateAvatar(id,file);
+    const avatar = await avatarService.updateAvatar(idUser,file);
     return res.status(200).json(avatar);
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -49,8 +49,8 @@ const handleUpdateAvatar = async (req, res) => {
 
 const handleDeleteAvatar = async (req, res) => {
     try {
-        const { id } = req.params;
-        const result = await avatarService.deleteAvatar(id);
+        const { idUser } = req.params;
+        const result = await avatarService.deleteAvatar(idUser);
 
         if (result.error) {
             return res.status(404).json({ message: result.error });
