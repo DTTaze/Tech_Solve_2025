@@ -41,6 +41,7 @@ const loginUser = async (data) => {
 
     // Create an access token
     const payload = {
+      id: user.id,
       email: user.email,
       username: user.username,
     };
@@ -52,6 +53,7 @@ const loginUser = async (data) => {
       EC: 0,
       access_token,
       user: {
+        id: user.id,
         email: user.email,
         username: user.username,
       },

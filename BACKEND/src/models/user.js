@@ -3,14 +3,22 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-
+    static associate(models) {
+      User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
+    }
   }
+
   User.init(
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+      },
+      role_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: "Role", key: "id" },
       },
       googleId: {
         type: DataTypes.STRING,
@@ -29,19 +37,36 @@ module.exports = (sequelize, DataTypes) => {
       username: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
       },
-      avatarURL: {
+      full_name: {
         type: DataTypes.STRING,
-        allowNull: true, 
+        allowNull: false,
+      },
+      phone_number: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      coins: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      avatar_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     {
       sequelize,
       modelName: "User",
-      tableName: "Users",
+      tableName: "users",
     }
   );
-  
 
   return User;
 };

@@ -6,9 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --exec ./node_modules/.bin/babel-node src/server.js",
-    "migrate": "npx sequelize-cli db:migrate",
-    "seed": "npx sequelize-cli db:seed:all",
-    "dockerup": "docker-compose down -v && docker-compose up -d --build",
+    "migrate": "docker compose exec backend npx sequelize-cli db:migrate",
+    "seed": "docker compose exec backend npx sequelize-cli db:seed:all",
+    "undoseed": "docker compose exec backend npx sequelize-cli db:seed:undo:all",
+    "dockerup": "docker-compose down && docker-compose up -d --build",
     "duu": "docker compose down && docker compose up -d --build"
   },
   "repository": {
@@ -25,6 +26,7 @@
     "@babel/core": "7.26.0",
     "@babel/node": "7.26.0",
     "@babel/preset-env": "7.26.0",
+    "@casl/ability": "^6.7.3",
     "axios": "^1.8.3",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
