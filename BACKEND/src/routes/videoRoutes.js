@@ -1,6 +1,6 @@
 import express from "express";
 import middlewareVideo from "../middlewares/middlewareVideo";
-import videoController from "../controllers/videoController";
+const videoController = require("../controllers/videoController");
 
 const router = express.Router();
 
