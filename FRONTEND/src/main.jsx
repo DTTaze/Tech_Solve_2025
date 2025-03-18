@@ -1,7 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import './index.css'
+import App from './App.jsx'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import App from "./App.jsx";
 import { AuthWrapper } from "./layouts/auth.context.jsx";
 import HomePage from "./pages/homepage.jsx";
 import MissionPage from "./pages/mission.jsx";  

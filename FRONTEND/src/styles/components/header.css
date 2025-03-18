@@ -1,0 +1,15 @@
+.header--underlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-color: #32DE8A;
+    transform: translateY(-100%);
+    transition: transform 0.3s;
+}
+
+.header--sticky .header--underlay {
+    transform: translateY(0);
+}

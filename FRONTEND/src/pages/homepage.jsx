@@ -1,14 +1,14 @@
-import HomepageHeader from "../layouts/userHeader";
 import HomepageSection from "../components/homepage-section";
-import "../styles/pages/homepage.scss";
+import Header from "../layouts/userHeader";
+import "../styles/pages/homepage.scss"
 
 function Homepage() {
-  return (
-    <>
-      <HomepageHeader />
-      <HomepageSection />
-    </>
-  );
+    return (
+        <>
+            <Header />
+            <HomepageSection />
+        </>
+    );
 }
 
 export default Homepage;

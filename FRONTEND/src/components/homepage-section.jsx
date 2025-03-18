@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import "../styles/components/homepage-section.scss";
+import "../styles/components/homepage-section.css";
 
 
 function SectionHero() {
@@ -36,7 +36,7 @@ function SectionHero() {
     return (
         <section className="section hero">
             <header>
-                <h2 id="heroTitle" className="fade-text">{formattedTitle}</h2>
+                <h1 id="heroTitle" className="fade-text">{formattedTitle}</h1>
             </header>
             <div className="container">
                 {images.map((src, i) => (
