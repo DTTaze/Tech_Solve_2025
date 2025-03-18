@@ -94,7 +94,7 @@ const uploadAndCompressVideo = async (file, title, userId) => {
     // Step 3: Upload the compressed video to Cloudinary
     const result = await cloudinary.uploader.upload(compressedPath, {
       resource_type: "video",
-      folder: "compressed_videos",
+      folder: "videos",
       allowed_formats: ["mp4", "avi", "mkv", "mov"],
     });
 
