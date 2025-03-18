@@ -3,16 +3,28 @@ const Task = db.Task;
 
 const createTask = async (data) => {
   try {
-    let { title, description, coins } = data;
+    let { title, content, description, coins, difficulty } = data;
     coins = Number(coins);
-    if (!title || !description || coins === undefined) {
+    if (
+      !title ||
+      !content ||
+      !description ||
+      coins === undefined ||
+      !["easy", "medium", "hard"].includes(difficulty)
+    ) {
       throw new Error("Title, description, and coins are required");
     }
     if (typeof coins !== "number" || coins < 0) {
       throw new Error("Coins must be a positive number");
     }
 
-    let result = await Task.create({ title, description, coins });
+    let result = await Task.create({
+      title,
+      content,
+      description,
+      coins,
+      difficulty,
+    });
     return result;
   } catch (e) {
     throw e;

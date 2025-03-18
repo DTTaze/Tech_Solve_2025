@@ -3,16 +3,14 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class RolePermission extends Model {
-    static associate(models) {
-      
-    }
+    static associate(models) {}
   }
   RolePermission.init(
     {
       role_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: "Role",
+          model: "roles",
           key: "id",
         },
         primaryKey: true,
@@ -20,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       permission_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: "Permission",
+          model: "permissions",
           key: "id",
         },
         primaryKey: true,

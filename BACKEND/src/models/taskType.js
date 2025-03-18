@@ -17,20 +17,20 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      taskId: {
+      task_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Tasks",
+          model: "tasks",
           key: "id",
         },
         onDelete: "CASCADE",
       },
-      typeId: {
+      type_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Types", 
+          model: "types",
           key: "id",
         },
         onDelete: "CASCADE",
@@ -39,8 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "TaskType",
-      tableName: "TaskTypes",
-      timestamps: false,
+      tableName: "task_types",
     }
   );
 

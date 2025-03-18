@@ -5,8 +5,14 @@ module.exports = (sequelize, DataTypes) => {
   class TaskUser extends Model {
     static associate(models) {
       // Liên kết với Task và User
-      TaskUser.belongsTo(models.User, { foreignKey: "userId", onDelete: "CASCADE" });
-      TaskUser.belongsTo(models.Task, { foreignKey: "taskId", onDelete: "CASCADE" });
+      TaskUser.belongsTo(models.User, {
+        foreignKey: "user_id",
+        onDelete: "CASCADE",
+      });
+      TaskUser.belongsTo(models.Task, {
+        foreignKey: "task_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -17,19 +23,19 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      userId: {
+      user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Users",
+          model: "users",
           key: "id",
         },
       },
-      taskId: {
+      task_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Tasks",
+          model: "tasks",
           key: "id",
         },
       },
@@ -37,16 +43,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("pending", "inProgress", "done"),
         allowNull: false,
       },
-      assignedAt: {
+      assigned_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
       },
-      completedAt: {
+      completed_at: {
         type: DataTypes.DATE,
         allowNull: true,
       },
-      coinsPerUser: {
+      coins_per_user: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -54,8 +60,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "TaskUser",
-      tableName: "TaskUsers",
-      timestamps: true,
+      tableName: "task_users",
     }
   );
 

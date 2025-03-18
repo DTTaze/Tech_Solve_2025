@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       role_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: "Role", key: "id" },
+        references: { model: "roles", key: "id" },
       },
       avatar_url: {
         type: DataTypes.STRING,
@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         unique: true,
       },
-      username: {
+      email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
@@ -61,22 +61,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 0,
       },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      updated_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
     },
     {
       sequelize,
       modelName: "User",
       tableName: "users",
-      timestamps: true,
     }
   );
 

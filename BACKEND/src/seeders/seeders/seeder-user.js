@@ -7,7 +7,7 @@ module.exports = {
       {
         id: 1,
         role_id: 1, // Admin
-        googleId: null,
+        google_id: null,
         email: "admin@example.com",
         password: bcrypt.hashSync("123", bcrypt.genSaltSync(10)),
         username: "admin",
@@ -16,13 +16,13 @@ module.exports = {
         address: "Admin Street",
         coins: 100,
         avatar_url: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       },
       {
         id: 2,
         role_id: 2, // User
-        googleId: null,
+        google_id: null,
         email: "user@example.com",
         password: bcrypt.hashSync("123", bcrypt.genSaltSync(10)),
         username: "user",
@@ -31,8 +31,23 @@ module.exports = {
         address: "User Street",
         coins: 50,
         avatar_url: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 3,
+        role_id: 3, // Customer
+        google_id: null,
+        email: "user@example.com",
+        password: bcrypt.hashSync("123", bcrypt.genSaltSync(10)),
+        username: "user",
+        full_name: "Normal User",
+        phone_number: "987654321",
+        address: "User Street",
+        coins: 50,
+        avatar_url: null,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
     ]);
   },

@@ -9,8 +9,8 @@
     "migrate": "docker compose exec backend npx sequelize-cli db:migrate",
     "seed": "docker compose exec backend npx sequelize-cli db:seed:all",
     "undoseed": "docker compose exec backend npx sequelize-cli db:seed:undo:all",
-    "dockerup": "docker-compose down && docker-compose up -d --build",
-    "duu": "docker compose down && docker compose up -d --build"
+    "du": "docker compose down && docker compose up -d --build",
+    "ddv": "docker compose down -v"
   },
   "repository": {
     "type": "git",
