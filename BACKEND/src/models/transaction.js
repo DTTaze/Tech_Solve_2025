@@ -1,38 +1,41 @@
 "use strict";
 const { Model } = require("sequelize");
-module.exports = (sequelize, DataTypes) => {
-  class Video extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file sẽ tự động gọi method này.
-     */
-    static associate(models) {
 
+module.exports = (sequelize, DataTypes) => {
+  class Transaction extends Model {
+    static associate(models) {
+      Transaction.belongsTo(models.User, { foreignKey: "buyer_id", onDelete: "CASCADE" });
+
+      Transaction.belongsTo(models.Item, { foreignKey: "item_id", onDelete: "CASCADE" });
     }
   }
-  Video.init(
+
+  Transaction.init(
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      title: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      url: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      filename: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      user_id: {
+      buyer_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      item_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 1, 
+        },
+      },
+      status: {
+        type: DataTypes.ENUM("completed", "failed", "pending"),
+        allowNull: false,
+        defaultValue: "pending",
       },
       created_at: {
         type: DataTypes.DATE,
@@ -47,12 +50,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Video",
-      tableName: "Videos",
+      modelName: "Transaction",
+      tableName: "Transactions",
       timestamps: true,
       underscored: true,
     }
   );
-  
-  return Video;
+
+  return Transaction;
 };

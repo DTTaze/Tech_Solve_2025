@@ -6,19 +6,19 @@ const db = require("../models/index.js");
 const cloudinary = require("../config/cloudinary.js");
 const Video = db.Video;
 
-const createVideo = async ({ title, url, filename, userId }) => {
+const createVideo = async ({ title, url, filename, user_id }) => {
   try {
-    userId = Number(userId);
+    user_id = Number(user_id);
 
-    if (!title || !url || !filename || userId === undefined) {
-      throw new Error("Title, URL, filename, and userId are required");
+    if (!title || !url || !filename || user_id === undefined) {
+      throw new Error("Title, URL, filename, and user_id are required");
     }
-    if (typeof userId !== "number" || userId <= 0) {
-      throw new Error("Invalid userId");
+    if (typeof user_id !== "number" || user_id <= 0) {
+      throw new Error("Invalid user_id");
     }
 
     console.log("Saving video to the database...");
-    const video = await Video.create({ title, url, filename, userId });
+    const video = await Video.create({ title, url, filename, user_id });
     console.log("Video saved successfully.");
 
     return video;
@@ -28,8 +28,8 @@ const createVideo = async ({ title, url, filename, userId }) => {
   }
 };
 
-const uploadAndCompressVideo = async (file, title, userId) => {
-  console.log("uploadAndCompressVideo", file, title, userId);
+const uploadAndCompressVideo = async (file, title, user_id) => {
+  console.log("uploadAndCompressVideo", file, title, user_id);
 
   const uploadsDir = path.join(__dirname, "../uploads");
   const compressedDir = path.join(uploadsDir, "compressed_videos");
@@ -105,7 +105,7 @@ const uploadAndCompressVideo = async (file, title, userId) => {
       title,
       url: result.secure_url, // Public URL from Cloudinary
       filename: result.public_id,
-      userId,
+      user_id,
     };
 
     await createVideo(videoData);
@@ -171,7 +171,7 @@ const getVideoById = async (idUser, idVideo) => {
       idVideo = null;
     }
 
-    const condition = idVideo ? { id: idVideo, userId: idUser } : { userId: idUser };
+    const condition = idVideo ? { id: idVideo, user_id: idUser } : { user_id: idUser };
 
     const videos = await Video.findAll({ where: condition });
 
@@ -221,7 +221,7 @@ const deleteVideo = async (idUser, idVideo) => {
     }
 
     const isValidIdVideo = Number.isInteger(idVideo) && idVideo > 0;
-    const condition = isValidIdVideo ? { id: idVideo, userId: idUser } : { userId: idUser };
+    const condition = isValidIdVideo ? { id: idVideo, user_id: idUser } : { user_id: idUser };
 
     const videos = isValidIdVideo
       ? [await Video.findOne({ where: condition })]
