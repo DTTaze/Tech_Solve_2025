@@ -23,7 +23,7 @@ function UserProfile() {
             <img
               alt="user-image"
               className="userImage"
-              src="/assets/photos/default-avatar.jpg" // Giữ ảnh mặc định
+              src="/assets/photos/default-avatar.jpg" 
             />
             <div>
               <h2 className="userName">{userData?.username ?? "null"}</h2>

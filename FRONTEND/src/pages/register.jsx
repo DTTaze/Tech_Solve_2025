@@ -81,17 +81,6 @@ const RegisterPage = () => {
             >
               <Input />
             </Form.Item>
-
-            <Form.Item
-              label="CCCD"
-              name="CCCD"
-              rules={[
-                { required: true, message: "Vui lòng nhập CCCD!" },
-                { pattern: /^\d{12}$/, message: "CCCD phải có đúng 12 số!" }
-              ]}
-            >
-              <Input />
-            </Form.Item>
             <Form.Item
               label="Mật khẩu"
               name="password"

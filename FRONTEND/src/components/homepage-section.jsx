@@ -4,6 +4,8 @@ import "../styles/components/homepage-section.css";
 
 function SectionHero() {
     const [index, setIndex] = useState(0);
+    const [showText, setShowText] = useState(false); 
+
     const titles = [
         "Hành động nhỏ, tác động lớn!",
         "Trồng cây hôm nay, hưởng trái ngọt mai sau!",
@@ -17,7 +19,11 @@ function SectionHero() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setIndex((prevIndex) => (prevIndex + 1) % images.length);
+            setShowText(false);
+            setTimeout(() => {
+                setIndex((prevIndex) => (prevIndex + 1) % images.length);
+                setShowText(true); 
+            }, 300); 
         }, 3000);
 
         return () => clearInterval(interval);
@@ -27,24 +33,29 @@ function SectionHero() {
         return titles[index].split(",").map((line, i, arr) => (
             <span key={i}>
                 {line}
-                {i !== arr.length - 1 && ","} {/* Giữ dấu phẩy */}
-                {i !== arr.length - 1 && <br />} {/* Xuống dòng */}
+                {i !== arr.length - 1 && ","} 
+                {i !== arr.length - 1 && <br />} 
             </span>
         ));
     }, [index, titles]);
 
     return (
-        <section className="section hero">
-            <header>
-                <h1 id="heroTitle" className="fade-text">{formattedTitle}</h1>
+        <section className="section hero h-screen w-screen flex justify-center items-center">
+            <header className="text-4xl w-1/2 h-full z-10 text-[#059212] flex justify-center items-center">
+                <h1 
+                    id="heroTitle" 
+                    className={`transition-opacity duration-1000 ${showText ? "opacity-100" : "opacity-0"}`}
+                >
+                    {formattedTitle}
+                </h1>
             </header>
-            <div className="container">
+            <div className="relative w-1/2 h-full flex justify-center items-center">
                 {images.map((src, i) => (
                     <img
                         key={i}
                         src={src}
                         alt={`Slide ${i + 1}`}
-                        className={`fade-img ${i === index ? "active" : ""}`}
+                        className={`w-4/5 h-[70%] object-cover rounded-[20px] absolute transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
                     />
                 ))}
             </div>
@@ -52,8 +63,10 @@ function SectionHero() {
     );
 }
 
+
 function SectionLeft({ imagePath, H2Text, PText, ButtonText }) {
     const sectionRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
         const section = sectionRef.current;
@@ -63,44 +76,7 @@ function SectionLeft({ imagePath, H2Text, PText, ButtonText }) {
             (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        section.classList.add("active");
-                    }
-                });
-            },
-            { threshold: 0.25 }
-        );
-
-        observer.observe(section);
-
-        return () => observer.unobserve(section); 
-    }, []);
-
-    return (
-        <section ref={sectionRef} className="section section-left">
-            <div className="background">
-                <img src={imagePath} alt="ảnh mô tả" />
-            </div>
-            <header>
-                <h2>{H2Text}</h2>
-                <p>{PText}</p>
-                <button>{ButtonText}</button>
-            </header>
-        </section>
-    );
-}
-
-function SectionRight({ imagePath, H2Text, PText, ButtonText }) {
-    const sectionRef = useRef(null);
-
-    useEffect(() => {
-        const section = sectionRef.current;
-        if (!section) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        section.classList.add("active");
+                        setIsVisible(true);
                     }
                 });
             },
@@ -113,14 +89,56 @@ function SectionRight({ imagePath, H2Text, PText, ButtonText }) {
     }, []);
 
     return (
-        <section ref={sectionRef} className="section section-right">
-            <header>
-                <h2>{H2Text}</h2>
-                <p>{PText}</p>
-                <button>{ButtonText}</button>
+        <section ref={sectionRef} className="w-screen h-[90vh] overflow-hidden flex justify-evenly items-center section-left">
+            <div className={`w-2/5 h-4/5 overflow-hidden rounded-[20px] transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : "-translate-x-full"}`}>
+                <img src={imagePath} alt="ảnh mô tả" className="w-full h-full object-cover" />
+            </div>
+            <header className={`w-2/5 h-1/2 flex flex-col justify-between transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : "translate-x-full"}`}>
+                <h2 className="text-[30px] text-[#1F7D53]">{H2Text}</h2>
+                <p className="text-[20px]">{PText}</p>
+                <button>
+                    {ButtonText}
+                </button>
             </header>
-            <div className="background">
-                <img src={imagePath} alt="ảnh mô tả" />
+        </section>
+    );
+}
+
+function SectionRight({ imagePath, H2Text, PText, ButtonText }) {
+    const sectionRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setIsVisible(true);
+                    }
+                });
+            },
+            { threshold: 0.25 }
+        );
+
+        observer.observe(section);
+
+        return () => observer.unobserve(section);
+    }, []);
+
+    return (
+        <section ref={sectionRef} className="w-screen h-[90vh] overflow-hidden flex justify-evenly items-center section section-right">
+            <header className={`w-2/5 h-1/2 flex flex-col justify-between transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : "translate-x-full"}`}>
+                <h2 className="text-[30px] text-[#1F7D53]">{H2Text}</h2>
+                <p className="text-[20px]">{PText}</p>
+                <button>
+                    {ButtonText}
+                </button>
+            </header>
+            <div className={`w-2/5 h-4/5 overflow-hidden rounded-[20px] transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : "-translate-x-full"}`}>
+                <img src={imagePath} alt="ảnh mô tả" className="w-full h-full object-cover" />
             </div>
         </section>
     );

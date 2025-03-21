@@ -150,11 +150,6 @@ header {
     font-family: Roboto, sans-serif;
 }
 
-h2 {
-    font-size: 18px;
-    margin-bottom: 5px;
-}
-
 .subtext {
     color: gray;
     font-size: 14px;
@@ -211,14 +206,6 @@ h3 {
     font-size: 12px;
     padding: 2px 5px;
     border-radius: 4px;
-}
-
-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 5px;
 }
 
 .add-btn {

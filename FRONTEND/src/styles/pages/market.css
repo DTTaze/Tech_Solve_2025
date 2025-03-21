@@ -18,10 +18,10 @@ body {
 
 .section-search {
   display: flex;
-  justify-content: center; /* Căn giữa theo chiều ngang */
-  align-items: center; /* Căn giữa theo chiều dọc */
-  height: 60px; /* Đảm bảo chiều cao đầy đủ */
-  text-align: center; /* Căn giữa nội dung văn bản */
+  justify-content: center; 
+  align-items: center; 
+  height: 60px; 
+  text-align: center; 
   background-color: #f9f9f9;
   border-radius: 6px ;
   margin-top: 4%;
