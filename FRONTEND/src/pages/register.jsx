@@ -6,8 +6,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 const RegisterPage = () => {
   const navigate = useNavigate();
   const onFinish = async (values) => {
-    const { username, email, password } = values;
-    const res = await createUserApi(username, email, password);
+    const res = await createUserApi(values);
     try {
       if (res) {
         notification.success({
@@ -44,6 +43,13 @@ const RegisterPage = () => {
             layout="vertical"
           >
             <Form.Item
+              label="Họ tên"
+              name="full_name"
+              rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
               label="Tên tài khoản"
               name="username"
               rules={[
@@ -67,27 +73,6 @@ const RegisterPage = () => {
                   type: "email",
                   message: "Email không hợp lệ!",
                 },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Số điện thoại"
-              name="phonenumber"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-                { pattern: /^0\d{9}$/, message: "Số điện thoại phải có 10 số và bắt đầu bằng 0!" }
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="CCCD"
-              name="CCCD"
-              rules={[
-                { required: true, message: "Vui lòng nhập CCCD!" },
-                { pattern: /^\d{12}$/, message: "CCCD phải có đúng 12 số!" }
               ]}
             >
               <Input />

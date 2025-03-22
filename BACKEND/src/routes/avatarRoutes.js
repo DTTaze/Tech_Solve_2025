@@ -4,15 +4,15 @@ const middlewareAvatar = require("../middlewares/middlewareAvatar");
 const router = express.Router();
 
 router.post(
-    "/upload/:idUser", 
+    "/upload/:user_id", 
     middlewareAvatar.single("avatar"),
     avatarController.handleUploadAvatar);
 router.get("/", avatarController.handleGetAllAvatars);
-router.get("/:idUser", avatarController.handleGetAvatarById);
+router.get("/:user_id", avatarController.handleGetAvatarById);
 router.put(
-    "/:idUser",
+    "/:user_id",
     middlewareAvatar.single("avatar"),
     avatarController.handleUpdateAvatar);
-router.delete("/:idUser", avatarController.handleDeleteAvatar);
+router.delete("/:user_id", avatarController.handleDeleteAvatar);
 
 export default router;

@@ -15,10 +15,7 @@ function App() {
       if (res && !res.message) {
         setAuth({
           isAuthenticated: true,
-          user: {
-            email: res.email,
-            username: res.username,
-          },
+          user: res,
         });
       }
       setAppLoading(false);

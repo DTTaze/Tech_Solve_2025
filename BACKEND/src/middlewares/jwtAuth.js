@@ -18,8 +18,11 @@ const jwtAuth = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = {
           id: decoded.id,
+          full_name: decoded.full_name,
           email: decoded.email,
           username: decoded.username,
+          role_id: decoded.role_id,
+          avatar_url: decoded.avatar_url,
         };
         next();
       } catch (e) {

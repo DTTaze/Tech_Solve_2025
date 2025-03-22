@@ -1,7 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../layouts/auth.context";
-import "../styles/components/header.css"
+import { notification } from "antd";
+import "../styles/components/header.css";
 
 function Header() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ function Header() {
         }
       }
     };
-  
+
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -41,6 +42,7 @@ function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
+    notification.success({ message: "Logout success" });
     setAuth({ isAuthenticated: false, user: null });
     navigate("/");
   };
@@ -59,26 +61,45 @@ function Header() {
       </div>
 
       <div className="flex z-10 items-center space-x-4">
-        <button className="text-lg font-bold hover:text-green-500" onClick={() => navigate("/missions")}>
+        <button
+          className="text-lg font-bold hover:text-green-500"
+          onClick={() => navigate("/missions")}
+        >
           Nhiệm vụ
         </button>
-        <button className="text-lg font-bold hover:text-green-500" onClick={() => navigate("/market")}>
+        <button
+          className="text-lg font-bold hover:text-green-500"
+          onClick={() => navigate("/market")}
+        >
           Chợ trao đổi
         </button>
         {auth.isAuthenticated ? (
-          <div className="relative user-profile cursor-pointer flex items-center" onClick={() => setMenuOpen(!menuOpen)}>
+          <div
+            className="relative user-profile cursor-pointer flex items-center"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
             <img
-              src={auth.user?.avatar || "../src/assets/photos/default-avatar.jpg"}
+              src={
+                auth.user?.avatar || "../src/assets/photos/default-avatar.jpg"
+              }
               alt="Avatar"
               className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
             />
             {menuOpen && (
               <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg p-2 min-w-[150px] flex flex-col transition-all duration-300 ease-in-out opacity-100 scale-100">
-                <p className="p-2 font-bold border-b border-gray-200">{auth.user.username}</p>
-                <button className="w-full p-2 text-left hover:bg-gray-100" onClick={handleProfileClick}>
+                <p className="p-2 font-bold border-b border-gray-200">
+                  {auth.user.username}
+                </p>
+                <button
+                  className="w-full p-2 text-left hover:bg-gray-100"
+                  onClick={handleProfileClick}
+                >
                   Xem hồ sơ
                 </button>
-                <button className="w-full p-2 text-left hover:bg-gray-100" onClick={handleLogout}>
+                <button
+                  className="w-full p-2 text-left hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
                   Đăng xuất
                 </button>
               </div>
@@ -86,18 +107,22 @@ function Header() {
           </div>
         ) : (
           <>
-            <button className="text-lg font-bold hover:text-green-500" onClick={() => navigate("/register")}>
+            <button
+              className="text-lg font-bold hover:text-green-500"
+              onClick={() => navigate("/register")}
+            >
               Đăng ký
             </button>
-            <button className="text-lg font-bold hover:text-green-500" onClick={() => navigate("/login")}>
+            <button
+              className="text-lg font-bold hover:text-green-500"
+              onClick={() => navigate("/login")}
+            >
               Đăng nhập
             </button>
           </>
         )}
       </div>
-      <div className="header--underlay">
-
-      </div>
+      <div className="header--underlay"></div>
     </header>
   );
 }

@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 
 const createUser = async (data) => {
   try {
-    let { email, password, username } = data;
+    let { email, password, username, full_name, phone_number, address } = data;
     const user = await User.findOne({ where: { email: email } });
     if (user) {
       throw new Error("User already exists");
@@ -19,6 +19,9 @@ const createUser = async (data) => {
       email: email,
       password: hashPassword,
       username: username,
+      full_name: full_name,
+      phone_number: phone_number,
+      address: address,
     });
     return newUser;
   } catch (error) {
@@ -28,8 +31,12 @@ const createUser = async (data) => {
 
 const loginUser = async (data) => {
   try {
-    let { email, password } = data;
-    const user = await User.findOne({ where: { email: email } });
+    let { username, email, password } = data;
+    if (!email && !username) {
+      throw new Error("Vui lòng cung cấp email hoặc username");
+    }
+    let condition = email ? { email } : { username };
+    const user = await User.findOne({ where: condition });
     if (!user) {
       throw new Error("Invalid email or password");
     }
@@ -42,8 +49,11 @@ const loginUser = async (data) => {
     // Create an access token
     const payload = {
       id: user.id,
+      full_name: user.full_name,
       email: user.email,
       username: user.username,
+      role_id: user.role_id,
+      avatar_url: user.avatar_url,
     };
     const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
@@ -54,8 +64,11 @@ const loginUser = async (data) => {
       access_token,
       user: {
         id: user.id,
+        full_name: user.full_name,
         email: user.email,
         username: user.username,
+        role_id: user.role_id,
+        avatar_url: user.avatar_url,
       },
     };
   } catch (error) {
@@ -104,12 +117,18 @@ const getUserByID = async (id) => {
 
 const updateUser = async (id, data) => {
   try {
-    let { username, email } = data;
+    let { username, email, full_name, address, phone_number } = data;
     let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
     }
-
+    full_name
+      ? (user.full_name = full_name)
+      : (user.full_name = user.full_name);
+    address ? (user.address = address) : (user.address = user.address);
+    phone_number
+      ? (user.phone_number = phone_number)
+      : (user.phone_number = user.phone_number);
     user.username = username;
     user.email = email;
     await user.save();

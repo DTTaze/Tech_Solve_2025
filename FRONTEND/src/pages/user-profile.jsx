@@ -1,10 +1,15 @@
-import { useContext } from "react";
+import { useContext, useState, useRef } from "react";
 import { AuthContext } from "../layouts/auth.context";
+import { uploadUserAvatarApi, updateUserAvatarApi } from "../utils/api.js";
 import "./user-profile.css";
 
 function UserProfile() {
   const { auth, appLoading } = useContext(AuthContext);
-
+  const [loading, setLoading] = useState(false);
+  const [avatar, setAvatar] = useState(
+    auth?.user?.avatar_url || "/assets/photos/default-avatar.jpg"
+  );
+  const fileInputRef = useRef(null);
   if (appLoading) {
     return <p>Loading user data...</p>;
   }
@@ -14,7 +19,33 @@ function UserProfile() {
   }
 
   const userData = auth.user;
+  console.log(userData)
+  const handleAvatarClick = () => {
+    fileInputRef.current.click();
+  };
 
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setLoading(true);
+
+    try {
+      let response;
+      console.log(userData.avatar_url);
+      if (!userData.avatar_url) {
+        response = await uploadUserAvatarApi(userData.id, file);
+      } else {
+        response = await updateUserAvatarApi(userData.id, file);
+      }
+      console.log("API Response:", response);
+      setAvatar(response.avatar_url);
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div>
       <div className="userProfile">
@@ -23,11 +54,21 @@ function UserProfile() {
             <img
               alt="user-image"
               className="userImage"
-              src="/assets/photos/default-avatar.jpg" // Giữ ảnh mặc định
+              src={avatar}
+              onClick={handleAvatarClick}
+              style={{ cursor: "pointer", opacity: loading ? 0.5 : 1 }}
+            />
+            {loading && <p>Uploading...</p>}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
             />
             <div>
-              <h2 className="userName">{userData?.username ?? "null"}</h2>
-              <p className="status">{userData?.status ?? "null"}</p>
+              <h2 className="userName">{userData?.full_name ?? "null"}</h2>
+              {/* <p className="status">{userData?.status ?? "null"}</p> */}
             </div>
           </div>
           <div className="userInfomation_1--buttons">
@@ -36,9 +77,9 @@ function UserProfile() {
         </div>
 
         <div className="userInformation_2">
-          <i className="fa-regular fa-circle-user"></i>
+          {/* <i className="fa-regular fa-circle-user"></i>
           <p>User ID</p>
-          <p>{userData.id || "N/A"}</p>
+          <p>{userData.id || "N/A"}</p> */}
 
           <i className="fa-regular fa-id-card"></i>
           <p>Username</p>
@@ -52,8 +93,6 @@ function UserProfile() {
           <p>Phone number</p>
           <p>{userData.phone || "N/A"}</p>
         </div>
-
-        {/* Các phần còn lại giữ nguyên hardcoded */}
         <div className="organizations">
           <header>
             <h2>Organizations</h2>
@@ -66,7 +105,13 @@ function UserProfile() {
                 <i className="fa-solid fa-globe org-icon"></i>
                 <div className="org-details">
                   <p className="org-name">Acme, Ltd</p>
-                  <p className="org-role">Admin</p>
+                  <p className="org-role">
+                    {userData.role_id === 1
+                      ? "Admin"
+                      : userData.role_id === 2
+                      ? "User"
+                      : "Customer"}
+                  </p>
                 </div>
               </div>
               <div className="org-right">

@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --exec ./node_modules/.bin/babel-node src/server.js",
     "migrate": "docker compose exec backend npx sequelize-cli db:migrate",
-    "seed": "src\\seeders\\seeders\\seed.bat",
+    "seed": "node src/seeders/seeders/index.js",
     "undoseed": "docker compose exec backend npx sequelize-cli db:seed:undo:all",
     "du": "docker compose down && docker compose up -d --build",
     "ddv": "docker compose down -v"

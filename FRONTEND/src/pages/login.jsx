@@ -9,20 +9,27 @@ const LoginPage = () => {
   const { setAuth } = useContext(AuthContext);
   const onFinish = async (values) => {
     try {
-      const { email, password } = values;
-      const res = await loginUserApi(email, password);
-      
+      const { identifier, password } = values;
+      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(
+        identifier
+      );
+      let loginData = isEmail
+        ? { email: identifier, password }
+        : { username: identifier, password };
+
+      const res = await loginUserApi(loginData);
+
       if (!res || res.status !== 200) {
         throw new Error("Lỗi đăng nhập: Không nhận được phản hồi từ server");
       }
-  
+
       if (res.data.EC === 0) {
         localStorage.setItem("access_token", res.data.access_token);
         notification.success({
           message: "Login Success",
           description: "Đã đăng nhập thành công",
         });
-  
+
         setAuth({
           isAuthenticated: true,
           user: {
@@ -30,7 +37,7 @@ const LoginPage = () => {
             username: res.data.user?.username ?? "",
           },
         });
-  
+
         navigate("/");
       } else {
         notification.error({
@@ -46,7 +53,7 @@ const LoginPage = () => {
       });
     }
   };
-  
+
   return (
     <Row justify={"center"} style={{ marginTop: "30px" }}>
       <Col xs={24} md={16} lg={8}>
@@ -66,8 +73,8 @@ const LoginPage = () => {
             layout="vertical"
           >
             <Form.Item
-              label="Email"
-              name="email"
+              label="Email/Username"
+              name="identifier"
               rules={[
                 {
                   required: true,

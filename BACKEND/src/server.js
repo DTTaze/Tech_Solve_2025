@@ -62,7 +62,7 @@ app.listen(PORT, () => {
 // Đồng bộ database
 (async () => {
   try {
-    await sequelize.sync({ force: true }); // Sync DB
+    await sequelize.sync(); // Sync DB
     console.log("\x1b[32m%s\x1b[0m", "Database synchronized successfully, but not safe.");
   } catch (e) {
     console.log("\x1b[31m%s\x1b[0m", "Database synchronization failed.", e);
