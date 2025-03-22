@@ -1,6 +1,6 @@
 import express from "express";
-import oauthController from "../controllers/oauthController";
-import userController from "../controllers/userController";
+const oauthController = require("../controllers/oauthController");
+const userController = require("../controllers/userController");
 
 const router = express.Router();
 

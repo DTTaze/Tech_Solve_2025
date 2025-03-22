@@ -1,12 +1,13 @@
 import express from "express";
-import userController from "../controllers/userController"; // Chưa có itemController nên tạm dùng userController
+const itemController =  require("../controllers/itemController"); 
 
 const router = express.Router();
 
-// router.post("/upload", userController.handleLoginUser);
-// router.get("/", userController.handleUserPage);
-// router.get("/:id", userController.handleGetUser);
-// router.put("/:id", userController.handleUpdateUser);
-// router.delete("/:id", userController.handleDeleteUser);
+router.post("/upload/:idUser", itemController.handleUploadItem);
+router.get("/", itemController.handlegetAllItems);
+router.get(":idItem", itemController.handleGetItemByIdItem);
+router.get("/:idUser", itemController.handleGetItemByIdUser);
+router.put("/:idItem", itemController.handleUpdateItem);
+router.delete("/:idItem", itemController.handleDeleteItem);
 
 export default router;

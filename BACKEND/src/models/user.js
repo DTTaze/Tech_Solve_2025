@@ -4,6 +4,8 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
+      User.hasMany(models.Item, { foreignKey: "owner_id", onDelete: "CASCADE" });
+      User.hasMany(models.Transaction, { foreignKey: "buyer_id", onDelete: "CASCADE" });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
     }
   }
@@ -24,6 +26,11 @@ module.exports = (sequelize, DataTypes) => {
       avatar_url: {
         type: DataTypes.STRING,
         allowNull: true,
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
       },
       google_id: {
         type: DataTypes.STRING,
@@ -66,6 +73,9 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "User",
+      tableName: "Users",
+      timestamps: true, 
+      underscored: true, 
       tableName: "users",
     }
   );
