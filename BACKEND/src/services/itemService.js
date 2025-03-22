@@ -60,16 +60,22 @@ const updateItem = async (id, itemData) => {
         if (!item) {
             throw new Error("Item not found");
         }
-        if (itemData.price < 1) {
+
+        if (!itemData.name && itemData.name !== undefined) {
+            throw new Error("Name is required");
+        }
+        if (itemData.price !== undefined && itemData.price < 1) {
             throw new Error("Price must be at least 1");
         }
-        itemData.owner_id = id;
+
         await item.update(itemData);
         return item;
     } catch (error) {
+        console.error("Update failed:", error);
         throw new Error(error.message);
     }
-}
+};
+
 
 const deleteItem = async (idItem) => {
     try{

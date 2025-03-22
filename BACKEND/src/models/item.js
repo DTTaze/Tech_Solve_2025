@@ -4,7 +4,7 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Item extends Model {
     static associate(models) {
-      Item.belongsTo(models.User, { foreignKey: "owner_id", onDelete: "CASCADE" });
+      Item.hasMany(models.User, { foreignKey: "owner_id", onDelete: "CASCADE" });
 
       Item.hasMany(models.Transaction, { foreignKey: "item_id", onDelete: "CASCADE" });
     }
