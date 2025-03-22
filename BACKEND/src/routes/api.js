@@ -9,7 +9,8 @@ import avatarRoutes from "../routes/avatarRoutes.js";
 import jwtAuth from "../middlewares/jwtAuth.js";
 import responseFormatter from "../middlewares/responseFormatter.js";
 import homeController from "../controllers/homeController.js";
-
+import roleRoutes from "./roleRoutes.js";
+import permissionRoutes from "./permissionRoutes.js";
 const router = express.Router();
 
 const initWebRoutes = (app) => {
@@ -20,13 +21,14 @@ const initWebRoutes = (app) => {
 
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);
+  app.use("/api/roles", roleRoutes);
+  app.use("/api/permissions", permissionRoutes);
   app.use("/api/tasks", taskRoutes);
-  // app.use("/api/items", itemRoutes);
+  app.use("/api/items", itemRoutes);
   app.use("/api/videos", videoRoutes);
   // app.use("/api/images", imageRoutes);
   app.use("/api/avatars", avatarRoutes);
   // router.post("/image/upload", uploadImage.single('image'),imageController.uploadImage);
-  app.use("/api/items", itemRoutes);
   return app.use("/api", router);
 };
 

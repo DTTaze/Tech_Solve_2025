@@ -65,13 +65,17 @@ app.listen(PORT, () => {
 (async () => {
   try {
     await sequelize.sync(); // Sync DB
-    console.log("\x1b[33m%s\x1b[0m", "Running database seeders...");
-    execSync(
-      "npm run seed",
-      { stdio: "inherit" }
+    try {
+      execSync("npm run seed", { stdio: "inherit" });
+      console.log("\x1b[32m%s\x1b[0m", "Database seeding completed!");
+    } catch (seedError) {
+      console.error("\x1b[31m%s\x1b[0m", "Seeding failed:", seedError.message);
+    }
+  } catch (dbError) {
+    console.error(
+      "\x1b[31m%s\x1b[0m",
+      "Database sync failed:",
+      dbError.message
     );
-    console.log("\x1b[32m%s\x1b[0m", "Database seeding completed!");
-  } catch (e) {
-    console.error("\x1b[31m%s\x1b[0m", "Database seeding failed.", e);
   }
 })();

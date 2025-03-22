@@ -4,7 +4,10 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Type extends Model {
     static associate(models) {
-      Type.hasMany(models.TaskType, { foreignKey: "type_id", onDelete: "CASCADE" });
+      Type.hasMany(models.TaskType, {
+        foreignKey: "type_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -19,16 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-      },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      updated_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
       },
     },
     {
