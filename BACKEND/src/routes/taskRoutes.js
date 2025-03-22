@@ -9,6 +9,8 @@ router.get("/:id", taskController.handleGetTask);
 router.put("/:id", taskController.handleUpdateTask);
 router.delete("/:id", taskController.handleDeleteTask);
 
-router.post("/acceptTask/:id", taskController.handleAcceptTask);
-router.post("/completeTask/:id", taskController.handleCompleteTask);
+router.post("/accept/:id", taskController.handleAcceptTask);
+router.post("/complete/:id", taskController.handleCompleteTask);
+
+router.post("/coin/receive", taskController.handleReceiveCoin);
 export default router;

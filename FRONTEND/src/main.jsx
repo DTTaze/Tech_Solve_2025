@@ -5,11 +5,12 @@ import App from './App.jsx'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthWrapper } from "./layouts/auth.context.jsx";
 import HomePage from "./pages/homepage.jsx";
-import MissionPage from "./pages/mission.jsx";  
-import UserProfilePage from "./pages/user-profile.jsx"
+import MissionPage from "./pages/mission.jsx";
+import UserProfilePage from "./pages/user-profile.jsx";
 import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
 import MarketPage from "./pages/market.jsx";
+import Admin from "./pages/Admin.jsx";
 
 const router = createBrowserRouter([
   {
@@ -30,8 +31,8 @@ const router = createBrowserRouter([
       },
       {
         path: "market",
-        element: <MarketPage/>
-      }
+        element: <MarketPage />,
+      },
     ],
   },
   {
@@ -46,8 +47,9 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthWrapper>
+    {/* <AuthWrapper>
       <RouterProvider router={router} />
-    </AuthWrapper>
+    </AuthWrapper> */}
+    <Admin/>
   </StrictMode>
 );

@@ -45,6 +45,7 @@ function App() {
     fetchAccount();
   }, []);
 
+
   return (
     <div>
       {appLoading === true ? (
@@ -60,9 +61,6 @@ function App() {
         </div>
       ) : (
         <>
-          {/* <Header /> */}
-          {/* <AdminHeader /> */}
-          <UserHeader />
           <Outlet />
         </>
       )}
