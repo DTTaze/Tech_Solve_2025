@@ -1,0 +1,83 @@
+.admin-pages-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: #e7e5e5;
+  justify-items: center;
+  gap: 5px;
+}
+
+.breadcrumb-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Căn giữa theo trục Y (dọc) */
+  margin-bottom: 20px;
+  padding-left: 0;
+  background-color: white; /* Màu nền trắng */
+  border: 1px solid rgb(206, 205, 205);
+  border-left: none;
+  border-right: none;
+  height: 60px
+}
+
+.breadcrumb-item1 {
+  padding-right: 20px;
+}
+
+.breadcrumb-item2 {
+  text-decoration: none;
+  color: #007bff; 
+  font-size: 16px;
+}
+
+.breadcrumb-item2 a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-item2 span {
+  margin: 0 5px; /* Giảm khoảng cách giữa các phần tử trong breadcrumb */
+  color: #666; /* Màu của ký tự phân cách */
+}
+
+.card-grid-container {
+  display: grid;
+  padding: 20px;
+}
+
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  margin: 20px;
+  background-color: #f9f9f9;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0px 0px 10px 10px;
+}
+
+.chart-footer {
+  display: flex;
+  gap:0;
+  border-radius: 10px;
+
+}
+
+@media (max-width: 768px) {
+  .breadcrumb-container {
+    flex-direction: column; /* Xếp dọc trên mobile */
+    align-items: flex-start;
+  }
+
+  .breadcrumb-item1 {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .breadcrumb-item2 a,
+  .breadcrumb-item2 span {
+    font-size: 14px; /* Giảm kích thước chữ trên mobile */
+  }
+}

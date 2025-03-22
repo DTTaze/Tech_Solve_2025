@@ -3,11 +3,9 @@ import { Outlet } from "react-router-dom";
 import { AuthContext } from "./layouts/auth.context";
 import axios from "./utils/axios.customize";
 import { Spin } from "antd";
-import Header from "./layouts/header_test";
-import AdminHeader from "./layouts/adminHeader";
-import UserHeader from "./layouts/userHeader";
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
+
   useEffect(() => {
     const fetchAccount = async () => {
       setAppLoading(true);
@@ -22,6 +20,7 @@ function App() {
     };
     fetchAccount();
   }, []);
+
   return (
     <div>
       {appLoading === true ? (
@@ -37,9 +36,6 @@ function App() {
         </div>
       ) : (
         <>
-          {/* <Header /> */}
-          {/* <AdminHeader /> */}
-          <UserHeader />
           <Outlet />
         </>
       )}

@@ -28,7 +28,7 @@ body {
 .main-mission-container {
     display: flex;
     gap: 5px;
-    justify-content: center;
+    justify-content: space-between;
     padding: 15px;
     border-radius: 10px;
     background-color: #ffffff;
@@ -45,7 +45,6 @@ body {
     color: #fff;
     background-color: #5B913B;
     border-radius: 6px ;
-    text-align: center;
 }
 
 .day_mission_container {
