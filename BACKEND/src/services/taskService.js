@@ -1,5 +1,7 @@
 const db = require("../models/index.js");
 const Task = db.Task;
+const TaskUser = db.TaskUser;
+const User = db.User;
 
 const createTask = async (data) => {
   try {
@@ -92,10 +94,55 @@ const deleteTask = async (id) => {
   }
 };
 
+const acceptTask = async (task_id, user_id) => {
+  try {
+    if (!task_id || !user_id) {
+      throw new Error("Task ID and User ID are required");
+    }
+
+    const task = await Task.findByPk(task_id);
+    if (!task) throw new Error("Task not found");
+
+    const user = await User.findByPk(user_id);
+    if (!user) throw new Error("User not found");
+
+    await TaskUser.create({
+      task_id,
+      user_id,
+      status: "pending",
+      coins_per_user: task.coins,
+    });
+
+    return { message: "Task accepted successfully" };
+  } catch (e) {
+    throw e;
+  }
+}
+
+const completeTask = async (task_id, user_id) => {
+  try {
+    if (!task_id || !user_id) {
+      throw new Error("Task ID and User ID are required");
+    }
+
+    const taskUser = await TaskUser.findOne({
+      where: { task_id, user_id },
+    });
+    taskUser.status = "done";
+    taskUser.completed_at = new Date();
+    await taskUser.save();
+    if (!taskUser) throw new Error("Task not found");
+  } catch (e) {
+    throw e;
+  }
+}
+
 module.exports = {
   createTask,
   getAllTasks,
   getTaskById,
   updateTask,
   deleteTask,
+  acceptTask,
+  completeTask,
 };
