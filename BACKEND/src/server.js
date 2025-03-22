@@ -2,13 +2,14 @@ import express from "express";
 import configViewEngine from "./config/viewEngine";
 import initWebRoutes from "./routes/api";
 const session = require("express-session");
-const passport = require("passport"); 
+const passport = require("passport");
 import bodyParser from "body-parser";
 import connection from "./config/connectDB";
 const { sequelize } = require("./models");
 require("dotenv").config();
 require("../src/config/passport");
 import cors from "cors";
+import { execSync } from "child_process";
 
 const app = express();
 const PORT = process.env.PORT || 4040;
@@ -30,12 +31,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Cấu hình session
-app.use(session({
-  secret: "secret",
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false }, // Nếu dùng HTTPS thì đặt true
-}));
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }, // Nếu dùng HTTPS thì đặt true
+  })
+);
 
 // Cấu hình Passport
 app.use(passport.initialize());
@@ -59,12 +62,16 @@ app.listen(PORT, () => {
   console.log(`Đăng nhập bằng Google: http://localhost:${PORT}/auth/google`);
 });
 
-// Đồng bộ database
 (async () => {
   try {
     await sequelize.sync(); // Sync DB
-    console.log("\x1b[32m%s\x1b[0m", "Database synchronized successfully, but not safe.");
+    console.log("\x1b[33m%s\x1b[0m", "Running database seeders...");
+    execSync(
+      "npm run seed",
+      { stdio: "inherit" }
+    );
+    console.log("\x1b[32m%s\x1b[0m", "Database seeding completed!");
   } catch (e) {
-    console.log("\x1b[31m%s\x1b[0m", "Database synchronization failed.", e);
+    console.error("\x1b[31m%s\x1b[0m", "Database seeding failed.", e);
   }
 })();

@@ -7,9 +7,7 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file sẽ tự động gọi method này.
      */
-    static associate(models) {
-
-    }
+    static associate(models) {}
   }
   Video.init(
     {
@@ -34,25 +32,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
-      updated_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-      },
     },
     {
       sequelize,
       modelName: "Video",
-      tableName: "Videos",
-      timestamps: true,
-      underscored: true,
+      tableName: "videos",
     }
   );
-  
+
   return Video;
 };

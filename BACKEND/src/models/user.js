@@ -27,11 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        unique: true,
-      },
       google_id: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -73,9 +68,6 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "User",
-      tableName: "Users",
-      timestamps: true, 
-      underscored: true, 
       tableName: "users",
     }
   );
