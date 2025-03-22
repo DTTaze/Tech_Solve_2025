@@ -1,15 +1,40 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../layouts/auth.context";
-import { uploadUserAvatarApi, updateUserAvatarApi } from "../utils/api.js";
+import {
+  uploadUserAvatarApi,
+  updateUserAvatarApi,
+  getUserAvatarByIdApi,
+} from "../utils/api.js";
 import "./user-profile.css";
 
 function UserProfile() {
-  const { auth, appLoading } = useContext(AuthContext);
+  const { auth, appLoading, setAuth, setAppLoading } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
-  const [avatar, setAvatar] = useState(
-    auth?.user?.avatar_url || "/assets/photos/default-avatar.jpg"
-  );
+  const [avatar, setAvatar] = useState(null);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (auth?.user?.avatar_url) {
+      setAvatar(auth.user.avatar_url);
+    } else if (auth?.user?.id) {
+      const fetchAvatar = async () => {
+        try {
+          const response = await getUserAvatarByIdApi(auth.user.id);
+          if (response && response.avatar_url) {
+            setAvatar(response.avatar_url);
+            setAuth((prevAuth) => ({
+              ...prevAuth,
+              user: { ...prevAuth.user, avatar_url: response.avatar_url },
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching avatar:", error);
+        }
+      };
+      fetchAvatar();
+    }
+  }, [auth?.user?.id, auth?.user?.avatar_url]);
+
   if (appLoading) {
     return <p>Loading user data...</p>;
   }
@@ -19,7 +44,7 @@ function UserProfile() {
   }
 
   const userData = auth.user;
-  console.log(userData)
+
   const handleAvatarClick = () => {
     fileInputRef.current.click();
   };
@@ -32,20 +57,34 @@ function UserProfile() {
 
     try {
       let response;
-      console.log(userData.avatar_url);
       if (!userData.avatar_url) {
         response = await uploadUserAvatarApi(userData.id, file);
       } else {
         response = await updateUserAvatarApi(userData.id, file);
       }
-      console.log("API Response:", response);
-      setAvatar(response.avatar_url);
+
+      if (!response || !response.user || !response.user.avatar_url) {
+        throw new Error("Avatar URL not found in API response");
+      }
+
+      const avatarUrl = response.user.avatar_url;
+      setAvatar(avatarUrl);
+
+      // Update auth context with new avatar URL
+      setAuth((prevAuth) => ({
+        ...prevAuth,
+        user: { ...prevAuth.user, avatar_url: avatarUrl },
+      }));
     } catch (error) {
       console.error("Error uploading avatar:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const avatarUrl =
+    avatar || userData.avatar_url || "/assets/photos/default-avatar.jpg";
+
   return (
     <div>
       <div className="userProfile">
@@ -54,7 +93,7 @@ function UserProfile() {
             <img
               alt="user-image"
               className="userImage"
-              src={avatar}
+              src={`${avatarUrl}?t=${new Date().getTime()}`}
               onClick={handleAvatarClick}
               style={{ cursor: "pointer", opacity: loading ? 0.5 : 1 }}
             />

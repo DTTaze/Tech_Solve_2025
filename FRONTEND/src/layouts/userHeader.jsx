@@ -2,11 +2,14 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../layouts/auth.context";
 import { notification } from "antd";
+import { getUserAvatarByIdApi } from "../utils/api";
 import "../styles/components/header.css";
 
-function Header() {
+function UserHeader() {
   const navigate = useNavigate();
   const { auth, setAuth } = useContext(AuthContext);
+  const userData = auth?.user || {};
+  const avatarUrl = userData.avatar_url || "/assets/photos/default-avatar.jpg";
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -78,12 +81,17 @@ function Header() {
             className="relative user-profile cursor-pointer flex items-center"
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            <img
+            {/* <img
               src={
                 auth.user?.avatar || "../src/assets/photos/default-avatar.jpg"
               }
               alt="Avatar"
               className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
+            /> */}
+            <img
+              src={`${avatarUrl}?t=${new Date().getTime()}`}
+              alt="User Avatar"
+              className="user-avatar"
             />
             {menuOpen && (
               <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg p-2 min-w-[150px] flex flex-col transition-all duration-300 ease-in-out opacity-100 scale-100">
@@ -127,4 +135,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default UserHeader;
