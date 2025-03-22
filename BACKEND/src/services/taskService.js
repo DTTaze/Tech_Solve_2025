@@ -137,6 +137,24 @@ const completeTask = async (task_id, user_id) => {
   }
 }
 
+const receiveCoin = async (user_id,coins) => {
+  try {
+    if (!user_id) {
+      throw new Error("User ID is required");
+    }
+
+    const user = await User.findByPk(user_id);
+    if (!user) throw new Error("User not found");
+
+    user.coins += coins;
+    await user.save();
+    return { message: "Successfully received {coins} coins." };
+  } catch (e) {
+    throw e;
+  }
+}
+  
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -145,4 +163,5 @@ module.exports = {
   deleteTask,
   acceptTask,
   completeTask,
+  receiveCoin,
 };

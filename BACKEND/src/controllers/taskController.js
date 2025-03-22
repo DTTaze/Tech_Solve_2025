@@ -77,6 +77,17 @@ const handleCompleteTask = async (req, res) => {
   }
 };
 
+const handleReceiveCoin = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const coins = Number(req.body.coins);
+    let result = await taskService.receiveCoin(user_id, coins);
+    return res.success("Recieve coin success", result);
+  } catch (error) {
+    return res.error(500, "Failed to recieve coin", error.message);
+  }
+};
+
 module.exports = {
   handleGetAllTasks,
   handleCreateTask,
@@ -85,4 +96,5 @@ module.exports = {
   handleUpdateTask,
   handleAcceptTask,
   handleCompleteTask,
+  handleReceiveCoin
 };
