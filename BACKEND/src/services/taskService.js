@@ -37,7 +37,7 @@ const getAllTasks = async () => {
   try {
     return await Task.findAll();
   } catch (e) {
-    throw new Error("Failed to fetch tasks");
+    throw e;
   }
 };
 
@@ -137,22 +137,24 @@ const completeTask = async (task_id, user_id) => {
   }
 }
 
-const receiveCoin = async (user_id,coins) => {
+const receiveCoin = async (user_id, coins) => {
   try {
-    if (!user_id) {
-      throw new Error("User ID is required");
-    }
+    if (!user_id) throw new Error("User ID is required");
+    if (!Number.isInteger(coins) || coins <= 0)
+      throw new Error("Coins must be a positive integer");
 
     const user = await User.findByPk(user_id);
     if (!user) throw new Error("User not found");
 
-    user.coins += coins;
+    user.coins = (user.coins || 0) + coins;
     await user.save();
-    return { message: "Successfully received {coins} coins." };
+
+    return { message: `Successfully received ${coins} coins.` };
   } catch (e) {
     throw e;
   }
-}
+};
+
   
 
 module.exports = {

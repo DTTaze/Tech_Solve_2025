@@ -49,11 +49,6 @@ const handleAcceptTask = async (req, res) => {
   try {
     const task_id = req.params.id;
     const user_id = req.user.id; 
-
-    if (!task_id) {
-      return res.error(400, "Task ID is required");
-    }
-
     let result = await taskService.acceptTask(task_id, user_id);
     return res.success("Accept task success", result);
   } catch (error) {
@@ -66,10 +61,6 @@ const handleCompleteTask = async (req, res) => {
   try {
     const task_id = req.params.id;
     const user_id = req.user.id; 
-
-    if (!task_id) {
-      return res.error(400, "Task ID is required");
-    }
     let result = await taskService.completeTask(task_id, user_id);
     return res.success("Complete task success", result);
   } catch (error) {
