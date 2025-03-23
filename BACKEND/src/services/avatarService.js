@@ -1,4 +1,3 @@
-const { image } = require("../config/cloudinary.js");
 const db = require("../models/index.js");
 const User = db.User;
 const cloudinary = require("../config/cloudinary.js");
@@ -11,7 +10,7 @@ const uploadAvatar = async (file, user_id) => {
     const user = await User.findByPk(user_id);
     if (!user) throw new Error("User not found");
 
-    if (user.avatar_url) throw new Error("User already has an avatar.");
+    if (user.avatar_id) throw new Error("User already has an avatar.");
 
     const result = await cloudinary.uploader.upload(file.path, {
       folder: "avatars",
