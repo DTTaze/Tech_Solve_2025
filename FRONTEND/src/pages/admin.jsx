@@ -125,7 +125,7 @@ function Admin() {
         <Toolbar sx={{ minHeight: "64px", padding: "0 16px" }}>
           <TemporaryDrawer />
           <Typography
-            variant="h6"
+            variant="h4"
             component="div"
             sx={{ display: { xs: "none", sm: "block" } }}
           >

@@ -5,7 +5,7 @@ import "../styles/pages/homepage.scss"
 function Homepage() {
     return (
         <>
-            <Header />
+            {/* <Header /> */}
             <HomepageSection />
         </>
     );

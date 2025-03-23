@@ -10,7 +10,7 @@ import UserProfilePage from "./pages/user-profile.jsx";
 import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
 import MarketPage from "./pages/market.jsx";
-import Admin from "./pages/Admin.jsx";
+import Admin from "./pages/admin.jsx";
 
 const router = createBrowserRouter([
   {
