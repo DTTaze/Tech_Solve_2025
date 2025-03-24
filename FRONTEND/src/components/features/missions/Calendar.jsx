@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import dayjs from 'dayjs'
 import range from "lodash-es/range"
-import '../styles/components/calendar.scss'
+import '../../../styles/components/Calendar.scss'
 
 const weekDays = ['Sun','Mon', 'Tue', 'Wed', 'Thus', 'Fri', 'Sat']
 const todayObj = dayjs()

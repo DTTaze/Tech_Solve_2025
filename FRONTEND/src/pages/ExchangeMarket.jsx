@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Header from "../layouts/userHeader.jsx";
-import '../styles/pages/market.css'
-import Search_bar from '../components/search_bar'
-import images from "../components/photo.jsx";
-import {Product} from "../components/product.jsx";
+import Header from "../layouts/Header.jsx";
+import '../styles/pages/ExchangeMarket.css'
+import Search_bar from '../components/ui/SearchBar.jsx'
+import images from "../components/features/exchangemarket/Photo.jsx";
+import {Product} from "../components/features/exchangemarket/Product.jsx";
 
 function Market() {
     const [product_items, setProduct_item] = useState ([

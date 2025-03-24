@@ -1,5 +1,14 @@
 import axios from "./axios.customize";
 
+const getUserApi = () => {
+  const URL_API = "api/users/me";
+  return axios.get(URL_API);
+};
+
+const updateUserApi = (user_id, data) => {
+  
+};
+
 const createUserApi = (data) => {
   const URL_API = "api/auth/register";
   return axios.post(URL_API, data);
@@ -55,4 +64,5 @@ export {
   getAllUserAvatarsApi,
   getUserAvatarByIdApi,
   uploadUserAvatarApi,
+  getUserApi
 };

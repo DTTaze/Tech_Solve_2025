@@ -1,41 +1,41 @@
-import { notification, Table } from "antd";
-import { useEffect, useState } from "react";
-import { getAllUserApi } from "../utils/api";
-const UserPage = () => {
-  const [dataSource, setDataSource] = useState([]);
-  useEffect(() => {
-    const fetchUser = async () => {
-      const res = await getAllUserApi();
-      if (!res?.message) {
-        setDataSource(res);
-      } else {
-        notification.error({
-          message: "Unauthorized",
-        });
-      }
-    };
-    fetchUser();
-  }, []);
+import { useState } from "react";
+import UserHeader from "../layouts/Header.jsx";
+import ProfileCard from '../components/user/ProfileCard.jsx';
+import PersonalInfoForm from "../components/user/PersonalInformation.jsx";
+import UserDashboard from "../components/user/UserDashboard.jsx";
+import TransactionHistory from "../components/user/TransactionHistory.jsx";
 
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-    },
-    {
-      title: "Username",
-      dataIndex: "username",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-    },
-  ];
+function UserProfile() {
+  const [selectedTab, setSelectedTab] = useState("Thông tin cá nhân");
+
+  const renderContent = () => {
+    switch (selectedTab) {
+      case "Thông tin cá nhân":
+        return <PersonalInfoForm />;
+      case "Nhiệm vụ":
+        return <UserDashboard />;
+      case "Lịch sử giao dịch":
+        return <TransactionHistory />;
+      default:
+        return <PersonalInfoForm />;
+    }
+  };
 
   return (
-    <div style={{ padding: 50 }}>
-      <Table bordered dataSource={dataSource} columns={columns} rowKey={"id"} />
-    </div>
+    <>
+      <UserHeader />
+      <div className="w-screen min-h-screen bg-[#f7f8fa] mt-18">
+        <div className="w-[80vw] m-auto flex">
+          <div className="grow-1 mt-4">
+            <ProfileCard setSelectedTab={setSelectedTab} />
+          </div>
+          <div className="grow-3 mt-4 ml-3">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    </>
   );
-};
-export default UserPage;
+}
+
+export default UserProfile;

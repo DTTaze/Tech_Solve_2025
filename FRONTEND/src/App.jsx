@@ -4,8 +4,8 @@ import { AuthContext } from "./layouts/auth.context";
 import axios from "./utils/axios.customize";
 import { Spin } from "antd";
 import Header from "./layouts/header_test";
-import AdminHeader from "./layouts/adminHeader";
-import UserHeader from "./layouts/userHeader";
+import AdminHeader from "./layouts/AdminHeader";
+import UserHeader from "./layouts/Header";
 
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);

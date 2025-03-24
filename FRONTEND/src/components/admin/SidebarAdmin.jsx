@@ -18,7 +18,6 @@ import SecurityIcon from "@mui/icons-material/Security";
 import LockIcon from "@mui/icons-material/Lock";
 import CategoryIcon from "@mui/icons-material/Category";
 import MenuIcon from "@mui/icons-material/Menu";
-import Logo from "../assets/images/favicon.ico";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
