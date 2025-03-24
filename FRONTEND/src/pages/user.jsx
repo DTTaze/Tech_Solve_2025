@@ -25,11 +25,11 @@ function UserProfile() {
     <>
       <UserHeader />
       <div className="w-screen min-h-screen bg-[#f7f8fa] mt-18">
-        <div className="w-[80vw] m-auto flex">
+        <div className="w-[80vw] m-auto flex gap-3">
           <div className="grow-1 mt-4">
             <ProfileCard setSelectedTab={setSelectedTab} />
           </div>
-          <div className="grow-3 mt-4 ml-3">
+          <div className="grow-3">
             {renderContent()}
           </div>
         </div>
