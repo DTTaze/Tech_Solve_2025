@@ -61,6 +61,7 @@ function App() {
         </div>
       ) : (
         <>
+          <UserHeader />
           <Outlet />
         </>
       )}

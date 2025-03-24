@@ -111,9 +111,9 @@ function Mission() {
 
   return (
     <div className="main-mission-container">
-      <div className="header">
+      {/* <div className="header">
         <Header />
-      </div>
+      </div> */}
       <div id="day-mission" className="day_mission_container">
         <div className="day-mission-header">
           <h1>NHIỆM VỤ HÀNG NGÀY</h1>

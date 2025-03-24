@@ -2,7 +2,7 @@ const avatarService = require("../services/avatarService");
 
 const handleUploadAvatar = async (req, res) => {
   try {
-    const user_id = req.params.user_id;
+    const user_id = req.user.id;
     const { file } = req;
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -25,7 +25,7 @@ const handleGetAllAvatars = async (req, res) => {
 
 const handleGetAvatarById = async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const user_id = req.user.id;
     const avatar = await avatarService.getAvatarById(user_id);
     if (!avatar) {
       return res.status(404).json({ message: "Avatar not found" });
@@ -38,7 +38,7 @@ const handleGetAvatarById = async (req, res) => {
 
 const handleUpdateAvatar = async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const user_id = req.user.id;
     const { file } = req;
     const avatar = await avatarService.updateAvatar(user_id,file);
     return res.status(200).json(avatar);
@@ -49,7 +49,7 @@ const handleUpdateAvatar = async (req, res) => {
 
 const handleDeleteAvatar = async (req, res) => {
     try {
-        const { user_id } = req.params;
+      const user_id = req.user.id;
         const result = await avatarService.deleteAvatar(user_id);
 
         if (result.error) {

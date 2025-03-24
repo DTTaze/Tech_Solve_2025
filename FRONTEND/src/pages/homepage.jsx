@@ -4,7 +4,7 @@ import Header from "../layouts/Header";
 function Homepage() {
     return (
         <>
-            <Header />
+            {/* <Header /> */}
             <HomepageSection />
         </>
     );
