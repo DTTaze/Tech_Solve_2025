@@ -1,4 +1,3 @@
-const { image } = require("../config/cloudinary.js");
 const db = require("../models/index.js");
 const User = db.User;
 const cloudinary = require("../config/cloudinary.js");

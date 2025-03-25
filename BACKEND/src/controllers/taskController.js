@@ -79,6 +79,48 @@ const handleReceiveCoin = async (req, res) => {
   }
 };
 
+const handleSubmitTask = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const task_user_id = req.params.task_user_id;
+    let description = req.body.description;
+    description = description ? String(description) : "";
+    const auth = req.headers.authorization;
+
+    // 🛑 Kiểm tra nếu file không tồn tại
+    if (!req.file) {
+      console.log("req.body:", req.body);
+      console.log("req.file:", req.file); // Kiểm tra xem có file nào không
+      throw new Error("Image is required");
+    }
+
+    let file = req.file; // Lấy file từ form-data
+
+    let result = await taskService.submitTask(
+      task_user_id,
+      user_id,
+      description,
+      file, // ✅ Truyền file đúng cách
+      auth
+    );
+
+    return res.success("Submit task success", result);
+  } catch (error) {
+    return res.error(500, "Failed to submit task", error.message);
+  }
+};
+
+const handleUpdateTaskSubmit = async (req, res) => {
+  try {
+    const task_submit_id = req.params.id;
+    let result = await taskService.updateTaskSubmit(task_submit_id);
+    return res.success("Approved task submit success", result);
+  } catch (error) {
+    return res.error(500, "Failed to update task submit", error.message);
+  }
+}
+
+
 module.exports = {
   handleGetAllTasks,
   handleCreateTask,
@@ -87,5 +129,7 @@ module.exports = {
   handleUpdateTask,
   handleAcceptTask,
   handleCompleteTask,
-  handleReceiveCoin
+  handleReceiveCoin,
+  handleSubmitTask,
+  handleUpdateTaskSubmit,
 };

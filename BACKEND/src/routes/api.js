@@ -26,9 +26,9 @@ const initWebRoutes = (app) => {
   app.use("/api/tasks", taskRoutes);
   app.use("/api/items", itemRoutes);
   app.use("/api/videos", videoRoutes);
-  // app.use("/api/images", imageRoutes);
   app.use("/api/avatars", avatarRoutes);
-  // router.post("/image/upload", uploadImage.single('image'),imageController.uploadImage);
+  app.use("/api/images", imageRoutes);
+
   return app.use("/api", router);
 };
 
