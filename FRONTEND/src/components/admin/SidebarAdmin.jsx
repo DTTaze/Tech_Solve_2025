@@ -18,7 +18,6 @@ import SecurityIcon from "@mui/icons-material/Security";
 import LockIcon from "@mui/icons-material/Lock";
 import CategoryIcon from "@mui/icons-material/Category";
 import MenuIcon from "@mui/icons-material/Menu";
-import Logo from "../assets/images/favicon.ico";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
@@ -87,11 +86,11 @@ export default function TemporaryDrawer() {
           backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
         }}
       >
-        <img
+        {/* <img
           src={Logo || "https://via.placeholder.com/40x40"}
           alt="Logo"
           style={{ height: 40, marginRight: 12 }}
-        />
+        /> */}
         <Typography variant="h6" fontWeight={600} color="primary">
           Admin Panel
         </Typography>

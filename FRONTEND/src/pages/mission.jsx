@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import Calendar from "../components/calendar.jsx";
-import Ranking from "../components/chartRank.jsx";
+import Calendar from "../components/features/missions/Calendar.jsx";
+import Ranking from "../components/features/missions/ChartRank.jsx";
 import "../styles/pages/mission.scss";
-import images from "../components/photo.jsx";
-import Header from "../layouts/userHeader.jsx";
+import images from "../components/features/exchangemarket/Photo.jsx";
+import Header from "../layouts/Header.jsx";
 import { Footer } from "antd/es/layout/layout.js";
-import { motion } from "framer-motion";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 

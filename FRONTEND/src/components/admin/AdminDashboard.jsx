@@ -5,9 +5,9 @@ import {
   WidgetIncome,
   WidgetPageViews,
   WidgetVisits,
-} from "./cards-widget";
-import SimpleLineChart from "./chart-admin";
-import { ChartFooter } from "./chart-footer";
+} from "./CardWidget";
+import SimpleLineChart from "./ChartAdmin";
+import { ChartFooter } from "./ChartFooter";
 import { Box, Paper, Typography, Divider, Stack, Button } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";

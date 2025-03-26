@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import DataTable from "./data-table";
-import { userColumns, usersData } from "../data/mock-data";
+import DataTable from "./DataTable";
+import { userColumns, usersData } from "../../data/mock-data";
 import { Box, Typography } from "@mui/material";
 
 export default function UsersManagement() {

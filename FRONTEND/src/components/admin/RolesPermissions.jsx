@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import DataTable from "./data-table";
+import DataTable from "./DataTable";
 import {
   roleColumns,
   rolesData,
   permissionColumns,
   permissionsData,
-} from "../data/mock-data";
+} from "../../data/mock-data";
 import { Box, Typography, Tabs, Tab } from "@mui/material";
 
 function TabPanel(props) {

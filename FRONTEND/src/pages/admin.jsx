@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import "../styles/pages/admin.css";
-import CustomizedBreadcrumbs from "../components/breadcrumb";
-import TemporaryDrawer from "../components/sidebar-admin";
-import AdminDashboard from "../components/admin-dashboard";
-import UsersManagement from "../components/users-management";
-import RolesPermissions from "../components/roles-permissions";
-import ContentManagement from "../components/content-management";
+import CustomizedBreadcrumbs from "../components/admin/BreadCrumb";
+import TemporaryDrawer from "../components/admin/SidebarAdmin";
+import AdminDashboard from "../components/admin/AdminDashboard";
+import UsersManagement from "../components/admin/UsersManagement";
+import RolesPermissions from "../components/admin/RolesPermissions";
+import ContentManagement from "../components/admin/ContentManagement";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import DataTable from "./data-table";
+import DataTable from "./DataTable";
 import {
   taskColumns,
   tasksData,
@@ -9,9 +9,9 @@ import {
   videosData,
   avatarColumns,
   avatarsData,
-} from "../data/mock-data";
+} from "../../data/mock-data";
 import { Box, Typography } from "@mui/material";
-import AdminTabs from "./admin-tabs";
+import AdminTabs from "./AdminTabs";
 
 // Tasks Management Component
 function TasksManagement() {
