@@ -156,7 +156,7 @@ function UserHeader() {
         )}
       </div>
 
-      <div className="header-underlay w-full h-full z-1 absolute bg-[#74dc2e] top-0 left-0 -translate-y-full transition-transform duration-300"></div>
+      <div className="header-underlay w-full h-full z-1 absolute bg-[#0B6E4F] top-0 left-0 -translate-y-full transition-transform duration-300"></div>
     </header>
   );
 }
