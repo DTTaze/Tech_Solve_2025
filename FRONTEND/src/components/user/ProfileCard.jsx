@@ -1,5 +1,5 @@
 import { useContext, useState, useRef, useEffect } from "react";
-import { AuthContext } from "../../layouts/auth.context.jsx";
+import { AuthContext } from "../../contexts/auth.context.jsx";
 import {
   uploadUserAvatarApi,
   updateUserAvatarApi,

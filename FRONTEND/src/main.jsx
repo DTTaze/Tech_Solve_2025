@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AuthWrapper } from "./layouts/auth.context.jsx";
+import { AuthWrapper } from "./contexts/auth.context.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import MissionPage from "./pages/Mission.jsx";
 import UserProfilePage from "./pages/User.jsx";

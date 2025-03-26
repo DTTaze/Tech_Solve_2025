@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { AuthContext } from "./layouts/auth.context";
+import { AuthContext } from "./contexts/auth.context";
 import axios from "./utils/axios.customize";
 import { Spin } from "antd";
 import Header from "./layouts/header_test";

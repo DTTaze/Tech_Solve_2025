@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Menu, notification } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "./auth.context";
+import { AuthContext } from "../contexts/auth.context";
 
 const AdminHeader = () => {
   const navigate = useNavigate();
