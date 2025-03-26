@@ -117,7 +117,7 @@ const acceptTask = async (task_id, user_id) => {
   } catch (e) {
     throw e;
   }
-}
+};
 
 const completeTask = async (task_id, user_id) => {
   try {
@@ -128,14 +128,42 @@ const completeTask = async (task_id, user_id) => {
     const taskUser = await TaskUser.findOne({
       where: { task_id, user_id },
     });
+    if (!taskUser) throw new Error("Task not found");
     taskUser.status = "done";
     taskUser.completed_at = new Date();
     await taskUser.save();
-    if (!taskUser) throw new Error("Task not found");
+    const user = await User.findByPk(user_id);
+    if (!user) throw new Error("User not found");
+
+    let newStreak = user.streak || 0;
+    if (user.last_logined) {
+      let lastLogin = new Date(user.last_logined);
+      lastLogin.setHours(0, 0, 0, 0);
+
+      let today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate());
+
+      let todayStr = today.toISOString().split("T")[0];
+      let lastLoginStr = lastLogin.toISOString().split("T")[0];
+      let yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      if (lastLoginStr === todayStr) {
+        return;
+      } else if (lastLoginStr === yesterdayStr) {
+        newStreak += 1;
+      } else {
+        newStreak = 1;
+      }
+    }
+    await user.update({
+      streak: newStreak,
+    });
   } catch (e) {
     throw e;
   }
-}
+};
 
 const receiveCoin = async (user_id, coins) => {
   try {
@@ -154,8 +182,6 @@ const receiveCoin = async (user_id, coins) => {
     throw e;
   }
 };
-
-  
 
 module.exports = {
   createTask,

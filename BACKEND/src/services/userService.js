@@ -22,6 +22,7 @@ const createUser = async (data) => {
       full_name: full_name,
       phone_number: phone_number,
       address: address,
+      last_logined: fn("CURDATE"),
     });
     return newUser;
   } catch (e) {
@@ -31,6 +32,10 @@ const createUser = async (data) => {
 
 const loginUser = async (data) => {
   try {
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let todayStr = today.toISOString().split("T")[0];
+
     let { username, email, password } = data;
     if (!email && !username) {
       throw new Error("Vui lòng cung cấp email hoặc username");
@@ -46,6 +51,9 @@ const loginUser = async (data) => {
       throw new Error("Invalid email or password");
     }
 
+    await user.update({
+      last_logined: todayStr,
+    });
     // Create an access token
     const payload = {
       id: user.id,
@@ -69,6 +77,8 @@ const loginUser = async (data) => {
         username: user.username,
         role_id: user.role_id,
         avatar_url: user.avatar_url,
+        last_logined: todayStr,
+        streak: user.streak,
       },
     };
   } catch (e) {

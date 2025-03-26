@@ -4,8 +4,14 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      User.hasMany(models.Item, { foreignKey: "owner_id", onDelete: "CASCADE" });
-      User.hasMany(models.Transaction, { foreignKey: "buyer_id", onDelete: "CASCADE" });
+      User.hasMany(models.Item, {
+        foreignKey: "owner_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.Transaction, {
+        foreignKey: "buyer_id",
+        onDelete: "CASCADE",
+      });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
     }
   }
@@ -63,6 +69,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
+        validate: { min: 0 },
+      },
+      streak: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        validate: { min: 0 },
+      },
+      last_logined: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
       },
     },
     {

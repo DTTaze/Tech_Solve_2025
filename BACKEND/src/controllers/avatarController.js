@@ -2,72 +2,79 @@ const avatarService = require("../services/avatarService");
 
 const handleUploadAvatar = async (req, res) => {
   try {
-    const user_id = req.user.id;
     const { file } = req;
+    const userId = req.params.user_id || req.user?.id;
+
     if (!file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return res.error(400, "No file uploaded");
     }
-    const avatar = await avatarService.uploadAvatar(file,user_id);
-    return res.status(201).json(avatar);
+
+    const result = await avatarService.uploadAvatar(file, userId);
+    return res.success("Avatar uploaded successfully", result);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.error(500, "Failed to upload avatar", error.message);
   }
-}
+};
 
 const handleGetAllAvatars = async (req, res) => {
   try {
-    const avatars = await avatarService.getAllAvatar();
-    return res.status(200).json(avatars);
+    const result = await avatarService.getAllAvatar();
+    return res.success("Fetched all avatars successfully", result);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.error(500, "Failed to fetch avatars", error.message);
   }
-}
+};
 
-const handleGetAvatarById = async (req, res) => {
+const handleGetAvatarByUserId = async (req, res) => {
   try {
-    const user_id = req.user.id;
-    const avatar = await avatarService.getAvatarById(user_id);
-    if (!avatar) {
-      return res.status(404).json({ message: "Avatar not found" });
+    const userId = req.params.user_id || req.user?.id;
+    const result = await avatarService.getAvatarById(userId);
+
+    if (!result) {
+      return res.error(404, "Avatar not found");
     }
-    return res.status(200).json(avatar);
+
+    return res.success("Fetched avatar successfully", result);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.error(500, "Failed to fetch avatar", error.message);
   }
-}
+};
 
 const handleUpdateAvatar = async (req, res) => {
   try {
-    const user_id = req.user.id;
     const { file } = req;
-    const avatar = await avatarService.updateAvatar(user_id,file);
-    return res.status(200).json(avatar);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-}
+    const userId = req.params.user_id || req.user?.id;
 
-const handleDeleteAvatar = async (req, res) => {
-    try {
-      const user_id = req.user.id;
-        const result = await avatarService.deleteAvatar(user_id);
-
-        if (result.error) {
-            return res.status(404).json({ message: result.error });
-        }
-
-        return res.status(200).json({ message: result.message });
-    } catch (error) {
-        console.error("Error in handleDeleteAvatar:", error);
-        return res.status(500).json({ message: "Internal server error" });
+    if (!file) {
+      return res.error(400, "No file uploaded");
     }
+
+    const result = await avatarService.updateAvatar(userId, file);
+    return res.success("Avatar updated successfully", result);
+  } catch (error) {
+    return res.error(500, "Failed to update avatar", error.message);
+  }
 };
 
+const handleDeleteAvatar = async (req, res) => {
+  try {
+    const userId = req.params.user_id || req.user?.id;
+    const result = await avatarService.deleteAvatar(userId);
+
+    if (result.error) {
+      return res.error(404, result.error);
+    }
+
+    return res.success("Avatar deleted successfully", result.message);
+  } catch (error) {
+    return res.error(500, "Failed to delete avatar", error.message);
+  }
+};
 
 module.exports = {
-    handleUploadAvatar,
-    handleGetAllAvatars,
-    handleGetAvatarById,
-    handleUpdateAvatar,
-    handleDeleteAvatar,
+  handleUploadAvatar,
+  handleGetAllAvatars,
+  handleGetAvatarByUserId,
+  handleUpdateAvatar,
+  handleDeleteAvatar,
 };
