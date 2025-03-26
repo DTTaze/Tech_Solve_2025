@@ -41,28 +41,35 @@ function SectionHero() {
     }, [index]);
 
     return (
-        <section className="h-screen max-sm:h-fit w-full flex max-sm:flex-col-reverse max-sm:justify-end items-center justify-center p-4 sm:p-6 lg:p-8 overflow-hidden">
-            <header className="text-2xl max-sm:w-full sm:text-3xl lg:text-4xl w-1/2 text-[#059212] flex justify-center items-center mb-6 lg:mb-0">
-                <h1 
-                    id="heroTitle" 
-                    className={`transition-opacity duration-1000 ${showText ? "opacity-100" : "opacity-0"}`}
-                >
-                    {formattedTitle}
-                </h1>
-            </header>
-            <div className="relative w-1/2 h-full flex justify-center items-center sm:h-[60vh] max-sm:w-full lg:h-auto">
-                {images.map((src, i) => (
-                    <img
-                        key={i}
-                        src={src}
-                        alt={`Slide ${i + 1}`}
-                        className={` sm:w-4/5 lg:w-full sm:max-h-[400px] object-cover rounded-[20px] absolute transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
-                    />          
-                ))}
-            </div>
-        </section>
+        <section className="h-screen w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
+    {/* Tiêu đề */}
+    <header className="w-full lg:w-1/2 text-[#059212] flex justify-center items-center text-center font-bold 
+                      text-lg sm:text-xl md:text-2xl lg:text-4xl">
+        <h1 
+            id="heroTitle" 
+            className={`transition-opacity duration-1000 ${showText ? "opacity-100" : "opacity-0"}`}
+        >
+            {formattedTitle}
+        </h1>
+    </header>
+
+    {/* Hình ảnh */}
+    <div className="relative w-full lg:w-1/2 flex justify-center items-center h-[50vh] lg:h-auto">
+        {images.map((src, i) => (
+            <img
+                key={i}
+                src={src}
+                alt={`Slide ${i + 1}`}
+                className={`w-full sm:max-w-[90%] lg:w-4/5 max-h-[300px] sm:max-h-[400px] object-cover rounded-[20px] 
+                            absolute transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
+            />          
+        ))}
+    </div>
+</section>
+
     );
 }
+
 
 function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
     const sectionRef = useRef(null);
