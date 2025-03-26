@@ -5,10 +5,6 @@ const getUserApi = () => {
   return axios.get(URL_API);
 };
 
-const updateUserApi = (user_id, data) => {
-  
-};
-
 const createUserApi = (data) => {
   const URL_API = "api/auth/register";
   return axios.post(URL_API, data);

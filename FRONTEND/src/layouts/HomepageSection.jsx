@@ -50,13 +50,13 @@ function SectionHero() {
                     {formattedTitle}
                 </h1>
             </header>
-            <div className="relative w-1/2 h-screen flex justify-center items-center h-[50vh] sm:h-[60vh] max-sm:w-full lg:h-auto">
+            <div className="relative w-1/2 h-full flex justify-center items-center sm:h-[60vh] max-sm:w-full lg:h-auto">
                 {images.map((src, i) => (
                     <img
                         key={i}
                         src={src}
                         alt={`Slide ${i + 1}`}
-                        className={`w-full sm:w-4/5 lg:w-full max-h-[300px] sm:max-h-[400px] object-cover rounded-[20px] absolute transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
+                        className={` sm:w-4/5 lg:w-full sm:max-h-[400px] object-cover rounded-[20px] absolute transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
                     />          
                 ))}
             </div>

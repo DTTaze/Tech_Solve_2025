@@ -86,11 +86,11 @@ export default function TemporaryDrawer() {
           backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
         }}
       >
-        <img
+        {/* <img
           src={Logo || "https://via.placeholder.com/40x40"}
           alt="Logo"
           style={{ height: 40, marginRight: 12 }}
-        />
+        /> */}
         <Typography variant="h6" fontWeight={600} color="primary">
           Admin Panel
         </Typography>

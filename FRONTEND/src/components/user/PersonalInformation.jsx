@@ -16,7 +16,7 @@ function PersonalInfoForm() {
   }, []);
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md mt-6">
+    <div className="p-4 bg-white rounded-lg shadow-md">
       <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
       <hr className="my-2 border-gray-300" />
       <form className="space-y-4">

@@ -95,7 +95,7 @@ function ProfileCard({ setSelectedTab }) {
     const avatarUrl = avatar || userData.avatar_url || "../src/assets/images/default-avatar.jpg";
 
     return (
-        <div className="flex min-w-[300px] flex-col px-4 pt-[21px] bg-[#ffffff] rounded-lg shadow-md">
+        <div className="flex flex-col p-4 bg-[#ffffff] rounded-lg shadow-md">
           <div className="flex flex-col space-y-4">
             <div className="flex space-x-4">
               <div className="relative flex h-20 w-20 shrink-0">
@@ -128,12 +128,12 @@ function ProfileCard({ setSelectedTab }) {
             </div>
           </div>
           <div className="mb-4 mt-4 h-px w-full border-b"></div>
-            <div className="space-y-2">
-              <MenuItem text="Thông tin cá nhân" onClick={() => setSelectedTab("Thông tin cá nhân")} />
-              <MenuItem text="Nhiệm vụ" onClick={() => setSelectedTab("Nhiệm vụ")} />
-              <MenuItem text="Lịch sử giao dịch" onClick={() => setSelectedTab("Lịch sử giao dịch")} />
-            </div>
+          <div className="space-y-2">
+            <MenuItem text="Thông tin cá nhân" onClick={() => setSelectedTab("Thông tin cá nhân")} />
+            <MenuItem text="Nhiệm vụ" onClick={() => setSelectedTab("Nhiệm vụ")} />
+            <MenuItem text="Lịch sử giao dịch" onClick={() => setSelectedTab("Lịch sử giao dịch")} />
           </div>
+        </div>
       );
 }
 
