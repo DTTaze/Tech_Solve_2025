@@ -2,12 +2,20 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
 import { notification } from "antd";
+import { getUserApi } from "../utils/api";
 
 function UserHeader() {
-  const navigate = useNavigate();
   const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  getUserApi()
+  .then(response => {
+    console.log('Dữ liệu người dùng:', response);
+  })
+  .catch(error => {
+    console.error('Lỗi khi lấy dữ liệu người dùng:', error);
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +39,8 @@ function UserHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     notification.success({ message: "Đăng xuất thành công" });
@@ -39,7 +49,7 @@ function UserHeader() {
   };
 
   return (
-    <header className="user-header w-full px-5 py-3 fixed top-0 left-0 flex justify-between items-center z-10 bg-white transition-all duration-300">
+    <header className="user-header w-full px-5 pt-2 fixed top-0 left-0 flex justify-between items-center z-10 bg-white transition-all duration-300">
       {/* === 1. Logo === */}
       <div
         className="flex items-center cursor-pointer select-none z-10"
@@ -60,7 +70,7 @@ function UserHeader() {
         {["missions", "market", "news"].map((page) => (
           <button
             key={page}
-            className="font-bold hover:text-[#62C370] text-lg"
+            className="font-bold hover:text-[#62C370] text-lg cursor-pointer"
             onClick={() => navigate(`/${page}`)}
           >
             {page === "missions" ? "Nhiệm vụ" : page === "market" ? "Chợ trao đổi" : "Tin tức"}
@@ -83,15 +93,15 @@ function UserHeader() {
           </div>
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#0B6E4F] rounded-lg shadow-lg p-2 w-40 mt-2">
-              <p className="p-2 font-bold">{auth.user.username}</p>
+              <p className="p-2 font-bold text-white select-none">{auth.user.username}</p>
               <button
-                className="w-full p-2 text-left hover:text-[#62C370] rounded"
+                className="w-full p-2 text-left hover:text-[#62C370] rounded font-bold cursor-pointer"
                 onClick={() => navigate("/profile")}
               >
-                Xem hồ sơ
+                Xem Hồ Sơ 
               </button>
               <button
-                className="w-full p-2 text-left hover:text-[#62C370] rounded"
+                className="w-full p-2 text-left hover:text-[#62C370] rounded font-bold cursor-pointer"
                 onClick={handleLogout}
               >
                 Đăng xuất
@@ -101,10 +111,10 @@ function UserHeader() {
         </div>
       ) : (
         <div className="hidden md:flex gap-3 z-10">
-          <button className="text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/register")}>
+          <button className="!text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/register")}>
             Đăng ký
           </button>
-          <button className="text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/login")}>
+          <button className="!text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/login")}>
             Đăng nhập
           </button>
         </div>
@@ -137,19 +147,19 @@ function UserHeader() {
 
         {!auth.isAuthenticated ? (
           <>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/register")}>
+            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/register")}>
               Đăng ký
             </button>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/login")}>
+            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/login")}>
               Đăng nhập
             </button>
           </>
         ) : (
           <>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/profile")}>
+            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/profile")}>
               Xem hồ sơ
             </button>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={handleLogout}>
+            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={handleLogout}>
               Đăng xuất
             </button>
           </>
