@@ -1,5 +1,5 @@
 import React from "react";
-import '../styles/components/product.scss'
+import '../../../styles/components/Product.scss'
 
 export function Product ({name, price, ImgScr}) {
     return (

@@ -4,43 +4,48 @@ const handleCreateRole = async (req, res) => {
   try {
     const { name, description } = req.body;
     const result = await roleService.createRole(name, description);
-    return res.status(201).json(result);
+    return res.success("Role created successfully", result);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.error(400, "Failed to create role", error.message);
   }
 };
+
 const handleGetRole = async (req, res) => {
   try {
-    const result = await roleService.getRoleById(req.params.id);
-    return res.status(200).json(result);
+    const role_id = Number(req.params.id);
+    const result = await roleService.getRoleById(role_id);
+    return res.success("Role retrieved successfully", result);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.error(500, "Failed to get role", error.message);
   }
 };
+
 const handleGetAllRoles = async (req, res) => {
   try {
     const result = await roleService.getAllRoles();
-    return res.status(200).json(result);
+    return res.success("Roles retrieved successfully", result);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.error(500, "Failed to get roles", error.message);
   }
 };
 
 const handleUpdateRole = async (req, res) => {
   try {
-    const result = await roleService.updateRole(req.params.id, req.body);
-    return res.status(200).json(result);
+    const role_id = Number(req.params.id);
+    const result = await roleService.updateRole(role_id, req.body);
+    return res.success("Role updated successfully", result);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.error(500, "Failed to update role", error.message);
   }
 };
 
 const handleDeleteRole = async (req, res) => {
   try {
-    const result = await roleService.deleteRole(req.params.id);
-    return res.status(200).json(result);
+    const role_id = Number(req.params.id);
+    const result = await roleService.deleteRole(role_id);
+    return res.success("Role deleted successfully", result);
   } catch (error) {
-    return res.status(400).json({ message: error.message });
+    return res.error(500, "Failed to delete role", error.message);
   }
 };
 

@@ -1,15 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import './index.css'
-import App from './App.jsx'
+import "./index.css";
+import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AuthWrapper } from "./layouts/auth.context.jsx";
-import HomePage from "./pages/homepage.jsx";
-import MissionPage from "./pages/mission.jsx";
-import UserProfilePage from "./pages/user-profile.jsx";
-import LoginPage from "./pages/login.jsx";
-import RegisterPage from "./pages/register.jsx";
-import MarketPage from "./pages/market.jsx";
+import { AuthWrapper } from "./contexts/auth.context.jsx";
+import Homepage from "./pages/Homepage.jsx";
+import MissionPage from "./pages/Mission.jsx";
+import UserProfilePage from "./pages/User.jsx";
+import LoginPage from "./pages/Login.jsx";
+import RegisterPage from "./pages/Register.jsx";
+import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
 import MissionVideo from "./pages/mission-video.jsx";
 const router = createBrowserRouter([
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <Homepage />,
       },
       {
         path: "profile",
@@ -43,13 +43,16 @@ const router = createBrowserRouter([
     path: "login",
     element: <LoginPage />,
   },
+  {
+    path: "admin",
+    element: <Admin />,
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <AuthWrapper>
+    <AuthWrapper>
       <RouterProvider router={router} />
-    </AuthWrapper> */}
-    <MissionVideo/>
+    </AuthWrapper> 
   </StrictMode>
 );

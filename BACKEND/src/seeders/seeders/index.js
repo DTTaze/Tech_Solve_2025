@@ -3,6 +3,12 @@ const roleSeeder = require("./seeder-role");
 const permissionSeeder = require("./seeder-permission");
 const rolePermissionSeeder = require("./seeder-role_permission");
 const userSeeder = require("./seeder-user");
+const typeSeeder = require("./seeder-type");
+const taskTypeSeeder = require("./seeder-task_type");
+const taskSeeder = require("./seeder-task");
+const itemSeeder = require("./seeder-item");
+const transactionSeeder = require("./seeder-transaction");
+const taskUserSeeder = require("./seeder-task_user");
 
 const seeders = [
   { model: require("../../models").Role, seeder: roleSeeder },
@@ -12,6 +18,12 @@ const seeders = [
     seeder: rolePermissionSeeder,
   },
   { model: require("../../models").User, seeder: userSeeder },
+  { model: require("../../models").Item, seeder: itemSeeder },
+  { model: require("../../models").Transaction, seeder: transactionSeeder },
+  { model: require("../../models").Task, seeder: taskSeeder },
+  { model: require("../../models").Type, seeder: typeSeeder },
+  { model: require("../../models").TaskType, seeder: taskTypeSeeder },
+  { model: require("../../models").TaskUser, seeder: taskUserSeeder },
 ];
 
 (async () => {

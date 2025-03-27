@@ -1,74 +1,221 @@
-.admin-pages-container{
+.admin-pages-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  background-color: #e7e5e5;
-  justify-items: center;
-  gap: 5px;
+  padding: 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  color: #333;
+  font-family: "Roboto", "Segoe UI", sans-serif;
+}
+
+.MuiAppBar-root {
+  background: white !important;
+  color: black !important;
+  box-shadow: none !important;
+  height: 64px;
 }
 
 .breadcrumb-container {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Căn giữa theo trục Y (dọc) */
-  margin-bottom: 20px;
-  padding-left: 0;
-  background-color: white; /* Màu nền trắng */
-  border: 1px solid rgb(206, 205, 205);
-  border-left: none;
-  border-right: none;
-  height: 60px
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  padding: 0;
+  background-color: transparent;
+  height: auto;
+  box-shadow: none;
+  position: relative;
+  z-index: 900;
 }
 
 .breadcrumb-item1 {
   padding-right: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .breadcrumb-item2 {
   text-decoration: none;
-  color: #007bff; 
+  color: #1976d2;
   font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.breadcrumb-item2 a {
+  transition: color 0.2s ease;
 }
 
 .breadcrumb-item2 a:hover {
   text-decoration: underline;
+  color: #1565c0;
 }
 
 .breadcrumb-item2 span {
-  margin: 0 5px; /* Giảm khoảng cách giữa các phần tử trong breadcrumb */
-  color: #666; /* Màu của ký tự phân cách */
+  margin: 0 5px;
+  color: #757575;
 }
 
-.card-grid-container {
-  display: grid;
-  padding: 20px;
+.admin-content-container {
+  flex: 1;
+  padding: 1.5rem;
+  overflow: auto;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
 }
 
 .chart-container {
   display: flex;
   flex-direction: column;
-  padding: 15px;
-  margin: 20px;
-  background-color: #f9f9f9;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0px 0px 10px 10px;
+  padding: 1.5rem;
+  margin: 0 0 1.5rem 0;
+  background-color: #ffffff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.chart-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .chart-footer {
   display: flex;
-  gap:0;
-  border-radius: 10px;
+  gap: 0;
+  border-radius: 0 0 8px 8px;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 1rem;
+}
 
+/* MUI Override Styles */
+.MuiPaper-root {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 8px !important;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+}
+
+.MuiPaper-root:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.MuiButton-root {
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiButton-contained {
+  background-color: #1976d2 !important;
+}
+
+.MuiButton-contained:hover {
+  background-color: #1565c0 !important;
+  box-shadow: 0 3px 8px rgba(21, 101, 192, 0.3) !important;
+}
+
+.MuiDataGrid-root {
+  border: none !important;
+  font-family: "Roboto", "Segoe UI", sans-serif !important;
+}
+
+.MuiDataGrid-columnHeader {
+  background-color: #f8f9fa !important;
+  font-weight: 600 !important;
+}
+
+.MuiDataGrid-cell {
+  border-color: #f0f0f0 !important;
+}
+
+.MuiTabs-root {
+  background-color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+.MuiTab-root {
+  text-transform: none !important;
+  font-weight: 500 !important;
+  min-width: 100px !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiTab-root.Mui-selected {
+  color: #1976d2 !important;
+  font-weight: 600 !important;
+}
+
+.MuiTabs-indicator {
+  background-color: #1976d2 !important;
+  height: 3px !important;
+}
+
+.MuiTypography-h5 {
+  font-weight: 600 !important;
+  color: #333 !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.MuiTypography-h6 {
+  font-weight: 500 !important;
+  color: #444 !important;
+}
+
+/* Beautiful scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Badge notification pulse animation */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
+}
+
+.MuiBadge-badge {
+  animation: pulse 2s infinite;
+}
+
+/* Menu transition animations */
+.MuiMenu-paper {
+  transform-origin: top right !important;
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 167ms cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 @media (max-width: 768px) {
   .breadcrumb-container {
-    flex-direction: column; /* Xếp dọc trên mobile */
+    flex-direction: column;
     align-items: flex-start;
+    height: auto;
+    padding: 10px 1rem;
   }
 
   .breadcrumb-item1 {
@@ -78,6 +225,14 @@
 
   .breadcrumb-item2 a,
   .breadcrumb-item2 span {
-    font-size: 14px; /* Giảm kích thước chữ trên mobile */
+    font-size: 14px;
+  }
+
+  .admin-content-container {
+    padding: 1rem;
+  }
+
+  .MuiPaper-root:hover {
+    transform: none !important;
   }
 }

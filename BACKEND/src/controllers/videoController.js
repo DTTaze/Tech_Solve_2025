@@ -9,7 +9,7 @@ const handleUploadVideo = async (req, res) => {
     let result = await videoService.uploadAndCompressVideo(
       req.file,
       req.body.title,
-      req.body.userId
+      req.body.user_id
     );
     res.success("Upload video success", result);
   } catch (error) {
@@ -29,8 +29,8 @@ const handleGetAllVideos = async (req, res) => {
 const handleGetVideoById = async (req, res) => {
   try {
     const result = await videoService.getVideoById(
-      req.params.idUser,
-      req.params.idVideo
+      req.params.user_id,
+      req.params.video_id
     );
     let temp;
     return res.success(
@@ -61,8 +61,8 @@ const handleUpdateVideo = async (req, res) => {
 const handleDeleteVideo = async (req, res) => {
   try {
     let result = await videoService.deleteVideo(
-      req.params.idUser,
-      req.params.idVideo
+      req.params.user_id,
+      req.params.video_id
     );
     return res.success("Delete video(s) success", result);
   } catch (error) {
