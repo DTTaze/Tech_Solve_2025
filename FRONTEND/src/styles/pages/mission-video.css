@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+    font-family:Roboto, sans-serif;
+    font-size: 14px;
+}
+
+.missionVideo-page-container {
+    margin-top: 0px;
+    display: flex;
+    width: 100vw;
+    max-width: 100%;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    align-self: center;
+    flex: 1 1 auto;
+    background-color: rgb(20, 19, 19);
+}
+
+.missionVideo-page-sidebar {
+    width: 15rem;
+    flex-shrink: 0;
+    z-index: 99;
+}
+
+.missionVideo-page-sidebar-container {
+    width: 15rem;
+    height: 100vh;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    overflow: auto;
+    overscroll-behavior: contain;
+    flex-direction: column;
+    flex-shrink: 0;
+    background-color: white;
+    position: fixed;
+    box-sizing: content-box;
+}
+
+.sidebar-header {
+    display: flex;
+    padding-top: 1.25rem;
+    padding-bottom: 0.5rem;
+    flex-shrink: 0;
+    gap: 1rem;
+    width: 100%;
+    -webkit-box-align: center;
+    align-items: center;
+}
+
+.missionVideo-page-main-video {
+    flex-grow: 3;
+    padding-left: 30%;
+    padding-right: 30%;
+    border-radius: 10px;
+    scrollbar-width: none;
+}

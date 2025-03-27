@@ -11,7 +11,7 @@ import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
 import MarketPage from "./pages/market.jsx";
 import Admin from "./pages/Admin.jsx";
-
+import MissionVideo from "./pages/mission-video.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -50,6 +50,6 @@ createRoot(document.getElementById("root")).render(
     {/* <AuthWrapper>
       <RouterProvider router={router} />
     </AuthWrapper> */}
-    <Admin/>
+    <MissionVideo/>
   </StrictMode>
 );

@@ -1,0 +1,60 @@
+.video-section-container {
+    scrollbar-width: none;
+}
+
+.video-section-container::-webkit-scrollbar {
+    display: none;
+}
+
+.comment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.comment-section input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.comment-section button {
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment-section button:hover {
+    background-color: #218838;
+}
+
+.comments-list {
+    max-height: 100px;
+    overflow-y: auto;
+    margin-top: 5px;
+}
+
+.comments-list p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.reward-section {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.reward-section p {
+    margin: 0;
+    font-size: 1rem;
+}

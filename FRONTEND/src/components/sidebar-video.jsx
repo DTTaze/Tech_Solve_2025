@@ -10,19 +10,37 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import MenuImg from '../assets/images/menu.svg'
+// import { useNavigate } from "react-router-dom";
+import { CForm, CFormInput } from '@coreui/react'
 
-export default function TemporaryDrawer() {
-  const [open, setOpen] = React.useState(false);
+const FormInput = () => {
+  return (
+    <CForm>
+      <CFormInput
+        type="email"
+        id="exampleFormControlInput1"
+        placeholder="Tìm kiếm"
+        size='sm'
+        className='h-5 rounded-lg'
+      />
+    </CForm>
+  )
+}
 
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
-  };
-
+export default function VideoDrawer() {
+  // const navigate = useNavigate()
   const DrawerList = (
-    <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+    <Box sx={{ width: 250 }} role="presentation" >
+      <div className='flex flex-col gap-4 p-4 m-2 justify-center items-center'>
+        <button className='font-bold text-[30px]'>Green Flag</button>
+        <div>
+          {/* <input className='w-full border-1 border-[#7b7b7b]'/> */}
+          <FormInput/>
+        </div>
+      </div>
+      <Divider/>
       <List>
-        {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+        {['Đề xuất', 'Đã follow', 'Tải lên', 'Hồ sơ'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
               <ListItemIcon>
@@ -34,8 +52,9 @@ export default function TemporaryDrawer() {
         ))}
       </List>
       <Divider />
+      <p>Các tài khoản đã theo dõi</p>
       <List>
-        {['All mail', 'Trash', 'Spam'].map((text, index) => (
+        {['Tuấn Anh', 'Thiên Bảo', 'Thành Tài', 'Trung Kiên'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
               <ListItemIcon>
@@ -51,18 +70,16 @@ export default function TemporaryDrawer() {
 
   return (
     <div>
-      <Button onClick={toggleDrawer(true)}>
-        <img src={MenuImg} />
-      </Button>
-      <Drawer open={open} 
-        onClose={toggleDrawer(false)} 
-        ModalProps={{
-          BackdropProps: {
-            invisible: true, 
-          },
-        }}>
-        {DrawerList}
-      </Drawer>
+      <Drawer open={true} 
+              variant="persistent"
+              ModalProps={{
+                BackdropProps: {
+                  invisible: true, 
+                },
+              }}
+              >
+              {DrawerList}
+        </Drawer>
     </div>
   );
 }
