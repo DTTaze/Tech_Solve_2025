@@ -1,13 +1,6 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
-import {
-  WidgetUsers,
-  WidgetIncome,
-  WidgetPageViews,
-  WidgetVisits,
-} from "./CardWidget";
-import SimpleLineChart from "./ChartAdmin";
-import { ChartFooter } from "./ChartFooter";
+
 import { Box, Paper, Typography, Divider, Stack, Button } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
