@@ -1,7 +1,7 @@
 const transactions = [
-  { date: "2025-03-20", description: "Mua hàng tại cửa hàng A", status: "Completed" },
-  { date: "2025-03-21", description: "Nhận hoàn tiền", status: "Pending" },
-  { date: "2025-03-22", description: "Thanh toán hóa đơn điện", status: "Completed" }
+  { date: "2025-03-20", description: "Chậu hoa", status: "Completed" },
+  { date: "2025-03-21", description: "Áo thun", status: "Pending" },
+  { date: "2025-03-22", description: "Giày", status: "Completed" }
 ];
 
 const TransactionHistory = () => {

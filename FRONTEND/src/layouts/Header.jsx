@@ -8,14 +8,23 @@ function UserHeader() {
   const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
 
-  getUserApi()
-  .then(response => {
-    console.log('Dữ liệu người dùng:', response);
-  })
-  .catch(error => {
-    console.error('Lỗi khi lấy dữ liệu người dùng:', error);
-  });
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await getUserApi();
+        if (response) {
+          setUser(response);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      } 
+    };
+
+    fetchUser();
+  }, []);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,6 +103,7 @@ function UserHeader() {
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#0B6E4F] rounded-lg shadow-lg p-2 w-40 mt-2">
               <p className="p-2 font-bold text-white select-none">{auth.user.username}</p>
+              <p className="p-2 font-bold select-none"> Coins: {user.coins}</p>
               <button
                 className="w-full p-2 text-left hover:text-[#62C370] rounded font-bold cursor-pointer"
                 onClick={() => navigate("/profile")}

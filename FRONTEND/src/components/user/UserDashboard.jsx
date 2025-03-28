@@ -130,11 +130,7 @@ function CompletedTasksList({ tasks = [] }) {
 
 const UserDashboard = () => {
   return (
-    <div className="flex flex-col gap-3 w-full">
-      <div className="flex flex-col xl:flex-row gap-3">
-        <ProblemStats />
-        <Badges />
-      </div>
+    <div className="">
       <CompletedTasksList />
     </div>
   );
