@@ -1,5 +1,4 @@
 import { useState } from "react";
-import UserHeader from "../layouts/Header.jsx";
 import ProfileCard from '../components/user/ProfileCard.jsx';
 import PersonalInfoForm from "../components/user/PersonalInformation.jsx";
 import UserDashboard from "../components/user/UserDashboard.jsx";

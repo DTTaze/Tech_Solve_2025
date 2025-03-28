@@ -8,6 +8,8 @@ const jwtAuth = (req, res, next) => {
     "/auth/register",
     "/auth/google",
     "/auth/google/callback",
+    "/auth/forgot_password",
+    "/auth/reset_password",
   ];
   if (white_lists.find((item) => "/api" + item === req.originalUrl)) {
     next();
