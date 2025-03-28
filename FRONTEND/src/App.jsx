@@ -1,11 +1,11 @@
 import { useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { AuthContext } from "./contexts/auth.context";
-import axios from "./utils/axios.customize";
-import { Spin } from "antd";
+import { notification, Spin } from "antd";
 import Header from "./layouts/header_test";
 import AdminHeader from "./layouts/AdminHeader";
 import UserHeader from "./layouts/Header";
+import { getUserApi } from "./utils/api";
 
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
@@ -14,29 +14,36 @@ function App() {
     const fetchAccount = async () => {
       setAppLoading(true);
       try {
-        const res = await axios.get("/api/users/me");
+        const res = await getUserApi();
 
-        if (res && !res.message) {
-          if (!res.avatar_url && res.id) {
+        if (res && res.status === 200) {
+          if (!res.data.avatar_url && res.data.id) {
             try {
-              const avatarRes = await axios.get(`/api/avatars/${res.id}`);
+              const avatarRes = await getUserAvatarByIdApi(res.data.id);
               if (avatarRes && avatarRes.avatar_url) {
-                res.avatar_url = avatarRes.avatar_url;
+                res.data.avatar_url = avatarRes.avatar_url;
               }
             } catch (avatarErr) {
-              console.error("Failed to fetch avatar:", avatarErr);
+              notification.error({
+                message: "Lấy avatar không thành công",
+                description:
+                  avatarErr.error || "Đã xảy ra lỗi, vui lòng thử lại!",
+              });
             }
           }
           setAuth({
             isAuthenticated: true,
-            user: res,
+            user: res.data,
           });
-          if (res.avatar_url) {
-            localStorage.setItem("user_avatar_url", res.avatar_url);
+          if (res.data.avatar_url) {
+            localStorage.setItem("user_avatar_url", res.data.avatar_url);
           }
         }
       } catch (err) {
-        console.error("Failed to fetch user data:", err);
+        notification.error({
+          message: "Lấy user không thành công",
+          description: err.message || "Đã xảy ra lỗi, vui lòng thử lại!",
+        });
       } finally {
         setAppLoading(false);
       }
@@ -44,7 +51,6 @@ function App() {
 
     fetchAccount();
   }, []);
-
 
   return (
     <div>

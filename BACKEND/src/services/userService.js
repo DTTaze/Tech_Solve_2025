@@ -73,7 +73,6 @@ const loginUser = async (data) => {
     });
 
     return {
-      EC: 0,
       access_token,
       user: {
         id: user.id,

@@ -55,7 +55,7 @@ const handleUpdateUser = async (req, res) => {
 };
 
 const handleGetProfile = async (req, res) => {
-  return res.status(200).json(req.user);
+  return res.success("Get user profile success", req.user);
 };
 module.exports = {
   handleGetAllUsers,

@@ -8,20 +8,23 @@ const RegisterPage = () => {
   const onFinish = async (values) => {
     const res = await createUserApi(values);
     try {
-      if (res) {
+      if (res && res.status === 200) {
         notification.success({
           message: "Register Success",
-          description: "Đã đăng ký thành công",
+          description: res.message,
         });
         navigate("/login");
       } else {
         notification.error({
-          message: "Register Failed",
-          description: "Đăng ký không thành công",
+          message: "Đăng ký không thành công",
+          description: res.error || "Đã xảy ra lỗi, vui lòng thử lại!",
         });
       }
     } catch (e) {
-      console.log(e);
+      notification.error({
+        message: "Đăng ký không thành công",
+        description: e.message || "Đã xảy ra lỗi, vui lòng thử lại!",
+      });
     }
   };
   return (
