@@ -13,7 +13,9 @@ const createUser = async (data) => {
     if (user) {
       throw new Error("User already exists");
     }
-
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let todayStr = today.toISOString().split("T")[0];
     const hashPassword = bcrypt.hashSync(password, salt);
     const newUser = await User.create({
       email: email,
@@ -22,7 +24,7 @@ const createUser = async (data) => {
       full_name: full_name,
       phone_number: phone_number,
       address: address,
-      last_logined: fn("CURDATE"),
+      last_logined: todayStr,
     });
     return newUser;
   } catch (e) {

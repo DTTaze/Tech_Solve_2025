@@ -33,15 +33,25 @@ Then check your current path and go to BACKEND if you are in TECHSOLVE_2025
 
 ```bash
   cd .\BACKEND\
-  npm run dockerup
+  npm run du
 ```
+
+<h5>Using this when you want to remove volume</h5>
+
+```bash
+  cd .\BACKEND\
+  npm run ddv
+```
+
 <h4>To deploy this project in localhost</h4>
 
 **FRONTEND**
+
 ```bash
   cd .\FRONTEND\
   npm run dev
 ```
+
 **BACKEND**
 
 ```bash
