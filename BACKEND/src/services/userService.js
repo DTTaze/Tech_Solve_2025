@@ -62,6 +62,9 @@ const loginUser = async (data) => {
       username: user.username,
       role_id: user.role_id,
       avatar_url: user.avatar_url,
+      coins: user.coins,
+      last_logined: todayStr,
+      streak: user.streak,
     };
     const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
@@ -77,6 +80,7 @@ const loginUser = async (data) => {
         username: user.username,
         role_id: user.role_id,
         avatar_url: user.avatar_url,
+        coins: user.coins,
         last_logined: todayStr,
         streak: user.streak,
       },
