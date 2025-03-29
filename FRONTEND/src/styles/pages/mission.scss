@@ -27,17 +27,16 @@ body {
 
 .main-mission-container {
     display: flex;
+    flex-direction: column;
     gap: 5px;
-    justify-content: space-between;
     padding: 15px;
     border-radius: 10px;
     background-color: #ffffff;
-    flex-direction: column;
-    align-items: center;
 }
 
 .day-mission-header {
     display: flex;
+    width: 100%;
     justify-content: center; /* Căn giữa theo chiều ngang */
     align-items: center; /* Căn giữa theo chiều dọc */
     height: 60px; /* Đảm bảo chiều cao đầy đủ */
@@ -48,11 +47,16 @@ body {
 }
 
 .day_mission_container {
-    margin-top: 4%;
     padding: 20px;
-    width: 80%;
+    width: auto;
     gap: 5px;
     background-color: #f9f9f9;
+    border-radius: 10px;
+    display: flex; /* Kích hoạt flexbox */
+    flex-direction: column; /* Căn theo cột nếu cần */
+    align-items: center; /* Căn giữa theo chiều ngang */
+    justify-content: center; /* Căn giữa theo chiều dọc */
+    text-align: center; /* Căn giữa nội dung text */
 } 
 
 .another-mission-container {
@@ -60,7 +64,7 @@ body {
     background-color: #f9f9f9;
     border-radius: 10px;
     margin: 20px 0;
-    width: 80%;
+    width: 100%;
     min-height: 450px;
 }
 
@@ -68,7 +72,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    width: 95%;
+    width: 100%;
     min-height: 361px;
     background-color: #ffffff;
     padding: 15px;
@@ -90,11 +94,11 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
     transition: transform 0.2s ease, box-shadow 0.2s ease; /* Hiệu ứng hover */
 }
-// .container {
-//     display: flex;
-//     gap: 10px;
-//     width: 100%;
-// }
+.mission-date-rank-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
 .item1 {
     flex: 2;
     width: 100%;
@@ -106,12 +110,19 @@ body {
 
 .task-container {
     display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     gap: 10px;
+    height: 100px;
 }
 
 .task-name{
     flex-grow: 1;
+    margin-right: 10px;
+    display: flex;
+    flex-direction: column;
+    height:100%;
 }
 
 .image-container {
@@ -124,6 +135,7 @@ body {
     height: 50px; /* Kích thước container (thu nhỏ) */
     background-color: white; /* Nền trắng để che phần ngoài */
     border: solid 1px black;
+    padding: 5px;
 }
 
 .task-img {
@@ -135,7 +147,7 @@ body {
 
 
 .task-button {
-    
+    border-radius: 10px;
     border: none;
     cursor: pointer;
     background-color: #f9f9f9;
@@ -149,6 +161,12 @@ body {
     border-bottom-color: #388e3c;
 }
 
+.task-button.completed {
+    background-color: #e8e5e5; /* Màu xám đậm hơn cho nhiệm vụ đã hoàn thành */
+}
+
+
+
 .progress-container {
     display: flex;
     width: 100%;
@@ -156,7 +174,7 @@ body {
     background-color: #e0e0e0; 
     border-radius: 5px;
     overflow: hidden; 
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 .progress-bar {

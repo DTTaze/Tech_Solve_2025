@@ -8,7 +8,7 @@ import UserProfilePage from "./pages/User.jsx";
 import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
-import Admin from "./pages/Admin.jsx";
+import Admin from "./pages/admin.jsx";
 import App from "./App.jsx";
 import "./index.css"; 
 

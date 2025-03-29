@@ -1,19 +1,12 @@
-"use client"
-
 import { Coins } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 
-export default function ItemCard({ item, onPurchase, disabled, userCoins = 0 }) {
+export default function ItemCard({ item, onPurchase, userCoins = 0 }) {
   const [displayedCoins, setDisplayedCoins] = useState(userCoins ?? 0)
 
   const handlePurchase = () => {
-    if (disabled) return
-
-    // Giảm coins và cập nhật
     setDisplayedCoins((prev) => Math.max(0, prev - item.price))
-
-    // Gọi hàm mua hàng
     onPurchase(item)
   }
 
@@ -50,19 +43,12 @@ export default function ItemCard({ item, onPurchase, disabled, userCoins = 0 }) 
       </div>
 
       <div className="p-4 pt-0">
-        <motion.div
-          whileTap={{ scale: 0.9, rotate: [-1, 1, -1, 0] }}
-          transition={{ type: "spring", stiffness: 300, damping: 10 }}
-          className="w-full"
-        >
           <button
             onClick={handlePurchase}
-            disabled={disabled}
-            className={`w-full px-4 rounded-3xl py-2 text-white bg-[#0B6E4F]`}
+            className={`w-full px-4 rounded-3xl py-2 text-white bg-[#0B6E4F] cursor-pointer`}
           >
             Trao đổi 
           </button>
-          </motion.div>
       </div>
     </div>
   )

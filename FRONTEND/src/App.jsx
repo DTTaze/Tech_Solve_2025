@@ -2,8 +2,6 @@ import { useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { AuthContext } from "./contexts/auth.context";
 import { notification, Spin } from "antd";
-import Header from "./layouts/header_test";
-import AdminHeader from "./layouts/AdminHeader";
 import UserHeader from "./layouts/Header";
 import { getUserApi } from "./utils/api";
 
@@ -17,20 +15,6 @@ function App() {
         const res = await getUserApi();
 
         if (res && res.status === 200) {
-          if (!res.data.avatar_url && res.data.id) {
-            try {
-              const avatarRes = await getUserAvatarByIdApi(res.data.id);
-              if (avatarRes && avatarRes.avatar_url) {
-                res.data.avatar_url = avatarRes.avatar_url;
-              }
-            } catch (avatarErr) {
-              notification.error({
-                message: "Lấy avatar không thành công",
-                description:
-                  avatarErr.error || "Đã xảy ra lỗi, vui lòng thử lại!",
-              });
-            }
-          }
           setAuth({
             isAuthenticated: true,
             user: res.data,

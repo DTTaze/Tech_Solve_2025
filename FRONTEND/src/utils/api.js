@@ -1,18 +1,31 @@
 import axios from "./axios.customize";
 
+const createUserApi = (data) => {
+  const URL_API = "api/auth/register";
+  return axios.post(URL_API, data);
+};
+
 const getUserApi = () => {
   const URL_API = "api/users/me";
   return axios.get(URL_API);
 };
 
-const createUserApi = (data) => {
-  const URL_API = "api/auth/register";
-  return axios.post(URL_API, data);
+export const updateUserApi = async (userId, userData) => {
+  try {
+    const response = await axios.put(`api/users/${userId}`, userData);
+    return response;
+  } catch (error) {
+    console.error("❌ API lỗi:", error.response ? error.response.data : error.message);
+    throw error;
+  }
 };
+
+
 const loginUserApi = (data) => {
   const URL_API = "api/auth/login";
   return axios.post(URL_API, data);
 };
+
 const getAllUserApi = () => {
   const URL_API = "api/users";
   return axios.get(URL_API);
@@ -28,12 +41,15 @@ const uploadUserAvatarApi = (user_id, file) => {
     },
   });
 };
+
 const getAllUserAvatarsApi = () => {
   return axios.get("api/avatars/");
 };
+
 const getUserAvatarByIdApi = (user_id) => {
   return axios.get(`api/avatars/${user_id}`);
 };
+
 const updateUserAvatarApi = (user_id, file) => {
   const formData = new FormData();
   formData.append("avatar", file);
@@ -44,13 +60,11 @@ const updateUserAvatarApi = (user_id, file) => {
     },
   });
 };
+
 const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
 };
-// const getUserByIdApi = () => {
-//   const URL_API = "api/users/:id";
-//   return axios.get(URL_API);
-// };
+
 export {
   createUserApi,
   loginUserApi,

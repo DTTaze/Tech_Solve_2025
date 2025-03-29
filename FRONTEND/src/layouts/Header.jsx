@@ -1,54 +1,39 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
 import { notification } from "antd";
 import { getUserApi } from "../utils/api";
+import { Coins } from "lucide-react";
 
 function UserHeader() {
   const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const menuRef = useRef(null);
+  const profileMenuRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
-        if (response) {
-          setUser(response);
-        }
+        if (response) setUser(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
-      } 
+      }
     };
-
     fetchUser();
   }, []);
 
-
   useEffect(() => {
-    const handleScroll = () => {
-      const header = document.querySelector(".user-header");
-      const header_underplay = document.querySelector(".header-underlay");
-
-      if (header) {
-        if (window.scrollY > 50) {
-          header.classList.add("shadow-md", "py-2");
-          header_underplay.classList.add("translate-y-0");
-          header_underplay.classList.remove("-translate-y-full");
-        } else {
-          header.classList.remove("shadow-md", "py-2");
-          header_underplay.classList.add("-translate-y-full");
-          header_underplay.classList.remove("translate-y-0");
-        }
-      }
+    const handleClickOutside = (event) => {
+      if (!menuRef.current?.contains(event.target)) setMenuOpen(false);
+      if (!profileMenuRef.current?.contains(event.target)) setProfileMenuOpen(false);
     };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -57,126 +42,83 @@ function UserHeader() {
     navigate("/");
   };
 
+  const pages = [
+    { key: "missions", label: "Nhiệm vụ" },
+    { key: "market", label: "Chợ trao đổi" },
+    { key: "news", label: "Tin tức" }
+  ];
+
   return (
-    <header className="user-header w-full px-5 pt-2 fixed top-0 left-0 flex justify-between items-center z-10 bg-white transition-all duration-300">
-      {/* === 1. Logo === */}
-      <div
-        className="flex items-center cursor-pointer select-none z-10"
-        onClick={() => navigate("/")}
-      >
-        <img
-          src="../src/assets/images/Logo-Greenflag.png"
-          className="w-10 h-10 md:w-12 md:h-12"
-          alt="Logo"
-        />
-        <span className="text-lg md:text-2xl font-bold ml-2 text-[#0B6E4F]">
-          Green Flag
-        </span>
+    <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10">
+      {/* Logo */}
+      <div className="flex items-center cursor-pointer select-none" onClick={() => navigate("/")}>
+        <img src="../src/assets/images/Logo-Greenflag.png" className="w-10 h-10 md:w-12 md:h-12" alt="Logo" />
+        <span className="text-lg md:text-2xl font-bold ml-2 text-[#0B6E4F]">Green Flag</span>
       </div>
 
-      {/* === 2. Menu Desktop === */}
-      <nav className="hidden md:flex space-x-6 gap-3 z-10">
-        {["missions", "market", "news"].map((page) => (
-          <button
-            key={page}
-            className="font-bold hover:text-[#62C370] text-lg cursor-pointer"
-            onClick={() => navigate(`/${page}`)}
-          >
-            {page === "missions" ? "Nhiệm vụ" : page === "market" ? "Chợ trao đổi" : "Tin tức"}
+      {/* Navigation */}
+      <nav className="hidden md:flex space-x-6">
+        {pages.map(({ key, label }) => (
+          <button key={key} className="font-bold hover:text-[#62C370] text-lg" onClick={() => navigate(`/${key}`)}>
+            {label}
           </button>
         ))}
       </nav>
 
-      {/* === 3. User Avatar / Đăng nhập === */}
+      {/* User Profile */}
       {auth.isAuthenticated ? (
-        <div className="relative user-profile z-10">
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-          >
-            <img
-              src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"}
-              alt="Avatar"
-              className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
-            />
+        <div className="relative" ref={profileMenuRef}>
+          <div className="hidden md:flex items-center cursor-pointer" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
+            <img src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover" />
           </div>
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#0B6E4F] rounded-lg shadow-lg p-2 w-40 mt-2">
-              <p className="p-2 font-bold text-white select-none">{auth.user.username}</p>
-              <p className="p-2 font-bold select-none"> Coins: {user.coins}</p>
-              <button
-                className="w-full p-2 text-left hover:text-[#62C370] rounded font-bold cursor-pointer"
-                onClick={() => navigate("/profile")}
-              >
-                Xem Hồ Sơ 
-              </button>
-              <button
-                className="w-full p-2 text-left hover:text-[#62C370] rounded font-bold cursor-pointer"
-                onClick={handleLogout}
-              >
-                Đăng xuất
-              </button>
+              <p className="p-2 font-bold text-white">{auth.user.username}</p>
+              <div className="flex items-center">
+                <Coins className="h-6 w-6 text-amber-600 mr-2" />
+                <span className="font-medium text-white">: {user?.coins}</span>
+              </div>
+              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold" onClick={handleLogout}>Đăng xuất</button>
             </div>
           )}
         </div>
       ) : (
-        <div className="hidden md:flex gap-3 z-10">
-          <button className="!text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/register")}>
-            Đăng ký
-          </button>
-          <button className="!text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/login")}>
-            Đăng nhập
-          </button>
+        <div className="hidden md:flex gap-3">
+          <button className="text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/register")}>Đăng ký</button>
+          <button className="text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/login")}>Đăng nhập</button>
         </div>
       )}
 
-      {/* === 4. Nút menu Mobile === */}
-      <button className="md:hidden text-2xl z-10" onClick={() => setMenuOpen(!menuOpen)}>
+      {/* Mobile Menu Button */}
+      <button className="md:hidden text-2xl" onClick={() => setMenuOpen(!menuOpen)}>
         {menuOpen ? "✖" : "☰"}
       </button>
 
-      {/* === 5. Menu Mobile (Toàn màn hình) === */}
+      {/* Mobile Menu */}
       <div
+        ref={menuRef}
         className={`fixed top-0 left-0 w-full h-screen bg-[#0B6E4F] transition-transform duration-300 ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
-        } flex flex-col items-center justify-center text-white`}
+        } flex flex-col items-center justify-center text-white z-50`}
       >
-
-        {["missions", "market", "news"].map((page) => (
-          <button
-            key={page}
-            className="text-2xl font-bold py-3 hover:text-[#62C370]"
-            onClick={() => {
-              navigate(`/${page}`);
-              setMenuOpen(false);
-            }}
-          >
-            {page === "missions" ? "Nhiệm vụ" : page === "market" ? "Chợ trao đổi" : "Tin tức"}
+        {pages.map(({ key, label }) => (
+          <button key={key} className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => { navigate(`/${key}`); setMenuOpen(false); }}>
+            {label}
           </button>
         ))}
-
         {!auth.isAuthenticated ? (
           <>
-            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/register")}>
-              Đăng ký
-            </button>
-            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/login")}>
-              Đăng nhập
-            </button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/register")}>Đăng ký</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/login")}>Đăng nhập</button>
           </>
         ) : (
           <>
-            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/profile")}>
-              Xem hồ sơ
-            </button>
-            <button className="!text-2xl font-bold py-3 hover:text-[#62C370]" onClick={handleLogout}>
-              Đăng xuất
-            </button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/profile")}>Xem hồ sơ</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={handleLogout}>Đăng xuất</button>
           </>
         )}
       </div>
-
-      <div className="header-underlay w-full h-full z-1 absolute bg-[#0B6E4F] top-0 left-0 -translate-y-full transition-transform duration-300"></div>
     </header>
   );
 }
