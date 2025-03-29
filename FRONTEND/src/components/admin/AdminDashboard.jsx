@@ -1,6 +1,4 @@
 import React from "react";
-import Grid from "@mui/material/Grid";
-
 import { Box, Paper, Typography, Divider, Stack, Button } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -10,7 +8,6 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import IconButton from "@mui/material/IconButton";
 
 export default function AdminDashboard() {
-  // Sample activity data
   const recentActivities = [
     {
       id: 1,
@@ -50,9 +47,20 @@ export default function AdminDashboard() {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      {/* Thay Grid bằng CSS Grid */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr", // 1 cột trên mobile
+            sm: "repeat(2, 1fr)", // 2 cột trên sm
+            md: "repeat(4, 1fr)", // 4 cột trên md
+          },
+          gap: 3, // spacing=3 tương đương 24px
+        }}
+      >
         {/* Statistic Cards */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Box>
           <Paper
             sx={{
               p: 2,
@@ -90,9 +98,9 @@ export default function AdminDashboard() {
               <PeopleAltIcon sx={{ fontSize: 60 }} />
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box>
           <Paper
             sx={{
               p: 2,
@@ -130,9 +138,9 @@ export default function AdminDashboard() {
               <TaskAltIcon sx={{ fontSize: 60 }} />
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box>
           <Paper
             sx={{
               p: 2,
@@ -170,9 +178,9 @@ export default function AdminDashboard() {
               <ShoppingBagIcon sx={{ fontSize: 60 }} />
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box>
           <Paper
             sx={{
               p: 2,
@@ -205,53 +213,58 @@ export default function AdminDashboard() {
               </Typography>
             </Box>
           </Paper>
-        </Grid>
+        </Box>
+      </Box>
 
+      {/* Grid cho phần Charts và Recent Activities */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr", // 1 cột trên mobile
+            md: "2fr 1fr", // tỷ lệ 8:4 trên md
+          },
+          gap: 3,
+          mt: 3,
+        }}
+      >
         {/* Charts */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3 }}>
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
-            >
-              <Typography variant="h6">Activity Overview</Typography>
-              <Button size="small" variant="outlined">
-                View Details
-              </Button>
-            </Box>
-            <SimpleLineChart />
-            <ChartFooter />
-          </Paper>
-        </Grid>
+        <Paper sx={{ p: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="h6">Activity Overview</Typography>
+            <Button size="small" variant="outlined">
+              View Details
+            </Button>
+          </Box>
+          <SimpleLineChart />
+          <ChartFooter />
+        </Paper>
 
         {/* Recent Activities */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, height: "100%" }}>
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
-            >
-              <Typography variant="h6">Recent Activities</Typography>
-              <Button size="small" variant="text">
-                View All
-              </Button>
-            </Box>
-            <Stack spacing={2} divider={<Divider flexItem />}>
-              {recentActivities.map((activity) => (
-                <Box key={activity.id}>
-                  <Typography variant="body2" fontWeight={500}>
-                    {activity.user}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {activity.action}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {activity.time}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Paper>
-        </Grid>
-      </Grid>
+        <Paper sx={{ p: 3, height: "100%" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="h6">Recent Activities</Typography>
+            <Button size="small" variant="text">
+              View All
+            </Button>
+          </Box>
+          <Stack spacing={2} divider={<Divider flexItem />}>
+            {recentActivities.map((activity) => (
+              <Box key={activity.id}>
+                <Typography variant="body2" fontWeight={500}>
+                  {activity.user}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {activity.action}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {activity.time}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Paper>
+      </Box>
     </Box>
   );
 }
