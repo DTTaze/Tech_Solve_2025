@@ -12,9 +12,7 @@ const getUserApi = () => {
 
 export const updateUserApi = async (userId, userData) => {
   try {
-    console.log("🚀 Gửi request PUT:", `/api/users/${userId}`, userData);
-    const response = await axios.put(`/api/users/${userId}`, userData);
-    console.log("📡 Phản hồi từ server:", response.data);
+    const response = await axios.put(`api/users/${userId}`, userData);
     return response;
   } catch (error) {
     console.error("❌ API lỗi:", error.response ? error.response.data : error.message);
