@@ -6,6 +6,7 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import IconButton from "@mui/material/IconButton";
+import SimpleLineChart from "../admin/ChartAdmin"
 
 export default function AdminDashboard() {
   const recentActivities = [
@@ -237,7 +238,7 @@ export default function AdminDashboard() {
             </Button>
           </Box>
           <SimpleLineChart />
-          <ChartFooter />
+         
         </Paper>
 
         {/* Recent Activities */}
