@@ -1,17 +1,17 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthWrapper } from "./contexts/auth.context.jsx";
-import Homepage from "./pages/Homepage.jsx";
+import Homepage from "./pages/homepage.jsx";
 import MissionPage from "./pages/Mission.jsx";
 import UserProfilePage from "./pages/User.jsx";
-import LoginPage from "./pages/Login.jsx";
-import RegisterPage from "./pages/Register.jsx";
+import LoginPage from "./pages/login.jsx";
+import RegisterPage from "./pages/register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
-import MissionVideo from "./pages/mission-video.jsx";
+import App from "./App.jsx";
+import "./index.css"; 
+
 const router = createBrowserRouter([
   {
     path: "/",

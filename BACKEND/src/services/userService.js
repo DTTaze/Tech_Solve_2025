@@ -13,7 +13,9 @@ const createUser = async (data) => {
     if (user) {
       throw new Error("User already exists");
     }
-
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let todayStr = today.toISOString().split("T")[0];
     const hashPassword = bcrypt.hashSync(password, salt);
     const newUser = await User.create({
       email: email,
@@ -22,7 +24,7 @@ const createUser = async (data) => {
       full_name: full_name,
       phone_number: phone_number,
       address: address,
-      last_logined: fn("CURDATE"),
+      last_logined: todayStr,
     });
     return newUser;
   } catch (e) {
@@ -62,13 +64,15 @@ const loginUser = async (data) => {
       username: user.username,
       role_id: user.role_id,
       avatar_url: user.avatar_url,
+      coins: user.coins,
+      last_logined: todayStr,
+      streak: user.streak,
     };
     const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
     });
 
     return {
-      EC: 0,
       access_token,
       user: {
         id: user.id,
@@ -77,6 +81,7 @@ const loginUser = async (data) => {
         username: user.username,
         role_id: user.role_id,
         avatar_url: user.avatar_url,
+        coins: user.coins,
         last_logined: todayStr,
         streak: user.streak,
       },

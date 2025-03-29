@@ -19,11 +19,7 @@ const LoginPage = () => {
 
       const res = await loginUserApi(loginData);
 
-      if (!res || res.status !== 200) {
-        throw new Error("Lỗi đăng nhập: Không nhận được phản hồi từ server");
-      }
-
-      if (res.data.EC === 0) {
+      if (res && res.status === 200) {
         localStorage.setItem("access_token", res.data.access_token);
         notification.success({
           message: "Login Success",
@@ -41,14 +37,13 @@ const LoginPage = () => {
         navigate("/");
       } else {
         notification.error({
-          message: "Login Failed",
-          description: res.data.message || "Đăng nhập thất bại",
+          message: "Đăng nhập thất bại",
+          description: res.error || "Đã xảy ra lỗi, vui lòng thử lại!",
         });
       }
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
       notification.error({
-        message: "Lỗi đăng nhập",
+        message: "Đăng nhập thất bại",
         description: error.message || "Đã xảy ra lỗi, vui lòng thử lại!",
       });
     }

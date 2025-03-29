@@ -58,11 +58,11 @@ export default function ItemCard({ item, onPurchase, disabled, userCoins = 0 }) 
           <button
             onClick={handlePurchase}
             disabled={disabled}
-            className={`w-full px-4 !rounded-3xl py-2 text-white bg-[#0B6E4F]`}
+            className={`w-full px-4 rounded-3xl py-2 text-white bg-[#0B6E4F]`}
           >
-            Exchange
+            Trao đổi 
           </button>
-        </motion.div>
+          </motion.div>
       </div>
     </div>
   )

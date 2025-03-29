@@ -17,7 +17,7 @@ export default function ItemCatalog({ items }) {
     if (selectedItem && userCoins >= selectedItem.price) {
       setUserCoins(userCoins - selectedItem.price)
       setIsModalOpen(false)
-      alert(`Successfully exchanged for ${selectedItem.name}!`)
+      alert(`Trao đổi thành công cho ${selectedItem.name}!`)
     }
   }
 

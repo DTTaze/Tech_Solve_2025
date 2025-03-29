@@ -8,6 +8,8 @@ const jwtAuth = (req, res, next) => {
     "/auth/register",
     "/auth/google",
     "/auth/google/callback",
+    "/auth/forgot_password",
+    "/auth/reset_password",
   ];
   if (white_lists.find((item) => "/api" + item === req.originalUrl)) {
     next();
@@ -23,6 +25,9 @@ const jwtAuth = (req, res, next) => {
           username: decoded.username,
           role_id: decoded.role_id,
           avatar_url: decoded.avatar_url,
+          coins: decoded.coins,
+          last_logined: decoded.last_logined,
+          streak: decoded.streak,
         };
         next();
       } catch (e) {

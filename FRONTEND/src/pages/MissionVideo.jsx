@@ -12,4 +12,4 @@ function MissionVideo () {
     )
 }
 
-export default MissionVideo
+export default MissionVideo;
