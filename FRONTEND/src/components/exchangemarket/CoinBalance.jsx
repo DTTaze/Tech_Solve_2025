@@ -15,7 +15,7 @@ export default function CoinBalance({ coins }) {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="text-xl font-bold text-amber-600"
       >
-        {coins.toLocaleString()} coins
+        {coins} coins
       </motion.div>
     </div>
   )

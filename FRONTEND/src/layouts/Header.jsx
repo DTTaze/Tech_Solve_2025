@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
 import { notification } from "antd";
 import { getUserApi } from "../utils/api";
+import { Coins } from "lucide-react";
 
 function UserHeader() {
   const { auth, setAuth } = useContext(AuthContext);
@@ -15,37 +16,14 @@ function UserHeader() {
       try {
         const response = await getUserApi();
         if (response) {
-          setUser(response);
+          setUser(response.data);
         }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
-      } 
-    };
-
-    fetchUser();
-  }, []);
-
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const header = document.querySelector(".user-header");
-      const header_underplay = document.querySelector(".header-underlay");
-
-      if (header) {
-        if (window.scrollY > 50) {
-          header.classList.add("shadow-md", "py-2");
-          header_underplay.classList.add("translate-y-0");
-          header_underplay.classList.remove("-translate-y-full");
-        } else {
-          header.classList.remove("shadow-md", "py-2");
-          header_underplay.classList.add("-translate-y-full");
-          header_underplay.classList.remove("translate-y-0");
-        }
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    fetchUser();
   }, []);
 
   const navigate = useNavigate();
@@ -58,12 +36,8 @@ function UserHeader() {
   };
 
   return (
-    <header className="user-header w-full px-5 pt-2 fixed top-0 left-0 flex justify-between items-center z-10 bg-white transition-all duration-300">
-      {/* === 1. Logo === */}
-      <div
-        className="flex items-center cursor-pointer select-none z-10"
-        onClick={() => navigate("/")}
-      >
+    <header className="w-full px-5 pt-2 flex justify-between items-center z-10 bg-white transition-all duration-300">
+      <div className="flex items-center cursor-pointer select-none z-10" onClick={() => navigate("/")}>
         <img
           src="../src/assets/images/Logo-Greenflag.png"
           className="w-10 h-10 md:w-12 md:h-12"
@@ -74,7 +48,6 @@ function UserHeader() {
         </span>
       </div>
 
-      {/* === 2. Menu Desktop === */}
       <nav className="hidden md:flex space-x-6 gap-3 z-10">
         {["missions", "market", "news"].map((page) => (
           <button
@@ -87,23 +60,29 @@ function UserHeader() {
         ))}
       </nav>
 
-      {/* === 3. User Avatar / Đăng nhập === */}
       {auth.isAuthenticated ? (
-        <div className="relative user-profile z-10">
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-          >
-            <img
-              src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"}
-              alt="Avatar"
-              className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
-            />
-          </div>
+        <div className="relative z-10">
+          {/* Ẩn avatar trên mobile và khi menu mở */}
+          {auth.isAuthenticated && !menuOpen && (
+            <div
+              className="hidden md:flex items-center cursor-pointer"
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+            >
+              <img
+                src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
+              />
+            </div>
+          )}
+
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#0B6E4F] rounded-lg shadow-lg p-2 w-40 mt-2">
               <p className="p-2 font-bold text-white select-none">{auth.user.username}</p>
-              <p className="p-2 font-bold select-none"> Coins: {user.coins}</p>
+              <div className="flex items-center">
+                <Coins className="h-6 w-6 text-amber-600 mr-2" />
+                <span className="font-medium text-white">: {user?.coins}</span>
+              </div>
               <button
                 className="w-full p-2 text-left hover:text-[#62C370] rounded font-bold cursor-pointer"
                 onClick={() => navigate("/profile")}
@@ -130,18 +109,16 @@ function UserHeader() {
         </div>
       )}
 
-      {/* === 4. Nút menu Mobile === */}
       <button className="md:hidden text-2xl z-10" onClick={() => setMenuOpen(!menuOpen)}>
         {menuOpen ? "✖" : "☰"}
       </button>
 
-      {/* === 5. Menu Mobile (Toàn màn hình) === */}
+      {/* === Menu Mobile (Toàn màn hình) === */}
       <div
-        className={`fixed top-0 left-0 w-full h-screen bg-[#0B6E4F] transition-transform duration-300 ${
+        className={`fixed top-0 left-0 w-full h-screen z-1 bg-[#0B6E4F] transition-transform duration-300 ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col items-center justify-center text-white`}
       >
-
         {["missions", "market", "news"].map((page) => (
           <button
             key={page}
@@ -175,8 +152,6 @@ function UserHeader() {
           </>
         )}
       </div>
-
-      <div className="header-underlay w-full h-full z-1 absolute bg-[#0B6E4F] top-0 left-0 -translate-y-full transition-transform duration-300"></div>
     </header>
   );
 }

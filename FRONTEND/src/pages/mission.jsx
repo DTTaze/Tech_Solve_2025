@@ -7,14 +7,6 @@ import CoinBalance from "../components/exchangemarket/CoinBalance.jsx";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
 
-function Footer() {
-  return (
-      <footer className="text-center p-4 sm:p-6 bg-gray-800 text-white text-sm sm:text-base">
-          @Created by ABKT
-      </footer>
-  );
-}
-
 function Mission() {
   // đây là list các nhiệm vụ của web
   const [task, setTask] = useState([

@@ -41,7 +41,7 @@ function SectionHero() {
     }, [index]);
 
     return (
-        <section className="h-screen w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
+        <section className="h-[60vh] w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
     {/* Tiêu đề */}
     <header className="w-full lg:w-1/2 text-[#059212] flex justify-center items-center text-center font-bold 
                       text-lg sm:text-xl md:text-2xl lg:text-4xl">
@@ -125,14 +125,6 @@ function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
     );
 }
 
-function Footer() {
-    return (
-        <footer className="text-center p-4 sm:p-6 bg-gray-800 text-white text-sm sm:text-base">
-            @Created by ABKT
-        </footer>
-    );
-}
-
 function HomepageSection() {
     return (
         <>
@@ -159,10 +151,8 @@ function HomepageSection() {
                 path="/register"
                 ButtonText="Tham gia ngay"
             />
-            <Footer />
         </>
     );
 }
 
-export { SectionHero, Section, Footer };
 export default HomepageSection;

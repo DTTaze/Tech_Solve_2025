@@ -3,7 +3,7 @@ import { items } from "../data/data"
 
 export default function ExchangeMarket() {
   return (
-    <main className="w-[80vw] m-auto mt-20">
+    <main className="w-[80vw] m-auto mt-5">
       <ItemCatalog items={items} />
     </main>
   )
