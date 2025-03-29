@@ -1,0 +1,12 @@
+tunnel: greenflag
+credentials-file: C:\\Users\\Quoc Anh\\.cloudflared\\bf53f7b1-4d42-4cc8-9cd0-4ebfeb81524c.json
+
+ingress:
+  - hostname: greenflag.id.vn
+    service: http://localhost:5173
+
+  - hostname: greenflag.id.vn
+    path: /api/*
+    service: http://localhost:6060
+
+  - service: http_status:404
