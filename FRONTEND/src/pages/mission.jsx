@@ -3,11 +3,17 @@ import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
 import "../styles/pages/mission.scss";
 import images from "../components/features/exchangemarket/Photo.jsx";
-import Header from "../layouts/Header.jsx";
-import { Footer } from "antd/es/layout/layout.js";
 import CoinBalance from "../components/exchangemarket/CoinBalance.jsx";
 
 /* ------------------------------------------------------------ Task ------------------------------------------------------------ */
+
+function Footer() {
+  return (
+      <footer className="text-center p-4 sm:p-6 bg-gray-800 text-white text-sm sm:text-base">
+          @Created by ABKT
+      </footer>
+  );
+}
 
 function Mission() {
   // đây là list các nhiệm vụ của web
@@ -143,7 +149,7 @@ function Mission() {
           <img src={imgScr} alt="plant" className="task-img" />
         </div>
         <div className="task-name">
-          <div className="flex items-center py-2 justify-between ">
+          <div className="flex items-center py-2 justify-between font-semibold">
             <h2 style={{ textAlign: "left" }}>{Task_num}</h2>
             <span className={`px-2 py-1 rounded-[15px] text-white font-semibold min-w-[80px] ${
               Level === "easy" ? "bg-green-400" :
@@ -158,7 +164,7 @@ function Mission() {
     );
   };
 // hàm sử dụng để cập nhật coins sau khi đã hoàn thành nhiệm vụ
-const HandleClickTask = ({ UserId, Level, taskId }) => {
+const HandleClickTask = ({ UserId, taskId }) => {
   setUserInfo((prevUserInfo) => {
     return prevUserInfo.map((user) => {
       if (user.user_id === UserId) {
@@ -212,97 +218,110 @@ const HandleClickTask = ({ UserId, Level, taskId }) => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  // user tam thoi de test
+  const userInfo_test = userInfo.find(value => value.user_id === 1)
+
   return (
-    <div className="main-mission-container">
-      {/* <div className="header">
-        <Header />
-      </div> */}
-      <div id="day-mission" className="day_mission_container">
-        <div className="day-mission-header">
-          <h1>NHIỆM VỤ HÀNG NGÀY</h1>
+    <div>
+      <div className="main-mission-container w-[80vw] m-auto mt-20">
+        <div className="width">
+          <CoinBalance coins = {userInfo_test.coins}/>
         </div>
-        <div className="container">
-          <div className="item1">
-            <div className="mission-container">
-              {user_tasks
-                .filter((item) => item.user_id === 1 && !item.completed_at) 
-                .map((item) => (
-                  <button
-                    key={item.task_id}
-                    className={`task-button ${item.Complete === item.Total ? "completed" : ""}`}
-                    onClick={() =>
-                      HandleClickTask({
-                        UserId: item.user_id,
-                        Level: item.level,
-                        taskId: item.task_id,
-                      })
-                    }
-                  >
-                    <Task
-                      Level={item.level}
-                      Complete={item.Complete}
-                      Total={item.Total}
-                      imgScr={item.imgScr}
-                      Task_num={item.Task_num}
-                    />
-                  </button>
-                ))}
-            </div>
+        <div id="day-mission" className="day_mission_container">
+          <div className="day-mission-header">
+            <p className="font-semibold text-2xl">NHIỆM VỤ HÀNG NGÀY</p>
           </div>
-          <div className="item2">
-            <div className="Mission_rank_container">
-              <div>
-                <Calendar />
-              </div>
-              <div>
-                <Ranking />
+          <div className="mission-date-rank-container">
+            <div className="item1">
+              <div className="mission-container">
+                {user_tasks
+                  .filter((item) => item.user_id === 1 && !item.completed_at) 
+                  .map((item) => (
+                    <button
+                      key={item.task_id}
+                      className={`task-button ${item.Complete === item.Total ? "completed" : ""}`}
+                      onClick={() =>
+                        HandleClickTask({
+                          UserId: item.user_id,
+                          taskId: item.task_id,
+                        })
+                      }
+                    >
+                      <Task
+                        Level={item.level}
+                        Complete={item.Complete}
+                        Total={item.Total}
+                        imgScr={item.imgScr}
+                        Task_num={item.Task_num}
+                      />
+                    </button>
+                  ))}
               </div>
             </div>
+            <div className="item2">
+              <div className="Mission_rank_container">
+                <div>
+                  <Calendar />
+                </div>
+                <div>
+                  <Ranking />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="another-mission-container">
-        <div className="day-mission-header">
-          <h1>NHIỆM VỤ KHÁC</h1>
-        </div>
-        <div className="mission-container" style={{ width: "98%" }}>
-          {currentTasks.map((item) => (
-            <button key={item.id} className="task-button" onClick={() => HandleClickTask({ UserId: item.user_id, Level: item.level })}>
-              <Task
-                Level={item.level}
-                Complete={item.Complete}
-                Total={item.Total}
-                imgScr={item.imgScr}
-                Task_num={item.Task_num}
-              />
-            </button>
-          ))}
-        </div>
-        {totalTasks > TaskPerPage && (
-          <div className="pagination">
-            <button
-              onClick={goToPreviousPage}
-              disabled={CurrentPage === 1}
-              className="pagination-button"
-            >
-              &lt;
-            </button>
-            <span>
-              {CurrentPage} of {totalPages}
-            </span>
-            <button
-              onClick={goToNextPage}
-              disabled={CurrentPage === totalPages}
-              className="pagination-button"
-            >
-              &gt;
-            </button>
+        <div className="another-mission-container">
+          <div className="day-mission-header">
+          <p className="font-semibold text-2xl">NHIỆM VỤ KHÁC</p>
           </div>
-        )}
-        <div>
-          <Footer className="footer">Liên hệ: 012345678</Footer>
-        </div>
+          <div className="mission-container">
+          {currentTasks
+                  .filter((item) => item.user_id === 1 && !item.completed_at) 
+                  .map((item) => (
+                    <button
+                      key={item.task_id}
+                      className={`task-button ${item.Complete === item.Total ? "completed" : ""}`}
+                      onClick={() =>
+                        HandleClickTask({
+                          UserId: item.user_id,
+                          taskId: item.task_id,
+                        })
+                      }
+                    >
+                      <Task
+                        Level={item.level}
+                        Complete={item.Complete}
+                        Total={item.Total}
+                        imgScr={item.imgScr}
+                        Task_num={item.Task_num}
+                      />
+                    </button>
+                  ))}
+          </div>
+          {totalTasks > TaskPerPage && (
+            <div className="pagination">
+              <button
+                onClick={goToPreviousPage}
+                disabled={CurrentPage === 1}
+                className="pagination-button"
+              >
+                &lt;
+              </button>
+              <span>
+                {CurrentPage} of {totalPages}
+              </span>
+              <button
+                onClick={goToNextPage}
+                disabled={CurrentPage === totalPages}
+                className="pagination-button"
+              >
+                &gt;
+              </button>
+            </div>
+          )}
+        </div> 
       </div>
+      <Footer/>
     </div>
   );
 }
