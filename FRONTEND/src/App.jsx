@@ -40,10 +40,7 @@ function App() {
           }
         }
       } catch (err) {
-        notification.error({
-          message: "Lấy user không thành công",
-          description: err.message || "Đã xảy ra lỗi, vui lòng thử lại!",
-        });
+        console.log(err);
       } finally {
         setAppLoading(false);
       }

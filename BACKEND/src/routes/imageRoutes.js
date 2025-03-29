@@ -10,9 +10,9 @@ router.post(
   imageController.handleUploadImage
 );
 
-router.get("/getall", imageController.handleGetAllImages);
-router.get("/get/:id", imageController.handleGetImageById);
-router.put("/update/:id", middlewareImage.single("image"), imageController.handleUpdateImage);
-router.delete("/delete/:id",middlewareImage.single("image"), imageController.handleDeleteImage);
+router.get("/", imageController.handleGetAllImages);
+router.get("/:id", imageController.handleGetImageById);
+router.put("/:id", middlewareImage.single("image"), imageController.handleUpdateImage);
+router.delete("/:id",middlewareImage.single("image"), imageController.handleDeleteImage);
 
 export default router;

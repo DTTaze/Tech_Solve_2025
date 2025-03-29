@@ -22,7 +22,7 @@ const handleGetAllItems = async (req, res) => {
 
 const handleGetItemByIdItem = async (req, res) => {
   try {
-    const item_id = Number(req.params.item_id);
+    const item_id = Number(req.params.id);
     const item = await itemService.getItemByIdItem(item_id);
     return res.success("Item retrieved successfully", item);
   } catch (error) {
@@ -42,7 +42,7 @@ const handleGetItemByIdUser = async (req, res) => {
 
 const handleUpdateItem = async (req, res) => {
   try {
-    const item_id = Number(req.params.item_id);
+    const item_id = Number(req.params.id);
     const itemData = req.body;
     const updatedItem = await itemService.updateItem(item_id, itemData);
     return res.success("Item updated successfully", updatedItem);
@@ -53,11 +53,22 @@ const handleUpdateItem = async (req, res) => {
 
 const handleDeleteItem = async (req, res) => {
   try {
-    const item_id = Number(req.params.item_id);
+    const item_id = Number(req.params.id);
     const message = await itemService.deleteItem(item_id);
-    return res.success(message);
+    return res.success("Item deleted successfully", message);
   } catch (error) {
     return res.error(500, "Failed to delete item", error.message);
+  }
+};
+const handlePurchaseItem = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const item_id = Number(req.params.item_id);
+    const quantity = Number(req.body.quantity);
+    const result = await itemService.purchaseItem(user_id, item_id, quantity);
+    return res.success("Item purchased successfully", result);
+  } catch (error) {
+    return res.error(500, "Failed to purchase item", error.message);
   }
 };
 
@@ -68,4 +79,5 @@ module.exports = {
   handleGetItemByIdUser,
   handleUpdateItem,
   handleDeleteItem,
+  handlePurchaseItem,
 };

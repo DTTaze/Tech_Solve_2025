@@ -14,7 +14,7 @@ module.exports = {
         full_name: "Admin User",
         phone_number: "123456789",
         address: "Admin Street",
-        coins: 100,
+        coins: 200,
         avatar_url: null,
         last_logined: Sequelize.fn("CURDATE"),
         created_at: new Date(),
