@@ -1,24 +1,17 @@
 import { useState, useEffect } from "react";
 import { getUserApi, updateUserApi } from "../../utils/api.js";
 import { notification } from "antd";
+import "../../styles/components/PersonalInformation.css";
 
 function PersonalInfoForm() {
-  const [user, setUser] = useState({
-    id: "",
-    username: "",
-    email: "",
-    full_name: "",
-    address: "",
-    phone_number: "",
-  });
-
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
-        setUser(response.data || {}); // Đảm bảo không bị undefined
+        if (response.data) setUser(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
         notification.error({ message: "Không thể tải thông tin người dùng" });
@@ -28,10 +21,16 @@ function PersonalInfoForm() {
     fetchUser();
   }, []);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!user) return;
 
+    setLoading(true);
     try {
       await updateUserApi(user.id, user);
       notification.success({ message: "Cập nhật thông tin thành công!" });
@@ -43,57 +42,40 @@ function PersonalInfoForm() {
     }
   };
 
+  if (!user) return <p className="text-gray-500">Đang tải...</p>;
+
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
+    <div className="p-4 border bg-white rounded-lg shadow-md">
       <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
       <hr className="my-2 border-gray-300" />
-      {user ? (
-        <form className="space-y-4" onSubmit={handleUpdate}>
-          <FormGroup label="Họ và Tên" required>
-            <input
-              type="text"
-              className="form-input"
-              value={user.full_name}
-              onChange={(e) => setUser({ ...user, full_name: e.target.value })}
-              required
-            />
-          </FormGroup>
-          <FormGroup label="Địa chỉ" required>
-            <input
-              type="text"
-              className="form-input"
-              value={user.address}
-              onChange={(e) => setUser({ ...user, address: e.target.value })}
-              required
-            />
-          </FormGroup>
-          <FormGroup label="Số điện thoại">
-            <span>{user.phone_number || "Chưa có số điện thoại"}</span>
-          </FormGroup>
-          <FormGroup label="Tên đăng nhập">
-            <span>{user.username || "Chưa có tên đăng nhập"}</span>
-          </FormGroup>
-          <FormGroup label="Email">
-            <span>{user.email || "Chưa có email"}</span>
-          </FormGroup>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Đang cập nhật..." : "Cập nhật"}
-          </button>
-        </form>
-      ) : (
-        <p>Đang tải...</p>
-      )}
-    </div>
-  );
-}
 
-function FormGroup({ label, children, required }) {
-  return (
-    <div className="flex flex-col">
-      <label className="font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      {children}
+      <form className="space-y-4" onSubmit={handleUpdate}>
+        {[
+          { id: "username", label: "Tên người dùng" },
+          { id: "email", label: "Email" },
+          { id: "full_name", label: "Họ và Tên" },
+          { id: "address", label: "Địa chỉ" },
+          { id: "phone_number", label: "Số điện thoại" },
+        ].map(({ id, label }) => (
+          <div key={id} className="input-field">
+            <input
+              required
+              type="text"
+              name={id}
+              id={id}
+              value={user[id] || ""}
+              onChange={handleChange}
+            />
+            <label htmlFor={id}>{label}</label>
+          </div>
+        ))}
+
+        <button type="submit" className="btn-submit" disabled={loading}>
+          <span>
+          {loading ? "Đang cập nhật..." : "Cập nhật"}
+          </span>
+        </button>
+      </form>
     </div>
   );
 }

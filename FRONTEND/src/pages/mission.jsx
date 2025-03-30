@@ -313,7 +313,6 @@ const HandleClickTask = ({ UserId, taskId }) => {
           )}
         </div> 
       </div>
-      <Footer/>
     </div>
   );
 }

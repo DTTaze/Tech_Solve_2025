@@ -59,7 +59,7 @@ function UserHeader() {
       {/* Navigation */}
       <nav className="hidden md:flex space-x-6">
         {pages.map(({ key, label }) => (
-          <button key={key} className="font-bold hover:text-[#62C370] text-lg" onClick={() => navigate(`/${key}`)}>
+          <button key={key} className="font-bold hover:text-[#62C370] text-lg cursor-pointer" onClick={() => navigate(`/${key}`)}>
             {label}
           </button>
         ))}
@@ -67,7 +67,7 @@ function UserHeader() {
 
       {/* User Profile */}
       {auth.isAuthenticated ? (
-        <div className="relative" ref={profileMenuRef}>
+        <div className="relative z-10" ref={profileMenuRef}>
           <div className="hidden md:flex items-center cursor-pointer" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
             <img src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover" />
           </div>
@@ -78,20 +78,20 @@ function UserHeader() {
                 <Coins className="h-6 w-6 text-amber-600 mr-2" />
                 <span className="font-medium text-white">: {user?.coins}</span>
               </div>
-              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
-              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold" onClick={handleLogout}>Đăng xuất</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold cursor-pointer" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
             </div>
           )}
         </div>
       ) : (
         <div className="hidden md:flex gap-3">
-          <button className="text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/register")}>Đăng ký</button>
-          <button className="text-lg font-bold hover:text-[#62C370]" onClick={() => navigate("/login")}>Đăng nhập</button>
+          <button className="text-lg font-bold hover:text-[#62C370] cursor-pointer" onClick={() => navigate("/register")}>Đăng ký</button>
+          <button className="text-lg font-bold hover:text-[#62C370] cursor-pointer" onClick={() => navigate("/login")}>Đăng nhập</button>
         </div>
       )}
 
       {/* Mobile Menu Button */}
-      <button className="md:hidden text-2xl" onClick={() => setMenuOpen(!menuOpen)}>
+      <button className="md:hidden text-2xl cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
         {menuOpen ? "✖" : "☰"}
       </button>
 
@@ -103,19 +103,19 @@ function UserHeader() {
         } flex flex-col items-center justify-center text-white z-50`}
       >
         {pages.map(({ key, label }) => (
-          <button key={key} className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => { navigate(`/${key}`); setMenuOpen(false); }}>
+          <button key={key} className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => { navigate(`/${key}`); setMenuOpen(false); }}>
             {label}
           </button>
         ))}
         {!auth.isAuthenticated ? (
           <>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/register")}>Đăng ký</button>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/login")}>Đăng nhập</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => navigate("/register")}>Đăng ký</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => navigate("/login")}>Đăng nhập</button>
           </>
         ) : (
           <>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={() => navigate("/profile")}>Xem hồ sơ</button>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370]" onClick={handleLogout}>Đăng xuất</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => navigate("/profile")}>Xem hồ sơ</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
           </>
         )}
       </div>
