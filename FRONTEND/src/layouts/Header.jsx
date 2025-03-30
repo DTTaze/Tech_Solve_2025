@@ -54,15 +54,25 @@ function UserHeader() {
   const pages = [
     { key: "missions", label: "Nhiệm vụ" },
     { key: "market", label: "Chợ trao đổi" },
-    { key: "news", label: "Tin tức" }
+    { key: "mission-video", label: "Short film" },
+    { key: "news", label: "Tin tức" },
   ];
 
   return (
     <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10">
       {/* Logo */}
-      <div className="flex items-center cursor-pointer select-none" onClick={() => navigate("/")}>
-        <img src="../src/assets/images/Logo-Greenflag.png" className="w-10 h-10 md:w-12 md:h-12" alt="Logo" />
-        <span className="text-lg md:text-2xl font-bold ml-2 text-[#0B6E4F]">Green Flag</span>
+      <div
+        className="flex items-center cursor-pointer select-none"
+        onClick={() => navigate("/")}
+      >
+        <img
+          src="../src/assets/images/Logo-Greenflag.png"
+          className="w-10 h-10 md:w-12 md:h-12"
+          alt="Logo"
+        />
+        <span className="text-lg md:text-2xl font-bold ml-2 text-[#0B6E4F]">
+          Green Flag
+        </span>
       </div>
 
       {/* Navigation */}

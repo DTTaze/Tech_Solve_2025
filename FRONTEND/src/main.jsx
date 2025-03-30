@@ -11,7 +11,7 @@ import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/admin.jsx";
 import MissionVideo from "./pages/MissionVideo.jsx"
 import App from "./App.jsx";
-import "./index.css"; 
+import "./index.css";
 
 const router = createBrowserRouter([
   {
@@ -35,7 +35,7 @@ const router = createBrowserRouter([
         element: <MarketPage />,
       },
       {
-        path: "videos",
+        path: "mission-video",
         element: <MissionVideo />,
       },
     ],
@@ -58,6 +58,6 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthWrapper>
       <RouterProvider router={router} />
-    </AuthWrapper> 
+    </AuthWrapper>
   </StrictMode>
 );
