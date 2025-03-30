@@ -87,7 +87,6 @@ const handleSubmitTask = async (req, res) => {
     description = description ? String(description) : "";
     const auth = req.headers.authorization;
 
-    // 🛑 Kiểm tra nếu file không tồn tại
     if (!req.file) {
       console.log("req.body:", req.body);
       console.log("req.file:", req.file); // Kiểm tra xem có file nào không
@@ -100,7 +99,7 @@ const handleSubmitTask = async (req, res) => {
       task_user_id,
       user_id,
       description,
-      file, // ✅ Truyền file đúng cách
+      file,
       auth
     );
 

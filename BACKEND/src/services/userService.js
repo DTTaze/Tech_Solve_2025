@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
+const Task = db.Task;
 const TaskUser = db.TaskUser;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
@@ -183,6 +184,7 @@ const getTaskCompleted = async (id) => {
     }
     const TaskUsers = await TaskUser.findAll({
       where: { user_id: id, status: "done" },
+      include: [{ model: Task, as: "tasks" }],
     });
     return TaskUsers;
   } catch (e) {
