@@ -57,6 +57,16 @@ const handleUpdateUser = async (req, res) => {
 const handleGetProfile = async (req, res) => {
   return res.success("Get user profile success", req.user);
 };
+
+const handleGetTaskCompleted = async (req, res) => {
+  try {
+    let result = await userService.getTaskCompleted(req.params.id);
+    return res.success("Get task completed success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task completed", error.message);
+  }
+}
+
 module.exports = {
   handleGetAllUsers,
   handleCreateUser,
@@ -65,4 +75,5 @@ module.exports = {
   handleUpdateUser,
   handleLoginUser,
   handleGetProfile,
+  handleGetTaskCompleted,
 };
