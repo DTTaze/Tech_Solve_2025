@@ -2,10 +2,13 @@ const transactionService = require('../services/transactionService');
 
 const handleCreateTransaction = async (req, res) => {
   try {
-    const transactionData = req.body;
-    const transaction = await transactionService.createTransaction(transactionData);
+    const transaction = await transactionService.createTransaction(req.body);
+    if (!transaction) {
+      return res.error(400, "Transaction creation failed", req.body);
+    }
     return res.success("Transaction created successfully", transaction);
   } catch (error) {
+    console.log("Transaction Data:", req.body);
     return res.error(500, "Failed to create transaction", error.message);
   }
 }
