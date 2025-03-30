@@ -15,11 +15,9 @@ export const updateUserApi = async (userId, userData) => {
     const response = await axios.put(`api/users/${userId}`, userData);
     return response;
   } catch (error) {
-    console.error("❌ API lỗi:", error.response ? error.response.data : error.message);
     throw error;
   }
 };
-
 
 const loginUserApi = (data) => {
   const URL_API = "api/auth/login";
@@ -65,6 +63,10 @@ const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
 };
 
+export const getAllTaskCompletedById = (user_id) => {
+  return axios.get(`api/users/task/completed/${user_id}`);
+}
+
 const getAllTasksApi = () => {
   return axios.get("api/tasks");
 };
@@ -77,7 +79,7 @@ const acceptTaskApi = (taskId, userId) => {
   return axios.post(`api/tasks/${taskId}/accept/${userId}`);
 };
 
-const completeTaskApi = (taskId) => {
+export const completeTaskApi = (taskId) => {
   return axios.post(`api/tasks/${taskId}/complete`);
 };
 
@@ -114,7 +116,6 @@ export {
   getAllTasksApi,
   getTaskByIdApi,
   acceptTaskApi,
-  completeTaskApi,
   receiveCoinApi,
   submitTaskApi
 };
