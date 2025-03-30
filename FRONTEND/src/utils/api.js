@@ -1,36 +1,23 @@
 import axios from "./axios.customize";
 
 const createUserApi = (data) => {
-  const URL_API = "api/auth/register";
-  return axios.post(URL_API, data);
+  return axios.post("api/auth/register", data);
 };
 
 const getUserApi = () => {
-  const URL_API = "api/users/me";
-  return axios.get(URL_API);
+  return axios.get("api/users/me");
 };
 
-export const updateUserApi = async (userId, userData) => {
-  try {
-    console.log("🚀 Gửi request PUT:", `/api/users/${userId}`, userData);
-    const response = await axios.put(`/api/users/${userId}`, userData);
-    console.log("📡 Phản hồi từ server:", response.data);
-    return response;
-  } catch (error) {
-    console.error("❌ API lỗi:", error.response ? error.response.data : error.message);
-    throw error;
-  }
+export const updateUserApi = async (id, data) => {
+  return axios.put(`api/users/${id}`, data);
 };
-
 
 const loginUserApi = (data) => {
-  const URL_API = "api/auth/login";
-  return axios.post(URL_API, data);
+  return axios.post("api/auth/login", data);
 };
 
 const getAllUserApi = () => {
-  const URL_API = "api/users";
-  return axios.get(URL_API);
+  return axios.get("api/users");
 };
 
 const uploadUserAvatarApi = (user_id, file) => {
@@ -67,6 +54,48 @@ const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
 };
 
+export const getAllTaskCompletedById = (user_id) => {
+  return axios.get(`api/users/task/completed/${user_id}`);
+}
+
+const getAllTasksApi = () => {
+  return axios.get("api/tasks");
+};
+
+const getTaskByIdApi = (taskId) => {
+  return axios.get(`api/tasks/${taskId}`);
+};
+
+const acceptTaskApi = (taskId, userId) => {
+  return axios.post(`api/tasks/${taskId}/accept/${userId}`);
+};
+
+export const completeTaskApi = (taskId) => {
+  return axios.post(`api/tasks/${taskId}/complete`);
+};
+
+const receiveCoinApi = (coins) => {
+  return axios.post("api/tasks/receive-coin", { coins });
+};
+
+const submitTaskApi = (taskUserId, data) => {
+  const formData = new FormData();
+  if (data.description) {
+    formData.append("description", data.description);
+  }
+  if (data.file) {
+    formData.append("file", data.file);
+  }
+
+  return axios.post(`api/tasks/submit/${taskUserId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+const getAllTaskCompletedById = (id) => {
+  return axios.get(`api/users/task/completed/${id}`);
+};
 export {
   createUserApi,
   loginUserApi,
@@ -76,5 +105,11 @@ export {
   getAllUserAvatarsApi,
   getUserAvatarByIdApi,
   uploadUserAvatarApi,
-  getUserApi
+  getUserApi,
+  getAllTasksApi,
+  getTaskByIdApi,
+  acceptTaskApi,
+  receiveCoinApi,
+  submitTaskApi,
+  getAllTaskCompletedById,
 };

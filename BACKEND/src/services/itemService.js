@@ -1,6 +1,7 @@
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
+const Transaction = db.Transaction;
 
 const createItem = async (itemData, user_id) => {
   try {
@@ -62,28 +63,33 @@ const getItemByIdUser = async (user_id) => {
   }
 };
 
-const updateItem = async (id, itemData) => {
+const updateItem = async (id, data) => {
   try {
-    const item = await Item.findByPk(id);
+    let { name, price, stock,status } = data;
+    let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
     }
 
-    if (itemData.name !== undefined && itemData.name.trim() === "") {
-      throw new Error("Name cannot be empty");
-    }
+    name ? (item.name = name) : (item.name = item.name);
+    status ? (item.status = status) : (item.status = item.status);
+    description ? (item.description = description) : (item.description = item.description);
+    price ? (item.price = price) : (item.price = item.price);
 
-    if (itemData.price !== undefined && itemData.price < 1) {
-      throw new Error("Price must be at least 1");
+    if (stock !== undefined) {
+      if (stock < 0) {
+        throw new Error("Stock cannot be negative");
+      }
+      item.stock = stock;
+      item.status = stock > 0 ? "available" : "sold";
     }
-
-    await item.update(itemData);
+    await item.save();
     return item;
   } catch (e) {
-    console.e("Update failed:", e);
     throw e;
   }
 };
+
 
 const deleteItem = async (item_id) => {
   try {
@@ -102,6 +108,54 @@ const deleteItem = async (item_id) => {
     throw e;
   }
 };
+const purchaseItem = async (user_id, item_id, quantity = 1) => {
+  try {
+    if (!user_id || !item_id || quantity < 1) {
+      throw new Error("User ID, Item ID, and valid quantity are required");
+    }
+
+    const item = await Item.findByPk(item_id);
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    if (item.status !== "available") {
+      throw new Error("Item is not available for purchase");
+    }
+
+    if (item.stock < quantity) {
+      throw new Error("Not enough stock available");
+    }
+
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const totalPrice = item.price * quantity;
+    if (user.coins < totalPrice) {
+      throw new Error("Insufficient balance");
+    }
+
+    await user.update({ coins: user.coins - totalPrice });
+    await item.update({
+      stock: item.stock - quantity,
+      status: item.stock - quantity === 0 ? "sold" : "available",
+    });
+
+    const transaction = await Transaction.create({
+      buyer_id: user.id,
+      item_id: item.id,
+      quantity: quantity,
+      amount: totalPrice,
+      status: "completed",
+    });
+
+    return { message: "Purchase successful", item, transaction };
+  } catch (e) {
+    throw e;
+  }
+};
 
 module.exports = {
   createItem,
@@ -110,4 +164,5 @@ module.exports = {
   getItemByIdUser,
   updateItem,
   deleteItem,
+  purchaseItem,
 };

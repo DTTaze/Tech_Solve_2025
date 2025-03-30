@@ -21,6 +21,7 @@ const LoginPage = () => {
 
       if (res && res.status === 200) {
         localStorage.setItem("access_token", res.data.access_token);
+        console.log( res.data);
         notification.success({
           message: "Login Success",
           description: "Đã đăng nhập thành công",

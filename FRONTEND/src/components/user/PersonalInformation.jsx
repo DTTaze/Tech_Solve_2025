@@ -1,67 +1,87 @@
 import { useState, useEffect } from "react";
-import { getUserApi } from "../../utils/api.js";
+import { getUserApi, updateUserApi } from "../../utils/api.js";
+import { notification } from "antd";
+import "../../styles/components/PersonalInformation.css";
 
 function PersonalInfoForm() {
-  const [user, setUser] = useState({
-    full_name: "",
-    address: "",
-    phone: "",
-    username: "",
-    email: "",
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getUserApi()
-      .then((response) => setUser(response))
+    const fetchUser = async () => {
+      try {
+        const response = await getUserApi();
+        if (response.data) setUser(response.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+        notification.error({ message: "Không thể tải thông tin người dùng" });
+      }
+    };
+
+    fetchUser();
   }, []);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+  
+    setLoading(true);
+    try {
+      const response = await updateUserApi(user.id, user);
+      console.log("Dữ liệu từ updateUserApi:", response.data); // Kiểm tra dữ liệu phản hồi
+  
+      if (response.data) {
+        setUser((prevUser) => ({ ...prevUser, ...response.data })); // Cập nhật state đúng cách
+      }
+  
+      notification.success({ message: "Cập nhật thông tin thành công!" });
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin:", error);
+      notification.error({ message: "Cập nhật thất bại!" });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  if (!user) return <p className="text-gray-500">Đang tải...</p>;
+
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
+    <div className="p-4 border bg-white rounded-lg shadow-md">
       <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
       <hr className="my-2 border-gray-300" />
-      <form className="space-y-4">
-        <FormGroup label="Họ và Tên" required>
-          <input
-            type="text"
-            className="form-input"
-            value={user.full_name}
-            onChange={(e) => setUser({ ...user, full_name: e.target.value })}
-            required
-          />
-        </FormGroup>
-        <FormGroup label="Địa chỉ" required>
-          <input
-            type="text"
-            className="form-input"
-            value={user.address}
-            onChange={(e) => setUser({ ...user, address: e.target.value })}
-            required
-          />
-        </FormGroup>
-        <FormGroup label="Số điện thoại">
-          <span>{user.phone || "Chưa có số điện thoại"}</span>
-        </FormGroup>
-        <FormGroup label="Tên đăng nhập">
-          <span>{user.username || "Chưa có tên đăng nhập"}</span>
-        </FormGroup>
-        <FormGroup label="Email">
-          <span>{user.email || "Chưa có email"}</span>
-        </FormGroup>
-        <button type="submit" className="btn btn-primary">
-          Cập nhật
+
+      <form className="space-y-4" onSubmit={handleUpdate}>
+        {[
+          { id: "username", label: "Tên người dùng" },
+          { id: "email", label: "Email" },
+          { id: "full_name", label: "Họ và Tên" },
+          { id: "address", label: "Địa chỉ" },
+          { id: "phone_number", label: "Số điện thoại" },
+        ].map(({ id, label }) => (
+          <div key={id} className="input-field">
+            <input
+              required
+              type="text"
+              name={id}
+              id={id}
+              value={user[id] || ""}
+              onChange={handleChange}
+            />
+            <label htmlFor={id}>{label}</label>
+          </div>
+        ))}
+
+        <button type="submit" className="btn-submit" disabled={loading}>
+          <span>
+          {loading ? "Đang cập nhật..." : "Cập nhật"}
+          </span>
         </button>
       </form>
-    </div>
-  );
-}
-
-function FormGroup({ label, children, required }) {
-  return (
-    <div className="flex flex-col">
-      <label className="font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      {children}
     </div>
   );
 }

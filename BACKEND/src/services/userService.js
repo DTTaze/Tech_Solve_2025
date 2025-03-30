@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
+const Task = db.Task;
+const TaskUser = db.TaskUser;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 
@@ -60,6 +62,8 @@ const loginUser = async (data) => {
     const payload = {
       id: user.id,
       full_name: user.full_name,
+      phone_number: user.phone_number,
+      address: user.address,
       email: user.email,
       username: user.username,
       role_id: user.role_id,
@@ -77,6 +81,8 @@ const loginUser = async (data) => {
       user: {
         id: user.id,
         full_name: user.full_name,
+        phone_number: user.phone_number,
+        address: user.address,
         email: user.email,
         username: user.username,
         role_id: user.role_id,
@@ -174,6 +180,22 @@ const findOrCreateUser = async (profile) => {
   }
 };
 
+const getTaskCompleted = async (id) => {
+  try {
+    const user = await User.findOne({ where: { id: id } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const TaskUsers = await TaskUser.findAll({
+      where: { user_id: id, status: "done" },
+      include: [{ model: Task, as: "tasks" }],
+    });
+    return TaskUsers;
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
@@ -182,4 +204,5 @@ module.exports = {
   updateUser,
   findOrCreateUser,
   loginUser,
+  getTaskCompleted,
 };

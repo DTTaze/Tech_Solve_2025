@@ -18,16 +18,17 @@ function SectionHero() {
     ];
 
     useEffect(() => {
-        const timeout = setTimeout(() => setShowText(false), 2700);
-        const interval = setInterval(() => {
-            setIndex((prevIndex) => (prevIndex + 1) % images.length);
-            setShowText(true);
-        }, 3000);
-
-        return () => {
-            clearTimeout(timeout);
-            clearInterval(interval);
+        const changeSlide = () => {
+            setShowText(false);
+            setTimeout(() => {
+                setIndex((prevIndex) => (prevIndex + 1) % images.length);
+                setShowText(true);
+            }, 500);
         };
+
+        const interval = setInterval(changeSlide, 3000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const formattedTitle = useMemo(() => {
@@ -41,35 +42,35 @@ function SectionHero() {
     }, [index]);
 
     return (
-        <section className="h-[60vh] w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
-    {/* Tiêu đề */}
-    <header className="w-full lg:w-1/2 text-[#059212] flex justify-center items-center text-center font-bold 
-                      text-lg sm:text-xl md:text-2xl lg:text-4xl">
-        <h1 
-            id="heroTitle" 
-            className={`transition-opacity duration-1000 ${showText ? "opacity-100" : "opacity-0"}`}
-        >
-            {formattedTitle}
-        </h1>
-    </header>
+        <section className="relative min-h-[70vh] lg:min-h-[60vh] w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
+            {/* Tiêu đề */}
+            <header className="w-full lg:w-1/2 flex justify-center items-center text-center font-bold 
+                            text-base sm:text-lg md:text-xl lg:text-3xl xl:text-4xl text-[#059212] leading-tight z-10">
+                <h1 
+                    id="heroTitle" 
+                    className={`transition-opacity duration-500 ${showText ? "opacity-100" : "opacity-0"}`}
+                >
+                    {formattedTitle}
+                </h1>
+            </header>
 
-    {/* Hình ảnh */}
-    <div className="relative w-full lg:w-1/2 flex justify-center items-center h-[50vh] lg:h-auto">
-        {images.map((src, i) => (
-            <img
-                key={i}
-                src={src}
-                alt={`Slide ${i + 1}`}
-                className={`w-full sm:max-w-[90%] lg:w-4/5 max-h-[300px] sm:max-h-[400px] object-cover rounded-[20px] 
-                            absolute transition-opacity duration-1000 ${i === index ? "opacity-100" : "opacity-0"}`}
-            />          
-        ))}
-    </div>
-</section>
-
+            {/* Hình ảnh */}
+            <div className="relative w-full lg:w-1/2 flex justify-center items-center h-[250px] sm:h-[300px] md:h-[350px] lg:h-auto">
+                {images.map((src, i) => (
+                    <img
+                        key={i}
+                        src={src}
+                        alt={`Slide ${i + 1}`}
+                        className={`w-full max-w-[95%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] xl:max-w-[75%] 
+                                    h-auto object-cover rounded-[20px] aspect-[16/9] 
+                                    flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-700 
+                                    ${i === index ? "opacity-100" : "opacity-0"}`}
+                    />          
+                ))}
+            </div>
+        </section>
     );
 }
-
 
 function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
     const sectionRef = useRef(null);

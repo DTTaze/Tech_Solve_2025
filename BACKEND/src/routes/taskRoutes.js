@@ -10,7 +10,7 @@ router.get("/:id", taskController.handleGetTask);
 router.put("/:id", taskController.handleUpdateTask);
 router.delete("/:id", taskController.handleDeleteTask);
 
-router.post("/accept/:id", taskController.handleAcceptTask);
+router.post("/accept/:UserID/:id", taskController.handleAcceptTask);
 router.post("/complete/:id", taskController.handleCompleteTask);
 
 router.post("/submit/:task_user_id",middlewareImage.single("image"), taskController.handleSubmitTask);

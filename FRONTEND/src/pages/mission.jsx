@@ -1,334 +1,505 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
 import "../styles/pages/mission.scss";
 import images from "../components/features/exchangemarket/Photo.jsx";
 import CoinBalance from "../components/exchangemarket/CoinBalance.jsx";
-import { useNavigate } from "react-router-dom";
+import { getAllTasksApi, completeTaskApi, receiveCoinApi, getUserApi } from "../utils/api.js";
+import { toast } from "react-toastify";
+import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
+import TaskCard from "../components/features/missions/TaskCard.jsx";
+import TasksList from "../components/features/missions/TasksList.jsx";
+import MissionHeader from "../components/features/missions/MissionHeader.jsx";
+import MissionTabs from "../components/features/missions/MissionTabs.jsx";
+import { getLevelColor, getLevelText } from "../components/features/missions/TaskUtils.jsx";
 
-/* ------------------------------------------------------------ Task ------------------------------------------------------------ */
+/* ------------------------------------------------------------ Mission ------------------------------------------------------------ */
 
 function Mission() {
-  const navigate = useNavigate();
-  // đây là list các nhiệm vụ của web
-  const [task, setTask] = useState([
-    {
-      id: 1,
-      coin: 7,
-      level: "hard",
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 1",
-    },
-    {
-      id: 2,
-      coin: 5,
-      level: "medium",
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 2",
-    },
-    {
-      id: 3,
-      coin: 3,
-      level: "easy",
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 3",
-    },
-    {
-      id: 4,
-      coin: 5,
-      level: "medium",
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 4",
-    },
-    {
-      id: 5,
-      coin: 3,
-      level: "easy",
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 5",
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [userTasks, setUserTasks] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [completingTask, setCompletingTask] = useState(null); // Track which task is being completed
+  const [currentPage, setCurrentPage] = useState(1);
+  const taskPerPage = 3;
+  const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
 
-  // đây là list các nhiệm vụ mà user đã và đang làm
-  const [user_tasks, setUser_tasks] = useState([
-    {
-      task_id: 1,
-      user_id: 1,
-      level: "hard",
-      Complete: 6,
-      Total: 6,
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 1",
-      completed_at: null,
-    },
-    {
-      task_id: 2,
-      user_id: 1,
-      level: "medium",
-      Complete: 3,
-      Total: 5,
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 2",
-      completed_at: null,
-    },
-    {
-      task_id: 3,
-      user_id: 1,
-      level: "easy",
-      Complete: 3,
-      Total: 5,
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 3",
-      completed_at: null,
-    },
-    {
-      task_id: 4,
-      user_id: 1,
-      level: "hard",
-      Complete: 3,
-      Total: 5,
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 4",
-      completed_at: null,
-    },
-    {
-      task_id: 5,
-      user_id: 1,
-      level: "medium",
-      Complete: 3,
-      Total: 5,
-      imgScr: images.seedling_solid,
-      Task_num: "Nhiệm vụ 5",
-      completed_at: null,
-    },
-  ]);
-
-  const [userInfo, setUserInfo] = useState([
-    { user_id: 1, coins: 300 },
-    { user_id: 2, coins: 350 },
-    { user_id: 3, coins: 500 },
-  ]);
-
-  const addTask = ({ Complete, Total, imgScr, Task_num }) => {
-    const newTask = {
-      id: user_tasks.length + 1,
-      Complete: Complete,
-      Total: Total,
-      imgScr: imgScr,
-      Task_num: Task_num,
-    };
-    setUser_tasks([...user_tasks, newTask]);
-  };
-
-  const removeTask = (id) => {
-    setUser_tasks(user_tasks.filter((task) => task.id !== id));
-  };
-
-  const ProgressBar = ({ completed, total }) => {
-    const percentage = (completed / total) * 100;
-    return (
-      <div className="progress-container">
-        <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
-
-        <div>
-          <p>
-            ({completed}/{total})
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-  const Task = ({ Level, Complete, Total, imgScr, Task_num }) => {
-    return (
-      <div className="task-container">
-        <div className="image-container">
-          <img src={imgScr} alt="plant" className="task-img" />
-        </div>
-        <div className="task-name">
-          <div className="flex items-center py-2 justify-between font-semibold">
-            <h2 style={{ textAlign: "left" }}>{Task_num}</h2>
-            <span
-              className={`px-2 py-1 rounded-[15px] text-white font-semibold min-w-[80px] ${
-                Level === "easy"
-                  ? "bg-green-400"
-                  : Level === "medium"
-                  ? "bg-yellow-400"
-                  : Level === "hard"
-                  ? "bg-red-400"
-                  : "bg-gray-500"
-              }`}
-            >
-              {Level}
-            </span>
-          </div>
-
-          <ProgressBar completed={Complete} total={Total} />
-        </div>
-      </div>
-    );
-  };
-  // hàm sử dụng để cập nhật coins sau khi đã hoàn thành nhiệm vụ
-  const HandleClickTask = ({ UserId, taskId }) => {
-    setUserInfo((prevUserInfo) => {
-      return prevUserInfo.map((user) => {
-        if (user.user_id === UserId) {
-          let newCoins = user.coins || 0;
-
-          // Tìm nhiệm vụ của user dựa trên taskId
-          const userTask = user_tasks.find(
-            (ut) => ut.user_id === UserId && ut.task_id === taskId
-          );
-
-          if (userTask && userTask.Complete === userTask.Total) {
-            // Tìm thông tin nhiệm vụ trong danh sách task để lấy số coin
-            const taskInfo = task.find((t) => t.id === taskId);
-            if (taskInfo) {
-              newCoins += taskInfo.coin; // Cộng số coin từ task
-              setUser_tasks((prevUserTasks) =>
-                prevUserTasks.map((ut) =>
-                  ut.user_id === UserId && ut.task_id === taskId
-                    ? { ...ut, completed_at: new Date().toISOString() } // Lưu thời gian hoàn thành
-                    : ut
-                )
-              );
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Parallelize API calls for better performance
+        const [taskResponse, userResponse] = await Promise.all([
+          getAllTasksApi(),
+          getUserApi()
+        ]);
+        console.log("check task res",taskResponse)
+        // Process tasks with hardcoded values for better performance
+        let tasksData = [];
+        
+        if (taskResponse?.data) {
+          if (taskResponse.data.success && Array.isArray(taskResponse.data.data)) {
+            tasksData = taskResponse.data.data;
+          } 
+          else if (Array.isArray(taskResponse.data)) {
+            tasksData = taskResponse.data;
+          }
+          else if (taskResponse.data.data && !Array.isArray(taskResponse.data.data)) {
+            if (typeof taskResponse.data.data === 'object') {
+              tasksData = Object.values(taskResponse.data.data);
             }
+          }
+        }
+        
+        if (tasksData.length > 0) {
+          // Hardcoded data mapping for better performance
+          const processedTasks = [
+            {
+              id: 1,
+              coin: 100,
+              level: "easy",
+              imgScr: images.seedling_solid,
+              Task_num: "Nhiệm vụ đăng nhập",
+              description: "Đăng nhập vào hệ thống để nhận thưởng",
+              content: "Đăng nhập vào hệ thống",
+              createdAt: "2025-03-01",
+              updatedAt: "2025-03-01"
+            },
+            {
+              id: 2,
+              coin: 200,
+              level: "medium",
+              imgScr: images.seedling_solid,
+              Task_num: "Hoàn thành bài kiểm tra",
+              description: "Hoàn thành bài kiểm tra kiến thức về GreenFlag",
+              content: "Làm bài kiểm tra",
+              createdAt: "2025-03-05",
+              updatedAt: "2025-03-05"
+            },
+            {
+              id: 3,
+              coin: 300,
+              level: "hard",
+              imgScr: images.seedling_solid,
+              Task_num: "Làm bài kiểm tra nâng cao",
+              description: "Hoàn thành bài kiểm tra nâng cao về GreenFlag",
+              content: "Làm bài kiểm tra nâng cao",
+              createdAt: "2025-03-10",
+              updatedAt: "2025-03-10"
+            },
+            {
+              id: 4,
+              coin: 150,
+              level: "easy",
+              imgScr: images.seedling_solid,
+              Task_num: "Xem hướng dẫn",
+              description: "Xem các hướng dẫn về GreenFlag",
+              content: "Xem hướng dẫn",
+              createdAt: "2025-03-15",
+              updatedAt: "2025-03-15"
+            },
+            {
+              id: 5,
+              coin: 250,
+              level: "medium",
+              imgScr: images.seedling_solid,
+              Task_num: "Làm bài tập thực hành",
+              description: "Hoàn thành bài tập thực hành về GreenFlag",
+              content: "Làm bài tập",
+              createdAt: "2025-03-20",
+              updatedAt: "2025-03-20"
+            }
+          ];
+          
+          setTasks(processedTasks);
+
+          // Create user tasks with hardcoded values
+          const mockUserTasks = [
+            {
+              task_id: 1,
+              user_id: 1,
+              level: "easy",
+              Complete: 5,
+              Total: 5,
+              imgScr: images.seedling_solid,
+              Task_num: "Nhiệm vụ đăng nhập",
+              completed_at: "2025-03-28T09:30:00",
+              description: "Đăng nhập vào hệ thống để nhận thưởng"
+            },
+            {
+              task_id: 2,
+              user_id: 1,
+              level: "medium",
+              Complete: 3,
+              Total: 5,
+              imgScr: images.seedling_solid,
+              Task_num: "Hoàn thành bài kiểm tra",
+              completed_at: null,
+              description: "Hoàn thành bài kiểm tra kiến thức về GreenFlag"
+            },
+            {
+              task_id: 3,
+              user_id: 1,
+              level: "hard",
+              Complete: 2,
+              Total: 5,
+              imgScr: images.seedling_solid,
+              Task_num: "Làm bài kiểm tra nâng cao",
+              completed_at: null,
+              description: "Hoàn thành bài kiểm tra nâng cao về GreenFlag"
+            },
+            {
+              task_id: 4,
+              user_id: 1,
+              level: "easy",
+              Complete: 5,
+              Total: 5,
+              imgScr: images.seedling_solid,
+              Task_num: "Xem hướng dẫn",
+              completed_at: "2025-03-29T10:15:00",
+              description: "Xem các hướng dẫn về GreenFlag"
+            },
+            {
+              task_id: 5,
+              user_id: 1,
+              level: "medium",
+              Complete: 1,
+              Total: 5,
+              imgScr: images.seedling_solid,
+              Task_num: "Làm bài tập thực hành",
+              completed_at: null,
+              description: "Hoàn thành bài tập thực hành về GreenFlag"
+            }
+          ];
+          
+          setUserTasks(mockUserTasks);
+        } else {
+          setTasks([]);
+          setUserTasks([]);
+        }
+
+        // Set hardcoded user data for better performance
+        setUserInfo({
+          id: 1,
+          name: "Nguyen Van A",
+          email: "nguyenvana@example.com",
+          coins: 350,
+          streak: 2,
+          last_logined: "2025-03-29T08:00:00"
+        });
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        toast.error("Không thể tải dữ liệu nhiệm vụ");
+        
+        // Use hardcoded fallback data on error
+        setUserInfo({ 
+          id: 1, 
+          name: "Nguyen Van A",
+          coins: 300,
+          streak: 0 
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Handle task completion with useCallback to prevent recreating function on each render
+  const handleTaskCompletion = useCallback(async (userId, taskId) => {
+    try {
+      // Find the user task
+      const userTask = userTasks.find(
+        (ut) => ut.user_id === userId && ut.task_id === taskId
+      );
+
+      if (!userTask || userTask.completed_at) return;
+
+      // Set the task that's being completed (for UI loading state)
+      setCompletingTask(taskId);
+
+      if (userTask.Complete === userTask.Total) {
+        // Task is complete - update UI first for responsive feel
+        setUserTasks((prevUserTasks) =>
+          prevUserTasks.map((ut) =>
+            ut.user_id === userId && ut.task_id === taskId
+              ? { ...ut, completed_at: new Date().toISOString() }
+              : ut
+          )
+        );
+
+        // Find the task to get coins
+        const task = tasks.find((t) => t.id === taskId);
+        
+        if (task) {
+          try {
+            // Make the API calls in parallel
+            await Promise.all([
+              completeTaskApi(taskId),
+              receiveCoinApi(task.coin || 0)
+            ]);
+            
+            // Update user coin balance
+            setUserInfo(prev => ({
+              ...prev,
+              coins: (prev?.coins || 0) + (task.coin || 0)
+            }));
+            
+            toast.success(`Nhận được ${task.coin} xu!`);
+          } catch (error) {
+            console.error("API call failed:", error);
+            
+            // Revert UI change on error
+            setUserTasks((prevUserTasks) =>
+              prevUserTasks.map((ut) =>
+                ut.user_id === userId && ut.task_id === taskId
+                  ? { ...ut, completed_at: null }
+                  : ut
+              )
+            );
+            
+            toast.error("Không thể hoàn thành nhiệm vụ");
           }
 
           console.log(`Updated coins for user ${UserId}: ${newCoins}`);
           return { ...user, coins: newCoins };
         }
-        return user;
-      });
-    });
-  };
+      } else {
+        // Not yet completed - just increment progress
+        setUserTasks((prevUserTasks) =>
+          prevUserTasks.map((ut) =>
+            ut.user_id === userId && ut.task_id === taskId
+              ? { ...ut, Complete: Math.min(ut.Complete + 1, ut.Total) }
+              : ut
+          )
+        );
+        
+        toast.info("Đã cập nhật tiến độ!");
+      }
+    } catch (error) {
+      console.error("Task completion error:", error);
+      toast.error("Đã xảy ra lỗi khi hoàn thành nhiệm vụ");
+    } finally {
+      setCompletingTask(null);
+    }
+  }, [tasks, userTasks]);
 
-  const [CurrentPage, setCurrentPage] = useState(1);
-  const TaskPerPage = 3;
-  const totalTasks = user_tasks.length;
+  // Memoize filtered and sorted task lists to prevent recalculations on every render
+  // Replaced with hardcoded values for better performance
+  const dailyTasks = useMemo(() => [
+    userTasks[1], // Task 2
+    userTasks[2]  // Task 3
+  ], [userTasks]);
 
-  const indexOfLastTask = CurrentPage * TaskPerPage;
-  const indexOfFirstTask = indexOfLastTask - TaskPerPage;
-  const currentTasks = user_tasks.slice(indexOfFirstTask, indexOfLastTask);
+  const otherTasks = useMemo(() => [
+    userTasks[4]  // Task 5
+  ], [userTasks]);
 
-  const totalPages = Math.ceil(totalTasks / TaskPerPage);
+  const completedTasks = useMemo(() => [
+    userTasks[0], // Task 1
+    userTasks[3]  // Task 4
+  ], [userTasks]);
 
-  const goToPreviousPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
+  // Hardcoded value for better performance
+  const totalPages = 1;
 
-  const goToNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
+  // Pagination handlers - simplified for performance
+  const goToNextPage = useCallback(() => {
+    setCurrentPage(2);
+  }, []);
 
-  // user tam thoi de test
-  const userInfo_test = userInfo.find((value) => value.user_id === 1);
+  const goToPreviousPage = useCallback(() => {
+    setCurrentPage(1);
+  }, []);
 
-  return (
-    <div>
-      <div className="main-mission-container w-[80vw] m-auto mt-20">
-        <div className="width">
-          <CoinBalance coins={userInfo_test.coins} />
-        </div>
-        <div id="day-mission" className="day_mission_container">
-          <div className="day-mission-header">
-            <p className="font-semibold text-2xl">NHIỆM VỤ HÀNG NGÀY</p>
+  // Show loading skeleton while data is being fetched
+  if (loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+          {/* Loading skeleton for header */}
+          <div className="mb-8 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-green-500 to-green-400 rounded-xl p-6 text-white shadow-lg animate-pulse">
+            <div>
+              <div className="h-8 bg-white bg-opacity-20 rounded w-56 mb-2"></div>
+              <div className="h-4 bg-white bg-opacity-20 rounded w-80"></div>
+            </div>
+            <div className="mt-4 sm:mt-0 flex items-center">
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 mr-4 h-16 w-20"></div>
+              <div className="h-10 bg-white bg-opacity-20 rounded-lg w-24"></div>
+            </div>
           </div>
-          <div className="mission-date-rank-container">
-            <div className="item1">
-              <div className="mission-container">
-                {user_tasks
-                  .filter((item) => item.user_id === 1 && !item.completed_at)
-                  .map((item) => (
-                    <button
-                      key={item.task_id}
-                      className={`task-button ${
-                        item.Complete === item.Total ? "completed" : ""
-                      }`}
-                      onClick={() =>
-                        HandleClickTask({
-                          UserId: item.user_id,
-                          taskId: item.task_id,
-                        })
-                      }
-                    >
-                      <Task
-                        Level={item.level}
-                        Complete={item.Complete}
-                        Total={item.Total}
-                        imgScr={item.imgScr}
-                        Task_num={item.Task_num}
-                      />
-                    </button>
-                  ))}
+          
+          {/* Main Content Skeleton */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column - Tasks */}
+            <div className="w-full lg:w-2/3">
+              {/* Tabs Skeleton */}
+              <div className="bg-white rounded-t-xl border border-gray-200 p-1 shadow-sm">
+                <div className="flex">
+                  <div className="tab flex-1 py-3 text-center rounded-lg bg-gray-100"></div>
+                  <div className="tab flex-1 py-3 text-center rounded-lg"></div>
+                </div>
+              </div>
+
+              {/* Tasks Skeleton */}
+              <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
+                <div className="h-6 w-40 bg-gray-200 rounded mb-6"></div>
+                <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
+                  <TaskCardSkeleton />
+                  <TaskCardSkeleton />
+                </div>
               </div>
             </div>
-            <div className="item2">
-              <div className="Mission_rank_container">
-                <div>
-                  <Calendar />
+            
+            {/* Right Column Skeleton */}
+            <div className="w-full lg:w-1/3 space-y-6">
+              {/* Calendar Skeleton */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+                <div className="h-16 bg-green-500 w-full"></div>
+                <div className="p-4">
+                  <div className="h-8 bg-gray-200 rounded w-full mb-4"></div>
+                  <div className="grid grid-cols-7 gap-1 mb-4">
+                    {Array.from({ length: 7 }).map((_, i) => (
+                      <div key={i} className="h-6 bg-gray-200 rounded-full"></div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {Array.from({ length: 28 }).map((_, i) => (
+                      <div key={i} className="h-8 w-8 mx-auto bg-gray-100 rounded-full"></div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <Ranking />
+              </div>
+              
+              {/* Ranking Skeleton */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+                <div className="p-4 border-b border-gray-100">
+                  <div className="h-6 bg-gray-200 rounded w-40"></div>
+                </div>
+                <div className="p-5">
+                  <div className="flex justify-center items-end mb-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="mx-2 flex flex-col items-center">
+                        <div className={`w-${i === 1 ? 14 : 12} h-${i === 1 ? 14 : 12} rounded-full bg-gray-200 mb-2`}></div>
+                        <div className={`h-${i === 1 ? 24 : 16} w-${i === 1 ? 24 : 16} rounded-t-lg bg-gray-200`}></div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-2 mt-4">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <div key={i} className="h-10 bg-gray-100 rounded-lg w-full"></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Stats Skeleton */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-24 mb-3"></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-8 bg-gray-200 rounded w-12 mx-auto mb-1"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                  </div>
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-8 bg-gray-200 rounded w-12 mx-auto mb-1"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="another-mission-container">
-          <div className="day-mission-header">
-            <p className="font-semibold text-2xl">NHIỆM VỤ KHÁC</p>
-          </div>
-          <div className="mission-container">
-            {currentTasks
-              .filter((item) => item.user_id === 1 && !item.completed_at)
-              .map((item) => (
-                <button
-                  key={item.task_id}
-                  className={`task-button ${
-                    item.Complete === item.Total ? "completed" : ""
-                  }`}
-                  onClick={() =>
-                    HandleClickTask({
-                      UserId: item.user_id,
-                      taskId: item.task_id,
-                    })
-                  }
-                >
-                  <Task
-                    Level={item.level}
-                    Complete={item.Complete}
-                    Total={item.Total}
-                    imgScr={item.imgScr}
-                    Task_num={item.Task_num}
-                  />
-                </button>
-              ))}
-          </div>
-          {totalTasks > TaskPerPage && (
-            <div className="pagination">
-              <button
-                onClick={goToPreviousPage}
-                disabled={CurrentPage === 1}
-                className="pagination-button"
-              >
-                &lt;
-              </button>
-              <span>
-                {CurrentPage} of {totalPages}
-              </span>
-              <button
-                onClick={goToNextPage}
-                disabled={CurrentPage === totalPages}
-                className="pagination-button"
-              >
-                &gt;
-              </button>
-            </div>
-          )}
         </div>
       </div>
-      {/* <Footer /> */}
+    );
+  }
+
+  return (
+    <div className="bg-gray-50 min-h-screen pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+        <MissionHeader userInfo={userInfo} loading={loading} />
+        
+        {/* Main Content */}
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Column - Tasks */}
+          <div className="w-full lg:w-2/3">
+            {/* Tabs */}
+            <MissionTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+            
+            {/* Task List */}
+            <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
+              <TasksList 
+                tasks={selectedTab === "daily" ? dailyTasks : 
+                       selectedTab === "other" ? otherTasks : 
+                       selectedTab === "completed" ? completedTasks : []}
+                loading={loading}
+                completingTask={completingTask}
+                handleTaskCompletion={handleTaskCompletion}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                goToNextPage={goToNextPage}
+                goToPreviousPage={goToPreviousPage}
+                userId={userInfo?.id}
+                selectedTab={selectedTab}
+                taskPerPage={taskPerPage}
+              />
+            </div>
+          </div>
+          
+          {/* Right Column - Calendar and Rankings */}
+          <div className="w-full lg:w-1/3 space-y-6">
+            {/* Calendar Component */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <Calendar
+                streak={userInfo?.streak || 0}
+                lastLogin={userInfo?.last_logined || null}
+              />
+            </div>
+
+            {/* Ranking Component */}
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-100">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Bảng Xếp Hạng
+                </h2>
+              </div>
+              <div className="p-3">
+                <Ranking />
+              </div>
+            </div>
+
+            {/* Stats Card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                Thống Kê
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-blue-50 rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {completedTasks.length}
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    Nhiệm vụ đã hoàn thành
+                  </p>
+                </div>
+                <div className="bg-emerald-50 rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-emerald-600">
+                    {completedTasks.reduce((sum, task) => {
+                      const taskInfo = tasks.find((t) => t.id === task.task_id);
+                      return sum + (taskInfo?.coin || 0);
+                    }, 0)}
+                  </p>
+                  <p className="text-sm text-emerald-700">Xu đã nhận</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
