@@ -8,9 +8,11 @@ import UserProfilePage from "./pages/User.jsx";
 import LoginPage from "./pages/login.jsx";
 import RegisterPage from "./pages/register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
-import Admin from "./pages/Admin.jsx";
+import Admin from "./pages/admin.jsx";
 import App from "./App.jsx";
-import "./index.css"; 
+import "./index.css";
+import MissionVideo from "./pages/MissionVideo.jsx";
+// import ReelsInterface from "./components/ReelsInterface.jsx"
 
 const router = createBrowserRouter([
   {
@@ -33,6 +35,10 @@ const router = createBrowserRouter([
         path: "market",
         element: <MarketPage />,
       },
+      {
+        path: "mission-video",
+        element: <MissionVideo />,
+      },
     ],
   },
   {
@@ -53,6 +59,6 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthWrapper>
       <RouterProvider router={router} />
-    </AuthWrapper> 
+    </AuthWrapper>
   </StrictMode>
 );
