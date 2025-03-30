@@ -6,11 +6,19 @@ import CommentButton from "./commentButton";
 import ShareButton from "./shareButton";
 import CoinImg from "../assets/images/Coin";
 import Timer from "../assets/images/Timer";
-
+import { notification } from "antd";
 // Component hiển thị số coin và timer
 function CalcCoins({ coins, timer }) {
+  const onReceiveCoins = () => {
+    notification.success({
+      message: "Receive coins success",
+    });
+  };
   return (
-    <div className="fixed top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-[1000]">
+    <div
+      onClick={onReceiveCoins}
+      className="fixed top-4 right-4 sm:top-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-[1000]"
+    >
       {/* Coins Display */}
       <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-lg border border-white/10">
         <div className="w-5 h-5 sm:w-6 sm:h-6">
@@ -154,9 +162,7 @@ export default function VideosSection() {
       });
       setVideoData((prev) =>
         prev.map((video) =>
-          video.id === videoId
-            ? { ...video, shares: video.shares + 1 }
-            : video
+          video.id === videoId ? { ...video, shares: video.shares + 1 } : video
         )
       );
     } catch (error) {
