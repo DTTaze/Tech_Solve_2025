@@ -21,6 +21,8 @@ const jwtAuth = (req, res, next) => {
         req.user = {
           id: decoded.id,
           full_name: decoded.full_name,
+          phone_number: decoded.phone_number,
+          address: decoded.address,
           email: decoded.email,
           username: decoded.username,
           role_id: decoded.role_id,

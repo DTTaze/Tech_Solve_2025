@@ -1,34 +1,23 @@
 import axios from "./axios.customize";
 
 const createUserApi = (data) => {
-  const URL_API = "api/auth/register";
-  return axios.post(URL_API, data);
+  return axios.post("api/auth/register", data);
 };
 
 const getUserApi = () => {
-  const URL_API = "api/users/me";
-  return axios.get(URL_API);
+  return axios.get("api/users/me");
 };
 
-export const updateUserApi = async (userId, userData) => {
-  try {
-    const response = await axios.put(`api/users/${userId}`, userData);
-    return response;
-  } catch (error) {
-    console.error("❌ API lỗi:", error.response ? error.response.data : error.message);
-    throw error;
-  }
+export const updateUserApi = async (id, data) => {
+  return axios.post(`api/users/${id}`, data);
 };
-
 
 const loginUserApi = (data) => {
-  const URL_API = "api/auth/login";
-  return axios.post(URL_API, data);
+  return axios.post("api/auth/login", data);
 };
 
 const getAllUserApi = () => {
-  const URL_API = "api/users";
-  return axios.get(URL_API);
+  return axios.get("api/users");
 };
 
 const uploadUserAvatarApi = (user_id, file) => {
@@ -82,7 +71,7 @@ const completeTaskApi = (taskId) => {
 };
 
 const receiveCoinApi = (coins) => {
-  return axios.post('api/tasks/receive-coin', { coins });
+  return axios.post("api/tasks/receive-coin", { coins });
 };
 
 const submitTaskApi = (taskUserId, data) => {
@@ -93,7 +82,7 @@ const submitTaskApi = (taskUserId, data) => {
   if (data.file) {
     formData.append("file", data.file);
   }
-  
+
   return axios.post(`api/tasks/submit/${taskUserId}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -116,5 +105,5 @@ export {
   acceptTaskApi,
   completeTaskApi,
   receiveCoinApi,
-  submitTaskApi
+  submitTaskApi,
 };
