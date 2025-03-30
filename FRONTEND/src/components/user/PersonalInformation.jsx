@@ -29,10 +29,16 @@ function PersonalInfoForm() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!user) return;
-
+  
     setLoading(true);
     try {
-      await updateUserApi(user.id, user);
+      const response = await updateUserApi(user.id, user);
+      console.log("Dữ liệu từ updateUserApi:", response.data); // Kiểm tra dữ liệu phản hồi
+  
+      if (response.data) {
+        setUser((prevUser) => ({ ...prevUser, ...response.data })); // Cập nhật state đúng cách
+      }
+  
       notification.success({ message: "Cập nhật thông tin thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -41,7 +47,7 @@ function PersonalInfoForm() {
       setLoading(false);
     }
   };
-
+  
   if (!user) return <p className="text-gray-500">Đang tải...</p>;
 
   return (
