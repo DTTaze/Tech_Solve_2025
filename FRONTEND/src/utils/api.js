@@ -89,7 +89,9 @@ const submitTaskApi = (taskUserId, data) => {
     },
   });
 };
-
+const getAllTaskCompletedById = (id) => {
+  return axios.get(`api/users/task/completed/${id}`);
+};
 export {
   createUserApi,
   updateUserApi,
@@ -106,4 +108,5 @@ export {
   acceptTaskApi,
   receiveCoinApi,
   submitTaskApi,
+  getAllTaskCompletedById,
 };
