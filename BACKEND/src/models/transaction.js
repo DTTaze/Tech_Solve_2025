@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      seller_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       buyer_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -29,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      amount: {
+      total_price: {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {

@@ -10,6 +10,7 @@ router.get(
 );
 router.get("/me", userController.handleGetProfile);
 router.get("/:id", userController.handleGetUser);
+router.get("/task/completed/:id", userController.handleGetTaskCompleted);
 router.put("/:id", userController.handleUpdateUser);
 router.delete("/:id", userController.handleDeleteUser);
 
