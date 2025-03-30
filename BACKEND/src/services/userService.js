@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 const { Op } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
+const TaskUser = db.TaskUser;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 
@@ -174,6 +175,21 @@ const findOrCreateUser = async (profile) => {
   }
 };
 
+const getTaskCompleted = async (id) => {
+  try {
+    const user = await User.findOne({ where: { id: id } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const TaskUsers = await TaskUser.findAll({
+      where: { user_id: id, status: "done" },
+    });
+    return TaskUsers;
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
@@ -182,4 +198,5 @@ module.exports = {
   updateUser,
   findOrCreateUser,
   loginUser,
+  getTaskCompleted,
 };
