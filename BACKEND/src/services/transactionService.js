@@ -4,7 +4,6 @@ const Item = db.Item;
 
 const createTransaction = async (transactionData) => {
   try {
-    console.log("Transaction data:", transactionData);
     const { name, quantity, buyer_id, seller_id, item_id, status } = transactionData;
 
     if (!name || !buyer_id || !seller_id || !item_id) {
@@ -20,11 +19,11 @@ const createTransaction = async (transactionData) => {
       throw new Error("buyer_id, seller_id, and item_id must be valid numbers.");
     }
 
-    if (!parsedQuantity || parsedQuantity <= 0) {
-      throw new Error("Quantity must be a valid positive number.");
-    }
+    // Nếu `quantity` không hợp lệ, mặc định là 1
+    const finalQuantity = isNaN(parsedQuantity) || parsedQuantity <= 0 ? 1 : parsedQuantity;
 
-    const finalStatus = status || "pending";
+    // Nếu `status` không hợp lệ, mặc định là "pending"
+    const finalStatus = status?.trim() ? status : "pending";
 
     const item = await Item.findOne({ where: { id: parsedItemId } });
     if (!item) {
@@ -35,22 +34,24 @@ const createTransaction = async (transactionData) => {
       throw new Error("Invalid item price.");
     }
 
-    const total_price = item.price * parsedQuantity;
+    const total_price = item.price * finalQuantity;
 
     const transaction = await Transaction.create({
-        name: name,
-        seller_id: seller_id,
-        buyer_id: buyer_id,
-        item_id: item_id,
-        total_price: total_price,
-        quantity: quantity,
-        status: status,
+        name,
+        seller_id: parsedSellerId,
+        buyer_id: parsedBuyerId,
+        item_id: parsedItemId,
+        total_price,
+        quantity: finalQuantity,
+        status: finalStatus,
     });
+
     return transaction;
   } catch (error) {
     throw error;
   }
 };
+
 
 const getTransactionByUserId = async (buyerId) => {
   try {

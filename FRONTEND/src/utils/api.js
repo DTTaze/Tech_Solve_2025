@@ -8,8 +8,8 @@ const getUserApi = () => {
   return axios.get("api/users/me");
 };
 
-const updateUserApi = async (id, data) => {
-  return axios.post(`api/users/${id}`, data);
+export const updateUserApi = async (id, data) => {
+  return axios.put(`api/users/${id}`, data);
 };
 
 const loginUserApi = (data) => {
@@ -54,6 +54,10 @@ const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
 };
 
+export const getAllTaskCompletedById = (user_id) => {
+  return axios.get(`api/users/task/completed/${user_id}`);
+}
+
 const getAllTasksApi = () => {
   return axios.get("api/tasks");
 };
@@ -94,7 +98,6 @@ const getAllTaskCompletedById = (id) => {
 };
 export {
   createUserApi,
-  updateUserApi,
   loginUserApi,
   getAllUserApi,
   updateUserAvatarApi,
