@@ -11,8 +11,8 @@ const jwtAuth = (req, res, next) => {
     "/auth/forgot_password",
     "/auth/reset_password",
   ];
-  if (white_lists.find((item) => req.path.startsWith("/api" + item))) {
-    next(); 
+  if (white_lists.find((item) => "/api" + item === req.originalUrl)) {
+    next();
   } else {
     if (req.headers.authorization && req.headers) {
       const token = req.headers.authorization.split(" ")[1];
