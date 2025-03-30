@@ -19,7 +19,6 @@ function UserHeader() {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
-        if (response) setUser(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }

@@ -8,7 +8,7 @@ const getUserApi = () => {
   return axios.get("api/users/me");
 };
 
-export const updateUserApi = async (id, data) => {
+const updateUserApi = async (id, data) => {
   return axios.post(`api/users/${id}`, data);
 };
 
@@ -66,7 +66,7 @@ const acceptTaskApi = (taskId, userId) => {
   return axios.post(`api/tasks/${taskId}/accept/${userId}`);
 };
 
-const completeTaskApi = (taskId) => {
+export const completeTaskApi = (taskId) => {
   return axios.post(`api/tasks/${taskId}/complete`);
 };
 
@@ -92,6 +92,7 @@ const submitTaskApi = (taskUserId, data) => {
 
 export {
   createUserApi,
+  updateUserApi,
   loginUserApi,
   getAllUserApi,
   updateUserAvatarApi,
@@ -103,7 +104,6 @@ export {
   getAllTasksApi,
   getTaskByIdApi,
   acceptTaskApi,
-  completeTaskApi,
   receiveCoinApi,
   submitTaskApi,
 };

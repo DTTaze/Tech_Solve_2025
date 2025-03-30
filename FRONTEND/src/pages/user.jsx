@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ProfileCard from '../components/user/ProfileCard.jsx';
 import PersonalInfoForm from "../components/user/PersonalInformation.jsx";
-import UserDashboard from "../components/user/UserDashboard.jsx";
+import CompletedTaskList from "../components/user/CompletedTasksList.jsx";
 import TransactionHistory from "../components/user/TransactionHistory.jsx";
 
 function UserProfile() {
@@ -12,7 +12,7 @@ function UserProfile() {
       case "Thông tin cá nhân":
         return <PersonalInfoForm />;
       case "Nhiệm vụ":
-        return <UserDashboard />;
+        return <CompletedTaskList />;
       case "Lịch sử giao dịch":
         return <TransactionHistory />;
       default:
