@@ -1,5 +1,4 @@
 import React from "react";
-import images from "../../../components/features/exchangemarket/Photo.jsx";
 import CoinBalance from "../../../components/exchangemarket/CoinBalance.jsx";
 
 /**
@@ -7,6 +6,7 @@ import CoinBalance from "../../../components/exchangemarket/CoinBalance.jsx";
  * Displays user streaks and coin balance
  */
 const MissionHeader = ({ userInfo, loading }) => {
+  console.log("check user infor",userInfo)
   if (loading) {
     return (
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-green-500 to-green-400 rounded-xl p-6 text-white shadow-lg animate-pulse">

@@ -14,6 +14,7 @@ export default function ItemCatalog({ items }) {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
+        console.log("check user res coins",response.data)
         if (response) {
           setUser(response.data);
           setUserCoins(response.data.coins || 0); 
