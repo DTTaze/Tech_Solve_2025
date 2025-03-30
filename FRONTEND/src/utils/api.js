@@ -65,6 +65,42 @@ const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
 };
 
+const getAllTasksApi = () => {
+  return axios.get("api/tasks");
+};
+
+const getTaskByIdApi = (taskId) => {
+  return axios.get(`api/tasks/${taskId}`);
+};
+
+const acceptTaskApi = (taskId, userId) => {
+  return axios.post(`api/tasks/${taskId}/accept/${userId}`);
+};
+
+const completeTaskApi = (taskId) => {
+  return axios.post(`api/tasks/${taskId}/complete`);
+};
+
+const receiveCoinApi = (coins) => {
+  return axios.post('api/tasks/receive-coin', { coins });
+};
+
+const submitTaskApi = (taskUserId, data) => {
+  const formData = new FormData();
+  if (data.description) {
+    formData.append("description", data.description);
+  }
+  if (data.file) {
+    formData.append("file", data.file);
+  }
+  
+  return axios.post(`api/tasks/submit/${taskUserId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 export {
   createUserApi,
   loginUserApi,
@@ -74,5 +110,11 @@ export {
   getAllUserAvatarsApi,
   getUserAvatarByIdApi,
   uploadUserAvatarApi,
-  getUserApi
+  getUserApi,
+  getAllTasksApi,
+  getTaskByIdApi,
+  acceptTaskApi,
+  completeTaskApi,
+  receiveCoinApi,
+  submitTaskApi
 };

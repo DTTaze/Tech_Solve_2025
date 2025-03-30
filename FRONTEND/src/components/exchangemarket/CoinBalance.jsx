@@ -6,7 +6,7 @@ export default function CoinBalance({ coins }) {
     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
       <div className="flex items-center">
         <Coins className="h-6 w-6 text-amber-600 mr-2" />
-        <span className="font-medium">Your Balance</span>
+        <span className="font-medium text-amber-600 mr-25">Your Balance</span>
       </div>
       <motion.div
         key={coins} // Kích hoạt animation khi số coin thay đổi
@@ -18,5 +18,5 @@ export default function CoinBalance({ coins }) {
         {coins} coins
       </motion.div>
     </div>
-  )
+  );
 }
