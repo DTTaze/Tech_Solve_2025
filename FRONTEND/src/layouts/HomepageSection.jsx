@@ -41,7 +41,7 @@ function SectionHero() {
     }, [index]);
 
     return (
-        <section className="h-[60vh] w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
+        <section className="h-[60%] w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
     {/* Tiêu đề */}
     <header className="w-full lg:w-1/2 text-[#059212] flex justify-center items-center text-center font-bold 
                       text-lg sm:text-xl md:text-2xl lg:text-4xl">

@@ -12,6 +12,7 @@ function UserHeader() {
   const [user, setUser] = useState(null);
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
+  const menuButtonRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,8 +29,16 @@ function UserHeader() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!menuRef.current?.contains(event.target)) setMenuOpen(false);
-      if (!profileMenuRef.current?.contains(event.target)) setProfileMenuOpen(false);
+      if (
+        menuRef.current?.contains(event.target) ||
+        menuButtonRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+      setMenuOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -91,7 +100,7 @@ function UserHeader() {
       )}
 
       {/* Mobile Menu Button */}
-      <button className="md:hidden text-2xl cursor-pointer" onClick={() => setMenuOpen(!menuOpen)}>
+      <button ref={menuButtonRef} className="md:hidden text-2xl cursor-pointer z-20" onClick={() => setMenuOpen(!menuOpen)}>
         {menuOpen ? "✖" : "☰"}
       </button>
 
@@ -100,7 +109,7 @@ function UserHeader() {
         ref={menuRef}
         className={`fixed top-0 left-0 w-full h-screen bg-[#0B6E4F] transition-transform duration-300 ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
-        } flex flex-col items-center justify-center text-white z-50`}
+        } flex flex-col items-center justify-center text-white z-10`}
       >
         {pages.map(({ key, label }) => (
           <button key={key} className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => { navigate(`/${key}`); setMenuOpen(false); }}>
