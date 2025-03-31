@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from "@tailwindcss/vite";
 import dns from "dns";
 // https://vitejs.dev/config/server-options.html#server-options
 dns.setDefaultResultOrder("verbatim");
@@ -11,6 +11,15 @@ export default defineConfig({
   server: {
     port: 5173,
     host: "0.0.0.0",
+    // strictPort: false,
+    // cors: {
+    //   origin: "https://greenflag.id.vn",
+    //   credentials: true,
+    // },
+    cors: {
+      origin: "https://localhost:6060",
+      credentials: true,
+    },
     allowedHosts: ["greenflag.id.vn"],
   },
 });
