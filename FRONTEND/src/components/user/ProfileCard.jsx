@@ -66,12 +66,12 @@ function ProfileCard({ setSelectedTab }) {
   };
 
   return (
-    <div className="flex flex-col p-4 bg-white rounded-lg shadow-md border">
-      <div className="flex space-x-4">
-        <div className="relative flex h-20 w-20 shrink-0">
+    <div className="max-w-sm mx-auto p-4 bg-white rounded-lg shadow-md border">
+      <div className="flex flex-wrap items-center space-x-4 sm:space-x-6">
+        <div className="relative flex h-20 w-20 sm:h-16 sm:w-16 shrink-0">
           <img
             alt="Avatar"
-            className={`h-20 w-20 rounded-lg object-cover cursor-pointer ${loading ? 'opacity-50' : 'opacity-100'}`}
+            className={`h-full w-full rounded-lg object-cover cursor-pointer ${loading ? 'opacity-50' : 'opacity-100'}`}
             src={`${avatarUrl}?t=${Date.now()}`}
             onClick={() => fileInputRef.current.click()}
           />
@@ -83,9 +83,9 @@ function ProfileCard({ setSelectedTab }) {
             onChange={handleFileChange}
           />
         </div>
-        <div className="flex flex-col">
-          <h2 className="text-base font-semibold break-all">{user?.full_name || "null"}</h2>
-          <p className="text-xs">{user?.full_name}</p>
+        <div className="flex flex-col flex-1 break-words">
+          <h2 className="text-base font-semibold">{user?.full_name || "null"}</h2>
+          <p className="text-xs text-gray-600">{user?.email || "No email available"}</p>
         </div>
       </div>
       <div className="my-4 h-px w-full border-b"></div>

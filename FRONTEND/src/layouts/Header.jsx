@@ -20,13 +20,24 @@ function UserHeader() {
       try {
         const response = await getUserApi();
         setUser(response.data);
+  
+        if (auth.user && response.data.coins !== auth.user.coins) {
+          setAuth((prevAuth) => ({
+            ...prevAuth,
+            user: { ...prevAuth.user, coins: response.data.coins }
+          }));
+        }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
     };
+  
     fetchUser();
-  }, []);
-
+    const interval = setInterval(fetchUser, 5000);
+  
+    return () => clearInterval(interval);
+  }, [auth.user]);
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -77,13 +88,15 @@ function UserHeader() {
       </div>
 
       {/* Navigation */}
-      <nav className="hidden md:flex space-x-6">
-        {pages.map(({ key, label }) => (
-          <button key={key} className="font-bold hover:text-[#62C370] text-lg cursor-pointer" onClick={() => navigate(`/${key}`)}>
-            {label}
-          </button>
-        ))}
-      </nav>
+      {auth.isAuthenticated && (
+        <nav className="hidden md:flex space-x-6">
+          {pages.map(({ key, label }) => (
+            <button key={key} className="font-bold hover:text-[#62C370] text-lg cursor-pointer" onClick={() => navigate(`/${key}`)}>
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {/* User Profile */}
       {auth.isAuthenticated ? (
@@ -122,7 +135,7 @@ function UserHeader() {
           menuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col items-center justify-center text-white z-10`}
       >
-        {pages.map(({ key, label }) => (
+        {auth.isAuthenticated && pages.map(({ key, label }) => (
           <button key={key} className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => { navigate(`/${key}`); setMenuOpen(false); }}>
             {label}
           </button>

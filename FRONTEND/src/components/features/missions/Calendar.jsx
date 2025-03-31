@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import range from "lodash-es/range";
 import '../../../styles/components/Calendar.scss';
-import images from "../exchangemarket/Photo.jsx";
 
 const weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const todayObj = dayjs();

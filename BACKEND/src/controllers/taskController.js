@@ -93,11 +93,10 @@ const handleSubmitTask = async (req, res) => {
       throw new Error("Image is required");
     }
 
-    let file = req.file; // Lấy file từ form-data
+    let file = req.file; 
 
     let result = await taskService.submitTask(
       task_user_id,
-      user_id,
       description,
       file,
       auth
@@ -109,10 +108,11 @@ const handleSubmitTask = async (req, res) => {
   }
 };
 
-const handleUpdateTaskSubmit = async (req, res) => {
+const handleDecisionTaskSubmit = async (req, res) => {
   try {
     const task_submit_id = req.params.id;
-    let result = await taskService.updateTaskSubmit(task_submit_id);
+    const decision = req.body.decision; // "approved" or "rejected"
+    let result = await taskService.updateDecisionTaskSubmit(task_submit_id,decision);
     return res.success("Approved task submit success", result);
   } catch (error) {
     return res.error(500, "Failed to update task submit", error.message);
@@ -130,5 +130,5 @@ module.exports = {
   handleCompleteTask,
   handleReceiveCoin,
   handleSubmitTask,
-  handleUpdateTaskSubmit,
+  handleDecisionTaskSubmit,
 };

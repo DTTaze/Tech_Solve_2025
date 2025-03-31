@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Coins } from "lucide-react";
-import QuantityInput from "../ui/QuantityInput"
+import QuantityInput from "../../ui/QuantityInput"
 
 export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConfirm }) {
   if (!item || !isOpen) return null;

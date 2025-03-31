@@ -55,7 +55,7 @@ const createTransaction = async (transactionData) => {
 
 const getTransactionByUserId = async (buyerId) => {
   try {
-    const transaction = await Transaction.findOne({
+    const transaction = await Transaction.findAll({
       where: { buyer_id: buyerId },
     });
     if (!transaction) {

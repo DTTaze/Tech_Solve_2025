@@ -1,5 +1,4 @@
 import React from 'react';
-import images from "../exchangemarket/Photo.jsx";
 
 function Ranking({ rankData = null }) {
     // Default data if none provided
@@ -18,7 +17,7 @@ function Ranking({ rankData = null }) {
                 {/* 2nd Place */}
                 <div className="place-2 flex flex-col items-center mx-3">
                     <div className="avatar w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300 overflow-hidden mb-2">
-                        <img src={images.user} alt="User 2" className="w-full h-full object-cover" />
+                        <img src='../../../src/assets/images/anh-tho.jpg' alt="User 2" className="w-full h-full object-cover" />
                     </div>
                     <div className="h-20 w-20 bg-silver rounded-t-lg flex items-center justify-center bg-gradient-to-t from-gray-400 to-gray-300">
                         <span className="text-white font-bold text-lg">2</span>
@@ -31,7 +30,7 @@ function Ranking({ rankData = null }) {
                 <div className="place-1 flex flex-col items-center mx-4">
                     <div className="crown text-yellow-500 -mb-3">👑</div>
                     <div className="avatar w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center border-2 border-yellow-400 overflow-hidden mb-2">
-                        <img src={images.user} alt="User 1" className="w-full h-full object-cover" />
+                        <img src='../../../src/assets/images/anh-tho.jpg' alt="User 1" className="w-full h-full object-cover" />
                     </div>
                     <div className="h-24 w-24 rounded-t-lg flex items-center justify-center bg-gradient-to-t from-yellow-500 to-yellow-300">
                         <span className="text-white font-bold text-xl">1</span>
@@ -43,7 +42,7 @@ function Ranking({ rankData = null }) {
                 {/* 3rd Place */}
                 <div className="place-3 flex flex-col items-center mx-3">
                     <div className="avatar w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-yellow-700 overflow-hidden mb-2">
-                        <img src={images.user} alt="User 3" className="w-full h-full object-cover" />
+                        <img src='../../../src/assets/images/anh-tho.jpg' alt="User 3" className="w-full h-full object-cover" />
                     </div>
                     <div className="h-16 w-16 rounded-t-lg flex items-center justify-center bg-gradient-to-t from-yellow-700 to-yellow-600">
                         <span className="text-white font-bold text-lg">3</span>
@@ -63,7 +62,7 @@ function Ranking({ rankData = null }) {
                                 {position}
                             </div>
                             <div className="avatar w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
-                                <img src={images.user} alt={`User ${position}`} className="w-full h-full object-cover" />
+                                <img  alt={`User ${position}`} className="w-full h-full object-cover" />
                             </div>
                             <div className="name flex-1 text-sm font-medium text-gray-700">{name}</div>
                             <div className="score text-sm font-medium text-gray-600">

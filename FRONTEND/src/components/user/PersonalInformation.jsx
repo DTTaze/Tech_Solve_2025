@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getUserApi, updateUserApi } from "../../utils/api.js";
 import { notification } from "antd";
 import "../../styles/components/PersonalInformation.css";
@@ -6,39 +6,86 @@ import "../../styles/components/PersonalInformation.css";
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await getUserApi({ params: { t: Date.now() } });
+      console.log("Dữ liệu từ server:", response.data);
+      if (response.data) {
+        setUser(response.data);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+      notification.error({ message: "Không thể tải thông tin người dùng" });
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await getUserApi();
-        if (response.data) setUser(response.data);
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
-        notification.error({ message: "Không thể tải thông tin người dùng" });
-      }
-    };
-
     fetchUser();
-  }, []);
+  }, [fetchUser]);
+
+  const validateField = (name, value) => {
+    let error = "";
+    switch (name) {
+      case "username":
+        if (!value) error = "Tên người dùng không được để trống";
+        else if (value.length < 3) error = "Tên người dùng phải dài hơn 3 ký tự";
+        else if (!/^[a-zA-Z0-9]+$/.test(value))
+          error = "Tên người dùng chỉ được chứa chữ cái và số";
+        break;
+      case "email":
+        if (!value) error = "Email không được để trống";
+        else if (!/\S+@\S+\.\S+/.test(value)) error = "Email không hợp lệ";
+        break;
+      case "full_name":
+        if (!value) error = "Họ và tên không được để trống";
+        else if (!/^[a-zA-Z\s]+$/.test(value))
+          error = "Họ và tên không được chứa ký tự đặc biệt";
+        break;
+      case "address":
+        if (!value) error = "Địa chỉ không được để trống";
+        break;
+      case "phone_number":
+        if (!value) error = "Số điện thoại không được để trống";
+        else if (!/^\d{10}$/.test(value)) error = "Số điện thoại phải là 10 chữ số";
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+    setUser((prev) => ({ ...prev, [name]: value }));
+
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!user) return;
+
+    const newErrors = {};
+    inputFields.forEach(({ id }) => {
+      const error = validateField(id, user[id] || "");
+      if (error) newErrors[id] = error;
+    });
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      notification.error({ message: "Vui lòng kiểm tra lại thông tin" });
+      return;
+    }
   
     setLoading(true);
     try {
-      const response = await updateUserApi(user.id, user);
-      console.log("Dữ liệu từ updateUserApi:", response.data); // Kiểm tra dữ liệu phản hồi
-  
-      if (response.data) {
-        setUser((prevUser) => ({ ...prevUser, ...response.data })); // Cập nhật state đúng cách
-      }
-  
+      console.log("Dữ liệu gửi đi:", user);
+      const res = await updateUserApi(user.id, user);
+      console.log("Phản hồi từ updateUserApi:", res.data);
+      await fetchUser();
       notification.success({ message: "Cập nhật thông tin thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -47,8 +94,16 @@ function PersonalInfoForm() {
       setLoading(false);
     }
   };
-  
+
   if (!user) return <p className="text-gray-500">Đang tải...</p>;
+
+  const inputFields = [
+    { id: "username", label: "Tên người dùng" },
+    { id: "email", label: "Email" },
+    { id: "full_name", label: "Họ và Tên" },
+    { id: "address", label: "Địa chỉ" },
+    { id: "phone_number", label: "Số điện thoại" },
+  ];
 
   return (
     <div className="p-4 border bg-white rounded-lg shadow-md">
@@ -56,13 +111,7 @@ function PersonalInfoForm() {
       <hr className="my-2 border-gray-300" />
 
       <form className="space-y-4" onSubmit={handleUpdate}>
-        {[
-          { id: "username", label: "Tên người dùng" },
-          { id: "email", label: "Email" },
-          { id: "full_name", label: "Họ và Tên" },
-          { id: "address", label: "Địa chỉ" },
-          { id: "phone_number", label: "Số điện thoại" },
-        ].map(({ id, label }) => (
+        {inputFields.map(({ id, label }) => (
           <div key={id} className="input-field">
             <input
               required
@@ -71,14 +120,18 @@ function PersonalInfoForm() {
               id={id}
               value={user[id] || ""}
               onChange={handleChange}
+              className={errors[id] ? "border-red-500" : ""}
             />
             <label htmlFor={id}>{label}</label>
+            {errors[id] && (
+              <p className="text-red-500 text-sm mt-1">{errors[id]}</p>
+            )}
           </div>
         ))}
 
-        <button type="submit" className="btn-submit" disabled={loading}>
+        <button type="submit" className="btn-submit" disabled={loading || !user}>
           <span>
-          {loading ? "Đang cập nhật..." : "Cập nhật"}
+            {loading ? "Đang cập nhật..." : "Cập nhật"}
           </span>
         </button>
       </form>
