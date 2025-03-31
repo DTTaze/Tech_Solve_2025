@@ -74,7 +74,6 @@ function Mission() {
             id: task.id,
             coin: task.coins,
             level: task.difficulty || "easy",
-            imgScr: images.seedling_solid, // Default icon
             Task_num: task.title,
             description: task.description,
             content: task.content,

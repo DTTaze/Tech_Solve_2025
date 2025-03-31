@@ -70,7 +70,6 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-blue-50 rounded-xl">
             <img
-              src={images.seedling_solid}
               alt="All done!"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -127,7 +126,6 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-indigo-50 rounded-xl">
             <img
-              src={images.seedling_solid}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -248,7 +246,6 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-green-50 rounded-xl">
             <img
-              src={images.seedling_solid}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
