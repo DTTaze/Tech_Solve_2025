@@ -29,6 +29,52 @@ function Mission() {
   const taskPerPage = 3;
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
 
+  // Function to fetch new tasks
+  const fetchNewTasks = async () => {
+    try {
+      setLoading(true);
+      const taskResponse = await getAllTasksApi();
+
+      if (taskResponse?.data?.success) {
+        const tasksData = taskResponse.data.data.map((task) => ({
+          id: task.id,
+          title: task.title,
+          content: task.content,
+          description: task.description,
+          coins: task.coins,
+          difficulty: task.difficulty || "easy",
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+        }));
+        setTasks(tasksData);
+
+        // Create user tasks from the tasks data
+        const userTasksData = tasksData.map((task) => ({
+          task_id: task.id,
+          user_id: userInfo?.id || 1,
+          complete: 0,
+          total: 5,
+          satus: "inProgress",
+          coin_per_user: task.coins,
+          completed_at: null,
+          assigned_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }));
+
+        setUserTasks(userTasksData);
+        toast.success("Đã tải nhiệm vụ mới!");
+      } else {
+        toast.error("Không thể tải nhiệm vụ mới");
+      }
+    } catch (error) {
+      console.error("Failed to fetch new tasks:", error);
+      toast.error("Đã xảy ra lỗi khi tải nhiệm vụ mới");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch data from backend
   useEffect(() => {
     const fetchData = async () => {
@@ -46,105 +92,71 @@ function Mission() {
         console.log("Task response:", taskResponse);
         console.log("User response:", userResponse);
 
+        
         // Process tasks from API response
-        let tasksData = [];
-
-        if (taskResponse?.data) {
-          console.log("Processing task response data...");
-          if (
-            taskResponse.data.success &&
-            Array.isArray(taskResponse.data.data)
-          ) {
-            tasksData = taskResponse.data.data;
-          } else if (Array.isArray(taskResponse.data)) {
-            tasksData = taskResponse.data;
-          } else if (
-            taskResponse.data.data &&
-            !Array.isArray(taskResponse.data.data)
-          ) {
-            if (typeof taskResponse.data.data === "object") {
-              tasksData = Object.values(taskResponse.data.data);
-            }
-          }
-        }
-
-        console.log("Processed tasks data:", tasksData);
-
-        if (tasksData.length > 0) {
-          const processedTasks = tasksData.map((task) => ({
+        if (taskResponse.data) {
+          const tasksData = taskResponse.data.map((task) => ({
             id: task.id,
-            coin: task.coins,
-            level: task.difficulty || "easy",
-            imgScr: images.seedling_solid,
-            Task_num: task.title,
-            description: task.description,
+            title: task.title,
             content: task.content,
+            description: task.description,
+            coins: task.coins,
+            difficulty: task.difficulty || "easy",
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,
           }));
-
-          console.log("Processed tasks for UI:", processedTasks);
-          setTasks(processedTasks);
-
-          const mockUserTasks = processedTasks.map((task) => {
-            const total = 5;
-            const isCompleted = Math.random() > 0.6;
-            const progress = isCompleted
-              ? total
-              : Math.floor(Math.random() * total);
-
-            return {
-              task_id: task.id,
-              user_id: userResponse?.data?.data?.id || 1,
-              level: task.level,
-              Complete: progress,
-              Total: total,
-              imgScr: task.imgScr,
-              Task_num: task.Task_num,
-              coin: task.coin,
-              completed_at: isCompleted ? new Date().toISOString() : null,
-              description: task.description,
-            };
-          });
-
-          console.log("Mock user tasks:", mockUserTasks);
-          setUserTasks(mockUserTasks);
+          setTasks(tasksData);
         } else {
-          console.log("No tasks available.");
+          console.log("No task found, setting default null.");
           setTasks([]);
-          setUserTasks([]);
           toast.warning("No tasks available");
         }
+        //Xử lý thông tin nhiệm vụ của người dùng
+        if (userResponse?.data?.tasks) {
+          const userTasksData = userResponse.data.tasks.map((userTask) => ({
+            task_id: userTask.id,
+            user_id: userResponse?.data?.data?.id || 1,
+            complete: userTask.complete || 0,
+            total: userTask.total || 5,
+            satus: isCompleted ? "done" : "inProgress",
+            coin_per_user: userTask.coin,
+            completed_at: isCompleted ? new Date().toISOString() : null,
+            assigned_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }));
+          setUserTasks(userTasksData);
+        } else {
+          console.log("No user task found, setting default user task.");
+          setUserTasks([]);
+        }
 
-        if (userResponse?.data) {
+        // Xử lý thông tin người dùng
+        if (userResponse?.data?.user) {
           console.log("Setting user info:", userResponse.data);
           setUserInfo({
             id: userResponse.data.id,
+            role_id: userResponse.data.role_id,
+            avatar_url: userResponse.data.avatar_url || null,
+            google_id: userResponse.data.google_id || null,
             full_name: userResponse.data.full_name || "User",
             email: userResponse.data.email,
+            password: userResponse.data.password,
             coins: userResponse.data.coins || 0,
+            address: userResponse.data.address || null,
             streak: userResponse.data.streak || 0,
             last_logined: userResponse.data.last_logined,
+            created_at: userResponse.data.created_at,
+            updated_at: userResponse.data.updated_at,
+            ownerer_id: userResponse.data.ownererid || null,
           });
         } else {
           console.log("No user data found, setting default user info.");
-          setUserInfo({
-            id: 1,
-            name: "Guest User",
-            coins: 0,
-            streak: 0,
-          });
+          setUserInfo(null);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
         toast.error("Không thể tải dữ liệu nhiệm vụ");
-
-        setUserInfo({
-          id: 1,
-          name: "Guest User",
-          coins: 0,
-          streak: 0,
-        });
       } finally {
         setLoading(false);
         console.log("Finished fetching data.");
@@ -184,25 +196,19 @@ function Mission() {
           if (task) {
             try {
               // Make the API calls to complete task and receive coins
-              const completeResponse = await completeTaskApi(taskId); //cập nhật trạng thái hoàn thành
-              console.log("Task completion response:", completeResponse);
-
+              await completeTaskApi(taskId); //cập nhật trạng thái hoàn thành
+              console.log("Task completed successfully.");
               const coinsResponse = await receiveCoinApi(task.coin || 0);
               console.log("Receive coins response:", coinsResponse);
 
-              // Update user coin balance
-              // setUserInfo((prev) => ({
-              //   ...prev,
-              //   coins: (prev?.coins || 0) + (task.coin || 0),
-              // }));
-              const responseUser = await getUserApi();
+              // Update user coin balance using the response from receiveCoinApi
               setUserInfo((prev) => {
                 const updatedUser = {
                   ...prev,
-                  coins: responseUser?.data?.coins || 0,
+                  coins: coinsResponse.data.coins,
                 };
                 console.log(
-                  "check user infor after receive coins",
+                  "Updated user info after receiving coins:",
                   updatedUser
                 );
                 return updatedUser;
@@ -228,7 +234,7 @@ function Mission() {
           setUserTasks((prevUserTasks) =>
             prevUserTasks.map((ut) =>
               ut.user_id === userId && ut.task_id === taskId
-                ? { ...ut, Complete: Math.min(ut.Complete + 1, ut.Total) }
+                ? { ...ut, complete: Math.min(ut.complete + 1, ut.total) }
                 : ut
             )
           );
@@ -250,14 +256,15 @@ function Mission() {
     // Filter tasks for daily tasks (we'll use medium and hard difficulty as daily tasks)
     return userTasks.filter(
       (task) =>
-        !task.completed_at && (task.level === "medium" || task.level === "hard")
+        !task.completed_at &&
+        (task.difficulty === "medium" || task.difficulty === "hard")
     );
   }, [userTasks]);
 
   const otherTasks = useMemo(() => {
     // Filter tasks for other tasks (using easy difficulty as other tasks)
     return userTasks.filter(
-      (task) => !task.completed_at && task.level === "easy"
+      (task) => !task.completed_at && task.difficulty === "easy"
     );
   }, [userTasks]);
 
@@ -426,27 +433,53 @@ function Mission() {
 
             {/* Task List */}
             <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
-              <TasksList
-                tasks={
-                  selectedTab === "daily"
-                    ? dailyTasks
-                    : selectedTab === "other"
-                    ? otherTasks
-                    : selectedTab === "completed"
-                    ? completedTasks
-                    : []
-                }
-                loading={loading}
-                completingTask={completingTask}
-                handleTaskCompletion={handleTaskCompletion}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                goToNextPage={goToNextPage}
-                goToPreviousPage={goToPreviousPage}
-                userId={userInfo?.id}
-                selectedTab={selectedTab}
-                taskPerPage={taskPerPage}
-              />
+              {selectedTab === "daily" && dailyTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Không có nhiệm vụ hàng ngày nào
+                  </p>
+                  <button
+                    onClick={fetchNewTasks}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Lấy Nhiệm Vụ Mới
+                  </button>
+                </div>
+              ) : selectedTab === "other" && otherTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Không có nhiệm vụ phụ nào
+                  </p>
+                  <button
+                    onClick={fetchNewTasks}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Lấy Nhiệm Vụ Mới
+                  </button>
+                </div>
+              ) : (
+                <TasksList
+                  tasks={
+                    selectedTab === "daily"
+                      ? dailyTasks
+                      : selectedTab === "other"
+                      ? otherTasks
+                      : selectedTab === "completed"
+                      ? completedTasks
+                      : []
+                  }
+                  loading={loading}
+                  completingTask={completingTask}
+                  handleTaskCompletion={handleTaskCompletion}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  goToNextPage={goToNextPage}
+                  goToPreviousPage={goToPreviousPage}
+                  userId={userInfo?.id}
+                  selectedTab={selectedTab}
+                  taskPerPage={taskPerPage}
+                />
+              )}
             </div>
           </div>
 
