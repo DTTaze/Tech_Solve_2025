@@ -35,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("easy", "medium", "hard"),
         allowNull: false,
       },
+      total: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 1,
+      }
     },
     {
       sequelize,
