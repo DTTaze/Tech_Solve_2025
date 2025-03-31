@@ -22,6 +22,67 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+  flex-direction: column;
+  flex-shrink: 0;
+  background-color: white;
+  position: fixed;
+  box-sizing: content-box;
+}
+
+.missionVideo-page-main-video {
+  padding: 1rem;
+  background-color: #f8f9fa;
+}
+
+/* Custom scrollbar for video section */
+.missionVideo-page-main-video::-webkit-scrollbar {
+  width: 8px;
+}
+
+.missionVideo-page-main-video::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.missionVideo-page-main-video::-webkit-scrollbar-thumb {
+  background: #0b6e4f;
+  border-radius: 4px;
+}
+
+.missionVideo-page-main-video::-webkit-scrollbar-thumb:hover {
+  background: #094c35;
+}
+
+/* Animation for stats cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-white {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .missionVideo-page-main-video {
+    padding: 0.5rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
   background-color: #FFFFFF;
   overflow: hidden;
 }

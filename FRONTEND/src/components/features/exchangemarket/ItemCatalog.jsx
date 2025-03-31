@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import CoinBalance from "./CoinBalance";
 import ItemCard from "./ItemCard";
 import PurchaseModal from "./PurchaseModal";
-import { getUserApi, updateUserApi } from "../../utils/api";
+import { getUserApi, updateUserApi } from "../../../utils/api";
 
 export default function ItemCatalog({ items }) {
   const [user, setUser] = useState(null);

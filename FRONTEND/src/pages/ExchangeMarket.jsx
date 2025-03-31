@@ -1,4 +1,4 @@
-import ItemCatalog from "../components/exchangemarket/ItemCatalog"
+import ItemCatalog from "../components/features/exchangemarket/ItemCatalog"
 import { items } from "../data/data"
 
 export default function ExchangeMarket() {

@@ -1,69 +1,73 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { getAllTaskCompletedById, getUserApi } from "../../utils/api";
 
 function CompletedTasksList() {
-  const [user, setUser] = useState(null);
   const [userCompletedTasks, setUserCompletedTasks] = useState([]);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserCompletedTasks = async () => {
-      try {
-        const responseUser = await getUserApi();
-        setUser(responseUser.data);
-        const responseUserCompletedTasks = await getAllTaskCompletedById(responseUser.data.id);
-        console.log(responseUserCompletedTasks.data);
-        setUserCompletedTasks(responseUserCompletedTasks.data.map(task => ({
-          id: task.id,
-          name: task.tasks.title,
-          points: task.coins_per_user,
-          completedAt: task.completed_at
-        })));
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
-      }
-    };
-
-    fetchUserCompletedTasks();
+  const fetchUserCompletedTasks = useCallback(async () => {
+    try {
+      const { data: user } = await getUserApi();
+      const { data: tasks } = await getAllTaskCompletedById(user.id);
+      setUserCompletedTasks(
+        tasks.map(({ id, tasks, coins_per_user, completed_at }) => ({
+          id,
+          name: tasks.title,
+          points: coins_per_user,
+          completedAt: completed_at,
+        }))
+      );
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchUserCompletedTasks();
+  }, [fetchUserCompletedTasks]);
+
   const requestSort = (key) => {
-    const order = sortKey === key && sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder((prevOrder) => (sortKey === key && prevOrder === "asc" ? "desc" : "asc"));
     setSortKey(key);
-    setSortOrder(order);
   };
 
-  const sortedTasks = [...userCompletedTasks].sort((a, b) => {
-    if (a[sortKey] < b[sortKey]) return sortOrder === "asc" ? -1 : 1;
-    if (a[sortKey] > b[sortKey]) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
+  const sortedTasks = useMemo(() => {
+    return [...userCompletedTasks].sort((a, b) => {
+      if (a[sortKey] < b[sortKey]) return sortOrder === "asc" ? -1 : 1;
+      if (a[sortKey] > b[sortKey]) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [userCompletedTasks, sortKey, sortOrder]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+    return date.toLocaleDateString("vi-VN");
   };
+
+  const columns = [
+    { key: "id", label: "ID" },
+    { key: "name", label: "Tên nhiệm vụ" },
+    { key: "points", label: "Điểm" },
+    { key: "completedAt", label: "Ngày hoàn thành" },
+  ];
 
   return (
     <div className="w-full p-4 border rounded-lg shadow-md bg-white">
       <h2 className="text-xl font-bold">Danh sách nhiệm vụ đã hoàn thành</h2>
-      {userCompletedTasks.length > 0 ? (
+
+      {loading ? (
+        <div className="text-center p-4 text-gray-500">Đang tải...</div>
+      ) : userCompletedTasks.length > 0 ? (
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full border-collapse border border-gray-200">
             <thead>
               <tr className="bg-gray-100">
-                {[
-                  { key: "id", label: "ID" },
-                  { key: "name", label: "Tên nhiệm vụ" },
-                  { key: "points", label: "Điểm" },
-                  { key: "completedAt", label: "Ngày hoàn thành" },
-                ].map(({ key, label }) => (
-                  <th
-                    key={key}
-                    className="border p-2 cursor-pointer"
-                    onClick={() => requestSort(key)}
-                  >
+                {columns.map(({ key, label }) => (
+                  <th key={key} className="border p-2 cursor-pointer" onClick={() => requestSort(key)}>
                     {label}
                   </th>
                 ))}

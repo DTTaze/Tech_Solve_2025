@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
 import "../styles/pages/mission.scss";
-import images from "../components/features/exchangemarket/Photo.jsx";
-import CoinBalance from "../components/exchangemarket/CoinBalance.jsx";
+import CoinBalance from "../components/features/exchangemarket/CoinBalance.jsx";
 import {
   getAllTasksApi,
   completeTaskApi,

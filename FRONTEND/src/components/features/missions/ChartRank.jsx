@@ -1,5 +1,4 @@
 import React from 'react';
-import images from "../exchangemarket/Photo.jsx";
 
 function Ranking({ rankData = null }) {
     // Default data if none provided
