@@ -138,7 +138,9 @@ const getUserByID = async (id) => {
 
 const updateUser = async (id, data) => {
   try {
-    let { username, email, full_name, address, phone_number } = data;
+    let username = data.username || "";
+    let email = data.email || "";
+    let { full_name, address, phone_number } = data;
     let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
@@ -150,8 +152,10 @@ const updateUser = async (id, data) => {
     phone_number
       ? (user.phone_number = phone_number)
       : (user.phone_number = user.phone_number);
-    user.username = username;
-    user.email = email;
+    user.username == ""
+      ? (user.username = username)
+      : (user.username = user.username);
+    user.email == "" ? (user.email = email) : (user.email = user.email);
     await user.save();
 
     return await User.findAll();

@@ -1,98 +1,27 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 
+:root {
+  --primary-green: #0B6E4F; 
+  --secondary-green: #10A56C;
+  --light-green: #7DCE82;
+  --dark-bg: #121212;
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --text-light: #FFFFFF;
+  --text-dark: #333333;
+}
+
 body {
   font-family: Roboto, sans-serif;
   font-size: 14px;
+  margin: 0;
+  padding: 0;
 }
 
-.missionVideo-page-container {
-  margin-top: 0px;
-  display: flex;
+/* Main container */
+.mission-video-container {
+  position: relative;
   width: 100vw;
-  max-width: 100%;
-  -webkit-box-pack: justify;
-  justify-content: space-between;
-  align-self: center;
-  flex: 1 1 auto;
-  background-color: rgb(20, 19, 19);
-}
-
-.missionVideo-page-sidebar {
-  width: 15rem;
-  flex-shrink: 0;
-  z-index: 99;
-}
-
-.missionVideo-page-sidebar-container {
-  width: 15rem;
   height: 100vh;
-  display: flex;
-  -webkit-box-align: center;
-  align-items: center;
-  overflow: auto;
-  overscroll-behavior: contain;
-  flex-direction: column;
-  flex-shrink: 0;
-  background-color: white;
-  position: fixed;
-  box-sizing: content-box;
-}
-
-.missionVideo-page-main-video {
-  padding: 1rem;
-  background-color: #f8f9fa;
-}
-
-/* Custom scrollbar for video section */
-.missionVideo-page-main-video::-webkit-scrollbar {
-  width: 8px;
-}
-
-.missionVideo-page-main-video::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.missionVideo-page-main-video::-webkit-scrollbar-thumb {
-  background: #0b6e4f;
-  border-radius: 4px;
-}
-
-.missionVideo-page-main-video::-webkit-scrollbar-thumb:hover {
-  background: #094c35;
-}
-
-/* Animation for stats cards */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.bg-white {
-  animation: fadeInUp 0.5s ease-out;
-}
-
-/* Hover effects for stats cards */
-.bg-white:hover {
-  transform: translateY(-5px);
-  transition: transform 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .missionVideo-page-main-video {
-    padding: 0.5rem;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
+  background-color: #FFFFFF;
+  overflow: hidden;
 }
