@@ -1,7 +1,6 @@
 import React from "react";
 import TaskCard from "./TaskCard";
 import TaskCardSkeleton from "./TaskCardSkeleton";
-import images from "../../../components/features/exchangemarket/Photo.jsx";
 
 /**
  * Component to display a list of tasks with pagination

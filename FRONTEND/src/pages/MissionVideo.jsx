@@ -1,7 +1,7 @@
 import React from "react";
 import "../styles/pages/mission-video.css";
 import VideosSection from "../components/VideosSection";
-import CoinBalance from "../components/exchangemarket/CoinBalance.jsx";
+import CoinBalance from "../components/features/exchangemarket/CoinBalance.jsx";
 
 function MissionVideo() {
   return (

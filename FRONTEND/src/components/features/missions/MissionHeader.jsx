@@ -1,5 +1,5 @@
 import React from "react";
-import CoinBalance from "../../../components/exchangemarket/CoinBalance.jsx";
+import CoinBalance from "../exchangemarket/CoinBalance";
 
 /**
  * Header component for the mission page

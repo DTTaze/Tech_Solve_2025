@@ -1,7 +1,6 @@
 import React from "react";
 import ProgressBar from "./ProgressBar";
 import { getLevelColor, getLevelText } from "./TaskUtils";
-import images from "../../features/exchangemarket/Photo.jsx";
 
 /**
  * Task Card component for displaying mission tasks
