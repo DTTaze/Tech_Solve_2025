@@ -40,6 +40,16 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
+      complete: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0, // Đặt giá trị mặc định
+      },
+      total: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
       status: {
         type: DataTypes.ENUM("pending", "inProgress", "done"),
         allowNull: false,
