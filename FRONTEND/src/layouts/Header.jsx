@@ -124,7 +124,7 @@ function UserHeader() {
           menuOpen ? "translate-x-0" : "-translate-x-full"
         } flex flex-col items-center justify-center text-white z-10`}
       >
-        {pages.map(({ key, label }) => (
+        {auth.isAuthenticated && pages.map(({ key, label }) => (
           <button key={key} className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => { navigate(`/${key}`); setMenuOpen(false); }}>
             {label}
           </button>

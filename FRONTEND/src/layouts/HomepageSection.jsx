@@ -45,7 +45,7 @@ function SectionHero() {
         <section className="relative min-h-[70vh] lg:min-h-[60vh] w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-8 gap-6 overflow-hidden">
             {/* Tiêu đề */}
             <header className="w-full lg:w-1/2 flex justify-center items-center text-center font-bold 
-                            text-base sm:text-lg md:text-xl lg:text-3xl xl:text-4xl text-[#059212] leading-tight z-10">
+                            text-base sm:text-lg md:text-xl lg:text-3xl xl:text-4xl text-[#059212] leading-tight">
                 <h1 
                     id="heroTitle" 
                     className={`transition-opacity duration-500 ${showText ? "opacity-100" : "opacity-0"}`}
