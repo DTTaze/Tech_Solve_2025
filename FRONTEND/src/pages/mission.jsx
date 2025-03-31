@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
-import "../styles/pages/mission.scss";
-import CoinBalance from "../components/features/exchangemarket/CoinBalance.jsx";
+import images from "../components/features/exchangemarket/Photo.jsx";
 import {
   getAllTasksApi,
   completeTaskApi,
@@ -11,7 +10,6 @@ import {
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
-import TaskCard from "../components/features/missions/TaskCard.jsx";
 import TasksList from "../components/features/missions/TasksList.jsx";
 import MissionHeader from "../components/features/missions/MissionHeader.jsx";
 import MissionTabs from "../components/features/missions/MissionTabs.jsx";
@@ -19,7 +17,6 @@ import {
   getLevelColor,
   getLevelText,
 } from "../components/features/missions/TaskUtils.jsx";
-
 /* ------------------------------------------------------------ Mission ------------------------------------------------------------ */
 
 function Mission() {
@@ -38,6 +35,8 @@ function Mission() {
       try {
         setLoading(true);
 
+        console.log("Fetching data from APIs...");
+
         // Parallelize API calls for better performance
         const [taskResponse, userResponse] = await Promise.all([
           getAllTasksApi(),
@@ -51,6 +50,7 @@ function Mission() {
         let tasksData = [];
 
         if (taskResponse?.data) {
+          console.log("Processing task response data...");
           if (
             taskResponse.data.success &&
             Array.isArray(taskResponse.data.data)
@@ -68,13 +68,14 @@ function Mission() {
           }
         }
 
+        console.log("Processed tasks data:", tasksData);
+
         if (tasksData.length > 0) {
-          // Map API data to our application structure
           const processedTasks = tasksData.map((task) => ({
             id: task.id,
             coin: task.coins,
             level: task.difficulty || "easy",
-            imgScr: images.seedling_solid, // Default icon
+            imgScr: images.seedling_solid,
             Task_num: task.title,
             description: task.description,
             content: task.content,
@@ -82,13 +83,10 @@ function Mission() {
             updatedAt: task.updatedAt,
           }));
 
+          console.log("Processed tasks for UI:", processedTasks);
           setTasks(processedTasks);
 
-          // Process user tasks
-          // In a real implementation, we would fetch user tasks from the API
-          // For now, simulate user progress on these tasks
           const mockUserTasks = processedTasks.map((task) => {
-            // Generate random progress for each task
             const total = 5;
             const isCompleted = Math.random() > 0.6;
             const progress = isCompleted
@@ -109,15 +107,17 @@ function Mission() {
             };
           });
 
+          console.log("Mock user tasks:", mockUserTasks);
           setUserTasks(mockUserTasks);
         } else {
+          console.log("No tasks available.");
           setTasks([]);
           setUserTasks([]);
           toast.warning("No tasks available");
         }
 
-        // Set user data from API response
         if (userResponse?.data) {
+          console.log("Setting user info:", userResponse.data);
           setUserInfo({
             id: userResponse.data.id,
             full_name: userResponse.data.full_name || "User",
@@ -127,6 +127,7 @@ function Mission() {
             last_logined: userResponse.data.last_logined,
           });
         } else {
+          console.log("No user data found, setting default user info.");
           setUserInfo({
             id: 1,
             name: "Guest User",
@@ -138,7 +139,6 @@ function Mission() {
         console.error("Failed to fetch data:", error);
         toast.error("Không thể tải dữ liệu nhiệm vụ");
 
-        // Use fallback data on error
         setUserInfo({
           id: 1,
           name: "Guest User",
@@ -147,6 +147,7 @@ function Mission() {
         });
       } finally {
         setLoading(false);
+        console.log("Finished fetching data.");
       }
     };
 
@@ -167,7 +168,7 @@ function Mission() {
         // Set the task that's being completed (for UI loading state)
         setCompletingTask(taskId);
 
-        if (userTask.Complete === userTask.Total) {
+        if (userTask.complete === userTask.total) {
           // Task is complete - update UI first for responsive feel
           setUserTasks((prevUserTasks) =>
             prevUserTasks.map((ut) =>
@@ -183,7 +184,7 @@ function Mission() {
           if (task) {
             try {
               // Make the API calls to complete task and receive coins
-              const completeResponse = await completeTaskApi(taskId);
+              const completeResponse = await completeTaskApi(taskId); //cập nhật trạng thái hoàn thành
               console.log("Task completion response:", completeResponse);
 
               const coinsResponse = await receiveCoinApi(task.coin || 0);
@@ -198,7 +199,7 @@ function Mission() {
               setUserInfo((prev) => {
                 const updatedUser = {
                   ...prev,
-                  coins: (responseUser?.data?.coins || 0) + (task.coin || 0),
+                  coins: responseUser?.data?.coins || 0,
                 };
                 console.log(
                   "check user infor after receive coins",

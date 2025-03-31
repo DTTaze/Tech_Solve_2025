@@ -109,6 +109,7 @@ const deleteItem = async (item_id) => {
     throw e;
   }
 };
+
 const purchaseItem = async (user_id, item_id, data) => {
   try {
     let { seller_id, name, quantity } = data;

@@ -35,7 +35,6 @@ export const getUserAvatarByIdApi = (user_id) => {
   return axios.get(`api/avatars/${user_id}`);
 };
 
-
 export const getAllUserAvatarsApi = () => {
   return axios.get("api/avatars/");
 };
@@ -53,6 +52,14 @@ export const updateUserAvatarApi = (user_id, file) => {
 
 export const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
+};
+
+export const getItemsApi = () => {
+  return axios.get("api/items");
+}
+
+export const purchaseItemApi = (user_id, item_id, data) => {
+  return axios.post(`api/items/purchase/${item_id}`, { user_id, ...data });
 };
 
 export const acceptTaskApi = (taskId, userId) => {
@@ -98,3 +105,4 @@ export const submitTaskApi = (taskUserId, data) => {
 export const getUserTransactionHistory = (user_id) => {
   return axios.get(`api/transactions/${user_id}`);
 }
+

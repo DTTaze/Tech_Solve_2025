@@ -20,13 +20,24 @@ function UserHeader() {
       try {
         const response = await getUserApi();
         setUser(response.data);
+  
+        if (auth.user && response.data.coins !== auth.user.coins) {
+          setAuth((prevAuth) => ({
+            ...prevAuth,
+            user: { ...prevAuth.user, coins: response.data.coins }
+          }));
+        }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
     };
+  
     fetchUser();
-  }, []);
-
+    const interval = setInterval(fetchUser, 5000);
+  
+    return () => clearInterval(interval);
+  }, [auth.user]);
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
