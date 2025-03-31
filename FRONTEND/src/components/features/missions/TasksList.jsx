@@ -71,7 +71,7 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-blue-50 rounded-xl">
             <img
-              src={images.trophy_solid}
+              src={images.seedling_solid}
               alt="All done!"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -128,7 +128,7 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-indigo-50 rounded-xl">
             <img
-              src={images.clipboard_solid}
+              src={images.seedling_solid}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -233,16 +233,13 @@ const TasksList = ({
                     </h3>
                     <p className="text-xs text-gray-500">
                       Hoàn thành:{" "}
-                      {new Date(task.completed_at).toLocaleDateString(
-                        "vi-VN",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
+                      {new Date(task.completed_at).toLocaleDateString("vi-VN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
                   </div>
                 </div>
@@ -251,11 +248,17 @@ const TasksList = ({
           </div>
         ) : (
           <div className="text-center py-16 px-4 bg-green-50 rounded-xl">
+            <img
+              src={images.seedling_solid}
+              alt="No tasks"
+              className="w-20 h-20 mx-auto mb-4 opacity-30"
+            />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
               Chưa có nhiệm vụ hoàn thành!
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              Bạn chưa hoàn thành nhiệm vụ nào. Hãy bắt đầu với nhiệm vụ hàng ngày.
+              Bạn chưa hoàn thành nhiệm vụ nào. Hãy bắt đầu với nhiệm vụ hàng
+              ngày.
             </p>
           </div>
         )}
