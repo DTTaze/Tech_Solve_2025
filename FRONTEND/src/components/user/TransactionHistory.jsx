@@ -10,14 +10,13 @@ const TransactionHistory = () => {
     const fetchUserTransactionHistory = async () => {
       try {
         const { data: user } = await getUserApi();
-        const { data: transactionData } = await getUserTransactionHistory(user.id);
+        const response = await getUserTransactionHistory(user.id);
         
-        // Nếu API trả về một giao dịch duy nhất, chuyển thành mảng để dễ xử lý
-        const transactions = Array.isArray(transactionData)
-          ? transactionData
-          : [transactionData];
-
-        setTransactionList(transactions);
+        if (response.success && Array.isArray(response.data)) {
+          setTransactionList(response.data);
+        } else {
+          setTransactionList([]);
+        }
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
       }
@@ -28,98 +27,64 @@ const TransactionHistory = () => {
 
   const openModal = (tx) => {
     setTransaction({
-      id: tx.id,
-      name: tx.name,
-      sellerId: tx.seller_id,
-      buyerId: tx.buyer_id,
-      itemId: tx.item_id,
-      totalPrice: tx.total_price,
-      quantity: tx.quantity,
-      status: tx.status,
-      createdAt: new Date(tx.createdAt).toLocaleDateString("vi-VN"),
+      "ID": tx.id,
+      "Tên": tx.name,
+      "Tổng Coins": tx.total_price,
+      "Số lượng": tx.quantity,
+      "Trạng thái": tx.status,
+      "Thời gian giao dịch": new Date(tx.createdAt).toLocaleDateString("vi-VN"),
     });
     setShowModal(true);
   };
 
   return (
-    <div className="p-4 border rounded-lg shadow-md bg-white">
-      <h2 className="text-lg font-semibold mb-4">Lịch sử giao dịch</h2>
+    <div className="p-4 border rounded-lg shadow-md bg-white max-w-4xl mx-auto">
+      <h2 className="text-lg font-semibold mb-4 text-center">Lịch sử giao dịch</h2>
       {transactionList.length > 0 ? (
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border border-gray-300 p-2">Tên giao dịch</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactionList.map((tx) => (
-              <tr key={tx.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openModal(tx)}>
-                <td className="border border-gray-300 p-2 text-blue-500 underline">
-                  {tx.name}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 p-2">Tên giao dịch</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {transactionList.map((tx) => (
+                <tr key={tx.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openModal(tx)}>
+                  <td className="border border-gray-300 p-2 text-blue-500 underline">
+                    {tx.name}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="text-gray-500 text-center">Chưa có giao dịch.</div>
       )}
 
-      {/* Modal hiển thị chi tiết giao dịch */}
       {showModal && transaction && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-lg font-semibold mb-4">Chi tiết giao dịch</h3>
-            <table className="w-full border-collapse border border-gray-300">
-              <tbody>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">ID</td>
-                  <td className="border border-gray-300 p-2">{transaction.id}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Tên</td>
-                  <td className="border border-gray-300 p-2">{transaction.name}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Người bán</td>
-                  <td className="border border-gray-300 p-2">{transaction.sellerId}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Người mua</td>
-                  <td className="border border-gray-300 p-2">{transaction.buyerId}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">ID vật phẩm</td>
-                  <td className="border border-gray-300 p-2">{transaction.itemId}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Tổng giá</td>
-                  <td className="border border-gray-300 p-2">{transaction.totalPrice} coins</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Số lượng</td>
-                  <td className="border border-gray-300 p-2">{transaction.quantity}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Trạng thái</td>
-                  <td className="border border-gray-300 p-2">
-                    <span className={`px-2 py-1 rounded text-white text-sm ${transaction.status === "completed" ? "bg-green-500" : "bg-yellow-500"}`}>
-                      {transaction.status === "completed" ? "Hoàn thành" : "Đang xử lý"}
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2 font-semibold">Ngày tạo</td>
-                  <td className="border border-gray-300 p-2">{transaction.createdAt}</td>
-                </tr>
-              </tbody>
-            </table>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
             <button
               onClick={() => setShowModal(false)}
-              className="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+              className="absolute top-3 right-2 text-3xl text-gray-600 hover:text-gray-800 cursor-pointer"
             >
-              Đóng
+              ✖
             </button>
+            <h3 className="text-lg font-semibold mb-4 text-center">Chi tiết giao dịch</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
+                <tbody>
+                  {Object.entries(transaction).map(([key, value]) => (
+                    <tr key={key}>
+                      <td className="border border-gray-300 p-2 font-semibold w-1/2">{key}</td>
+                      <td className="border border-gray-300 p-2 w-1/2">{value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
