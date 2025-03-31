@@ -15,7 +15,7 @@ const sequelize = new Sequelize(
 const connection = async () => {
   try {
     await sequelize.authenticate();
-    console.log("\x1b[32m%s\x1b[0m", "Coonected to the database successfully");
+    console.log("\x1b[32m%s\x1b[0m", "Connected to the database successfully");
   } catch (error) {
     console.log("\x1b[31m%s\x1b[0m", "Unable to connect to the database", error);
   }

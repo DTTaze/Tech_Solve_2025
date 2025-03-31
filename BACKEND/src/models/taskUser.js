@@ -4,7 +4,6 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class TaskUser extends Model {
     static associate(models) {
-      // Liên kết với Task và User
       TaskUser.belongsTo(models.User, {
         foreignKey: "user_id",
         onDelete: "CASCADE",
@@ -40,19 +39,10 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
-      complete: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0, // Đặt giá trị mặc định
-      },
-      total: {
+      progress_count: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-      },
-      status: {
-        type: DataTypes.ENUM("pending", "inProgress", "done"),
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 0, 
       },
       assigned_at: {
         type: DataTypes.DATE,
@@ -62,10 +52,6 @@ module.exports = (sequelize, DataTypes) => {
       completed_at: {
         type: DataTypes.DATE,
         allowNull: true,
-      },
-      coins_per_user: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
       },
     },
     {

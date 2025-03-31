@@ -119,6 +119,15 @@ const handleDecisionTaskSubmit = async (req, res) => {
   }
 }
 
+const handleIncreaseProgressCount = async (req, res) => {
+  try {
+    const task_user_id = req.params.task_user_id;
+    let result = await taskService.increaseProgressCount(task_user_id);
+    return res.success("Increase progress count success", result);
+  } catch (error) {
+    return res.error(500, "Failed to increase progress count", error.message);
+  }
+}
 
 module.exports = {
   handleGetAllTasks,
@@ -131,4 +140,5 @@ module.exports = {
   handleReceiveCoin,
   handleSubmitTask,
   handleDecisionTaskSubmit,
+  handleIncreaseProgressCount,
 };

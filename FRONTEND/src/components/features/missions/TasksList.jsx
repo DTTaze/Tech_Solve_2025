@@ -1,6 +1,7 @@
 import React from "react";
 import TaskCard from "./TaskCard";
 import TaskCardSkeleton from "./TaskCardSkeleton";
+import images from "../../../assets/images/index";
 
 /**
  * Component to display a list of tasks with pagination
@@ -16,7 +17,7 @@ const TasksList = ({
   goToPreviousPage,
   userId,
   selectedTab,
-  taskPerPage
+  taskPerPage,
 }) => {
   if (loading) {
     return (
@@ -58,18 +59,22 @@ const TasksList = ({
 
         {tasks && tasks.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            {tasks.map((task) => (
-              task && <TaskCard
-                key={task.task_id}
-                task={task}
-                onClick={() => handleTaskCompletion(userId, task.task_id)}
-                completingTask={completingTask}
-              />
-            ))}
+            {tasks.map(
+              (task) =>
+                task && (
+                  <TaskCard
+                    key={task.task_id}
+                    task={task}
+                    onClick={() => handleTaskCompletion(userId, task.task_id)}
+                    completingTask={completingTask}
+                  />
+                )
+            )}
           </div>
         ) : (
           <div className="text-center py-16 px-4 bg-blue-50 rounded-xl">
             <img
+              src={images.anh_hat_giong}
               alt="All done!"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -77,8 +82,8 @@ const TasksList = ({
               Tuyệt vời!
             </h3>
             <p className="text-gray-600 max-w-md mx-auto mb-4">
-              Bạn đã hoàn thành tất cả nhiệm vụ hôm nay. Hãy quay lại
-              vào ngày mai để tiếp tục chuỗi hoạt động!
+              Bạn đã hoàn thành tất cả nhiệm vụ hôm nay. Hãy quay lại vào ngày
+              mai để tiếp tục chuỗi hoạt động!
             </p>
           </div>
         )}
@@ -114,18 +119,22 @@ const TasksList = ({
                 (currentPage - 1) * (taskPerPage || 3),
                 currentPage * (taskPerPage || 3)
               )
-              .map((task) => (
-                task && <TaskCard
-                  key={task.task_id}
-                  task={task}
-                  onClick={() => handleTaskCompletion(userId, task.task_id)}
-                  completingTask={completingTask}
-                />
-              ))}
+              .map(
+                (task) =>
+                  task && (
+                    <TaskCard
+                      key={task.task_id}
+                      task={task}
+                      onClick={() => handleTaskCompletion(userId, task.task_id)}
+                      completingTask={completingTask}
+                    />
+                  )
+              )}
           </div>
         ) : (
           <div className="text-center py-16 px-4 bg-indigo-50 rounded-xl">
             <img
+              src={images.anh_hat_giong}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -133,8 +142,8 @@ const TasksList = ({
               Chưa có nhiệm vụ!
             </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              Hiện tại chưa có nhiệm vụ khác nào. Hãy hoàn thành nhiệm
-              vụ hàng ngày trước nhé!
+              Hiện tại chưa có nhiệm vụ khác nào. Hãy hoàn thành nhiệm vụ hàng
+              ngày trước nhé!
             </p>
           </div>
         )}
@@ -246,6 +255,7 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-green-50 rounded-xl">
             <img
+              src={images.anh_hat_giong}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />

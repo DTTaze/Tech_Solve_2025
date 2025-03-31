@@ -13,11 +13,11 @@ import { execSync } from "child_process";
 
 const app = express();
 const PORT = process.env.PORT || 4040;
-
+const HOST = process.env.HOST || "0.0.0.0";
 // Cấu hình CORS
 app.use(
   cors({
-    origin: process.env.URL_REACT || "http://localhost:5173",
+    origin: [process.env.URL_REACT, "https://greenflag.id.vn"],
     methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["X-Requested-With", "Content-Type", "Authorization"],
     credentials: true,
@@ -57,9 +57,9 @@ initWebRoutes(app);
 connection();
 
 // Khởi động server
-app.listen(PORT, () => {
-  console.log(`Server đang chạy tại: http://localhost:${PORT}`);
-  console.log(`Đăng nhập bằng Google: http://localhost:${PORT}/auth/google`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server đang chạy tại: http://${HOST}:${PORT}`);
+  console.log(`Đăng nhập bằng Google: http://${HOST}:${PORT}/auth/google`);
 });
 
 (async () => {

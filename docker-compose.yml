@@ -24,6 +24,8 @@ services:
       - /app/node_modules
     working_dir: /app
     command: ["npm", "start"]
+    networks:
+      - greenflag_network
 
   frontend:
     build:
@@ -45,13 +47,15 @@ services:
       - /app/node_modules
     working_dir: /app
     command: ["npm", "run", "dev", "--", "--host"]
+    networks:
+      - greenflag_network
 
   mysql:
     image: mysql:latest
     container_name: mysql_container
     restart: always
     env_file:
-      - ./BACKEND/.env  
+      - ./BACKEND/.env
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -60,6 +64,8 @@ services:
       - "${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - greenflag_network
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -72,6 +78,21 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8080:80"
+    networks:
+      - greenflag_network
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_tunnel
+    restart: unless-stopped
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - "C:/Users/Quoc Anh/.cloudflared:/etc/cloudflared"
+    networks:
+      - greenflag_network
 volumes:
   mysql_data:
+
+networks:
+  greenflag_network:
+    driver: bridge

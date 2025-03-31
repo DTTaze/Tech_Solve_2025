@@ -10,7 +10,7 @@ const TaskSubmit = db.TaskSubmit;
 
 const createTask = async (data) => {
   try {
-    let { title, content, description, coins, difficulty } = data;
+    let { title, content, description, coins, difficulty, total } = data;
     coins = Number(coins);
     if (
       !title ||
@@ -24,13 +24,16 @@ const createTask = async (data) => {
     if (typeof coins !== "number" || coins < 0) {
       throw new Error("Coins must be a positive number");
     }
-
+    if (typeof total !== "number" || total < 0) {
+      throw new Error("Total must be a positive number");
+    }
     let result = await Task.create({
       title,
       content,
       description,
       coins,
       difficulty,
+      total,
     });
     return result;
   } catch (e) {
@@ -63,7 +66,7 @@ const updateTask = async (id, data) => {
   try {
     if (!id) throw new Error("Task ID is required");
 
-    let { title, description, coins } = data;
+    let { title,content,description, coins, difficulty,total } = data;
 
     if (!title && !description && coins === undefined) {
       throw new Error(
@@ -78,7 +81,7 @@ const updateTask = async (id, data) => {
     const task = await Task.findByPk(id);
     if (!task) throw new Error("Task not found");
 
-    await task.update({ title, description, coins });
+    await task.update({  title,content,description, coins, difficulty,total });
     return task;
   } catch (e) {
     throw e;
@@ -111,14 +114,12 @@ const acceptTask = async (task_id, user_id) => {
     const user = await User.findByPk(user_id);
     if (!user) throw new Error("User not found");
 
-    await TaskUser.create({
-      task_id,
+    const result = await TaskUser.create({
       user_id,
-      status: "pending",
-      coins_per_user: task.coins,
+      task_id,
     });
 
-    return { message: "Task accepted successfully" };
+    return result;
   } catch (e) {
     throw e;
   }
@@ -282,6 +283,34 @@ const updateDecisionTaskSubmit = async (task_submit_id,decision) => {
   }
 };
 
+const increaseProgressCount = async (task_user_id) => {
+  try {
+    if (!task_user_id) throw new Error("Missing task_user_id.");
+
+    const taskUser = await TaskUser.findByPk(task_user_id, {
+      include: [{ model: Task, as: "tasks" }],
+    });
+
+    if (!taskUser) throw new Error("Task user not found.");
+    if (!taskUser.tasks) throw new Error("Task not found.");
+
+    // Kiểm tra nếu progress_count >= total thì báo lỗi
+    if (taskUser.progress_count >= taskUser.tasks.total) {
+      throw new Error("Task is already completed.");
+    }
+
+    // Tăng progress_count lên 1
+    taskUser.progress_count = (taskUser.progress_count || 0) + 1;
+    await taskUser.save();
+
+    return taskUser;
+  } catch (error) {
+    console.error("Error increasing progress count:", error.message);
+    throw error;
+  }
+};
+
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -293,4 +322,5 @@ module.exports = {
   receiveCoin,
   submitTask,
   updateDecisionTaskSubmit,
+  increaseProgressCount,
 };
