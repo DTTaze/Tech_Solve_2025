@@ -6,6 +6,7 @@ import "../../styles/components/PersonalInformation.css";
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const fetchUser = useCallback(async () => {
     try {
@@ -24,21 +25,67 @@ function PersonalInfoForm() {
     fetchUser();
   }, [fetchUser]);
 
+  const validateField = (name, value) => {
+    let error = "";
+    switch (name) {
+      case "username":
+        if (!value) error = "Tên người dùng không được để trống";
+        else if (value.length < 3) error = "Tên người dùng phải dài hơn 3 ký tự";
+        else if (!/^[a-zA-Z0-9]+$/.test(value))
+          error = "Tên người dùng chỉ được chứa chữ cái và số";
+        break;
+      case "email":
+        if (!value) error = "Email không được để trống";
+        else if (!/\S+@\S+\.\S+/.test(value)) error = "Email không hợp lệ";
+        break;
+      case "full_name":
+        if (!value) error = "Họ và tên không được để trống";
+        else if (!/^[a-zA-Z\s]+$/.test(value))
+          error = "Họ và tên không được chứa ký tự đặc biệt";
+        break;
+      case "address":
+        if (!value) error = "Địa chỉ không được để trống";
+        break;
+      case "phone_number":
+        if (!value) error = "Số điện thoại không được để trống";
+        else if (!/^\d{10}$/.test(value)) error = "Số điện thoại phải là 10 chữ số";
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prev) => ({ ...prev, [name]: value }));
+
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!user) return;
 
+    const newErrors = {};
+    inputFields.forEach(({ id }) => {
+      const error = validateField(id, user[id] || "");
+      if (error) newErrors[id] = error;
+    });
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      notification.error({ message: "Vui lòng kiểm tra lại thông tin" });
+      return;
+    }
+  
     setLoading(true);
     try {
       console.log("Dữ liệu gửi đi:", user);
       const res = await updateUserApi(user.id, user);
       console.log("Phản hồi từ updateUserApi:", res.data);
-      await fetchUser(); // Lấy lại dữ liệu mới
+      await fetchUser();
       notification.success({ message: "Cập nhật thông tin thành công!" });
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -73,13 +120,19 @@ function PersonalInfoForm() {
               id={id}
               value={user[id] || ""}
               onChange={handleChange}
+              className={errors[id] ? "border-red-500" : ""}
             />
             <label htmlFor={id}>{label}</label>
+            {errors[id] && (
+              <p className="text-red-500 text-sm mt-1">{errors[id]}</p>
+            )}
           </div>
         ))}
 
         <button type="submit" className="btn-submit" disabled={loading || !user}>
-          {loading ? "Đang cập nhật..." : "Cập nhật"}
+          <span>
+            {loading ? "Đang cập nhật..." : "Cập nhật"}
+          </span>
         </button>
       </form>
     </div>
