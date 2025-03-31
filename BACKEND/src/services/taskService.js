@@ -197,16 +197,15 @@ const downloadImage = async (url) => {
   return response.data;
 };
 
-const submitTask = async (task_user_id, user_id, description, file, auth) => {
+const submitTask = async (task_user_id, description, file, auth) => {
   try {
+    console.log("file:", file);
     if (!task_user_id) throw new Error("Missing task_user_id.");
-    if (!user_id) throw new Error("Missing user_id.");
     if (!auth) throw new Error("Missing auth.");
-    if (!file || !file.path) throw new Error("Invalid file object.");
+    if (!file || !file.path) throw new Error("Invalid file object.",file);
 
     const newTaskSubmit = await TaskSubmit.create({
       task_user_id: task_user_id,
-      user_id: user_id,
       description: description || "",
       images_id: null,
       status: "pending",
@@ -245,21 +244,37 @@ const submitTask = async (task_user_id, user_id, description, file, auth) => {
   }
 };
 
-const updateTaskSubmit = async (task_submit_id) => {
+const updateDecisionTaskSubmit = async (task_submit_id,decision) => {
   try {
     if (!task_submit_id) throw new Error("Missing task_submit_id.");
-
+    if (!decision) throw new Error("Missing decision.");
+    if (!["approved", "rejected"].includes(decision)) {
+      throw new Error("Decision must be either 'approved' or 'rejected'.");
+    }
     const taskSubmit = await TaskSubmit.findByPk(task_submit_id);
     if (!taskSubmit) throw new Error("Task submit not found.");
 
-    taskSubmit.status = "approved";
+    taskSubmit.status = decision;
     await taskSubmit.save();
 
-    const taskUser = await TaskUser.findByPk(taskSubmit.task_user_id);
-    taskUser.status = "done";
-    taskUser.completed_at = new Date();
-    await taskUser.save();
-    
+    if (decision === "approved") {
+      const taskUser = await TaskUser.findByPk(taskSubmit.task_user_id);
+      if (!taskUser) throw new Error("Task user not found.");
+      taskUser.completed_at = new Date();
+      taskUser.status = "done";
+      taskUser.completed_at = new Date();
+      await taskUser.save();
+      
+      const user = await User.findByPk(taskUser.user_id);
+      if (!user) throw new Error("User not found.");
+      user.coins = (user.coins || 0) + taskUser.coins_per_user;
+      await user.save();
+    }
+    if (decision === "rejected") {
+      const taskUser = await TaskUser.findByPk(taskSubmit.task_user_id);
+      if (!taskUser) throw new Error("Task user not found.");
+      taskUser.status = "inProgress";
+    }
     return taskSubmit;
   } catch (error) {
     console.error("Error updating task submit:", error.message);
@@ -277,5 +292,5 @@ module.exports = {
   completeTask,
   receiveCoin,
   submitTask,
-  updateTaskSubmit,
+  updateDecisionTaskSubmit,
 };
