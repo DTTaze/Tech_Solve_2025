@@ -65,15 +65,17 @@ const getItemByIdUser = async (user_id) => {
 
 const updateItem = async (id, data) => {
   try {
-    let { name, price, stock,status } = data;
+    let { owner_id, name, price, stock, description, status } = data;
     let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
     }
-
+    owner_id ? (item.owner_id = owner_id) : (item.owner_id = item.owner_id);
     name ? (item.name = name) : (item.name = item.name);
     status ? (item.status = status) : (item.status = item.status);
-    description ? (item.description = description) : (item.description = item.description);
+    description
+      ? (item.description = description)
+      : (item.description = item.description);
     price ? (item.price = price) : (item.price = item.price);
 
     if (stock !== undefined) {
@@ -89,7 +91,6 @@ const updateItem = async (id, data) => {
     throw e;
   }
 };
-
 
 const deleteItem = async (item_id) => {
   try {
@@ -108,8 +109,19 @@ const deleteItem = async (item_id) => {
     throw e;
   }
 };
-const purchaseItem = async (user_id, item_id, quantity = 1) => {
+const purchaseItem = async (user_id, item_id, data) => {
   try {
+    let { seller_id, name, quantity } = data;
+    console.log("check quantity", quantity);
+    if (quantity === undefined) {
+      quantity = 1;
+    } else {
+      if (quantity < 1) {
+        throw new Error("Quantity must be possitive");
+      } else {
+        quantity = Number(quantity);
+      }
+    }
     if (!user_id || !item_id || quantity < 1) {
       throw new Error("User ID, Item ID, and valid quantity are required");
     }
@@ -144,10 +156,12 @@ const purchaseItem = async (user_id, item_id, quantity = 1) => {
     });
 
     const transaction = await Transaction.create({
+      seller_id: seller_id,
+      name: name,
       buyer_id: user.id,
       item_id: item.id,
       quantity: quantity,
-      amount: totalPrice,
+      total_price: totalPrice,
       status: "completed",
     });
 

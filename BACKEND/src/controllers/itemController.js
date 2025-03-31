@@ -64,8 +64,8 @@ const handlePurchaseItem = async (req, res) => {
   try {
     const user_id = req.user.id;
     const item_id = Number(req.params.item_id);
-    const quantity = Number(req.body.quantity);
-    const result = await itemService.purchaseItem(user_id, item_id, quantity);
+    const data = req.body;
+    const result = await itemService.purchaseItem(user_id, item_id, data);
     return res.success("Item purchased successfully", result);
   } catch (error) {
     return res.error(500, "Failed to purchase item", error.message);

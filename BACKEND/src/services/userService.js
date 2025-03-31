@@ -140,10 +140,28 @@ const updateUser = async (id, data) => {
   try {
     let username = data.username || "";
     let email = data.email || "";
-    let { full_name, address, phone_number } = data;
+    let { full_name, address, phone_number, coins, streak } = data;
     let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
+    }
+    if (coins === undefined) {
+      user.coins = user.coins;
+    } else {
+      if (coins < 0) {
+        throw new Error("Coins must be possitive");
+      } else {
+        user.coins = Number(coins);
+      }
+    }
+    if (streak === undefined) {
+      user.streak = user.streak;
+    } else {
+      if (streak < 0) {
+        throw new Error("Streak must be possitive");
+      } else {
+        user.streak = Number(streak);
+      }
     }
     full_name
       ? (user.full_name = full_name)
