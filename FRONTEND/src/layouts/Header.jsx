@@ -21,7 +21,6 @@ function UserHeader() {
         const response = await getUserApi();
         setUser(response.data);
   
-        // Cập nhật AuthContext nếu số coins thay đổi
         if (auth.user && response.data.coins !== auth.user.coins) {
           setAuth((prevAuth) => ({
             ...prevAuth,
@@ -34,7 +33,10 @@ function UserHeader() {
     };
   
     fetchUser();
-  }, [auth.user]);  // Lắng nghe auth.user để cập nhật khi có thay đổi
+    const interval = setInterval(fetchUser, 5000);
+  
+    return () => clearInterval(interval);
+  }, [auth.user]);
   
   useEffect(() => {
     const handleClickOutside = (event) => {
