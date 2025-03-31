@@ -9,7 +9,14 @@ import Timer from "../assets/images/Timer";
 import { notification } from "antd";
 
 // Component hiển thị stats trên bên trái màn hình
-function StatsSection({ video, task, userStats }) {
+function StatsSection({ video, task, userStats, coins, timer }) {
+  const onReceiveCoins = () => {
+    notification.success({
+      message: "Received 3 EcoCoins!",
+      description: "Thank you for contributing to a greener world!",
+    });
+  };
+
   return (
     <div className="video-stats-sidebar">
       <div className="user-profile-section">
@@ -22,6 +29,30 @@ function StatsSection({ video, task, userStats }) {
         <h3 className="profile-name">{video?.postedBy?.username || "EcoUser"}</h3>
         <p className="profile-bio">Environmental Activist</p>
         <button className="follow-button">Follow</button>
+      </div>
+
+      {/* Coins and Timer Display */}
+      <div className="sidebar-coins-timer">
+        <h4 className="stats-heading">Your Rewards</h4>
+        <div className="coins-timer-container">
+          {/* Coins Display */}
+          <div className="sidebar-display-pill coin-pill" onClick={onReceiveCoins}>
+            <CoinImg />
+            <div className="pill-content">
+              <span className="pill-label">EcoCoins</span>
+              <span className="pill-value">{coins}</span>
+            </div>
+          </div>
+
+          {/* Timer Display */}
+          <div className="sidebar-display-pill timer-pill">
+            <Timer />
+            <div className="pill-content">
+              <span className="pill-label">Remaining</span>
+              <span className="pill-value">{timer}s</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="task-stats-container">
@@ -76,31 +107,6 @@ function StatsSection({ video, task, userStats }) {
             <span>{task?.reward || 3} EcoCoins</span>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// Component hiển thị số coin và timer với UI mới
-function CalcCoins({ coins, timer }) {
-  const onReceiveCoins = () => {
-    notification.success({
-      message: "Received 3 EcoCoins!",
-      description: "Thank you for contributing to a greener world!",
-    });
-  };
-  return (
-    <div className="coins-timer-display">
-      {/* Coins Display */}
-      <div className="display-pill" onClick={onReceiveCoins}>
-        <CoinImg />
-        <span>{coins}</span>
-      </div>
-
-      {/* Timer Display */}
-      <div className="display-pill">
-        <Timer />
-        <span>{timer}s</span>
       </div>
     </div>
   );
@@ -544,22 +550,22 @@ export default function VideosSection() {
   return (
     <div className="tiktok-layout-container">
       <div className="video-section-container">
-        <CalcCoins coins={user.coins} timer={timer} />
-
         {videoData.map((video, index) => (
           <div
             key={video.id}
             ref={containerRefs.current[index]}
             className="video-card"
           >
-            {/* Stats section on the left */}
+            {/* Left Sidebar: Stats, Tasks, and User Info */}
             <StatsSection 
               video={video} 
-              task={taskData}
+              task={taskData} 
               userStats={userStats}
+              coins={user.coins}
+              timer={timer}
             />
             
-            {/* Center video container */}
+            {/* Center: Video */}
             <div className="center-video-container">
               {/* Eco Tag */}
               <div className="eco-tag">
