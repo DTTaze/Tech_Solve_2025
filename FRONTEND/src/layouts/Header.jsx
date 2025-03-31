@@ -77,13 +77,15 @@ function UserHeader() {
       </div>
 
       {/* Navigation */}
-      <nav className="hidden md:flex space-x-6">
-        {pages.map(({ key, label }) => (
-          <button key={key} className="font-bold hover:text-[#62C370] text-lg cursor-pointer" onClick={() => navigate(`/${key}`)}>
-            {label}
-          </button>
-        ))}
-      </nav>
+      {auth.isAuthenticated && (
+        <nav className="hidden md:flex space-x-6">
+          {pages.map(({ key, label }) => (
+            <button key={key} className="font-bold hover:text-[#62C370] text-lg cursor-pointer" onClick={() => navigate(`/${key}`)}>
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {/* User Profile */}
       {auth.isAuthenticated ? (
