@@ -89,7 +89,7 @@ function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
                 <img 
                     src={imagePath} 
                     alt="ảnh mô tả" 
-                    className="w-full h-[300px] sm:h-[400px] object-cover"
+                    className="w-full h-[300px] sm:h-[400px] object-fill"
                 />
             </div>
             <header 
@@ -116,14 +116,14 @@ function HomepageSection() {
         <>
             <SectionHero />
             <Section 
-                imagePath="../src/assets/images/anh-tho.jpg"
+                imagePath="../src/assets/images/Nhiemvu.png"
                 H2Text="Hoàn thành nhiệm vụ, tích điểm xanh"
                 PText="Chọn nhiệm vụ phù hợp, hoàn thành thử thách xanh và nhận điểm thưởng. Càng nhiều nhiệm vụ hoàn thành, bạn càng đóng góp nhiều hơn cho hành tinh!"
                 path = "/missions"
                 ButtonText="Khám phá nhiệm vụ"
             />
             <Section 
-                imagePath="../src/assets/images/anh-tho.jpg"
+                imagePath="../src/assets/images/Cho-trao-doi.png"
                 H2Text="Chợ Trao Đổi - Biến Điểm Thành Hành Động"
                 PText="Dùng điểm tích lũy để đổi lấy những sản phẩm bền vững, giúp bạn tiếp tục duy trì lối sống xanh và bảo vệ hành tinh."
                 path="/market"
