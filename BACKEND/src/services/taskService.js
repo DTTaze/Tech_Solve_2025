@@ -301,6 +301,8 @@ const increaseProgressCount = async (task_user_id) => {
 
     // Tăng progress_count lên 1
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
+
+    taskUser.completed_at = new Date();
     await taskUser.save();
 
     return taskUser;
