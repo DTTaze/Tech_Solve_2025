@@ -302,15 +302,16 @@ const increaseProgressCount = async (task_user_id) => {
     if (!taskUser) throw new Error("Task user not found.");
     if (!taskUser.tasks) throw new Error("Task not found.");
 
-    // Kiểm tra nếu progress_count >= total thì báo lỗi
     if (taskUser.progress_count >= taskUser.tasks.total) {
       throw new Error("Task is already completed.");
     }
 
-    // Tăng progress_count lên 1
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
 
-    taskUser.completed_at = new Date();
+    if(taskUser.progress_count = taskUser.tasks.total){
+      taskUser.completed_at = new Date();
+    }
+
     await taskUser.save();
 
     return taskUser;
