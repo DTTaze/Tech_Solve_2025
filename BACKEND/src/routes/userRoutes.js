@@ -13,5 +13,6 @@ router.get("/:id", userController.handleGetUser);
 router.get("/task/completed/:id", userController.handleGetTaskCompleted);
 router.put("/:id", userController.handleUpdateUser);
 router.delete("/:id", userController.handleDeleteUser);
+router.post("/task/all/:id", userController.handleGetAllTaskById);
 
 export default router;
