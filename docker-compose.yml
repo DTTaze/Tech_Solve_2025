@@ -1,5 +1,5 @@
 services:
-mysql:
+  mysql:
     image: mysql:latest
     container_name: mysql_container
     restart: always
