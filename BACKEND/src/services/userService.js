@@ -212,15 +212,29 @@ const getTaskCompleted = async (id) => {
     if (!user) {
       throw new Error("User not found");
     }
+
     const TaskUsers = await TaskUser.findAll({
-      where: { user_id: id, status: "done" },
-      include: [{ model: Task, as: "tasks" }],
+      where: { user_id: id },
+      include: [
+        {
+          model: Task,
+          as: "tasks",
+          required: true,
+          where: { total: { [Op.ne]: null } }, 
+        },
+      ],
     });
-    return TaskUsers;
+
+    const completedTasks = TaskUsers.filter(
+      (taskUser) => taskUser.progress_count >= taskUser.tasks.total
+    );
+
+    return completedTasks;
   } catch (e) {
     throw e;
   }
 };
+
 
 module.exports = {
   createUser,
