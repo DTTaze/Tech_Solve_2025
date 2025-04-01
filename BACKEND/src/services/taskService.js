@@ -1,13 +1,15 @@
 const axios = require("axios");
-const FormData = require("form-data"); 
+const FormData = require("form-data");
 const fs = require("fs");
 const { Readable } = require("stream");
 const db = require("../models/index.js");
+const e = require("express");
 const Task = db.Task;
 const TaskUser = db.TaskUser;
 const User = db.User;
 const TaskSubmit = db.TaskSubmit;
-
+const TaskType = db.TaskType;
+const Type = db.Type;
 const createTask = async (data) => {
   try {
     let { title, content, description, coins, difficulty, total } = data;
@@ -66,7 +68,7 @@ const updateTask = async (id, data) => {
   try {
     if (!id) throw new Error("Task ID is required");
 
-    let { title,content,description, coins, difficulty,total } = data;
+    let { title, content, description, coins, difficulty, total } = data;
 
     if (!title && !description && coins === undefined) {
       throw new Error(
@@ -81,7 +83,14 @@ const updateTask = async (id, data) => {
     const task = await Task.findByPk(id);
     if (!task) throw new Error("Task not found");
 
-    await task.update({  title,content,description, coins, difficulty,total });
+    await task.update({
+      title,
+      content,
+      description,
+      coins,
+      difficulty,
+      total,
+    });
     return task;
   } catch (e) {
     throw e;
@@ -193,7 +202,7 @@ const downloadImage = async (url) => {
   const response = await axios({
     url,
     method: "GET",
-    responseType: "stream", 
+    responseType: "stream",
   });
   return response.data;
 };
@@ -203,7 +212,7 @@ const submitTask = async (task_user_id, description, file, auth) => {
     console.log("file:", file);
     if (!task_user_id) throw new Error("Missing task_user_id.");
     if (!auth) throw new Error("Missing auth.");
-    if (!file || !file.path) throw new Error("Invalid file object.",file);
+    if (!file || !file.path) throw new Error("Invalid file object.", file);
 
     const newTaskSubmit = await TaskSubmit.create({
       task_user_id: task_user_id,
@@ -231,7 +240,6 @@ const submitTask = async (task_user_id, description, file, auth) => {
       }
     );
 
-
     if (!uploadResponse.data.data || !uploadResponse.data.data.id) {
       throw new Error("Image upload response is invalid.");
     }
@@ -245,7 +253,7 @@ const submitTask = async (task_user_id, description, file, auth) => {
   }
 };
 
-const updateDecisionTaskSubmit = async (task_submit_id,decision) => {
+const updateDecisionTaskSubmit = async (task_submit_id, decision) => {
   try {
     if (!task_submit_id) throw new Error("Missing task_submit_id.");
     if (!decision) throw new Error("Missing decision.");
@@ -265,7 +273,7 @@ const updateDecisionTaskSubmit = async (task_submit_id,decision) => {
       taskUser.status = "done";
       taskUser.completed_at = new Date();
       await taskUser.save();
-      
+
       const user = await User.findByPk(taskUser.user_id);
       if (!user) throw new Error("User not found.");
       user.coins = (user.coins || 0) + taskUser.coins_per_user;
@@ -312,6 +320,29 @@ const increaseProgressCount = async (task_user_id) => {
   }
 };
 
+const getAllTasksByTypeName = async (type_name) => {
+  try {
+    if (!type_name) throw new Error("Missing type_name");
+    const type = await Type.findOne({
+      where: { type: type_name },
+    });
+    if (!type) {
+      throw new Error("Type is not existed");
+    }
+    const tasks = await TaskType.findAll({
+      where: { type_id: type.id },
+      include: [
+        {
+          model: Task,
+        },
+      ],
+    });
+    if (!tasks) throw new Error("Failed to get task by type_name");
+    return tasks;
+  } catch (error) {
+    throw error;
+  }
+};
 
 module.exports = {
   createTask,
@@ -325,4 +356,5 @@ module.exports = {
   submitTask,
   updateDecisionTaskSubmit,
   increaseProgressCount,
+  getAllTasksByTypeName,
 };
