@@ -235,6 +235,29 @@ const getTaskCompleted = async (id) => {
   }
 };
 
+const getAllTaskById = async (id) => {
+  try {
+    const user = await User.findAll({ where: { id: id } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const TaskUsers = await TaskUser.findAll({
+      where: { user_id: id },
+      include: [
+        {
+          model: Task,
+          as: "tasks",
+          required: true,
+        },
+      ],
+    });
+
+    return TaskUsers;
+  } catch (e) {
+    throw e;
+  }
+};
 
 module.exports = {
   createUser,
@@ -245,4 +268,5 @@ module.exports = {
   findOrCreateUser,
   loginUser,
   getTaskCompleted,
+  getAllTaskById,
 };
