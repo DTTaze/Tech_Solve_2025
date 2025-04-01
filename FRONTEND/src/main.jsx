@@ -5,10 +5,10 @@ import { AuthWrapper } from "./contexts/auth.context.jsx";
 import Homepage from "./pages/homepage.jsx";
 import MissionPage from "./pages/mission.jsx";
 import UserProfilePage from "./pages/User.jsx";
-import LoginPage from "./pages/login.jsx";
-import RegisterPage from "./pages/register.jsx";
+import LoginPage from "./pages/Login.jsx";
+import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
-import Admin from "./pages/admin.jsx";
+import Admin from "./pages/Admin.jsx";
 import MissionVideo from "./pages/MissionVideo.jsx"
 import App from "./App.jsx";
 import "./index.css";
