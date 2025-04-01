@@ -16,4 +16,5 @@ router.post("/progress/increase/:task_user_id", taskController.handleIncreasePro
 router.post("/submit/:task_user_id",middlewareImage.single("image"), taskController.handleSubmitTask);
 router.put("/submit/decision/:id", taskController.handleDecisionTaskSubmit);
 router.post("/coin/receive", taskController.handleReceiveCoin);
+router.get("/type/:type_name",taskController.handleGetAllTasksByTypeName)
 export default router;

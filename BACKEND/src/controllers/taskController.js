@@ -56,11 +56,10 @@ const handleAcceptTask = async (req, res) => {
   }
 };
 
-
 const handleCompleteTask = async (req, res) => {
   try {
     const task_id = req.params.id;
-    const user_id = req.user.id; 
+    const user_id = req.user.id;
     let result = await taskService.completeTask(task_id, user_id);
     return res.success("Complete task success", result);
   } catch (error) {
@@ -93,7 +92,7 @@ const handleSubmitTask = async (req, res) => {
       throw new Error("Image is required");
     }
 
-    let file = req.file; 
+    let file = req.file;
 
     let result = await taskService.submitTask(
       task_user_id,
@@ -112,12 +111,15 @@ const handleDecisionTaskSubmit = async (req, res) => {
   try {
     const task_submit_id = req.params.id;
     const decision = req.body.decision; // "approved" or "rejected"
-    let result = await taskService.updateDecisionTaskSubmit(task_submit_id,decision);
+    let result = await taskService.updateDecisionTaskSubmit(
+      task_submit_id,
+      decision
+    );
     return res.success("Approved task submit success", result);
   } catch (error) {
     return res.error(500, "Failed to update task submit", error.message);
   }
-}
+};
 
 const handleIncreaseProgressCount = async (req, res) => {
   try {
@@ -127,8 +129,16 @@ const handleIncreaseProgressCount = async (req, res) => {
   } catch (error) {
     return res.error(500, "Failed to increase progress count", error.message);
   }
-}
-
+};
+const handleGetAllTasksByTypeName = async (req, res) => {
+  try {
+    const type_name = req.params.type_name;
+    let result = await taskService.getAllTasksByTypeName(type_name);
+    return res.success("Get task by type name success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task by type name", error.message);
+  }
+};
 module.exports = {
   handleGetAllTasks,
   handleCreateTask,
@@ -141,4 +151,5 @@ module.exports = {
   handleSubmitTask,
   handleDecisionTaskSubmit,
   handleIncreaseProgressCount,
+  handleGetAllTasksByTypeName,
 };

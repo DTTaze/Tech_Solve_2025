@@ -104,14 +104,14 @@ function UserHeader() {
             <img src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover" />
           </div>
           {profileMenuOpen && (
-            <div className="absolute right-0 bg-[#0B6E4F] rounded-lg shadow-lg p-2 w-40 mt-2">
-              <p className="p-2 font-bold text-white">{auth.user.username}</p>
-              <div className="flex items-center">
+            <div className="absolute right-0 bg-white rounded-lg shadow-lg  w-40 mt-2">
+              <p className="p-2 font-bold ">{auth.user.username}</p>
+              <div className="flex items-center ml-2">
                 <Coins className="h-6 w-6 text-amber-600 mr-2" />
-                <span className="font-medium text-white">: {user?.coins}</span>
+                <span className="font-medium ">: {user?.coins}</span>
               </div>
-              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold cursor-pointer" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
-              <button className="w-full p-2 text-left hover:text-[#62C370] font-bold cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] hover:bg-gray-200 font-bold cursor-pointer" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] hover:bg-gray-200 rounded-lg font-bold cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
             </div>
           )}
         </div>

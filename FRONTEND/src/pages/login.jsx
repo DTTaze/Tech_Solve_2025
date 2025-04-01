@@ -23,7 +23,7 @@ const LoginPage = () => {
         localStorage.setItem("access_token", res.data.access_token);
         console.log( res.data);
         notification.success({
-          message: "Login Success",
+          message: "Đăng nhập thành công",
           description: "Đã đăng nhập thành công",
         });
 

@@ -4,12 +4,12 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert("types", [
       {
-        type: "Type 1",
+        type: "daily",
         created_at: new Date(),
         updated_at: new Date(),
       },
       {
-        type: "Type 2",
+        type: "others",
         created_at: new Date(),
         updated_at: new Date(),
       },

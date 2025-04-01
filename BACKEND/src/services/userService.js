@@ -212,10 +212,47 @@ const getTaskCompleted = async (id) => {
     if (!user) {
       throw new Error("User not found");
     }
+
     const TaskUsers = await TaskUser.findAll({
-      where: { user_id: id, status: "done" },
-      include: [{ model: Task, as: "tasks" }],
+      where: { user_id: id },
+      include: [
+        {
+          model: Task,
+          as: "tasks",
+          required: true,
+          where: { total: { [Op.ne]: null } }, 
+        },
+      ],
     });
+
+    const completedTasks = TaskUsers.filter(
+      (taskUser) => taskUser.progress_count >= taskUser.tasks.total
+    );
+
+    return completedTasks;
+  } catch (e) {
+    throw e;
+  }
+};
+
+const getAllTaskById = async (id) => {
+  try {
+    const user = await User.findAll({ where: { id: id } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const TaskUsers = await TaskUser.findAll({
+      where: { user_id: id },
+      include: [
+        {
+          model: Task,
+          as: "tasks",
+          required: true,
+        },
+      ],
+    });
+
     return TaskUsers;
   } catch (e) {
     throw e;
@@ -231,4 +268,5 @@ module.exports = {
   findOrCreateUser,
   loginUser,
   getTaskCompleted,
+  getAllTaskById,
 };
