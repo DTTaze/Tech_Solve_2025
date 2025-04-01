@@ -130,6 +130,7 @@ const handleIncreaseProgressCount = async (req, res) => {
     return res.error(500, "Failed to increase progress count", error.message);
   }
 };
+
 const handleGetAllTasksByTypeName = async (req, res) => {
   try {
     const type_name = req.params.type_name;
@@ -137,6 +138,16 @@ const handleGetAllTasksByTypeName = async (req, res) => {
     return res.success("Get task by type name success", result);
   } catch (error) {
     return res.error(500, "Failed to get task by type name", error.message);
+  }
+};
+
+const handleGetAllTasksByDifficultyName = async (req, res) => {
+  try {
+    const difficulty_name = req.params.difficulty_name;
+    let result = await taskService.getAllTasksByDifficultyName(difficulty_name);
+    return res.success("Get task by difficulty name success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task by difficulty name", error.message);
   }
 };
 module.exports = {
@@ -152,4 +163,5 @@ module.exports = {
   handleDecisionTaskSubmit,
   handleIncreaseProgressCount,
   handleGetAllTasksByTypeName,
+  handleGetAllTasksByDifficultyName,
 };
