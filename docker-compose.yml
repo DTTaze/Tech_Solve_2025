@@ -81,15 +81,15 @@ services:
     networks:
       - greenflag_network
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflared_tunnel
-    restart: unless-stopped
-    command: tunnel --config /etc/cloudflared/config.yml run
-    volumes:
-      - "C:/Users/Quoc Anh/.cloudflared:/etc/cloudflared"
-    networks:
-      - greenflag_network
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: cloudflared_tunnel
+  #   restart: unless-stopped
+  #   command: tunnel --config /etc/cloudflared/config.yml run
+  #   volumes:
+  #     - "C:/Users/Quoc Anh/.cloudflared:/etc/cloudflared"
+  #   networks:
+  #     - greenflag_network
 volumes:
   mysql_data:
 
