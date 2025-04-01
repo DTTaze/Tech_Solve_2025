@@ -138,13 +138,17 @@ const getUserByID = async (id) => {
 
 const updateUser = async (id, data) => {
   try {
-    let username = data.username || "";
-    let email = data.email || "";
     let { full_name, address, phone_number, coins, streak } = data;
     let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
     }
+    data.username
+      ? (user.username = data.username)
+      : (user.username = user.username);
+    data.email
+      ? (user.email = data.email)
+      : (user.email = user.email);
     if (coins === undefined) {
       user.coins = user.coins;
     } else {

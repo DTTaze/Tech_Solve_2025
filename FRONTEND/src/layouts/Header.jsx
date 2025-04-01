@@ -146,7 +146,7 @@ function UserHeader() {
           </>
         ) : (
           <>
-            <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => navigate("/profile")}>Xem hồ sơ</button>
+            <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={() => { navigate("/profile"); setMenuOpen(false); }}>Xem hồ sơ</button>
             <button className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
           </>
         )}
