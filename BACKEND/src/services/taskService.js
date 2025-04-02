@@ -302,15 +302,16 @@ const increaseProgressCount = async (task_user_id) => {
     if (!taskUser) throw new Error("Task user not found.");
     if (!taskUser.tasks) throw new Error("Task not found.");
 
-    // Kiểm tra nếu progress_count >= total thì báo lỗi
     if (taskUser.progress_count >= taskUser.tasks.total) {
       throw new Error("Task is already completed.");
     }
 
-    // Tăng progress_count lên 1
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
 
-    taskUser.completed_at = new Date();
+    if(taskUser.progress_count = taskUser.tasks.total){
+      taskUser.completed_at = new Date();
+    }
+
     await taskUser.save();
 
     return taskUser;
@@ -322,7 +323,7 @@ const increaseProgressCount = async (task_user_id) => {
 
 const getAllTasksByTypeName = async (type_name) => {
   try {
-    if (!type_name) throw new Error("Missing type_name");
+    if (!type_name) throw new Error("Missing type name");
     const type = await Type.findOne({
       where: { type: type_name },
     });
@@ -337,7 +338,27 @@ const getAllTasksByTypeName = async (type_name) => {
         },
       ],
     });
-    if (!tasks) throw new Error("Failed to get task by type_name");
+    if (!tasks) throw new Error("Failed to get task by type name");
+    return tasks;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getAllTasksByDifficultyName = async (difficulty_name) => {
+  try {
+    if (!difficulty_name) throw new Error("Missing difficulty name");
+    else if (
+      difficulty_name !== "easy" &&
+      difficulty_name !== "medium" &&
+      difficulty_name !== "hard"
+    ) {
+      throw new Error("Difficulty name must be easy/medium/hard");
+    }
+    const tasks = await Task.findAll({
+      where: { difficulty: difficulty_name },
+    });
+    if (!tasks) throw new Error("Failed to get task by difficulty name");
     return tasks;
   } catch (error) {
     throw error;
@@ -357,4 +378,5 @@ module.exports = {
   updateDecisionTaskSubmit,
   increaseProgressCount,
   getAllTasksByTypeName,
+  getAllTasksByDifficultyName,
 };
