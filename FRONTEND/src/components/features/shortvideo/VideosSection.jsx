@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, createRef } from "react";
 import ReactPlayer from "react-player";
 import "../styles/components/VideoSection.css";
-import HeartButton from "./heartButton";
-import CommentButton from "./commentButton";
-import ShareButton from "./shareButton";
-import CoinImg from "../assets/images/Coin";
-import Timer from "../assets/images/Timer";
+import HeartButton from "./HeartButton";
+import CommentButton from "./CommentButton";
+import ShareButton from "./ShareButton";
+import CoinImg from "../../../assets/images/Coin";
+import Timer from "../../../assets/images/Timer";
 import { notification } from "antd";
 
 // Component hiển thị stats trên bên trái màn hình
