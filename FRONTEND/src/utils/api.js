@@ -20,6 +20,10 @@ export const updateUserApi = async (id, data) => {
   return axios.put(`api/users/${id}`, data);
 };
 
+export const deleteUserApi = async (id) => {
+  return axios.delete(`api/users/${id}`);
+};
+
 export const uploadUserAvatarApi = (user_id, file) => {
   const formData = new FormData();
   formData.append("avatar", file);

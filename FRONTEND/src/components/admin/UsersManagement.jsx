@@ -1,15 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
-import { userColumns, usersData } from "../../data/mock-data";
+import { notification } from "antd";
 import { Box, Typography } from "@mui/material";
-
+import { getAllUserApi, deleteUserApi } from "../../utils/api";
 export default function UsersManagement() {
-  const [users, setUsers] = useState(usersData);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleAddUser = () => {
+  useEffect(() => {
+    const getAllUsers = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllUserApi();
+        if (res.success) {
+          setUsers(res.data);
+        } else {
+          setError(res.error);
+          console.log(res.error);
+        }
+      } catch (e) {
+        setError(e);
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getAllUsers();
+  }, []);
+  const userColumns = [
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "name", headerName: "Name", width: 200 },
+    { field: "email", headerName: "Email", width: 230 },
+    { field: "role", headerName: "Role", width: 120 },
+    { field: "status", headerName: "Status", width: 120 },
+    { field: "dateCreated", headerName: "Date Created", width: 150 },
+  ];
+  const handleAddUser = async () => {
     console.log("Add user");
-    // Will implement user creation form/modal
   };
 
   const handleEditUser = (user) => {
@@ -17,9 +45,14 @@ export default function UsersManagement() {
     // Will implement user edit form/modal
   };
 
-  const handleDeleteUser = (user) => {
-    console.log("Delete user", user);
-    // Will implement confirmation and deletion logic
+  const handleDeleteUser = async (user) => {
+    const res = await deleteUserApi(user.id);
+    console.log(res);
+    if (res.success) {
+      notification.success({
+        message: "Xóa người dùng thành công",
+      });
+    }
   };
 
   return (
