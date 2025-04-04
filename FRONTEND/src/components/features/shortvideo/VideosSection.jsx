@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, createRef } from "react";
 import ReactPlayer from "react-player";
-import "../styles/components/VideoSection.css";
+import "../../../styles/components/VideoSection.css";
 import HeartButton from "./HeartButton";
 import CommentButton from "./CommentButton";
 import ShareButton from "./ShareButton";

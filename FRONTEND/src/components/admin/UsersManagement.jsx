@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
 import { notification } from "antd";
+import { userColumns } from "./HeaderColumn";
 import { Box, Typography } from "@mui/material";
 import { getAllUserApi, deleteUserApi } from "../../utils/api";
 export default function UsersManagement() {
@@ -28,14 +29,7 @@ export default function UsersManagement() {
     };
     getAllUsers();
   }, []);
-  const userColumns = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "name", headerName: "Name", width: 200 },
-    { field: "email", headerName: "Email", width: 230 },
-    { field: "role", headerName: "Role", width: 120 },
-    { field: "status", headerName: "Status", width: 120 },
-    { field: "dateCreated", headerName: "Date Created", width: 150 },
-  ];
+
   const handleAddUser = async () => {
     console.log("Add user");
   };

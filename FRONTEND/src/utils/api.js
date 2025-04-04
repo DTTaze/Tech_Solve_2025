@@ -16,12 +16,28 @@ export const getAllUserApi = () => {
   return axios.get("api/users");
 };
 
-export const updateUserApi = async (id, data) => {
+export const updateUserApi = (id, data) => {
   return axios.put(`api/users/${id}`, data);
 };
 
-export const deleteUserApi = async (id) => {
+export const deleteUserApi = (id) => {
   return axios.delete(`api/users/${id}`);
+};
+
+export const getAllRolesApi = () => {
+  return axios.get("api/roles");
+};
+
+export const getAllPermissionsApi = () => {
+  return axios.get("api/permissions");
+};
+
+// export const getAllRolesPermissionsApi = () => {
+//   return axios.get("api/permissions");
+// };
+
+export const getAllVideosApi = () => {
+  return axios.get("api/videos")
 };
 
 export const uploadUserAvatarApi = (user_id, file) => {
@@ -58,9 +74,9 @@ export const deleteUserAvatarApi = (user_id) => {
   return axios.delete(`api/avatars/${user_id}`);
 };
 
-export const getItemsApi = () => {
+export const getAllItemsApi = () => {
   return axios.get("api/items");
-}
+};
 
 export const purchaseItemApi = (user_id, item_id, data) => {
   return axios.post(`api/items/purchase/${item_id}`, { user_id, ...data });
@@ -108,5 +124,4 @@ export const submitTaskApi = (taskUserId, data) => {
 
 export const getUserTransactionHistory = (user_id) => {
   return axios.get(`api/transactions/${user_id}`);
-}
-
+};

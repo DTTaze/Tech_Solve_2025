@@ -180,7 +180,7 @@ const updateUser = async (id, data) => {
     user.email == "" ? (user.email = email) : (user.email = user.email);
     await user.save();
 
-    return await User.findAll();
+    return user;
   } catch (e) {
     throw e;
   }
