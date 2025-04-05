@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
 const Task = db.Task;
+const Role = db.Role;
 const TaskUser = db.TaskUser;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
@@ -45,7 +46,16 @@ const loginUser = async (data) => {
       throw new Error("Vui lòng cung cấp email hoặc username");
     }
     let condition = email ? { email } : { username };
-    const user = await User.findOne({ where: condition });
+    const user = await User.findOne({
+      where: condition,
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["id", "name"],
+        },
+      ],
+    });
     if (!user) {
       throw new Error("Invalid email or password");
     }
@@ -54,23 +64,23 @@ const loginUser = async (data) => {
     if (!isMatch) {
       throw new Error("Invalid email or password");
     }
-
     await user.update({
       last_logined: todayStr,
     });
     // Create an access token
     const payload = {
       id: user.id,
+      role_id: user.role_id,
+      role_name: user.roles?.name,
+      username: user.username,
+      email: user.email,
       full_name: user.full_name,
       phone_number: user.phone_number,
       address: user.address,
-      email: user.email,
-      username: user.username,
-      role_id: user.role_id,
-      avatar_url: user.avatar_url,
       coins: user.coins,
       last_logined: todayStr,
       streak: user.streak,
+      avatar_url: user.avatar_url,
     };
     const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE,
@@ -78,19 +88,7 @@ const loginUser = async (data) => {
 
     return {
       access_token,
-      user: {
-        id: user.id,
-        full_name: user.full_name,
-        phone_number: user.phone_number,
-        address: user.address,
-        email: user.email,
-        username: user.username,
-        role_id: user.role_id,
-        avatar_url: user.avatar_url,
-        coins: user.coins,
-        last_logined: todayStr,
-        streak: user.streak,
-      },
+      user: payload,
     };
   } catch (e) {
     throw e;
@@ -146,9 +144,7 @@ const updateUser = async (id, data) => {
     data.username
       ? (user.username = data.username)
       : (user.username = user.username);
-    data.email
-      ? (user.email = data.email)
-      : (user.email = user.email);
+    data.email ? (user.email = data.email) : (user.email = user.email);
     if (coins === undefined) {
       user.coins = user.coins;
     } else {
@@ -220,7 +216,7 @@ const getTaskCompleted = async (id) => {
           model: Task,
           as: "tasks",
           required: true,
-          where: { total: { [Op.ne]: null } }, 
+          where: { total: { [Op.ne]: null } },
         },
       ],
     });

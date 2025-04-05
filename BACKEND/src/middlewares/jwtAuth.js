@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const db = require("../models/index.js");
 const User = db.User;
+const Role = db.Role;
 
 const jwtAuth = async (req, res, next) => {
   const white_lists = [
@@ -21,7 +22,16 @@ const jwtAuth = async (req, res, next) => {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findByPk(decoded.id, {
-          attributes: { exclude: ["password"] },
+          attributes: {
+            exclude: ["password"],
+          },
+          include: [
+            {
+              model: Role,
+              as: "roles",
+              attributes: ["id", "name"],
+            },
+          ],
         });
         if (!user) return res.status(401).json({ message: "User not found" });
         req.user = user;
@@ -29,6 +39,7 @@ const jwtAuth = async (req, res, next) => {
       } catch (e) {
         return res.status(401).json({
           message: "Invalid or expired token",
+          error: e.message,
         });
       }
     } else {
