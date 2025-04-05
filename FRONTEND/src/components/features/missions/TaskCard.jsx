@@ -13,7 +13,7 @@ const TaskCard = React.memo(({ task, onClick, completingTask }) => {
   const isCompleted = task.Complete === task.Total;
   const levelColorClass = getLevelColor(task.level);
   const isLoading = completingTask === task.task_id;
-  
+
   return (
     <div
       className={`task-card bg-white rounded-xl border ${

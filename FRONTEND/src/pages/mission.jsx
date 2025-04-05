@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
-import images from "../components/features/exchangemarket/Photo.jsx";
 import {
   getAllTasksApi,
+  AllTaskByIdApi,
   completeTaskApi,
   receiveCoinApi,
   getUserApi,
@@ -28,6 +28,58 @@ function Mission() {
   const [currentPage, setCurrentPage] = useState(1);
   const taskPerPage = 3;
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
+
+  // Function to fetch tasks by type
+  const fetchNewTasks = async () => {
+    try {
+      setLoading(true);
+      const taskResponse = await getAllTasksApi();
+      const userResponse = await getUserApi();
+
+      const userData = userResponse.data;
+      setUserInfo(userData);
+
+      if (taskResponse.data) {
+        const tasksData = taskResponse.data.map((task) => ({
+          id: task.id,
+          title: task.title,
+          content: task.content,
+          description: task.description,
+          coins: task.coins,
+          difficulty: task.difficulty,
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+          total: task.total || 1,
+        }));  
+        setTasks(tasksData);
+
+        // Create user tasks from the tasks data
+        const userTasksData = tasksData.map((task) => ({
+          task_id: task.id,
+          user_id: userData.id || 1,
+          complete: 0,
+          total: task.total || 1,
+          satus: "inProgress",
+          coin_per_user: task.coins,
+          completed_at: null,
+          assigned_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          difficulty: task.difficulty || "easy",
+        }));
+        console.log("User tasks data:", userTasksData);
+        setUserTasks(userTasksData);
+        toast.success("Đã tải nhiệm vụ mới!");
+      } else {
+        toast.error("Không thể tải nhiệm vụ mới");
+      }
+    } catch (error) {
+      console.error("Failed to fetch new tasks:", error);
+      toast.error("Đã xảy ra lỗi khi tải nhiệm vụ mới");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch data from backend
   useEffect(() => {
@@ -68,47 +120,68 @@ function Mission() {
           }
         }
 
-        console.log("Processed tasks data:", tasksData);
+        console.log("tasks data:", tasksData);
+        // Process user data from API response
+        if (userResponse?.data) {
+          console.log("Setting user info:", userResponse.data);
+          const dataOfUser = {
+            id: userResponse.data.id,
+            full_name: userResponse.data.full_name || "User",
+            email: userResponse.data.email,
+            coins: userResponse.data.coins || 0,
+            streak: userResponse.data.streak || 0,
+            last_logined: userResponse.data.last_logined,
+          };
+          setUserInfo(dataOfUser);
+        } else {
+          console.log("No user data found, setting default user info.");
+          setUserInfo({
+            id: 0,
+            name: "Guest User",
+            coins: 0,
+            streak: 0,
+          });
+        }
 
+        // Process tasksData
         if (tasksData.length > 0) {
           const processedTasks = tasksData.map((task) => ({
-            id: task.id,
-            coin: task.coins,
-            level: task.difficulty || "easy",
-            imgScr: images.seedling_solid,
-            Task_num: task.title,
-            description: task.description,
+            id: task.id, 
+            title: task.title,
             content: task.content,
-            createdAt: task.createdAt,
-            updatedAt: task.updatedAt,
+            description: task.description, 
+            coins: task.coins,
+            difficulty: task.difficulty || "easy",
+            total: task.total || 1,
+            created_at: task.createdAt,
+            updated_at: task.updatedAt,
           }));
 
           console.log("Processed tasks for UI:", processedTasks);
           setTasks(processedTasks);
 
-          const mockUserTasks = processedTasks.map((task) => {
-            const total = 5;
-            const isCompleted = Math.random() > 0.6;
-            const progress = isCompleted
-              ? total
-              : Math.floor(Math.random() * total);
+          // get user tasks from API
+          const userTasksData = await AllTaskByIdApi(userResponse.data.id);
+          console.log("User tasks data from API:", userTasksData);
+
+          const processedUserTasksData = userTasksData.data.map((task) => {
+            const taskOfUser = processedTasks.find((t) => t.id === task.task_id);
+            total =  taskOfUser?.total || 1;
 
             return {
-              task_id: task.id,
-              user_id: userResponse?.data?.data?.id || 1,
-              level: task.level,
-              Complete: progress,
-              Total: total,
-              imgScr: task.imgScr,
-              Task_num: task.Task_num,
-              coin: task.coin,
-              completed_at: isCompleted ? new Date().toISOString() : null,
-              description: task.description,
+              id: task.id,
+              task_id: task.task_id,
+              user_id: userResponse.data.id,
+              progress_count: task.progress_count,
+              assigned_at: task.assigned_at,
+              completed_at: total === task.progress_count ? new Date().toISOString() : null,
+              created_at: task.created_at,
+              updated_at: task.updated_at,  
             };
           });
 
-          console.log("Mock user tasks:", mockUserTasks);
-          setUserTasks(mockUserTasks);
+          console.log("Mock user tasks:", processedUserTasksData);
+          setUserTasks(processedUserTasksData);
         } else {
           console.log("No tasks available.");
           setTasks([]);
@@ -116,25 +189,6 @@ function Mission() {
           toast.warning("No tasks available");
         }
 
-        if (userResponse?.data) {
-          console.log("Setting user info:", userResponse.data);
-          setUserInfo({
-            id: userResponse.data.id,
-            full_name: userResponse.data.full_name || "User",
-            email: userResponse.data.email,
-            coins: userResponse.data.coins || 0,
-            streak: userResponse.data.streak || 0,
-            last_logined: userResponse.data.last_logined,
-          });
-        } else {
-          console.log("No user data found, setting default user info.");
-          setUserInfo({
-            id: 1,
-            name: "Guest User",
-            coins: 0,
-            streak: 0,
-          });
-        }
       } catch (error) {
         console.error("Failed to fetch data:", error);
         toast.error("Không thể tải dữ liệu nhiệm vụ");
@@ -244,22 +298,41 @@ function Mission() {
     },
     [tasks, userTasks]
   );
+  const TaskMap = useMemo(() => {
+    return Object.fromEntries(
+      tasks.map((task) => [task.id, task])
+    );
+  }
+  , [tasks]); 
 
+  console.log("TaskMap:", TaskMap);
   // Memoize filtered and sorted task lists to prevent recalculations on every render
   const dailyTasks = useMemo(() => {
-    // Filter tasks for daily tasks (we'll use medium and hard difficulty as daily tasks)
-    return userTasks.filter(
+    return userTasks
+    .map((userTask) => {
+      const task = TaskMap[userTask.task_id]
+      return task ? {...task,completed_at: userTask.completed_at} : null;
+    })
+    .filter(
       (task) =>
-        !task.completed_at && (task.level === "medium" || task.level === "hard")
+        task && task.completed_at === null && (task.diffficulty === "medium" || task.diffficulty === "hard")
     );
-  }, [userTasks]);
+  }, [userTasks, TaskMap]);
+  console.log("userTasks:", userTasks);
+  console.log("Daily tasks:", dailyTasks);
 
   const otherTasks = useMemo(() => {
     // Filter tasks for other tasks (using easy difficulty as other tasks)
-    return userTasks.filter(
-      (task) => !task.completed_at && task.level === "easy"
+    return userTasks
+    .map((userTask) => {
+      const task = TaskMap[userTasks.task_id]
+      return task ? {...task,completed_at: userTask.completed_at} : null;
+    })
+    .filter(
+      (task) =>
+        task && !task.completed_at && (task.diffficulty === "easy")
     );
-  }, [userTasks]);
+  }, [userTasks, TaskMap]);
 
   const completedTasks = useMemo(() => {
     // Filter for completed tasks
@@ -426,27 +499,53 @@ function Mission() {
 
             {/* Task List */}
             <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
-              <TasksList
-                tasks={
-                  selectedTab === "daily"
-                    ? dailyTasks
-                    : selectedTab === "other"
-                    ? otherTasks
-                    : selectedTab === "completed"
-                    ? completedTasks
-                    : []
-                }
-                loading={loading}
-                completingTask={completingTask}
-                handleTaskCompletion={handleTaskCompletion}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                goToNextPage={goToNextPage}
-                goToPreviousPage={goToPreviousPage}
-                userId={userInfo?.id}
-                selectedTab={selectedTab}
-                taskPerPage={taskPerPage}
-              />
+              {selectedTab === "daily" && dailyTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Không có nhiệm vụ hàng ngày nào
+                  </p>
+                  <button
+                    onClick={fetchNewTasks}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Lấy Nhiệm Vụ Mới
+                  </button>
+                </div>
+              ) : selectedTab === "other" && otherTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Không có nhiệm vụ phụ nào
+                  </p>
+                  <button
+                    onClick={fetchNewTasks}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Lấy Nhiệm Vụ Mới
+                  </button>
+                </div>
+              ) : (
+                <TasksList
+                  tasks={
+                    selectedTab === "daily"
+                      ? dailyTasks
+                      : selectedTab === "other"
+                      ? otherTasks
+                      : selectedTab === "completed"
+                      ? completedTasks
+                      : []
+                  }
+                  loading={loading}
+                  completingTask={completingTask}
+                  handleTaskCompletion={handleTaskCompletion}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  goToNextPage={goToNextPage}
+                  goToPreviousPage={goToPreviousPage}
+                  userId={userInfo.id}
+                  selectedTab={selectedTab}
+                  taskPerPage={taskPerPage}
+                />
+              )}
             </div>
           </div>
 

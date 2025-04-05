@@ -66,7 +66,7 @@ function UserHeader() {
     { key: "", label: "Trang chủ" },
     { key: "missions", label: "Nhiệm vụ" },
     { key: "market", label: "Chợ trao đổi" },
-    { key: "mission-video", label: "Video ngắn" },
+    { key: "short-video", label: "Video ngắn" },
   ];
 
   return (

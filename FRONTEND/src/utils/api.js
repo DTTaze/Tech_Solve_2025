@@ -56,7 +56,7 @@ export const deleteUserAvatarApi = (user_id) => {
 
 export const getItemsApi = () => {
   return axios.get("api/items");
-}
+};
 
 export const purchaseItemApi = (user_id, item_id, data) => {
   return axios.post(`api/items/purchase/${item_id}`, { user_id, ...data });
@@ -82,6 +82,10 @@ export const getAllTaskCompletedById = (id) => {
   return axios.get(`api/users/task/completed/${id}`);
 };
 
+export const AllTaskByIdApi = (id) => {
+  return axios.post(`api/users/task/all/${id}`);
+}
+
 export const receiveCoinApi = (coins) => {
   return axios.post("api/tasks/coin/receive", { coins });
 };
@@ -104,5 +108,4 @@ export const submitTaskApi = (taskUserId, data) => {
 
 export const getUserTransactionHistory = (user_id) => {
   return axios.get(`api/transactions/${user_id}`);
-}
-
+};

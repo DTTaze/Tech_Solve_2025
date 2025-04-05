@@ -9,7 +9,7 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
-import MissionVideo from "./pages/MissionVideo.jsx"
+import ShortVideo from "./pages/ShortVideo.jsx"
 import App from "./App.jsx";
 import "./index.css";
 
@@ -35,8 +35,8 @@ const router = createBrowserRouter([
         element: <MarketPage />,
       },
       {
-        path: "mission-video",
-        element: <MissionVideo />,
+        path: "short-video",
+        element: <ShortVideo />,
       },
     ],
   },
