@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import Comment_icon from "../assets/images/Comment";
+import Comment_icon from "../../../assets/images/Comment";
 
 const CommentButton = ({ comments }) => {
   const [showComments, setShowComments] = useState(false);

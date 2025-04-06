@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Heart from "../assets/images/Heart";
+import Heart from "../../../assets/images/Heart";
 
 export default function HeartButton({ initialLikes, onLike }) {
   const [heart, setHeart] = useState(false);

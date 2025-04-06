@@ -1,23 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
 import {
   taskColumns,
-  tasksData,
   itemColumns,
-  itemsData,
   videoColumns,
-  videosData,
   avatarColumns,
-  avatarsData,
-} from "../../data/mock-data";
+} from "./HeaderColumn";
+import {
+  getAllTasksApi,
+  getAllItemsApi,
+  getAllVideosApi,
+  getAllUserAvatarsApi,
+} from "../../utils/api";
 import { Box, Typography } from "@mui/material";
 import AdminTabs from "./AdminTabs";
 
 // Tasks Management Component
 function TasksManagement() {
-  const [tasks, setTasks] = useState(tasksData);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllTasksApi();
 
+        if (res.success) {
+          setTasks(res.data);
+        } else {
+          console.log(res.error);
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   const handleAddTask = () => {
     console.log("Add task");
   };
@@ -45,9 +66,28 @@ function TasksManagement() {
 
 // Items Management Component
 function ItemsManagement() {
-  const [items, setItems] = useState(itemsData);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllItemsApi();
 
+        if (res.success) {
+          setItems(res.data);
+        } else {
+          console.log(res.error);
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   const handleAddItem = () => {
     console.log("Add item");
   };
@@ -75,9 +115,27 @@ function ItemsManagement() {
 
 // Videos Management Component
 function VideosManagement() {
-  const [videos, setVideos] = useState(videosData);
+  const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllVideosApi();
+        if (res.success) {
+          setVideos(res.data);
+        } else {
+          console.log(res.error);
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchData();
+  }, []);
   const handleAddVideo = () => {
     console.log("Add video");
   };
@@ -105,9 +163,28 @@ function VideosManagement() {
 
 // Avatars Management Component
 function AvatarsManagement() {
-  const [avatars, setAvatars] = useState(avatarsData);
+  const [avatars, setAvatars] = useState([]);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllUserAvatarsApi();
 
+        if (res.success) {
+          setAvatars(res.data);
+        } else {
+          console.log(res.error);
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   const handleAddAvatar = () => {
     console.log("Add avatar");
   };
@@ -135,13 +212,14 @@ function AvatarsManagement() {
 
 // Main Content Management Component
 export default function ContentManagement() {
+  const [loading, setLoading] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
   const tabs = [
     { label: "Tasks", content: <TasksManagement /> },
     { label: "Items", content: <ItemsManagement /> },
     { label: "Videos", content: <VideosManagement /> },
     { label: "Avatars", content: <AvatarsManagement /> },
   ];
-
   return (
     <Box sx={{ width: "100%" }}>
       <Typography variant="h5" component="h1" sx={{ mb: 3, p: 2 }}>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ItemCatalog from "../components/features/exchangemarket/ItemCatalog";
-import { getItemsApi } from "../utils/api";
+import { getAllItemsApi } from "../utils/api";
 
 export default function ExchangeMarket() {
   const [items, setItems] = useState([]);
@@ -10,7 +10,7 @@ export default function ExchangeMarket() {
   useEffect(() => {
     async function fetchItems() {
       try {
-        const response = await getItemsApi();
+        const response = await getAllItemsApi();
         if (response.success) {
           setItems(response.data);
         } else {
