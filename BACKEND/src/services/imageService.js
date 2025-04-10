@@ -2,25 +2,27 @@ const db = require("../models/index");
 const Image = db.Image;
 const cloudinary = require("../config/cloudinary");
 
-const uploadImage = async (file, reference_id, reference_type) => {
+const uploadImages = async (files, reference_id, reference_type) => {
     try {
-        if (!file) throw new Error("No file provided");
-        console.log(file);
-        // Upload ảnh lên Cloudinary
-        const result = await cloudinary.uploader.upload(file.path, {
-            folder: "images",
-        });
-    
-        // Lưu ảnh vào database
-        const image = await Image.create({
+        if (!files || files.length === 0) throw new Error("No files provided");
+        console.log("Files:", files);
+
+        const uploadedImages = [];
+
+        for (const file of files) {
+            const result = await cloudinary.uploader.upload(file.path, {folder: "images",});
+
+            const image = await Image.create({
             url: result.secure_url,
             reference_id,
             reference_type,
-        });
-    
-        return image;
+            });
+
+            uploadedImages.push(image); 
+        }
+        return uploadedImages;
     } catch (error) {
-        throw new Error(error.message);   
+      throw new Error(error.message);
     }
 };
   
@@ -87,7 +89,7 @@ const deleteImage = async (id) => {
 }
 
 module.exports = { 
-    uploadImage,
+    uploadImages,
     getImageById,
     getAllImages,
     updateImage,

@@ -2,12 +2,12 @@ const imageService = require("../services/imageService.js");
 
 const handleUploadImage = async (req, res) => {
   try {
-    const { file } = req;
-    console.log("file in handleUploadImage", file);
+    const files = req.files; 
+
     const { reference_id, reference_type } = req.body;
 
-    if (!file) {
-      return res.status(400).json({ message: "No file uploaded" });
+    if (!files || files.length === 0) {
+      return res.error("No files uploaded",statusCode = 400);
     }
 
     if (!reference_id || !reference_type) {
@@ -19,13 +19,16 @@ const handleUploadImage = async (req, res) => {
       return res.status(400).json({ message: "Invalid reference_type" });
     }
 
-    const image = await imageService.uploadImage(file, reference_id, reference_type);
+    const images = await imageService.uploadImages(files, reference_id, reference_type);
 
-    return res.success("Image uploaded successfully", image);
+
+    return res.success("Images uploaded successfully", images);
   } catch (error) {
-    return res.error("Error uploading image", error);
+    console.error("Error uploading images:", error);
+    return res.status(500).json({ message: "Error uploading images", error });
   }
 };
+
 
 const handleGetImageById = async (req, res) => {
   try {

@@ -4,9 +4,22 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Transaction extends Model {
     static associate(models) {
-      Transaction.belongsTo(models.User, { foreignKey: "buyer_id", onDelete: "CASCADE" });
-
-      Transaction.belongsTo(models.Item, { foreignKey: "item_id", onDelete: "CASCADE" });
+      Transaction.belongsTo(models.User, {
+        foreignKey: "buyer_id",
+        as: "buyer",
+        onDelete: "CASCADE",
+      });
+    
+      Transaction.belongsTo(models.User, {
+        foreignKey: "seller_id",
+        as: "seller",
+        onDelete: "CASCADE",
+      });
+    
+      Transaction.belongsTo(models.Item, {
+        foreignKey: "item_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 

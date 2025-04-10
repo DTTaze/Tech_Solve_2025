@@ -8,7 +8,7 @@ const responseFormatter = (req, res, next) => {
     });
   };
 
-  res.error = (statusCode, message, error = null) => {
+  res.error = ( message, error = null,statusCode = 500) => {
     res.status(statusCode).json({
       status: statusCode,
       success: false,
