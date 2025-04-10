@@ -80,25 +80,16 @@ const handleReceiveCoin = async (req, res) => {
 
 const handleSubmitTask = async (req, res) => {
   try {
-    const user_id = req.user.id;
     const task_user_id = req.params.task_user_id;
     let description = req.body.description;
     description = description ? String(description) : "";
-    const auth = req.headers.authorization;
-
-    if (!req.file) {
-      console.log("req.body:", req.body);
-      console.log("req.file:", req.file); // Kiểm tra xem có file nào không
-      throw new Error("Image is required");
-    }
-
-    let file = req.file;
+    
+    const files = req.files;
 
     let result = await taskService.submitTask(
       task_user_id,
       description,
-      file,
-      auth
+      files,
     );
 
     return res.success("Submit task success", result);

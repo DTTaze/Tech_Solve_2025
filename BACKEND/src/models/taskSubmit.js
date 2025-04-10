@@ -4,13 +4,14 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class TaskSubmit extends Model {
     static associate(models) {
-      TaskSubmit.belongsTo(models.User, {
-        foreignKey: "id_user",
+      TaskSubmit.belongsTo(models.TaskUser, {
+        foreignKey: "task_user_id",
         onDelete: "CASCADE",
       });
-      TaskSubmit.belongsTo(models.TaskUser, {
-        foreignKey: "id_task_user",
-        onDelete: "CASCADE",
+      TaskSubmit.hasMany(models.Image, {
+        foreignKey: "reference_id",
+        as: "images",
+        constraints: false,
       });
     }
   }
@@ -33,11 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       description: {
         type: DataTypes.TEXT,
         allowNull: true,
-      },
-      images_id: {
-        type: DataTypes.JSON,
-        allowNull: true,
-      },
+      },    
       status: {
         type: DataTypes.ENUM("pending", "approved", "rejected"),
         defaultValue: "pending",

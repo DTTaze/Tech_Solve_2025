@@ -6,9 +6,10 @@ const router = express.Router();
 
 router.post(
   "/upload",
-  middlewareImage.single("image"),
+  middlewareImage.array("images", 5), 
   imageController.handleUploadImage
 );
+
 
 router.get("/", imageController.handleGetAllImages);
 router.get("/:id", imageController.handleGetImageById);
