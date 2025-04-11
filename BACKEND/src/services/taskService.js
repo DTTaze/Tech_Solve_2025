@@ -285,7 +285,7 @@ const increaseProgressCount = async (task_user_id) => {
 
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
 
-    if(taskUser.progress_count = taskUser.tasks.total){
+    if(taskUser.progress_count === taskUser.tasks.total){
       taskUser.completed_at = new Date();
     }
 
