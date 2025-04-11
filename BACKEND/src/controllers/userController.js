@@ -76,6 +76,15 @@ const handleGetAllTaskById = async (req, res) => {
   }
 };
 
+const handleGetItemByIdUser = async (req, res) => {
+  try {
+    let result = await userService.getItemByIdUser(req.params.user_id);
+    return res.success("Get item by user ID success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get item by user ID", error.message);
+  }
+}
+
 module.exports = {
   handleGetAllUsers,
   handleCreateUser,
@@ -86,4 +95,5 @@ module.exports = {
   handleGetProfile,
   handleGetTaskCompleted,
   handleGetAllTaskById,
+  handleGetItemByIdUser,
 };

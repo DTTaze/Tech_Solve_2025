@@ -6,6 +6,8 @@ const User = db.User;
 const Task = db.Task;
 const Role = db.Role;
 const TaskUser = db.TaskUser;
+const Item = db.Item;
+const Transaction = db.Transaction;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 
@@ -255,6 +257,33 @@ const getAllTaskById = async (id) => {
   }
 };
 
+const getItemByIdUser = async (user_id) => {
+  try {
+    const items = await Transaction.findAll({
+      where: {
+        buyer_id: user_id,
+        status: ["pending", "completed"], 
+      },
+      attributes: ["id", "total_price", "quantity", "status"],
+      include: [
+        {
+          model: Item, 
+          attributes: ["id", "name", "description", "price"],
+        },
+      ],
+    });
+
+    if (!items || items.length === 0) {
+      throw new Error("User not found");
+    }
+
+    return items;
+  } catch (e) {
+    throw e;
+  }
+};
+
+
 module.exports = {
   createUser,
   getAllUsers,
@@ -265,4 +294,5 @@ module.exports = {
   loginUser,
   getTaskCompleted,
   getAllTaskById,
+  getItemByIdUser,
 };

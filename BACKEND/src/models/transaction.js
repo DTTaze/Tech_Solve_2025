@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     
       Transaction.belongsTo(models.Item, {
         foreignKey: "item_id",
-        onDelete: "CASCADE",
       });
     }
   }

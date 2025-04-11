@@ -7,7 +7,7 @@ const handleUploadImage = async (req, res) => {
     const { reference_id, reference_type } = req.body;
 
     if (!files || files.length === 0) {
-      return res.error("No files uploaded",statusCode = 400);
+      return res.error(400, "No files uploaded");
     }
 
     if (!reference_id || !reference_type) {
@@ -41,7 +41,7 @@ const handleGetImageById = async (req, res) => {
 
     return res.success("Image found", image);
   } catch (error) {
-    return res.error("Error getting image", error);
+    return res.error(500, "Error getting image", error);
   }
 }
 
@@ -50,7 +50,7 @@ const handleGetAllImages = async (req, res) => {
     const images = await imageService.getAllImages();
     return res.success("Images found", images);
   } catch (error) {
-    return res.error("Error getting images", error);
+    return res.error(500, "Error getting images", error);
   }
 }
 
