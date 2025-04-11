@@ -82,6 +82,10 @@ export const getAllTaskCompletedById = (id) => {
   return axios.get(`api/users/task/completed/${id}`);
 };
 
+export const AllTaskByIdApi = (id) => {
+  return axios.post(`api/users/task/all/${id}`);
+};
+
 export const receiveCoinApi = (coins) => {
   return axios.post("api/tasks/coin/receive", { coins });
 };
@@ -104,5 +108,8 @@ export const submitTaskApi = (taskUserId, data) => {
 
 export const getUserTransactionHistory = (user_id) => {
   return axios.get(`api/transactions/${user_id}`);
-}
+};
 
+export const increaseProgressCountApi = (taskUserId) => {
+  return axios.post(`api/tasks/progress/increase/${taskUserId}`);
+}

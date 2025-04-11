@@ -7,6 +7,8 @@ import {
   completeTaskApi,
   receiveCoinApi,
   getUserApi,
+  getTaskByIdApi,
+  increaseProgressCountApi
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
@@ -28,6 +30,8 @@ function Mission() {
   const [currentPage, setCurrentPage] = useState(1);
   const taskPerPage = 3;
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
+  const [dailyTasks, setDailyTasks] = useState([]);
+  const [otherTasks, setOtherTasks] = useState([]);
 
   // Function to fetch new tasks
   const fetchNewTasks = async () => {
@@ -42,24 +46,24 @@ function Mission() {
           content: task.content,
           description: task.description,
           coins: task.coins,
-          difficulty: task.difficulty || "easy",
-          createdAt: task.createdAt,
-          updatedAt: task.updatedAt,
+          difficulty: task.difficulty,
+          created_at: task.createdAt,
+          updated_at: task.updatedAt,
+          total: task.total || 1,
         }));
         setTasks(tasksData);
 
         // Create user tasks from the tasks data
         const userTasksData = tasksData.map((task) => ({
+          id: task.id,
           task_id: task.id,
-          user_id: userInfo?.id || 1,
-          complete: 0,
-          total: 5,
-          satus: "inProgress",
-          coin_per_user: task.coins,
+          user_id: userResponse.data.id || 1,
+          progress_count: null,
           completed_at: null,
           assigned_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          difficulty: task.difficulty,
         }));
 
         setUserTasks(userTasksData);
@@ -94,8 +98,53 @@ function Mission() {
 
         
         // Process tasks from API response
-        if (taskResponse.data) {
-          const tasksData = taskResponse.data.map((task) => ({
+        let tasksData = [];
+
+        if (taskResponse?.data) {
+          console.log("Processing task response data...");
+          if (
+            taskResponse.data.success &&
+            Array.isArray(taskResponse.data.data)
+          ) {
+            tasksData = taskResponse.data.data;
+          } else if (Array.isArray(taskResponse.data)) {
+            tasksData = taskResponse.data;
+          } else if (
+            taskResponse.data.data &&
+            !Array.isArray(taskResponse.data.data)
+          ) {
+            if (typeof taskResponse.data.data === "object") {
+              tasksData = Object.values(taskResponse.data.data);
+            }
+          }
+        }
+
+        console.log("tasks data:", tasksData);
+        // Process user data from API response
+        if (userResponse?.data) {
+          console.log("Setting user info:", userResponse.data);
+          const dataOfUser = {
+            id: userResponse.data.id,
+            full_name: userResponse.data.full_name || "User",
+            email: userResponse.data.email,
+            coins: userResponse.data.coins || 0,
+            streak: userResponse.data.streak || 0,
+            last_logined: userResponse.data.last_logined,
+          };
+          setUserInfo(dataOfUser);
+        } else {
+          console.log("No user data found, setting default user info.");
+          setUserInfo({
+            id: 0,
+            name: "Guest User",
+            coins: 0,
+            streak: 0,
+          });
+        }
+
+        // Process tasksData
+        if (tasksData.length > 0) {
+          const processedTasks = tasksData.map((task) => ({
             id: task.id,
             title: task.title,
             content: task.content,
@@ -105,54 +154,39 @@ function Mission() {
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,
           }));
-          setTasks(tasksData);
+
+          console.log("Processed tasks for UI:", processedTasks);
+          setTasks(processedTasks);
+
+          // get user tasks from API
+          const userTasksData = await AllTaskByIdApi(userResponse.data.id);
+          console.log("User tasks data from API:", userTasksData);
+
+          const processedUserTasksData = userTasksData.data.map((task) => {
+            const taskOfUser = processedTasks.find(
+              (t) => t.id === task.task_id
+            );
+            const total = taskOfUser?.total || 1;
+
+            return {
+              id: task.id,
+              task_id: task.task_id,
+              user_id: userResponse.data.id,
+              progress_count: task.progress_count,
+              assigned_at: task.assigned_at,
+              completed_at:
+                total === task.progress_count ? new Date().toISOString() : null,
+              created_at: task.created_at,
+              updated_at: task.updated_at,
+            };
+          });
+
+          console.log(" user tasks:", processedUserTasksData);
+          setUserTasks(processedUserTasksData);
         } else {
           console.log("No task found, setting default null.");
           setTasks([]);
           toast.warning("No tasks available");
-        }
-        //Xử lý thông tin nhiệm vụ của người dùng
-        if (userResponse?.data?.tasks) {
-          const userTasksData = userResponse.data.tasks.map((userTask) => ({
-            task_id: userTask.id,
-            user_id: userResponse?.data?.data?.id || 1,
-            complete: userTask.complete || 0,
-            total: userTask.total || 5,
-            satus: isCompleted ? "done" : "inProgress",
-            coin_per_user: userTask.coin,
-            completed_at: isCompleted ? new Date().toISOString() : null,
-            assigned_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }));
-          setUserTasks(userTasksData);
-        } else {
-          console.log("No user task found, setting default user task.");
-          setUserTasks([]);
-        }
-
-        // Xử lý thông tin người dùng
-        if (userResponse?.data?.user) {
-          console.log("Setting user info:", userResponse.data);
-          setUserInfo({
-            id: userResponse.data.id,
-            role_id: userResponse.data.role_id,
-            avatar_url: userResponse.data.avatar_url || null,
-            google_id: userResponse.data.google_id || null,
-            full_name: userResponse.data.full_name || "User",
-            email: userResponse.data.email,
-            password: userResponse.data.password,
-            coins: userResponse.data.coins || 0,
-            address: userResponse.data.address || null,
-            streak: userResponse.data.streak || 0,
-            last_logined: userResponse.data.last_logined,
-            created_at: userResponse.data.created_at,
-            updated_at: userResponse.data.updated_at,
-            ownerer_id: userResponse.data.ownererid || null,
-          });
-        } else {
-          console.log("No user data found, setting default user info.");
-          setUserInfo(null);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -170,75 +204,61 @@ function Mission() {
   const handleTaskCompletion = useCallback(
     async (userId, taskId) => {
       try {
-        // Find the user task
         const userTask = userTasks.find(
           (ut) => ut.user_id === userId && ut.task_id === taskId
         );
-
+  
         if (!userTask || userTask.completed_at) return;
-
-        // Set the task that's being completed (for UI loading state)
+  
         setCompletingTask(taskId);
-
-        if (userTask.complete === userTask.total) {
-          // Task is complete - update UI first for responsive feel
-          setUserTasks((prevUserTasks) =>
-            prevUserTasks.map((ut) =>
-              ut.user_id === userId && ut.task_id === taskId
-                ? { ...ut, completed_at: new Date().toISOString() }
-                : ut
-            )
-          );
-
-          // Find the task to get coins
-          const task = tasks.find((t) => t.id === taskId);
-
-          if (task) {
-            try {
-              // Make the API calls to complete task and receive coins
-              await completeTaskApi(taskId); //cập nhật trạng thái hoàn thành
-              console.log("Task completed successfully.");
-              const coinsResponse = await receiveCoinApi(task.coin || 0);
-              console.log("Receive coins response:", coinsResponse);
-
-              // Update user coin balance using the response from receiveCoinApi
-              setUserInfo((prev) => {
-                const updatedUser = {
-                  ...prev,
-                  coins: coinsResponse.data.coins,
-                };
-                console.log(
-                  "Updated user info after receiving coins:",
-                  updatedUser
-                );
-                return updatedUser;
-              });
-              toast.success(`Nhận được ${task.coin} xu!`);
-            } catch (error) {
-              console.error("API call failed:", error);
-
-              // Revert UI change on error
-              setUserTasks((prevUserTasks) =>
-                prevUserTasks.map((ut) =>
-                  ut.user_id === userId && ut.task_id === taskId
-                    ? { ...ut, completed_at: null }
-                    : ut
-                )
-              );
-
-              toast.error("Không thể hoàn thành nhiệm vụ");
-            }
+        console.log("Completing task:", completingTask);
+  
+        const task = tasks.find((t) => t.id === taskId);
+        if (!task) return;
+  
+        // Gọi API để tăng tiến độ
+        const updatedTaskUser = await increaseProgressCountApi(userTask.id);
+        console.log("Updated task user:", updatedTaskUser);
+  
+        // Cập nhật UI từ dữ liệu trả về từ backend
+        setUserTasks((prevUserTasks) =>
+          prevUserTasks.map((ut) =>
+            ut.id === updatedTaskUser.data.id
+              ? {
+                  ...ut,
+                  progress_count: updatedTaskUser.data.progress_count,
+                  completed_at: updatedTaskUser.data.completed_at,
+                }
+              : ut
+          )
+        );
+  
+        // Nếu task vừa được hoàn thành
+        if (updatedTaskUser.data.completed_at) {
+          try {
+            const completeResponse = await completeTaskApi(updatedTaskUser.data.id);
+            console.log("Task completion response:", completeResponse);
+  
+            const coinsResponse = await receiveCoinApi(task.coins);
+            console.log("Receive coins response:", coinsResponse);
+  
+            // Cập nhật lại số xu từ backend
+            const responseUser = await getUserApi();
+            setUserInfo((prev) => {
+              const updatedUser = {
+                ...prev,
+                coins: responseUser?.data?.coins || 0,
+              };
+              console.log("check user info after receive coins", updatedUser);
+              return updatedUser;
+            });
+  
+            toast.success(`Nhận được ${task.coins} xu!`);
+          } catch (error) {
+            console.error("API call failed:", error);
+            toast.error("Không thể hoàn thành nhiệm vụ");
           }
         } else {
-          // Not yet completed - just increment progress
-          setUserTasks((prevUserTasks) =>
-            prevUserTasks.map((ut) =>
-              ut.user_id === userId && ut.task_id === taskId
-                ? { ...ut, complete: Math.min(ut.complete + 1, ut.total) }
-                : ut
-            )
-          );
-
           toast.info("Đã cập nhật tiến độ!");
         }
       } catch (error) {
@@ -250,23 +270,70 @@ function Mission() {
     },
     [tasks, userTasks]
   );
+  
 
   // Memoize filtered and sorted task lists to prevent recalculations on every render
-  const dailyTasks = useMemo(() => {
-    // Filter tasks for daily tasks (we'll use medium and hard difficulty as daily tasks)
-    return userTasks.filter(
-      (task) =>
-        !task.completed_at &&
-        (task.difficulty === "medium" || task.difficulty === "hard")
-    );
+
+  useEffect(() => {
+    const fetchDailyTasks = async () => {
+      console.log("UserTask: ", userTasks)
+      const tasks = await Promise.all(
+        userTasks.map(async (userTask) => {
+          const taskData = await getTaskByIdApi(userTask.task_id);
+          const task = taskData.data;
+          return task
+            ? {
+                ...task,
+                completed_at: userTask.completed_at,
+                progress_count: userTask.progress_count,
+              }
+            : null;
+        })
+      );
+
+      const filteredTasks = tasks.filter(
+        (task) =>
+          task &&
+          task.completed_at === null &&
+          (task.difficulty === "medium" || task.difficulty === "hard")
+      );
+
+      setDailyTasks(filteredTasks);
+    };
+
+    fetchDailyTasks();
   }, [userTasks]);
 
-  const otherTasks = useMemo(() => {
-    // Filter tasks for other tasks (using easy difficulty as other tasks)
-    return userTasks.filter(
-      (task) => !task.completed_at && task.difficulty === "easy"
-    );
+  console.log("Daily tasks:", dailyTasks);
+
+  useEffect(() => {
+    const fetchOtherTasks = async () => {
+      const tasks = await Promise.all(
+        userTasks.map(async (userTask) => {
+          const taskData = await getTaskByIdApi(userTask.task_id);
+          const task = taskData.data;
+          return task
+            ? {
+                ...task,
+                completed_at: userTask.completed_at,
+                progress_count: userTask.progress_count,
+              }
+            : null;
+        })
+      );
+
+      const filteredTasks = tasks.filter(
+        (task) =>
+          task && task.completed_at === null && task.difficulty === "easy"
+      );
+
+      setOtherTasks(filteredTasks);
+    };
+
+    fetchOtherTasks();
   }, [userTasks]);
+
+  console.log("Other tasks:", otherTasks);
 
   const completedTasks = useMemo(() => {
     // Filter for completed tasks
