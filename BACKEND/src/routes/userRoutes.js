@@ -8,11 +8,12 @@ router.get(
   checkPermission("read", "user"),
   userController.handleGetAllUsers
 );
-router.get("/me", userController.handleGetProfile);
-router.get("/:id", userController.handleGetUser);
-router.get("/task/completed/:id", userController.handleGetTaskCompleted);
-router.put("/:id", userController.handleUpdateUser);
-router.delete("/:id", userController.handleDeleteUser);
-router.post("/task/all/:id", userController.handleGetAllTaskById);
+router.get("/me", userController.handleGetProfile);//for user
+router.get("/:id", userController.handleGetUser);//for admin
+router.get("/task/completed/:id", userController.handleGetTaskCompleted);//for admin
+router.put("/:id", userController.handleUpdateUser);//for admin
+router.delete("/:id", userController.handleDeleteUser);//for admin
+router.post("/task/all/:id", userController.handleGetAllTaskById);//for admin
+router.get("/items/:user_id", userController.handleGetItemByIdUser);//for admin
 
 export default router;

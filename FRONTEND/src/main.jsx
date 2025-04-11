@@ -9,7 +9,8 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
-import MissionVideo from "./pages/MissionVideo.jsx"
+import MissionVideo from "./pages/MissionVideo.jsx";
+import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import App from "./App.jsx";
 import "./index.css";
 
@@ -38,6 +39,14 @@ const router = createBrowserRouter([
         path: "mission-video",
         element: <MissionVideo />,
       },
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoute requiredRole="Admin">
+            <Admin />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   {
@@ -47,10 +56,6 @@ const router = createBrowserRouter([
   {
     path: "login",
     element: <LoginPage />,
-  },
-  {
-    path: "admin",
-    element: <Admin />,
   },
 ]);
 

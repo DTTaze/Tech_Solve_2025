@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
 import {
   roleColumns,
-  rolesData,
+  rolesPermissionsColumns,
   permissionColumns,
-  permissionsData,
-} from "../../data/mock-data";
+} from "./HeaderColumn";
 import { Box, Typography, Tabs, Tab } from "@mui/material";
-
+import { getAllRolesApi, getAllPermissionsApi } from "../../utils/api";
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -25,10 +24,41 @@ function TabPanel(props) {
 }
 
 export default function RolesPermissions() {
-  const [roles, setRoles] = useState(rolesData);
-  const [permissions, setPermissions] = useState(permissionsData);
+  const [roles, setRoles] = useState([]);
+  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [rolesRes, permissionsRes] = await Promise.all([
+          getAllRolesApi(),
+          getAllPermissionsApi(),
+          // getAllRolesPermissionsApi(),
+        ]);
+
+        if (rolesRes.success) {
+          setRoles(rolesRes.data);
+        } else {
+          console.log(rolesRes.error);
+        }
+
+        if (permissionsRes.success) {
+          setPermissions(permissionsRes.data);
+        } else {
+          console.log(permissionsRes.error);
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAddRole = () => {
     console.log("Add role");
@@ -86,6 +116,11 @@ export default function RolesPermissions() {
             id="roles-permissions-tab-1"
             aria-controls="roles-permissions-tabpanel-1"
           />
+          <Tab
+            label="Roles - Permissions"
+            id="roles-permissions-tab-2"
+            aria-controls="roles-permissions-tabpanel-2"
+          />
         </Tabs>
       </Box>
 
@@ -106,6 +141,18 @@ export default function RolesPermissions() {
           title="Permissions"
           columns={permissionColumns}
           rows={permissions}
+          onAdd={handleAddPermission}
+          onEdit={handleEditPermission}
+          onDelete={handleDeletePermission}
+          loading={loading}
+        />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
+        <DataTable
+          title="Roles - Permissions"
+          columns={rolesPermissionsColumns}
+          rows={roles}
           onAdd={handleAddPermission}
           onEdit={handleEditPermission}
           onDelete={handleDeletePermission}

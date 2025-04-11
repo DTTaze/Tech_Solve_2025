@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sharing from "../assets/images/Sharing";
+import Sharing from "../../../assets/images/Sharing";
 
 export default function ShareButton({onShare, VideoId}) {
 

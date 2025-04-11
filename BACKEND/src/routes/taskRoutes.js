@@ -18,7 +18,7 @@ router.post(
 );
 router.post(
   "/submit/:task_user_id",
-  middlewareImage.single("image"),
+  middlewareImage.array("images", 5),
   taskController.handleSubmitTask
 );
 router.put("/submit/decision/:id", taskController.handleDecisionTaskSubmit);

@@ -163,7 +163,7 @@ const purchaseItem = async (user_id, item_id, data) => {
       item_id: item.id,
       quantity: quantity,
       total_price: totalPrice,
-      status: "completed",
+      status: "pending",
     });
 
     return { message: "Purchase successful", item, transaction };

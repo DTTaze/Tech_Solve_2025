@@ -10,6 +10,8 @@ const User = db.User;
 const TaskSubmit = db.TaskSubmit;
 const TaskType = db.TaskType;
 const Type = db.Type;
+const uploadImages = require("./imageService.js").uploadImages;
+
 const createTask = async (data) => {
   try {
     let { title, content, description, coins, difficulty, total } = data;
@@ -198,60 +200,35 @@ const receiveCoin = async (user_id, coins) => {
   }
 };
 
-const downloadImage = async (url) => {
-  const response = await axios({
-    url,
-    method: "GET",
-    responseType: "stream",
-  });
-  return response.data;
-};
-
-const submitTask = async (task_user_id, description, file, auth) => {
+const submitTask = async (task_user_id, description, files) => {
   try {
-    console.log("file:", file);
+    task_user_id = Number(task_user_id);
+    
+    if (!Number.isInteger(task_user_id)) {
+      throw new Error("Invalid task_user_id. It must be an integer.");
+    }
+
+    console.log("Files:", files);
+
     if (!task_user_id) throw new Error("Missing task_user_id.");
-    if (!auth) throw new Error("Missing auth.");
-    if (!file || !file.path) throw new Error("Invalid file object.", file);
+    if (!files || files.length === 0) throw new Error("No files provided.");
 
     const newTaskSubmit = await TaskSubmit.create({
       task_user_id: task_user_id,
       description: description || "",
-      images_id: null,
       status: "pending",
       submitted_at: new Date(),
     });
 
-    const imageStream = await downloadImage(file.path);
+    const uploadedImages = await uploadImages(files, newTaskSubmit.id, "taskSubmit");
 
-    const formData = new FormData();
-    formData.append("image", imageStream, file.originalname);
-    formData.append("reference_id", newTaskSubmit.id);
-    formData.append("reference_type", "taskSubmit");
-
-    const uploadResponse = await axios.post(
-      "http://localhost:6060/api/images/upload",
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-          authorization: auth,
-        },
-      }
-    );
-
-    if (!uploadResponse.data.data || !uploadResponse.data.data.id) {
-      throw new Error("Image upload response is invalid.");
-    }
-
-    await newTaskSubmit.update({ images_id: uploadResponse.data.data.id });
-
-    return uploadResponse.data.data;
+    return { taskSubmit: newTaskSubmit, images: uploadedImages };
   } catch (error) {
     console.error("Error submitting task:", error.message);
     throw error;
   }
 };
+
 
 const updateDecisionTaskSubmit = async (task_submit_id, decision) => {
   try {

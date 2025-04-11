@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post("/upload/:user_id", itemController.handleUploadItem);
 router.get("/", itemController.handleGetAllItems);
-router.get("/users/:user_id", itemController.handleGetItemByIdUser);
+router.get("/users/:user_id", itemController.handleGetItemByIdUser);//just for customers NOT USER
 router.get("/:id", itemController.handleGetItemByIdItem);
 router.put("/:id", itemController.handleUpdateItem);
 router.delete("/:id", itemController.handleDeleteItem);
