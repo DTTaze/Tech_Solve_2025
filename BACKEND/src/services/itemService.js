@@ -2,6 +2,8 @@ const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
 const Transaction = db.Transaction;
+import { where } from "sequelize";
+import { generateCode } from "../utils/generateCode";
 
 const createItem = async (itemData, user_id) => {
   try {
@@ -155,8 +157,15 @@ const purchaseItem = async (user_id, item_id, data) => {
       stock: item.stock - quantity,
       status: item.stock - quantity === 0 ? "sold" : "available",
     });
+    let isTransactionIdExisted;
+    let uniqueCode;
+    do {
+      uniqueCode = generateCode();
+      isTransactionIdExisted = await Transaction.findByPk(uniqueCode);
+    } while (isTransactionIdExisted !== null);
 
     const transaction = await Transaction.create({
+      id: uniqueCode,
       seller_id: seller_id,
       name: name,
       buyer_id: user.id,
