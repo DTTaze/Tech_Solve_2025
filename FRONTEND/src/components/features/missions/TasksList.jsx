@@ -1,7 +1,7 @@
 import React from "react";
 import TaskCard from "./TaskCard";
 import TaskCardSkeleton from "./TaskCardSkeleton";
-import images from "../../../assets/images/index";
+import imgSrc from "../../../assets/images/seedling-solid.svg";
 
 /**
  * Component to display a list of tasks with pagination
@@ -19,6 +19,7 @@ const TasksList = ({
   selectedTab,
   taskPerPage,
 }) => {
+  console.log("tasks in TaskList: ",tasks);
   if (loading) {
     return (
       <>
@@ -63,9 +64,9 @@ const TasksList = ({
               (task) =>
                 task && (
                   <TaskCard
-                    key={task.task_id}
+                    key={task.id}
                     task={task}
-                    onClick={() => handleTaskCompletion(userId, task.task_id)}
+                    onClick={() => handleTaskCompletion(userId, task.id)}
                     completingTask={completingTask}
                   />
                 )
@@ -74,7 +75,7 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-blue-50 rounded-xl">
             <img
-              src={images.anh_hat_giong}
+              src={imgSrc}
               alt="All done!"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -123,9 +124,9 @@ const TasksList = ({
                 (task) =>
                   task && (
                     <TaskCard
-                      key={task.task_id}
+                      key={task.id}
                       task={task}
-                      onClick={() => handleTaskCompletion(userId, task.task_id)}
+                      onClick={() => handleTaskCompletion(userId, task.id)}
                       completingTask={completingTask}
                     />
                   )
@@ -134,7 +135,7 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-indigo-50 rounded-xl">
             <img
-              src={images.anh_hat_giong}
+              src={imgSrc}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />
@@ -198,7 +199,7 @@ const TasksList = ({
         <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
           <span className="bg-green-100 text-green-700 p-1.5 rounded-full mr-2">
             <svg
-              xmlns="http://www.w3.org/2000/svg"
+              xmlns={imgSrc}
               className="h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
@@ -219,20 +220,20 @@ const TasksList = ({
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
             {tasks.slice(0, 4).map((task) => (
               <div
-                key={task.task_id}
+                key={task.id}
                 className="bg-gray-50 rounded-xl border border-gray-200 p-4 opacity-80 hover:opacity-100 transition-opacity"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center border border-green-200 bg-green-50">
                     <img
-                      src={task.imgScr}
+                      src={imgSrc}
                       alt="task icon"
                       className="w-5 h-5"
                     />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-700 flex items-center">
-                      {task.Task_num}
+                      {task.tasks.title}
                       <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                         ✓ Hoàn thành
                       </span>
@@ -255,7 +256,7 @@ const TasksList = ({
         ) : (
           <div className="text-center py-16 px-4 bg-green-50 rounded-xl">
             <img
-              src={images.anh_hat_giong}
+              src={imgSrc}
               alt="No tasks"
               className="w-20 h-20 mx-auto mb-4 opacity-30"
             />

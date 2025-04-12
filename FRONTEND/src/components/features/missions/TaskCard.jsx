@@ -1,6 +1,7 @@
 import React from "react";
 import ProgressBar from "./ProgressBar";
 import { getLevelColor, getLevelText } from "./TaskUtils";
+import imgScr from "../../../assets/images/seedling-solid.svg";
 
 /**
  * Task Card component for displaying mission tasks
@@ -10,10 +11,12 @@ import { getLevelColor, getLevelText } from "./TaskUtils";
  * @param {number|null} props.completingTask - ID of the task currently being completed (for loading state)
  */
 const TaskCard = React.memo(({ task, onClick, completingTask }) => {
-  const isCompleted = task.Complete === task.Total;
-  const levelColorClass = getLevelColor(task.level);
-  const isLoading = completingTask === task.task_id;
-  
+  const isCompleted = task.progress_count === task.total;
+  const levelColorClass = getLevelColor(task.difficulty);
+  const isLoading = completingTask === task.id;
+
+  const progress_count = task.progress_count || 0;
+  console.log("progress_count in TaskCard", task.progress_count);
   return (
     <div
       className={`task-card bg-white rounded-xl border ${
@@ -37,20 +40,20 @@ const TaskCard = React.memo(({ task, onClick, completingTask }) => {
                 : "border-gray-200"
             }`}
           >
-            <img src={task.imgScr} alt="task icon" className="w-full h-full" />
+            <img src={imgScr} alt="task icon" className="w-full h-full" />
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-800 text-sm">
-              {task.Task_num}
+              {task.title}
             </h3>
             <span
               className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full text-white ${levelColorClass}`}
             >
-              {getLevelText(task.level)}
+              {getLevelText(task.difficulty)}
             </span>
           </div>
           <div className="task-coin-reward flex items-center bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-lg font-medium border border-amber-100 text-xs">
-            <span className="coin-value mr-1 ml-1">+{task.coin || 0}</span>
+            <span className="coin-value mr-1 ml-1">+{task.coins || 0}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="25"
@@ -76,9 +79,9 @@ const TaskCard = React.memo(({ task, onClick, completingTask }) => {
         </p>
 
         <ProgressBar
-          completed={task.Complete}
-          total={task.Total}
-          level={task.level}
+          completed={progress_count}
+          total={task.total}
+          level={task.difficulty}
         />
 
         <button

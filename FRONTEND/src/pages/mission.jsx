@@ -6,6 +6,9 @@ import {
   completeTaskApi,
   receiveCoinApi,
   getUserApi,
+  getTaskByIdApi,
+  increaseProgressCountApi,
+  AllTaskByIdApi
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
@@ -23,6 +26,54 @@ function Mission() {
   const [currentPage, setCurrentPage] = useState(1);
   const taskPerPage = 3;
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
+  const [dailyTasks, setDailyTasks] = useState([]);
+  const [otherTasks, setOtherTasks] = useState([]);
+
+  // Function to fetch new tasks
+  const fetchNewTasks = async () => {
+    try {
+      setLoading(true);
+      const taskResponse = await getAllTasksApi();
+
+      if (taskResponse?.data?.success) {
+        const tasksData = taskResponse.data.data.map((task) => ({
+          id: task.id,
+          title: task.title,
+          content: task.content,
+          description: task.description,
+          coins: task.coins,
+          difficulty: task.difficulty,
+          created_at: task.createdAt,
+          updated_at: task.updatedAt,
+          total: task.total || 1,
+        }));
+        setTasks(tasksData);
+
+        // Create user tasks from the tasks data
+        const userTasksData = tasksData.map((task) => ({
+          id: task.id,
+          task_id: task.id,
+          user_id: userResponse.data.id || 1,
+          progress_count: null,
+          completed_at: null,
+          assigned_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          difficulty: task.difficulty,
+        }));
+
+        setUserTasks(userTasksData);
+        toast.success("Đã tải nhiệm vụ mới!");
+      } else {
+        toast.error("Không thể tải nhiệm vụ mới");
+      }
+    } catch (error) {
+      console.error("Failed to fetch new tasks:", error);
+      toast.error("Đã xảy ra lỗi khi tải nhiệm vụ mới");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch data from backend
   useEffect(() => {
@@ -41,6 +92,7 @@ function Mission() {
         console.log("Task response:", taskResponse);
         console.log("User response:", userResponse);
 
+        
         // Process tasks from API response
         let tasksData = [];
 
@@ -63,17 +115,38 @@ function Mission() {
           }
         }
 
-        console.log("Processed tasks data:", tasksData);
+        console.log("tasks data:", tasksData);
+        // Process user data from API response
+        if (userResponse?.data) {
+          console.log("Setting user info:", userResponse.data);
+          const dataOfUser = {
+            id: userResponse.data.id,
+            full_name: userResponse.data.full_name || "User",
+            email: userResponse.data.email,
+            coins: userResponse.data.coins || 0,
+            streak: userResponse.data.streak || 0,
+            last_logined: userResponse.data.last_logined,
+          };
+          setUserInfo(dataOfUser);
+        } else {
+          console.log("No user data found, setting default user info.");
+          setUserInfo({
+            id: 0,
+            name: "Guest User",
+            coins: 0,
+            streak: 0,
+          });
+        }
 
+        // Process tasksData
         if (tasksData.length > 0) {
           const processedTasks = tasksData.map((task) => ({
             id: task.id,
-            coin: task.coins,
-            level: task.difficulty || "easy",
-            // imgScr: images.seedling_solid,
-            Task_num: task.title,
-            description: task.description,
+            title: task.title,
             content: task.content,
+            description: task.description,
+            coins: task.coins,
+            difficulty: task.difficulty || "easy",
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,
           }));
@@ -81,65 +154,38 @@ function Mission() {
           console.log("Processed tasks for UI:", processedTasks);
           setTasks(processedTasks);
 
-          const mockUserTasks = processedTasks.map((task) => {
-            const total = 5;
-            const isCompleted = Math.random() > 0.6;
-            const progress = isCompleted
-              ? total
-              : Math.floor(Math.random() * total);
+          // get user tasks from API
+          const userTasksData = await AllTaskByIdApi(userResponse.data.id);
+          console.log("User tasks data from API:", userTasksData);
+
+          const processedUserTasksData = userTasksData.data.map((task) => {
+            const taskOfUser = processedTasks.find(
+              (t) => t.id === task.task_id
+            );
 
             return {
-              task_id: task.id,
-              user_id: userResponse?.data?.data?.id || 1,
-              level: task.level,
-              Complete: progress,
-              Total: total,
-              imgScr: task.imgScr,
-              Task_num: task.Task_num,
-              coin: task.coin,
-              completed_at: isCompleted ? new Date().toISOString() : null,
-              description: task.description,
+              id: task.id,
+              task_id: task.task_id,
+              user_id: userResponse.data.id,
+              progress_count: task.progress_count,
+              assigned_at: task.assigned_at,
+              completed_at: task.completed_at,
+              created_at: task.created_at,
+              updated_at: task.updated_at,
+              tasks: task.tasks
             };
           });
 
-          console.log("Mock user tasks:", mockUserTasks);
-          setUserTasks(mockUserTasks);
+          console.log(" user tasks:", processedUserTasksData);
+          setUserTasks(processedUserTasksData);
         } else {
-          console.log("No tasks available.");
+          console.log("No task found, setting default null.");
           setTasks([]);
-          setUserTasks([]);
           toast.warning("No tasks available");
-        }
-
-        if (userResponse?.data) {
-          console.log("Setting user info:", userResponse.data);
-          setUserInfo({
-            id: userResponse.data.id,
-            full_name: userResponse.data.full_name || "User",
-            email: userResponse.data.email,
-            coins: userResponse.data.coins || 0,
-            streak: userResponse.data.streak || 0,
-            last_logined: userResponse.data.last_logined,
-          });
-        } else {
-          console.log("No user data found, setting default user info.");
-          setUserInfo({
-            id: 1,
-            name: "Guest User",
-            coins: 0,
-            streak: 0,
-          });
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
         toast.error("Không thể tải dữ liệu nhiệm vụ");
-
-        setUserInfo({
-          id: 1,
-          name: "Guest User",
-          coins: 0,
-          streak: 0,
-        });
       } finally {
         setLoading(false);
         console.log("Finished fetching data.");
@@ -147,87 +193,70 @@ function Mission() {
     };
 
     fetchData();
-  }, []);
+  },[]);
 
   // Handle task completion with useCallback to prevent recreating function on each render
   const handleTaskCompletion = useCallback(
     async (userId, taskId) => {
       try {
-        // Find the user task
         const userTask = userTasks.find(
           (ut) => ut.user_id === userId && ut.task_id === taskId
         );
 
-        if (!userTask || userTask.completed_at) return;
-
-        // Set the task that's being completed (for UI loading state)
+        console.log("User task:", userTask);
+  
+        if (!userTask) return;
+  
         setCompletingTask(taskId);
-
-        if (userTask.complete === userTask.total) {
-          // Task is complete - update UI first for responsive feel
+  
+        const task = tasks.find((t) => t.id === taskId);
+        if (!task) return;
+  
+        // Gọi API để tăng tiến độ
+        const updatedTaskUser = await increaseProgressCountApi(userTask.id);
+        console.log("Updated task user:", updatedTaskUser);
+  
+        // Cập nhật UI từ dữ liệu trả về từ backend
+        if(updatedTaskUser.data) {
           setUserTasks((prevUserTasks) =>
             prevUserTasks.map((ut) =>
-              ut.user_id === userId && ut.task_id === taskId
-                ? { ...ut, completed_at: new Date().toISOString() }
+              ut.id === updatedTaskUser.data.id
+                ? {
+                    ...ut,
+                    progress_count: updatedTaskUser.data.progress_count,
+                    completed_at: updatedTaskUser.data.completed_at,
+                  }
                 : ut
             )
           );
-
-          // Find the task to get coins
-          const task = tasks.find((t) => t.id === taskId);
-
-          if (task) {
-            try {
-              // Make the API calls to complete task and receive coins
-              const completeResponse = await completeTaskApi(taskId); //cập nhật trạng thái hoàn thành
-              console.log("Task completion response:", completeResponse);
-
-              const coinsResponse = await receiveCoinApi(task.coin || 0);
-              console.log("Receive coins response:", coinsResponse);
-
-              // Update user coin balance
-              // setUserInfo((prev) => ({
-              //   ...prev,
-              //   coins: (prev?.coins || 0) + (task.coin || 0),
-              // }));
-              const responseUser = await getUserApi();
-              setUserInfo((prev) => {
-                const updatedUser = {
-                  ...prev,
-                  coins: responseUser?.data?.coins || 0,
-                };
-                console.log(
-                  "check user infor after receive coins",
-                  updatedUser
-                );
-                return updatedUser;
-              });
-              toast.success(`Nhận được ${task.coin} xu!`);
-            } catch (error) {
-              console.error("API call failed:", error);
-
-              // Revert UI change on error
-              setUserTasks((prevUserTasks) =>
-                prevUserTasks.map((ut) =>
-                  ut.user_id === userId && ut.task_id === taskId
-                    ? { ...ut, completed_at: null }
-                    : ut
-                )
-              );
-
-              toast.error("Không thể hoàn thành nhiệm vụ");
-            }
+        }
+        
+        // Nếu task nhiệm vụ đã hoàn thành
+        if (updatedTaskUser.data.completed_at) {
+          try {
+            const completeResponse = await completeTaskApi(userTask.task_id);
+            console.log("Task completion response:", completeResponse);
+  
+            const coinsResponse = await receiveCoinApi(task.coins);
+            console.log("Receive coins response:", coinsResponse);
+  
+            // Cập nhật lại số xu từ backend
+            const responseUser = await getUserApi();
+            setUserInfo((prev) => {
+              const updatedUser = {
+                ...prev,
+                coins: responseUser?.data?.coins || 0,
+              };
+              console.log("check user info after receive coins", updatedUser);
+              return updatedUser;
+            });
+  
+            toast.success(`Nhận được ${task.coins} xu!`);
+          } catch (error) {
+            console.error("API call failed:", error);
+            toast.error("Không thể hoàn thành nhiệm vụ");
           }
         } else {
-          // Not yet completed - just increment progress
-          setUserTasks((prevUserTasks) =>
-            prevUserTasks.map((ut) =>
-              ut.user_id === userId && ut.task_id === taskId
-                ? { ...ut, Complete: Math.min(ut.Complete + 1, ut.Total) }
-                : ut
-            )
-          );
-
           toast.info("Đã cập nhật tiến độ!");
         }
       } catch (error) {
@@ -239,22 +268,70 @@ function Mission() {
     },
     [tasks, userTasks]
   );
+  
 
   // Memoize filtered and sorted task lists to prevent recalculations on every render
-  const dailyTasks = useMemo(() => {
-    // Filter tasks for daily tasks (we'll use medium and hard difficulty as daily tasks)
-    return userTasks.filter(
-      (task) =>
-        !task.completed_at && (task.level === "medium" || task.level === "hard")
-    );
+
+  useEffect(() => {
+    const fetchDailyTasks = async () => {
+      console.log("UserTask: ", userTasks)
+      const tasks = await Promise.all(
+        userTasks.map(async (userTask) => {
+          const taskData = await getTaskByIdApi(userTask.task_id);
+          const task = taskData.data;
+          return task
+            ? {
+                ...task,
+                completed_at: userTask.completed_at,
+                progress_count: userTask.progress_count,
+              }
+            : null;
+        })
+      );
+
+      const filteredTasks = tasks.filter(
+        (task) =>
+          task &&
+          task.completed_at === null &&
+          (task.difficulty === "medium" || task.difficulty === "hard")
+      );
+
+      setDailyTasks(filteredTasks);
+    };
+
+    fetchDailyTasks();
   }, [userTasks]);
 
-  const otherTasks = useMemo(() => {
-    // Filter tasks for other tasks (using easy difficulty as other tasks)
-    return userTasks.filter(
-      (task) => !task.completed_at && task.level === "easy"
-    );
+  console.log("Daily tasks:", dailyTasks);
+
+  useEffect(() => {
+    const fetchOtherTasks = async () => {
+      const tasks = await Promise.all(
+        userTasks.map(async (userTask) => {
+          const taskData = await getTaskByIdApi(userTask.task_id);
+          const task = taskData.data;
+          return task
+            ? {
+                ...task,
+                completed_at: userTask.completed_at,
+                progress_count: userTask.progress_count,
+              }
+            : null;
+        })
+      );
+
+      const filteredTasks = tasks.filter(
+        (task) =>
+          task && task.completed_at === null && task.difficulty === "easy"
+      );
+
+      setOtherTasks(filteredTasks);
+    };
+
+    fetchOtherTasks();
   }, [userTasks]);
+
+  console.log("Other tasks:", otherTasks);
 
   const completedTasks = useMemo(() => {
     // Filter for completed tasks
@@ -421,27 +498,53 @@ function Mission() {
 
             {/* Task List */}
             <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
-              <TasksList
-                tasks={
-                  selectedTab === "daily"
-                    ? dailyTasks
-                    : selectedTab === "other"
-                    ? otherTasks
-                    : selectedTab === "completed"
-                    ? completedTasks
-                    : []
-                }
-                loading={loading}
-                completingTask={completingTask}
-                handleTaskCompletion={handleTaskCompletion}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                goToNextPage={goToNextPage}
-                goToPreviousPage={goToPreviousPage}
-                userId={userInfo?.id}
-                selectedTab={selectedTab}
-                taskPerPage={taskPerPage}
-              />
+              {selectedTab === "daily" && dailyTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Không có nhiệm vụ hàng ngày nào
+                  </p>
+                  <button
+                    onClick={fetchNewTasks}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Lấy Nhiệm Vụ Mới
+                  </button>
+                </div>
+              ) : selectedTab === "other" && otherTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Không có nhiệm vụ phụ nào
+                  </p>
+                  <button
+                    onClick={fetchNewTasks}
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Lấy Nhiệm Vụ Mới
+                  </button>
+                </div>
+              ) : (
+                <TasksList
+                  tasks={
+                    selectedTab === "daily"
+                      ? dailyTasks
+                      : selectedTab === "other"
+                      ? otherTasks
+                      : selectedTab === "completed"
+                      ? completedTasks
+                      : []
+                  }
+                  loading={loading}
+                  completingTask={completingTask}
+                  handleTaskCompletion={handleTaskCompletion}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  goToNextPage={goToNextPage}
+                  goToPreviousPage={goToPreviousPage}
+                  userId={userInfo?.id}
+                  selectedTab={selectedTab}
+                  taskPerPage={taskPerPage}
+                />
+              )}
             </div>
           </div>
 
