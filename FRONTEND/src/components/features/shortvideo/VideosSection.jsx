@@ -6,15 +6,14 @@ import CommentButton from "./CommentButton";
 import ShareButton from "./ShareButton";
 import CoinImg from "../../../assets/images/Coin";
 import Timer from "../../../assets/images/Timer";
-import { notification } from "antd";
 
 // Component hiển thị stats trên bên trái màn hình
 function StatsSection({ video, task, userStats, coins, timer }) {
   const onReceiveCoins = () => {
-    notification.success({
-      message: "Received 3 EcoCoins!",
-      description: "Thank you for contributing to a greener world!",
-    });
+    // notification.success({
+    //   message: "Received 3 EcoCoins!",
+    //   description: "Thank you for contributing to a greener world!",
+    // });
   };
 
   return (

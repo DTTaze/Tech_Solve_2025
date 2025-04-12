@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
-import { notification } from "antd";
 import { getUserApi } from "../utils/api";
 import { Coins } from "lucide-react";
 
@@ -10,17 +9,26 @@ function UserHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const navigate = useNavigate();
+
+  const showSuccessToast = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
         setUser(response.data);
-  
+
         if (auth.user && response.data.coins !== auth.user.coins) {
           setAuth((prevAuth) => ({
             ...prevAuth,
@@ -31,13 +39,13 @@ function UserHeader() {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
     };
-  
+
     fetchUser();
     const interval = setInterval(fetchUser, 5000);
-  
+
     return () => clearInterval(interval);
   }, [auth.user]);
-  
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -57,8 +65,8 @@ function UserHeader() {
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-    notification.success({ message: "Đăng xuất thành công" });
     setAuth({ isAuthenticated: false, user: null });
+    showSuccessToast("Đăng xuất thành công");
     navigate("/");
   };
 
@@ -70,7 +78,14 @@ function UserHeader() {
   ];
 
   return (
-    <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10">
+    <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10 relative">
+      {/* Toast */}
+      {showToast && (
+        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-md z-50 transition-opacity duration-300">
+          {toastMessage}
+        </div>
+      )}
+
       {/* Logo */}
       <div
         className="flex items-center cursor-pointer select-none"

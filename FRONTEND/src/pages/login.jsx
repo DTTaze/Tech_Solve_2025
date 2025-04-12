@@ -1,19 +1,31 @@
-import React, { useContext } from "react";
-import { Button, Col, Row, Divider, Form, Input, notification } from "antd";
+import React, { useContext, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { loginUserApi } from "../utils/api";
-import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import InputField from "../components/ui/InputField";
+import Button from "../components/ui/Button";
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useContext(AuthContext);
-  const onFinish = async (values) => {
+
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const newErrors = {};
+    if (!identifier.trim()) newErrors.identifier = "Vui lòng nhập email hoặc username.";
+    if (!password) newErrors.password = "Vui lòng nhập mật khẩu.";
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     try {
-      const { identifier, password } = values;
-      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(
-        identifier
-      );
-      let loginData = isEmail
+      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(identifier);
+      const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
 
@@ -21,11 +33,7 @@ const LoginPage = () => {
 
       if (res && res.status === 200) {
         localStorage.setItem("access_token", res.data.access_token);
-        console.log( res.data);
-        notification.success({
-          message: "Đăng nhập thành công",
-          description: "Đã đăng nhập thành công",
-        });
+        alert("Đăng nhập thành công!");
 
         setAuth({
           isAuthenticated: true,
@@ -37,77 +45,47 @@ const LoginPage = () => {
 
         navigate("/");
       } else {
-        notification.error({
-          message: "Đăng nhập thất bại",
-          description: res.error || "Đã xảy ra lỗi, vui lòng thử lại!",
-        });
+        alert(res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }
     } catch (error) {
-      notification.error({
-        message: "Đăng nhập thất bại",
-        description: error.message || "Đã xảy ra lỗi, vui lòng thử lại!",
-      });
+      alert(error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
     }
   };
 
   return (
-    <Row justify={"center"} style={{ marginTop: "30px" }}>
-      <Col xs={24} md={16} lg={8}>
-        <fieldset
-          style={{
-            padding: "15px",
-            margin: "5px",
-            border: "1px solid #ccc",
-            borderRadius: "5px",
-          }}
-        >
-          <legend>Đăng nhập</legend>
-          <Form
-            name="basic"
-            onFinish={onFinish}
-            autoComplete="off"
-            layout="vertical"
-          >
-            <Form.Item
-              label="Email/Username"
-              name="identifier"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your email!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your password!",
-                },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Login
-              </Button>
-            </Form.Item>
-          </Form>
-          <Link to={"/"}>
-            <ArrowLeftOutlined>Quay lại trang chủ</ArrowLeftOutlined>
-          </Link>
-          <Divider />
-          <div style={{ textAlign: "center" }}>
-            Chưa có tài khoản? <Link to={"/register"}>Đăng ký tại đây</Link>
-          </div>
-        </fieldset>
-      </Col>
-    </Row>
+    <div className="max-w-sm mx-auto mt-8 p-4 border border-gray-300 rounded shadow bg-white">
+      <h2 className="text-xl font-semibold text-center mb-4">Đăng nhập</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <InputField
+          id="identifier"
+          label="Email hoặc Username"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          error={errors.identifier}
+        />
+
+        <InputField
+          id="password"
+          label="Mật khẩu"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={errors.password}
+        />
+
+        <Button text="Đăng nhập"></Button>
+      </form>
+
+      <hr className="my-6 border-gray-300" />
+
+      <div className="text-center">
+        Chưa có tài khoản?{" "}
+        <Link to="/register" className="text-blue-600 hover:underline">
+          Đăng ký tại đây
+        </Link>
+      </div>
+    </div>
   );
 };
+
 export default LoginPage;
