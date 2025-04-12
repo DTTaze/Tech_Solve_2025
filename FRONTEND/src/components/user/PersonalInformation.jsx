@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getUserApi, updateUserApi } from "../../utils/api.js";
-import { notification } from "antd";
-import "../../styles/components/PersonalInformation.css";
+import InputField from "../ui/InputField.jsx";
+
 
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
@@ -11,7 +11,6 @@ function PersonalInfoForm() {
   const fetchUser = useCallback(async () => {
     try {
       const response = await getUserApi({ params: { t: Date.now() } });
-      console.log("Dữ liệu từ server:", response.data);
       if (response.data) {
         setUser(response.data);
       }
@@ -79,7 +78,7 @@ function PersonalInfoForm() {
       notification.error({ message: "Vui lòng kiểm tra lại thông tin" });
       return;
     }
-  
+
     setLoading(true);
     try {
       console.log("Dữ liệu gửi đi:", user);
@@ -112,27 +111,18 @@ function PersonalInfoForm() {
 
       <form className="space-y-4" onSubmit={handleUpdate}>
         {inputFields.map(({ id, label }) => (
-          <div key={id} className="input-field">
-            <input
-              required
-              type="text"
-              name={id}
-              id={id}
-              value={user[id] || ""}
-              onChange={handleChange}
-              className={errors[id] ? "border-red-500" : ""}
-            />
-            <label htmlFor={id}>{label}</label>
-            {errors[id] && (
-              <p className="text-red-500 text-sm mt-1">{errors[id]}</p>
-            )}
-          </div>
+          <InputField
+            key={id}
+            id={id}
+            label={label}
+            value={user[id] || ""}
+            onChange={handleChange}
+            error={errors[id]}
+          />
         ))}
 
         <button type="submit" className="btn-submit" disabled={loading || !user}>
-          <span>
-            {loading ? "Đang cập nhật..." : "Cập nhật"}
-          </span>
+          <span>{loading ? "Đang cập nhật..." : "Cập nhật"}</span>
         </button>
       </form>
     </div>
