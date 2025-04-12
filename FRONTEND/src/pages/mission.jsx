@@ -8,7 +8,8 @@ import {
   receiveCoinApi,
   getUserApi,
   getTaskByIdApi,
-  increaseProgressCountApi
+  increaseProgressCountApi,
+  AllTaskByIdApi
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
@@ -166,7 +167,6 @@ function Mission() {
             const taskOfUser = processedTasks.find(
               (t) => t.id === task.task_id
             );
-            const total = taskOfUser?.total || 1;
 
             return {
               id: task.id,
@@ -174,10 +174,10 @@ function Mission() {
               user_id: userResponse.data.id,
               progress_count: task.progress_count,
               assigned_at: task.assigned_at,
-              completed_at:
-                total === task.progress_count ? new Date().toISOString() : null,
+              completed_at: task.completed_at,
               created_at: task.created_at,
               updated_at: task.updated_at,
+              tasks: task.tasks
             };
           });
 
@@ -198,7 +198,7 @@ function Mission() {
     };
 
     fetchData();
-  }, []);
+  },[]);
 
   // Handle task completion with useCallback to prevent recreating function on each render
   const handleTaskCompletion = useCallback(
@@ -207,11 +207,12 @@ function Mission() {
         const userTask = userTasks.find(
           (ut) => ut.user_id === userId && ut.task_id === taskId
         );
+
+        console.log("User task:", userTask);
   
-        if (!userTask || userTask.completed_at) return;
+        if (!userTask) return;
   
         setCompletingTask(taskId);
-        console.log("Completing task:", completingTask);
   
         const task = tasks.find((t) => t.id === taskId);
         if (!task) return;
@@ -221,22 +222,24 @@ function Mission() {
         console.log("Updated task user:", updatedTaskUser);
   
         // Cập nhật UI từ dữ liệu trả về từ backend
-        setUserTasks((prevUserTasks) =>
-          prevUserTasks.map((ut) =>
-            ut.id === updatedTaskUser.data.id
-              ? {
-                  ...ut,
-                  progress_count: updatedTaskUser.data.progress_count,
-                  completed_at: updatedTaskUser.data.completed_at,
-                }
-              : ut
-          )
-        );
-  
-        // Nếu task vừa được hoàn thành
+        if(updatedTaskUser.data) {
+          setUserTasks((prevUserTasks) =>
+            prevUserTasks.map((ut) =>
+              ut.id === updatedTaskUser.data.id
+                ? {
+                    ...ut,
+                    progress_count: updatedTaskUser.data.progress_count,
+                    completed_at: updatedTaskUser.data.completed_at,
+                  }
+                : ut
+            )
+          );
+        }
+        
+        // Nếu task nhiệm vụ đã hoàn thành
         if (updatedTaskUser.data.completed_at) {
           try {
-            const completeResponse = await completeTaskApi(updatedTaskUser.data.id);
+            const completeResponse = await completeTaskApi(userTask.task_id);
             console.log("Task completion response:", completeResponse);
   
             const coinsResponse = await receiveCoinApi(task.coins);

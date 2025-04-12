@@ -233,7 +233,7 @@ const TasksList = ({
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-700 flex items-center">
-                      {task.title}
+                      {task.tasks.title}
                       <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                         ✓ Hoàn thành
                       </span>
