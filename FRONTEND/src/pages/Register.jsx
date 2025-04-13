@@ -2,59 +2,67 @@ import React, { useState } from "react";
 import { createUserApi } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/ui/InputField";
+import SubmitButton from "../components/ui/Button";
+import SocialLoginIcons from "../components/ui/SocialLoginIcons";
+
+const initialFormData = {
+  full_name: "",
+  username: "",
+  email: "",
+  password: "",
+};
 
 function RegisterPage() {
-  const [formData, setFormData] = useState({
-    full_name: "",
-    username: "",
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const validateField = (name, value) => {
-    let error = "";
     switch (name) {
       case "full_name":
-        if (!value.trim()) error = "Vui lòng nhập họ tên!";
-        break;
+        if (!value.trim()) return "Vui lòng nhập họ tên!";
+        if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
+          return "Họ tên chỉ được chứa chữ cái tiếng Việt và dấu cách!";
+        return "";
       case "username":
-        if (!value.trim()) error = "Vui lòng nhập tên tài khoản!";
-        break;
+        if (!value.trim()) return "Vui lòng nhập tên tài khoản!";
+        if (!/^[a-zA-Z]+$/.test(value))
+          return "Tên tài khoản chỉ được chứa chữ cái không dấu!";
+        return "";
       case "email":
-        if (!value.trim()) error = "Vui lòng nhập email!";
-        else if (!/\S+@\S+\.\S+/.test(value)) error = "Email không hợp lệ!";
-        break;
+        if (!value.trim()) return "Vui lòng nhập email!";
+        if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(value))
+          return "Email phải đúng định dạng và thuộc gmail (ví dụ: ten@gmail.com)";
+        return "";
       case "password":
-        if (!value) error = "Vui lòng nhập mật khẩu!";
-        break;
+        return !value ? "Vui lòng nhập mật khẩu!" : "";
       default:
-        break;
+        return "";
     }
-    return error;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const validateForm = () => {
+    const newErrors = {};
+    for (const [key, value] of Object.entries(formData)) {
+      const error = validateField(key, value);
+      if (error) newErrors[key] = error;
+    }
+    return newErrors;
+  };
 
-    const error = validateField(name, value);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+  const handleChange = ({ target: { name, value } }) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newErrors = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      const error = validateField(key, value);
-      if (error) newErrors[key] = error;
-    });
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
 
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(validationErrors).length > 0) {
       alert("Vui lòng kiểm tra lại thông tin!");
       return;
     }
@@ -62,11 +70,11 @@ function RegisterPage() {
     setLoading(true);
     try {
       const res = await createUserApi(formData);
-      if (res && res.status === 200) {
+      if (res?.status === 200) {
         alert("Đăng ký thành công!");
         navigate("/login");
       } else {
-        alert(res.error || "Đăng ký không thành công. Vui lòng thử lại!");
+        alert(res?.error || "Đăng ký không thành công. Vui lòng thử lại!");
       }
     } catch (e) {
       alert(e.message || "Đăng ký không thành công. Vui lòng thử lại!");
@@ -76,9 +84,10 @@ function RegisterPage() {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto mt-10 border rounded-md shadow">
+    <div className="p-4 max-w-md mx-auto mt-10 border-2 rounded-md shadow">
       <h4 className="text-xl font-semibold mb-4">Đăng ký tài khoản</h4>
       <hr className="my-2 border-gray-300" />
+
       <form className="space-y-4" onSubmit={handleSubmit}>
         <InputField
           id="full_name"
@@ -110,16 +119,17 @@ function RegisterPage() {
           error={errors.password}
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-submit w-full py-2 text-white text-lg"
-        >
-          {loading ? "Đang đăng ký..." : "Đăng ký"}
-        </button>
+        <SubmitButton text="Đăng ký" loading={loading} />
       </form>
 
-      <hr className="my-4" />
+      <div className="flex items-center mt-6">
+        <hr className="flex-grow border-t border-gray-300" />
+        <span className="mx-4 text-gray-500 font-medium">Hoặc</span>
+        <hr className="flex-grow border-t border-gray-300" />
+      </div>
+
+      <SocialLoginIcons />
+
       <p className="text-center">
         Đã có tài khoản?{" "}
         <Link to="/login" className="text-blue-600 font-medium">
