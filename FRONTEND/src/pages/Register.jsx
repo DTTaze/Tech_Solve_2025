@@ -32,8 +32,8 @@ function RegisterPage() {
         return "";
       case "email":
         if (!value.trim()) return "Vui lòng nhập email!";
-        if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(value))
-          return "Email phải đúng định dạng và thuộc gmail (ví dụ: ten@gmail.com)";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Email không hợp lệ!";
         return "";
       case "password":
         return !value ? "Vui lòng nhập mật khẩu!" : "";
@@ -61,7 +61,6 @@ function RegisterPage() {
 
     const validationErrors = validateForm();
     setErrors(validationErrors);
-
     if (Object.keys(validationErrors).length > 0) {
       alert("Vui lòng kiểm tra lại thông tin!");
       return;
