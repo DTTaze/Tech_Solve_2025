@@ -19,11 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      content: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      description: {
+      description: {  
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -32,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       difficulty: {
-        type: DataTypes.ENUM("easy", "medium", "hard"),
+        type: DataTypes.ENUM("easy", "medium", "hard", "event"),
         allowNull: false,
       },
       total: {
