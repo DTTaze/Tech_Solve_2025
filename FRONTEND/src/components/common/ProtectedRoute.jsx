@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../contexts/auth.context";
-import { Spin } from "antd";
+// import { Spin } from "antd";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { auth, appLoading } = useContext(AuthContext);

@@ -4,6 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert("transactions", [
       {
+        id: "GD-01",
         name: "Transaction 1",
         seller_id: 3,
         buyer_id: 1,
@@ -14,6 +15,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
+        id: "GD-02",
         name: "Transaction 2",
         seller_id: 3,
         buyer_id: 2,
@@ -24,6 +26,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
+        id: "GD-03",
         name: "Transaction 3",
         seller_id: 3,
         buyer_id: 2,
@@ -34,6 +37,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
+        id: "GD-04",
         name: "Transaction 4",
         seller_id: 3,
         buyer_id: 5,
@@ -44,6 +48,7 @@ module.exports = {
         updated_at: new Date(),
       },
       {
+        id: "GD-05",
         name: "Transaction 5",
         seller_id: 3,
         buyer_id: 1,

@@ -11,7 +11,7 @@ const TransactionHistory = () => {
       try {
         const { data: user } = await getUserApi();
         const response = await getUserTransactionHistory(user.id);
-        
+
         if (response.success && Array.isArray(response.data)) {
           setTransactionList(response.data);
         } else {
@@ -27,19 +27,24 @@ const TransactionHistory = () => {
 
   const openModal = (tx) => {
     setTransaction({
-      "ID": tx.id,
-      "Tên": tx.name,
-      "Tổng Coins": tx.total_price,
+      "Mã giao dịch": tx.id,
+      "Tên sản phẩm": tx.name,
       "Số lượng": tx.quantity,
-      "Trạng thái": tx.status,
-      "Thời gian giao dịch": new Date(tx.createdAt).toLocaleDateString("vi-VN"),
+      "Tổng số xu": tx.total_price,
+      "Trạng thái giao dịch": tx.status,
+      "Thời gian giao dịch":
+        new Date(tx.created_at).toLocaleDateString("vi-VN") +
+        " lúc " +
+        new Date(tx.created_at).toLocaleTimeString("vi-VN"),
     });
     setShowModal(true);
   };
 
   return (
     <div className="p-4 border rounded-lg shadow-md bg-white max-w-4xl mx-auto">
-      <h2 className="text-lg font-semibold mb-4 text-center">Lịch sử giao dịch</h2>
+      <h2 className="text-lg font-semibold mb-4 text-center">
+        Lịch sử giao dịch
+      </h2>
       {transactionList.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
@@ -50,7 +55,11 @@ const TransactionHistory = () => {
             </thead>
             <tbody>
               {transactionList.map((tx) => (
-                <tr key={tx.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openModal(tx)}>
+                <tr
+                  key={tx.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => openModal(tx)}
+                >
                   <td className="border border-gray-300 p-2 text-blue-500 underline">
                     {tx.name}
                   </td>
@@ -72,14 +81,20 @@ const TransactionHistory = () => {
             >
               ✖
             </button>
-            <h3 className="text-lg font-semibold mb-4 text-center">Chi tiết giao dịch</h3>
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Chi tiết giao dịch
+            </h3>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
                 <tbody>
                   {Object.entries(transaction).map(([key, value]) => (
                     <tr key={key}>
-                      <td className="border border-gray-300 p-2 font-semibold w-1/2">{key}</td>
-                      <td className="border border-gray-300 p-2 w-1/2">{value}</td>
+                      <td className="border border-gray-300 p-2 font-semibold w-1/2">
+                        {key}
+                      </td>
+                      <td className="border border-gray-300 p-2 w-1/2">
+                        {value}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

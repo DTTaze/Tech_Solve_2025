@@ -1,9 +1,9 @@
 import { useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { AuthContext } from "./contexts/auth.context";
-import { notification, Spin } from "antd";
 import UserHeader from "./layouts/Header";
 import { getUserApi } from "./utils/api";
+import { NotificationProvider } from './components/ui/NotificationProvider';
 
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
@@ -34,26 +34,45 @@ function App() {
   }, []);
 
   return (
-    <div>
-      {appLoading === true ? (
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <Spin></Spin>
+    <NotificationProvider>
+      {appLoading ? (
+        <div style={styles.spinnerWrapper}>
+          <div style={styles.spinner}></div>
         </div>
       ) : (
         <>
           <UserHeader />
-          <Outlet />
+          <Outlet /> 
         </>
       )}
-    </div>
+    </NotificationProvider>
   );
 }
+
+const styles = {
+  spinnerWrapper: {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+  },
+  spinner: {
+    width: "40px",
+    height: "40px",
+    border: "4px solid #ccc",
+    borderTop: "4px solid #1890ff",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  },
+};
+
+// Spinner animation style (injecting into the document head)
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(`
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`, styleSheet.cssRules.length);
 
 export default App;

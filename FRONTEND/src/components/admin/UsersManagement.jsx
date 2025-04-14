@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
-import { notification } from "antd";
+// import { notification } from "antd";
 import { userColumns } from "./HeaderColumn";
 import { Box, Typography } from "@mui/material";
 import { getAllUserApi, deleteUserApi } from "../../utils/api";

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
-import images from "../components/features/exchangemarket/Photo.jsx";
 import {
   getAllTasksApi,
   completeTaskApi,
@@ -16,10 +15,6 @@ import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.j
 import TasksList from "../components/features/missions/TasksList.jsx";
 import MissionHeader from "../components/features/missions/MissionHeader.jsx";
 import MissionTabs from "../components/features/missions/MissionTabs.jsx";
-import {
-  getLevelColor,
-  getLevelText,
-} from "../components/features/missions/TaskUtils.jsx";
 /* ------------------------------------------------------------ Mission ------------------------------------------------------------ */
 
 function Mission() {
