@@ -3,25 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
 import { getUserApi } from "../utils/api";
 import { Coins } from "lucide-react";
+import { useNotification } from "../components/ui/NotificationProvider"; // Import useNotification
 
 function UserHeader() {
   const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
 
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const navigate = useNavigate();
 
-  const showSuccessToast = (message) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  };
+  const { notify } = useNotification(); // Thêm useNotification
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -66,8 +61,8 @@ function UserHeader() {
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     setAuth({ isAuthenticated: false, user: null });
-    showSuccessToast("Đăng xuất thành công");
-    navigate("/");
+    notify("success", "Đăng xuất thành công"); // Hiển thị thông báo đăng xuất thành công
+    navigate("/");  // Chuyển hướng đến trang chủ
   };
 
   const pages = [
@@ -79,13 +74,6 @@ function UserHeader() {
 
   return (
     <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10 relative">
-      {/* Toast */}
-      {showToast && (
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-md z-50 transition-opacity duration-300">
-          {toastMessage}
-        </div>
-      )}
-
       {/* Logo */}
       <div
         className="flex items-center cursor-pointer select-none"
@@ -119,7 +107,7 @@ function UserHeader() {
             <img src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover" />
           </div>
           {profileMenuOpen && (
-            <div className="absolute right-0 bg-white rounded-lg shadow-lg  w-40 mt-2">
+            <div className="absolute right-0 bg-white rounded-lg shadow-lg w-40 mt-2">
               <p className="p-2 font-bold ">{auth.user.username}</p>
               <div className="flex items-center ml-2">
                 <Coins className="h-6 w-6 text-amber-600 mr-2" />

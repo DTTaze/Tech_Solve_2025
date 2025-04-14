@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/ui/InputField";
 import SubmitButton from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
+import { useNotification } from "../components/ui/NotificationProvider";
 
 const initialFormData = {
   full_name: "",
@@ -17,6 +18,7 @@ function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { notify } = useNotification(); 
 
   const validateField = (name, value) => {
     switch (name) {
@@ -62,7 +64,7 @@ function RegisterPage() {
     const validationErrors = validateForm();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
-      alert("Vui lòng kiểm tra lại thông tin!");
+      notify("error", "Vui lòng kiểm tra lại thông tin!");
       return;
     }
 
@@ -70,13 +72,13 @@ function RegisterPage() {
     try {
       const res = await createUserApi(formData);
       if (res?.status === 200) {
-        alert("Đăng ký thành công!");
-        navigate("/login");
+        navigate("/login")
+        notify("success", "Đăng ký thành công!");
       } else {
-        alert(res?.error || "Đăng ký không thành công. Vui lòng thử lại!");
+        notify("error", res?.error || "Đăng ký không thành công. Vui lòng thử lại!");
       }
     } catch (e) {
-      alert(e.message || "Đăng ký không thành công. Vui lòng thử lại!");
+      notify("error", e.message || "Đăng ký không thành công. Vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -88,36 +90,10 @@ function RegisterPage() {
       <hr className="my-2 border-gray-300" />
 
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <InputField
-          id="full_name"
-          label="Họ tên"
-          value={formData.full_name}
-          onChange={handleChange}
-          error={errors.full_name}
-        />
-        <InputField
-          id="username"
-          label="Tên tài khoản"
-          value={formData.username}
-          onChange={handleChange}
-          error={errors.username}
-        />
-        <InputField
-          id="email"
-          label="Email"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-        />
-        <InputField
-          id="password"
-          label="Mật khẩu"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          error={errors.password}
-        />
-
+        <InputField id="full_name" label="Họ tên" value={formData.full_name} onChange={handleChange} error={errors.full_name} />
+        <InputField id="username" label="Tên tài khoản" value={formData.username} onChange={handleChange} error={errors.username} />
+        <InputField id="email" label="Email" value={formData.email} onChange={handleChange} error={errors.email} />
+        <InputField id="password" label="Mật khẩu" type="password" value={formData.password} onChange={handleChange} error={errors.password} />
         <SubmitButton text="Đăng ký" loading={loading} />
       </form>
 
@@ -129,7 +105,7 @@ function RegisterPage() {
 
       <SocialLoginIcons />
 
-      <p className="text-center">
+      <p className="text-center mt-4">
         Đã có tài khoản?{" "}
         <Link to="/login" className="text-blue-600 font-medium">
           Đăng nhập

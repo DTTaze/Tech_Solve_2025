@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { AuthContext } from "./contexts/auth.context";
 import UserHeader from "./layouts/Header";
 import { getUserApi } from "./utils/api";
+import { NotificationProvider } from './components/ui/NotificationProvider';
 
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
@@ -33,7 +34,7 @@ function App() {
   }, []);
 
   return (
-    <div>
+    <NotificationProvider>
       {appLoading ? (
         <div style={styles.spinnerWrapper}>
           <div style={styles.spinner}></div>
@@ -41,10 +42,10 @@ function App() {
       ) : (
         <>
           <UserHeader />
-          <Outlet />
+          <Outlet /> 
         </>
       )}
-    </div>
+    </NotificationProvider>
   );
 }
 

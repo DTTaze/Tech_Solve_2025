@@ -13,6 +13,7 @@ import MissionVideo from "./pages/MissionVideo.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import App from "./App.jsx";
 import "./index.css";
+import { NotificationProvider } from './components/ui/NotificationProvider';
 
 const router = createBrowserRouter([
   {
@@ -62,7 +63,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthWrapper>
+      <NotificationProvider>
       <RouterProvider router={router} />
+      </NotificationProvider>
     </AuthWrapper>
   </StrictMode>
 );

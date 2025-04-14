@@ -4,10 +4,12 @@ import { loginUserApi } from "../utils/api";
 import { AuthContext } from "../contexts/auth.context";
 import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
+import { useNotification } from "../components/ui/NotificationProvider"; 
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useContext(AuthContext);
+  const { notify } = useNotification();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +35,8 @@ const LoginPage = () => {
 
       if (res && res.status === 200) {
         localStorage.setItem("access_token", res.data.access_token);
-        alert("Đăng nhập thành công!");
+
+        notify("success", "Đăng nhập thành công!"); 
 
         setAuth({
           isAuthenticated: true,
@@ -42,13 +45,12 @@ const LoginPage = () => {
             username: res.data.user?.username ?? "",
           },
         });
-
-        navigate("/");
+        navigate("/")
       } else {
-        alert(res.error || "Đăng nhập thất bại, vui lòng thử lại.");
+        notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại."); 
       }
     } catch (error) {
-      alert(error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+      notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại."); 
     }
   };
 
@@ -73,7 +75,7 @@ const LoginPage = () => {
           error={errors.password}
         />
 
-        <Button text="Đăng nhập"></Button>
+        <Button text="Đăng nhập" />
       </form>
 
       <hr className="my-6 border-gray-300" />
