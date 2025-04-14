@@ -33,6 +33,7 @@ function Mission() {
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
   const [dailyTasks, setDailyTasks] = useState([]);
   const [otherTasks, setOtherTasks] = useState([]);
+  // const [isOpenDropdown, setIsOpenDropdown] = useState(false);
 
   // Function to fetch new tasks
   const fetchNewTasks = async () => {
