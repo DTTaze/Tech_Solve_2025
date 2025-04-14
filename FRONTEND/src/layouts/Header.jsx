@@ -16,14 +16,14 @@ function UserHeader() {
   const menuButtonRef = useRef(null);
   const navigate = useNavigate();
 
-  const { notify } = useNotification(); // Thêm useNotification
+  const { notify } = useNotification(); 
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
         setUser(response.data);
-
+  
         if (auth.user && response.data.coins !== auth.user.coins) {
           setAuth((prevAuth) => ({
             ...prevAuth,
@@ -34,12 +34,14 @@ function UserHeader() {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
     };
-
-    fetchUser();
-    const interval = setInterval(fetchUser, 5000);
-
-    return () => clearInterval(interval);
-  }, [auth.user]);
+  
+    if (auth.isAuthenticated) {
+      fetchUser();
+      const interval = setInterval(fetchUser, 5000);
+  
+      return () => clearInterval(interval);
+    }
+  }, [auth.isAuthenticated, auth.user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
