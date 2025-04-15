@@ -65,7 +65,6 @@ module.exports = {
       },
       {
         title: "Đi xe đạp thay vì xe máy",
-        content: "Sử dụng xe đạp để di chuyển thay vì phương tiện chạy bằng xăng.",
         description: "Đi xe đạp ít nhất 3 ngày trong tuần để giảm khí thải.",
         coins: 20,
         difficulty: "medium",
@@ -75,7 +74,6 @@ module.exports = {
       },
       {
         title: "Tắt đèn khi ra khỏi phòng",
-        content: "Tiết kiệm điện bằng cách tắt đèn và thiết bị không dùng.",
         description: "Tắt đèn và các thiết bị điện mỗi khi ra khỏi phòng.",
         coins: 10,
         difficulty: "easy",
@@ -84,7 +82,6 @@ module.exports = {
       },
       {
         title: "Sử dụng bình nước cá nhân",
-        content: "Không dùng chai nhựa, thay vào đó là bình cá nhân.",
         description: "Mang theo bình nước cá nhân thay vì mua chai nhựa dùng một lần.",
         coins: 15,
         difficulty: "easy",
@@ -93,7 +90,6 @@ module.exports = {
       },
       {
         title: "Gom pin đã qua sử dụng",
-        content: "Bảo vệ môi trường bằng cách gom và xử lý pin đúng cách.",
         description: "Thu gom ít nhất 10 viên pin cũ và đem đến điểm thu hồi.",
         coins: 25,
         difficulty: "medium",
@@ -103,7 +99,6 @@ module.exports = {
       },
       {
         title: "Tham gia chiến dịch trồng rừng",
-        content: "Góp phần tái tạo rừng bằng cách tham gia trồng cây.",
         description: "Tham gia ít nhất một buổi trồng rừng tại địa phương.",
         coins: 35,
         difficulty: "hard",
@@ -112,7 +107,6 @@ module.exports = {
       },
       {
         title: "Chia sẻ kiến thức môi trường",
-        content: "Nâng cao nhận thức cộng đồng về bảo vệ môi trường.",
         description: "Viết bài chia sẻ hoặc đăng video tuyên truyền bảo vệ môi trường.",
         coins: 30,
         difficulty: "medium",
@@ -121,7 +115,6 @@ module.exports = {
       },
       {
         title: "Không dùng ống hút nhựa",
-        content: "Chuyển sang sử dụng ống hút kim loại hoặc giấy.",
         description: "Không sử dụng ống hút nhựa trong vòng 1 tuần.",
         coins: 15,
         difficulty: "easy",
@@ -130,7 +123,6 @@ module.exports = {
       },
       {
         title: "Tham gia dọn rác bãi biển",
-        content: "Góp phần làm sạch đại dương.",
         description: "Tham gia một buổi dọn rác tại bãi biển gần bạn.",
         coins: 40,
         difficulty: "hard",
@@ -139,7 +131,6 @@ module.exports = {
       },
       {
         title: "Sử dụng đồ tái chế",
-        content: "Ưu tiên sản phẩm được làm từ vật liệu tái chế.",
         description: "Mua và sử dụng ít nhất 3 sản phẩm tái chế.",
         coins: 20,
         difficulty: "medium",
@@ -148,7 +139,6 @@ module.exports = {
       },
       {
         title: "Tự làm compost",
-        content: "Biến rác hữu cơ thành phân bón tự nhiên.",
         description: "Bắt đầu ủ rác hữu cơ trong hộp compost tại nhà.",
         coins: 30,
         difficulty: "hard",
@@ -157,7 +147,6 @@ module.exports = {
       },
       {
         title: "Tắm trong 5 phút",
-        content: "Giảm lượng nước tiêu thụ bằng cách tắm nhanh.",
         description: "Giới hạn thời gian tắm trong 5 phút trong một tuần.",
         coins: 10,
         difficulty: "easy",
@@ -166,7 +155,6 @@ module.exports = {
       },
       {
         title: "Giảm sử dụng giấy",
-        content: "Hạn chế in ấn và sử dụng giấy một cách hợp lý.",
         description: "Chuyển sang lưu trữ tài liệu số thay vì in ra giấy.",
         coins: 15,
         difficulty: "medium",
@@ -175,7 +163,6 @@ module.exports = {
       },
       {
         title: "Tham gia workshop môi trường",
-        content: "Nâng cao kiến thức về sinh thái và bảo vệ môi trường.",
         description: "Tham gia một buổi hội thảo hoặc lớp học liên quan đến môi trường.",
         coins: 25,
         difficulty: "medium",
@@ -184,7 +171,6 @@ module.exports = {
       },
       {
         title: "Tiết kiệm nước khi rửa bát",
-        content: "Giảm lượng nước dùng trong sinh hoạt.",
         description: "Dùng chậu hoặc vòi tiết kiệm nước khi rửa bát trong một tuần.",
         coins: 10,
         difficulty: "easy",
@@ -193,7 +179,6 @@ module.exports = {
       },
       {
         title: "Dọn sạch khu phố",
-        content: "Cùng hàng xóm dọn vệ sinh khu vực sinh sống.",
         description: "Tổ chức hoặc tham gia một buổi tổng vệ sinh khu phố.",
         coins: 30,
         difficulty: "medium",
@@ -202,7 +187,6 @@ module.exports = {
       },
       {
         title: "Tham gia thử thách sống xanh",
-        content: "Sống thân thiện hơn với môi trường trong 7 ngày.",
         description: "Hoàn thành thử thách sống xanh trong một tuần (không nhựa, tiết kiệm nước, v.v.).",
         coins: 40,
         difficulty: "hard",
@@ -211,7 +195,6 @@ module.exports = {
       },
       {
         title: "Sửa chữa đồ dùng thay vì vứt đi",
-        content: "Kéo dài vòng đời sản phẩm, giảm rác thải.",
         description: "Sửa chữa ít nhất một món đồ thay vì mua mới.",
         coins: 20,
         difficulty: "medium",
@@ -220,7 +203,6 @@ module.exports = {
       },
       {
         title: "Ủng hộ tổ chức môi trường",
-        content: "Góp phần hỗ trợ các tổ chức vì môi trường.",
         description: "Quyên góp hoặc hỗ trợ truyền thông cho một tổ chức bảo vệ môi trường.",
         coins: 35,
         difficulty: "medium",
@@ -229,7 +211,6 @@ module.exports = {
       },
       {
         title: "Trồng cây tại nhà",
-        content: "Gây dựng không gian xanh ngay tại nhà bạn.",
         description: "Trồng ít nhất 3 chậu cây xanh trong khu vực sinh sống.",
         coins: 25,
         difficulty: "easy",
@@ -238,7 +219,6 @@ module.exports = {
       },
       {
         title: "Sử dụng năng lượng tái tạo",
-        content: "Ứng dụng năng lượng sạch vào sinh hoạt.",
         description: "Cài đặt hoặc sử dụng thiết bị dùng năng lượng mặt trời (ví dụ: đèn năng lượng mặt trời).",
         coins: 50,
         difficulty: "hard",
