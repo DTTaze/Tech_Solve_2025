@@ -63,7 +63,7 @@ export default function ItemCatalog({ items }) {
         quantity: quantity,
       });
   
-      if (response.data && response.data.message === "Purchase successful") {
+      if (response.data) {
         const updatedCoins = userCoins - totalCost;
         setUser({ ...user, coins: updatedCoins });
         setUserCoins(updatedCoins);
