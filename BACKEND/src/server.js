@@ -7,17 +7,20 @@ import bodyParser from "body-parser";
 import connection from "./config/connectDB";
 const { sequelize } = require("./models");
 require("dotenv").config();
-require("../src/config/passport");
+require("./config/passport");
 import cors from "cors";
 import { execSync } from "child_process";
-
 const app = express();
 const PORT = process.env.PORT || 4040;
 const HOST = process.env.HOST || "0.0.0.0";
 // Cấu hình CORS
 app.use(
   cors({
-    origin: [process.env.URL_REACT, "https://greenflag.id.vn"],
+    origin: [
+      process.env.URL_REACT,
+      process.env.URL_REDIS,
+      "https://greenflag.id.vn",
+    ],
     methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["X-Requested-With", "Content-Type", "Authorization"],
     credentials: true,
@@ -58,6 +61,10 @@ connection();
 
 // Khởi động server
 app.listen(PORT, HOST, () => {
+  console.log(
+    `Redis connecting to: ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+  );
+  console.log(`Server đang chạy tại: http://${HOST}:${PORT}/admin/queues`);
   console.log(`Server đang chạy tại: http://${HOST}:${PORT}`);
   console.log(`Đăng nhập bằng Google: http://${HOST}:${PORT}/auth/google`);
 });

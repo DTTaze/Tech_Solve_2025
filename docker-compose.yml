@@ -30,6 +30,15 @@ services:
     networks:
       - greenflag_network
 
+  redis:
+    image: redis:7
+    container_name: redis_container
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - greenflag_network
+
   backend:
     build:
       context: ./BACKEND
@@ -46,15 +55,46 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "${PORT}:${PORT}"
     depends_on:
       - mysql
+      - redis
     volumes:
       - ./BACKEND:/app
       - /app/node_modules
     working_dir: /app
     command: ["npm", "start"]
+    networks:
+      - greenflag_network
+
+  worker:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    container_name: worker_container
+    restart: always
+    env_file:
+      - ./BACKEND/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - mysql
+    volumes:
+      - ./BACKEND:/app
+      - /app/node_modules
+    working_dir: /app
+    command: ["node", "src/services/worker.js"]
     networks:
       - greenflag_network
 
@@ -73,11 +113,29 @@ services:
       - "5173:5173"
     depends_on:
       - mysql
+      - backend
     volumes:
       - ./FRONTEND:/app
       - /app/node_modules
     working_dir: /app
     command: ["npm", "run", "dev", "--", "--host"]
+    networks:
+      - greenflag_network
+
+  bullboard:
+    image: node:20
+    container_name: bullboard_container
+    restart: always
+    working_dir: /app
+    volumes:
+      - ./BACKEND:/app
+    env_file:
+      - ./BACKEND/.env
+    ports:
+      - "3000:3000"
+    command: ["node", "src/services/bullboard.js"]
+    depends_on:
+      - redis
     networks:
       - greenflag_network
 

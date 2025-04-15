@@ -71,7 +71,17 @@ const handlePurchaseItem = async (req, res) => {
     return res.error(500, "Failed to purchase item", error.message);
   }
 };
-
+const handlePurchaseQueue = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const item_id = Number(req.params.item_id);
+    const data = req.body;
+    const result = await itemService.requestPurchase(user_id, item_id, data);
+    return res.success("Item purchased successfully", result);
+  } catch (error) {
+    return res.error(500, "Failed to purchase item", error.message);
+  }
+};
 module.exports = {
   handleUploadItem,
   handleGetAllItems,
@@ -80,4 +90,5 @@ module.exports = {
   handleUpdateItem,
   handleDeleteItem,
   handlePurchaseItem,
+  handlePurchaseQueue,
 };

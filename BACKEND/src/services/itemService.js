@@ -2,8 +2,8 @@ const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
 const Transaction = db.Transaction;
-import { where } from "sequelize";
-import { generateCode } from "../utils/generateCode";
+const { generateCode } = require("../utils/generateCode");
+const purchaseQueue = require("./queue");
 
 const createItem = async (itemData, user_id) => {
   try {
@@ -115,72 +115,22 @@ const deleteItem = async (item_id) => {
 const purchaseItem = async (user_id, item_id, data) => {
   try {
     let { seller_id, name, quantity } = data;
-    console.log("check quantity", quantity);
-    if (quantity === undefined) {
-      quantity = 1;
-    } else {
-      if (quantity < 1) {
-        throw new Error("Quantity must be possitive");
-      } else {
-        quantity = Number(quantity);
-      }
-    }
-    if (!user_id || !item_id || quantity < 1) {
-      throw new Error("User ID, Item ID, and valid quantity are required");
+    if (!user_id || !item_id || quantity <= 0) {
+      throw new Error("Invalid input data");
     }
 
-    const item = await Item.findByPk(item_id);
-    if (!item) {
-      throw new Error("Item not found");
-    }
-
-    if (item.status !== "available") {
-      throw new Error("Item is not available for purchase");
-    }
-
-    if (item.stock < quantity) {
-      throw new Error("Not enough stock available");
-    }
-
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const totalPrice = item.price * quantity;
-    if (user.coins < totalPrice) {
-      throw new Error("Insufficient balance");
-    }
-
-    await user.update({ coins: user.coins - totalPrice });
-    await item.update({
-      stock: item.stock - quantity,
-      status: item.stock - quantity === 0 ? "sold" : "available",
+    const result = await purchaseQueue.add("purchase", {
+      user_id,
+      item_id,
+      seller_id,
+      name,
+      quantity,
     });
-    let isTransactionIdExisted;
-    let uniqueCode;
-    do {
-      uniqueCode = generateCode();
-      isTransactionIdExisted = await Transaction.findByPk(uniqueCode);
-    } while (isTransactionIdExisted !== null);
-
-    const transaction = await Transaction.create({
-      id: uniqueCode,
-      seller_id: seller_id,
-      name: name,
-      buyer_id: user.id,
-      item_id: item.id,
-      quantity: quantity,
-      total_price: totalPrice,
-      status: "pending",
-    });
-
-    return { message: "Purchase successful", item, transaction };
-  } catch (e) {
-    throw e;
+    return { message: "Purchase request is in queue", jobId: result.id };
+  } catch (error) {
+    throw error;
   }
 };
-
 module.exports = {
   createItem,
   getAllItems,

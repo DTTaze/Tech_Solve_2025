@@ -13,8 +13,9 @@ import roleRoutes from "./roleRoutes.js";
 import permissionRoutes from "./permissionRoutes.js";
 import transactionRoutes from "./transactionRoutes.js";
 const router = express.Router();
-
+const serverAdapter = require("../services/bullboard.js");
 const initWebRoutes = (app) => {
+  app.use("/admin/queues", serverAdapter.getRouter());
   app.use(jwtAuth);
   app.use(responseFormatter);
 

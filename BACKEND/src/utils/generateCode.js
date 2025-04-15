@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const crypto = require("crypto");
 
-export const generateCode = (prefix = "GD") => {
+const generateCode = (prefix = "GD") => {
   const uuid = uuidv4();
   const hash = crypto.createHash("sha256").update(uuid).digest("hex");
   const shortCode = hash
@@ -11,3 +11,5 @@ export const generateCode = (prefix = "GD") => {
     .join("-");
   return `${prefix}-${shortCode}`;
 };
+
+module.exports = { generateCode };
