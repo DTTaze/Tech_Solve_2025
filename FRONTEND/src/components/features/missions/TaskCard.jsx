@@ -7,10 +7,10 @@ import imgScr from "../../../assets/images/seedling-solid.svg";
  * Task Card component for displaying mission tasks
  * @param {Object} props
  * @param {Object} props.task - Task data object
- * @param {Function} props.onClick - Function to handle task completion
+ * @param {Function} props.handleTaskSelect - Function to handle task selection for modal
  * @param {number|null} props.completingTask - ID of the task currently being completed (for loading state)
  */
-const TaskCard = React.memo(({ task, onClick, completingTask }) => {
+const TaskCard = React.memo(({ task, handleTaskSelect, completingTask }) => {
   const isCompleted = task.progress_count === task.total;
   const levelColorClass = getLevelColor(task.difficulty);
   const isLoading = completingTask === task.id;
@@ -85,7 +85,7 @@ const TaskCard = React.memo(({ task, onClick, completingTask }) => {
         />
 
         <button
-          onClick={isLoading ? null : onClick}
+          onClick={isLoading ? null : () => handleTaskSelect(task)}
           disabled={task.completed_at || isLoading}
           className={`w-full mt-3 rounded-lg py-1.5 text-sm font-medium text-white transition-colors ${
             isCompleted

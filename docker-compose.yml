@@ -15,6 +15,11 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - greenflag_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -38,6 +43,11 @@ services:
       - "6379:6379"
     networks:
       - greenflag_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -60,8 +70,10 @@ services:
     ports:
       - "${PORT}:${PORT}"
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./BACKEND:/app
       - /app/node_modules
