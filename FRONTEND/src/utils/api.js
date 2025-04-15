@@ -37,7 +37,7 @@ export const getAllPermissionsApi = () => {
 // };
 
 export const getAllVideosApi = () => {
-  return axios.get("api/videos")
+  return axios.get("api/videos");
 };
 
 export const uploadUserAvatarApi = (user_id, file) => {
@@ -132,4 +132,4 @@ export const getUserTransactionHistory = (user_id) => {
 
 export const increaseProgressCountApi = (taskUserId) => {
   return axios.post(`api/tasks/progress/increase/${taskUserId}`);
-}
+};
