@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
 import { getUserApi } from "../utils/api";
 import { Coins } from "lucide-react";
-import { useNotification } from "../components/ui/NotificationProvider"; // Import useNotification
+import { useNotification } from "../components/ui/NotificationProvider"; 
 
 function UserHeader() {
   const { auth, setAuth } = useContext(AuthContext);
@@ -16,14 +16,14 @@ function UserHeader() {
   const menuButtonRef = useRef(null);
   const navigate = useNavigate();
 
-  const { notify } = useNotification(); // Thêm useNotification
+  const { notify } = useNotification(); 
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
         setUser(response.data);
-
+  
         if (auth.user && response.data.coins !== auth.user.coins) {
           setAuth((prevAuth) => ({
             ...prevAuth,
@@ -34,12 +34,14 @@ function UserHeader() {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
     };
-
-    fetchUser();
-    const interval = setInterval(fetchUser, 5000);
-
-    return () => clearInterval(interval);
-  }, [auth.user]);
+  
+    if (auth.isAuthenticated) {
+      fetchUser();
+      const interval = setInterval(fetchUser, 5000);
+  
+      return () => clearInterval(interval);
+    }
+  }, [auth.isAuthenticated, auth.user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -61,8 +63,8 @@ function UserHeader() {
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     setAuth({ isAuthenticated: false, user: null });
-    notify("success", "Đăng xuất thành công"); // Hiển thị thông báo đăng xuất thành công
-    navigate("/");  // Chuyển hướng đến trang chủ
+    notify("success", "Đăng xuất thành công");
+    navigate("/"); 
   };
 
   const pages = [
@@ -107,14 +109,15 @@ function UserHeader() {
             <img src={auth.user?.avatar || "../src/assets/images/default-avatar.jpg"} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover" />
           </div>
           {profileMenuOpen && (
-            <div className="absolute right-0 bg-white rounded-lg shadow-lg w-40 mt-2">
-              <p className="p-2 font-bold ">{auth.user.username}</p>
-              <div className="flex items-center ml-2">
-                <Coins className="h-6 w-6 text-amber-600 mr-2" />
-                <span className="font-medium ">: {user?.coins}</span>
+            <div className="absolute right-0 bg-[#f6f5f8] rounded-lg shadow-lg w-48 px-2 py-2">
+              <p className="p-2 font-bold ">Tên người dùng: {auth.user.username}</p>
+              <hr className="border border-gray-300 mb-2"/>
+              <div className="flex items-center ml-2 py-2">
+                <span className="font-bold select-none">Số Coins:  {user?.coins}</span>
+                <Coins className="h-6 w-6 text-amber-600 ml-2" />
               </div>
-              <button className="w-full p-2 text-left hover:text-[#62C370] hover:bg-gray-200 font-bold cursor-pointer" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
-              <button className="w-full p-2 text-left hover:text-[#62C370] hover:bg-gray-200 rounded-lg font-bold cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] hover:bg-white font-bold rounded-lg cursor-pointer" onClick={() => navigate("/profile")}>Xem Hồ Sơ</button>
+              <button className="w-full p-2 text-left hover:text-[#62C370] hover:bg-white rounded-lg font-bold cursor-pointer" onClick={handleLogout}>Đăng xuất</button>
             </div>
           )}
         </div>
