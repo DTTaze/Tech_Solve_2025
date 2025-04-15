@@ -1,6 +1,7 @@
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
+const Coin = db.Coin;
 const Transaction = db.Transaction;
 import { where } from "sequelize";
 import { generateCode } from "../utils/generateCode";
@@ -112,19 +113,20 @@ const deleteItem = async (item_id) => {
   }
 };
 
-const purchaseItem = async (user_id, item_id, data) => {
+const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
   try {
     let { seller_id, name, quantity } = data;
-    console.log("check quantity", quantity);
+
     if (quantity === undefined) {
       quantity = 1;
     } else {
       if (quantity < 1) {
-        throw new Error("Quantity must be possitive");
+        throw new Error("Quantity must be positive");
       } else {
         quantity = Number(quantity);
       }
     }
+
     if (!user_id || !item_id || quantity < 1) {
       throw new Error("User ID, Item ID, and valid quantity are required");
     }
@@ -142,21 +144,23 @@ const purchaseItem = async (user_id, item_id, data) => {
       throw new Error("Not enough stock available");
     }
 
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      throw new Error("User not found");
+    const user_coins = await Coin.findByPk(user_coin_id);
+    if (!user_coins) {
+      throw new Error("User coins not found");
     }
 
     const totalPrice = item.price * quantity;
-    if (user.coins < totalPrice) {
+    if (user_coins.amount < totalPrice) {
       throw new Error("Insufficient balance");
     }
 
-    await user.update({ coins: user.coins - totalPrice });
+    await user_coins.update({ amount: user_coins.amount - totalPrice });
+
     await item.update({
       stock: item.stock - quantity,
       status: item.stock - quantity === 0 ? "sold" : "available",
     });
+
     let isTransactionIdExisted;
     let uniqueCode;
     do {
@@ -168,7 +172,7 @@ const purchaseItem = async (user_id, item_id, data) => {
       id: uniqueCode,
       seller_id: seller_id,
       name: name,
-      buyer_id: user.id,
+      buyer_id: user_id,
       item_id: item.id,
       quantity: quantity,
       total_price: totalPrice,
@@ -180,6 +184,7 @@ const purchaseItem = async (user_id, item_id, data) => {
     throw e;
   }
 };
+
 
 module.exports = {
   createItem,
