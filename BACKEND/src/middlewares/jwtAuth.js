@@ -3,6 +3,7 @@ require("dotenv").config();
 const db = require("../models/index.js");
 const User = db.User;
 const Role = db.Role;
+const Coin = db.Coin;
 
 const jwtAuth = async (req, res, next) => {
   const white_lists = [
@@ -31,6 +32,11 @@ const jwtAuth = async (req, res, next) => {
               as: "roles",
               attributes: ["id", "name"],
             },
+            {
+              model: Coin,
+              as: "coins",
+              attributes: ["id", "amount"],
+            }
           ],
         });
         if (!user) return res.status(401).json({ message: "User not found" });

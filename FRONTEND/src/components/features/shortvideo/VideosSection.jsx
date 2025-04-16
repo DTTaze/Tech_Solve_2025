@@ -222,7 +222,7 @@ export default function VideosSection() {
     },
   ]);
 
-  const [user, setUser] = useState({ id: 1, username: "user1", coins: 0 });
+  const [user, setUser] = useState({ id: 1, username: "user1", coins: { amount: 0 } });
   const [playingStates, setPlayingStates] = useState(null);
   const [isActuallyPlaying, setIsActuallyPlaying] = useState(false);
   const [timer, setTimer] = useState(30);
@@ -560,7 +560,7 @@ export default function VideosSection() {
               video={video} 
               task={taskData} 
               userStats={userStats}
-              coins={user.coins}
+              coins={user.coins.amount}
               timer={timer}
             />
             

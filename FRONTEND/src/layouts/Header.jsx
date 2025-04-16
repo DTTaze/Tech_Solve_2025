@@ -24,7 +24,7 @@ function UserHeader() {
         const response = await getUserApi();
         setUser(response.data);
   
-        if (auth.user && response.data.coins !== auth.user.coins) {
+        if (auth.user && response.data.coins !== auth.user.coins.amount) {
           setAuth((prevAuth) => ({
             ...prevAuth,
             user: { ...prevAuth.user, coins: response.data.coins }

@@ -1,7 +1,5 @@
 "use strict";
-const { on } = require("form-data");
 const { Model } = require("sequelize");
-const user = require("./user");
 
 module.exports = (sequelize, DataTypes) => {
   class Coin extends Model {
@@ -26,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "Coin",
+      tableName: "coins",
     }
   );
   return Coin;

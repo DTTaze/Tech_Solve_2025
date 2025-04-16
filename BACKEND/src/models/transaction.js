@@ -9,13 +9,6 @@ module.exports = (sequelize, DataTypes) => {
         as: "buyer",
         onDelete: "CASCADE",
       });
-    
-      Transaction.belongsTo(models.User, {
-        foreignKey: "seller_id",
-        as: "seller",
-        onDelete: "CASCADE",
-      });
-    
       Transaction.belongsTo(models.Item, {
         foreignKey: "item_id",
       });
@@ -30,10 +23,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       name: {
         type: DataTypes.STRING,
-        allowNull: false,
-      },
-      seller_id: {
-        type: DataTypes.INTEGER,
         allowNull: false,
       },
       buyer_id: {

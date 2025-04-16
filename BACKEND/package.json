@@ -11,7 +11,8 @@
     "undoseed": "docker compose exec backend npx sequelize-cli db:seed:undo:all",
     "du": "docker compose down && docker compose up -d --build",
     "ddv": "docker compose down -v",
-    "db": "docker exec mysql_container sh -c 'exec mysqldump -h localhost -u root -p --no-data techsolve25' > ./mysql_schema.sql"
+    "dbu": "docker exec mysql_container sh -c 'exec mysqldump -h localhost -u root --no-data techsolve25' > ./mysql_schema.sql",
+    "db" : "docker exec mysql_container sh -c \"mysqldump -h localhost -u root --no-data techsolve25\" > ./mysql_schema.sql"
   },
   "repository": {
     "type": "git",

@@ -115,7 +115,7 @@ const deleteItem = async (item_id) => {
 
 const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
   try {
-    let { seller_id, name, quantity } = data;
+    let {name, quantity } = data;
 
     if (quantity === undefined) {
       quantity = 1;
@@ -170,7 +170,6 @@ const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
 
     const transaction = await Transaction.create({
       id: uniqueCode,
-      seller_id: seller_id,
       name: name,
       buyer_id: user_id,
       item_id: item.id,
