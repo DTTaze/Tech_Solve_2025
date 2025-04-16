@@ -16,7 +16,7 @@ export default function ItemCatalog({ items }) {
         const response = await getUserApi();
         if (response) {
           setUser(response.data);
-          setUserCoins(response.data.coins.amount || 0);
+          setUserCoins(response.data.coins?.amount || 0);
         }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -28,7 +28,7 @@ export default function ItemCatalog({ items }) {
 
   useEffect(() => {
     if (user) {
-      setUserCoins(user.coins.amout || 0);
+      setUserCoins(user.coins?.amount || 0);
     }
   }, [user]);
 
@@ -64,7 +64,7 @@ export default function ItemCatalog({ items }) {
   
       if (response.data) {
         const updatedCoins = userCoins - totalCost;
-        setUser({ ...user, coins: updatedCoins });
+        setUser({ ...user, coins: { amount: updatedCoins } });
         setUserCoins(updatedCoins);
         setIsModalOpen(false);
         alert(`Trao đổi thành công ${quantity} ${selectedItem.name}!`);

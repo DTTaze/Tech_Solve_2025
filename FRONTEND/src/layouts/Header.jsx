@@ -24,7 +24,7 @@ function UserHeader() {
         const response = await getUserApi();
         setUser(response.data);
   
-        if (auth.user && response.data.coins !== auth.user.coins.amount) {
+        if (auth.user && response.data.coins.amount !== auth.user.coins.amount) {
 
           setAuth((prevAuth) => ({
             ...prevAuth,
@@ -38,7 +38,7 @@ function UserHeader() {
 
     if (auth.isAuthenticated) {
       fetchUser();
-      const interval = setInterval(fetchUser, 5000);
+      const interval = setInterval(fetchUser, 50000);
 
       return () => clearInterval(interval);
     }
@@ -131,7 +131,7 @@ function UserHeader() {
               <hr className="border border-gray-300 mb-2" />
               <div className="flex items-center ml-2 py-2">
                 <span className="font-bold select-none">
-                  Số Coins: {user?.coins}
+                  Số Coins: {user?.coins?.amount || 0}
                 </span>
                 <Coins className="h-6 w-6 text-amber-600 ml-2" />
               </div>

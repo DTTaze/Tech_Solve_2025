@@ -12,6 +12,7 @@ import homeController from "../controllers/homeController.js";
 import roleRoutes from "./roleRoutes.js";
 import permissionRoutes from "./permissionRoutes.js";
 import transactionRoutes from "./transactionRoutes.js";
+import coinRoutes from "./coinRoutes.js";
 const router = express.Router();
 const serverAdapter = require("../services/bullboard.js");
 const initWebRoutes = (app) => {
@@ -31,6 +32,7 @@ const initWebRoutes = (app) => {
   app.use("/api/avatars", avatarRoutes);
   app.use("/api/images", imageRoutes);
   app.use("/api/transactions", transactionRoutes);
+  app.use("/api/coins", coinRoutes);
 
   return app.use("/api", router);
 };

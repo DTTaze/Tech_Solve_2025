@@ -3,7 +3,6 @@ const FormData = require("form-data");
 const fs = require("fs");
 const { Readable } = require("stream");
 const db = require("../models/index.js");
-const e = require("express");
 const Task = db.Task;
 const TaskUser = db.TaskUser;
 const User = db.User;
@@ -12,7 +11,7 @@ const TaskType = db.TaskType;
 const Type = db.Type;
 const Coin = db.Coin;
 const uploadImages = require("./imageService.js").uploadImages;
-
+const coinService = require("./coinService.js");
 const createTask = async (data) => {
   try {
     let { title, content, description, coins, difficulty, total } = data;
@@ -199,11 +198,7 @@ const receiveCoin = async (user_coins_id, coins) => {
       throw new Error("Coins must be a positive integer");
     }
 
-    const user_coins = await Coin.findByPk(user_coins_id);
-    if (!user_coins) throw new Error("Coin record not found");
-
-    user_coins.amount = (user_coins.amount || 0) + coins;
-    await user_coins.save();
+    await coinService.updateIncreaseCoin(user_coins_id, coins);
 
     return { message: `Successfully received ${coins} coins.` };
   } catch (e) {
