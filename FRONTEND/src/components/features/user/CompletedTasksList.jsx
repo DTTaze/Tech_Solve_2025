@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { getAllTaskCompletedById, getUserApi } from "../../utils/api";
+import { getAllTaskCompletedById, getUserApi } from "../../../utils/api";
 
 function CompletedTasksList() {
   const [userCompletedTasks, setUserCompletedTasks] = useState([]);

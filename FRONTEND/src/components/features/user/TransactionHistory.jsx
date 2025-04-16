@@ -1,4 +1,4 @@
-import { getUserTransactionHistory, getUserApi } from "../../utils/api";
+import { getUserTransactionHistory, getUserApi } from "../../../utils/api";
 import { useEffect, useState } from "react";
 
 const TransactionHistory = () => {

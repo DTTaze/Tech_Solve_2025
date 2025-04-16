@@ -1,8 +1,8 @@
 import { useState } from "react";
-import ProfileCard from '../components/user/ProfileCard.jsx';
-import PersonalInfoForm from "../components/user/PersonalInformation.jsx";
-import CompletedTaskList from "../components/user/CompletedTasksList.jsx";
-import TransactionHistory from "../components/user/TransactionHistory.jsx";
+import ProfileCard from "../components/features/user/ProfileCard.jsx";
+import PersonalInfoForm from "../components/features/user/PersonalInformation.jsx";
+import CompletedTaskList from "../components/features/user/CompletedTasksList.jsx";
+import TransactionHistory from "../components/features/user/TransactionHistory.jsx";
 
 function UserProfile() {
   const [selectedTab, setSelectedTab] = useState("Thông tin cá nhân");
@@ -27,9 +27,7 @@ function UserProfile() {
           <div className="w-[30%] mt-4">
             <ProfileCard setSelectedTab={setSelectedTab} />
           </div>
-          <div className="w-[70%] mt-4">
-            {renderContent()}
-          </div>
+          <div className="w-[70%] mt-4">{renderContent()}</div>
         </div>
       </div>
     </>

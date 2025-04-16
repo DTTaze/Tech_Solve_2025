@@ -100,7 +100,16 @@ const loginUser = async (data) => {
 const getAllUsers = async () => {
   try {
     const users = await User.findAll({
-      attributes: { exclude: ["password"] },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["id", "name"],
+        },
+      ],
     });
     return users;
   } catch (e) {
@@ -126,7 +135,16 @@ const deleteUser = async (id) => {
 
 const getUserByID = async (id) => {
   try {
-    const user = await User.findOne({ where: { id: id } });
+    const user = await User.findOne({
+      where: { id: id },
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["id", "name"],
+        },
+      ],
+    });
     if (!user) {
       throw new Error("User not found");
     }
@@ -262,12 +280,12 @@ const getItemByIdUser = async (user_id) => {
     const items = await Transaction.findAll({
       where: {
         buyer_id: user_id,
-        status: ["pending", "completed"], 
+        status: ["pending", "completed"],
       },
       attributes: ["id", "total_price", "quantity", "status"],
       include: [
         {
-          model: Item, 
+          model: Item,
           attributes: ["id", "name", "description", "price"],
         },
       ],
@@ -282,7 +300,6 @@ const getItemByIdUser = async (user_id) => {
     throw e;
   }
 };
-
 
 module.exports = {
   createUser,

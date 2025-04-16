@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { getUserApi, updateUserApi } from "../../utils/api.js";
-import InputField from "../ui/InputField.jsx";
-
+import { getUserApi, updateUserApi } from "../../../utils/api.js";
+import InputField from "../../ui/InputField.jsx";
 
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
@@ -29,7 +28,8 @@ function PersonalInfoForm() {
     switch (name) {
       case "username":
         if (!value) error = "Tên người dùng không được để trống";
-        else if (value.length < 3) error = "Tên người dùng phải dài hơn 3 ký tự";
+        else if (value.length < 3)
+          error = "Tên người dùng phải dài hơn 3 ký tự";
         else if (!/^[a-zA-Z0-9]+$/.test(value))
           error = "Tên người dùng chỉ được chứa chữ cái và số";
         break;
@@ -47,7 +47,8 @@ function PersonalInfoForm() {
         break;
       case "phone_number":
         if (!value) error = "Số điện thoại không được để trống";
-        else if (!/^\d{10}$/.test(value)) error = "Số điện thoại phải là 10 chữ số";
+        else if (!/^\d{10}$/.test(value))
+          error = "Số điện thoại phải là 10 chữ số";
         break;
       default:
         break;
@@ -121,7 +122,11 @@ function PersonalInfoForm() {
           />
         ))}
 
-        <button type="submit" className="btn-submit" disabled={loading || !user}>
+        <button
+          type="submit"
+          className="btn-submit"
+          disabled={loading || !user}
+        >
           <span>{loading ? "Đang cập nhật..." : "Cập nhật"}</span>
         </button>
       </form>

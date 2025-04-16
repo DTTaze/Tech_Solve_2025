@@ -1,10 +1,10 @@
 import { useContext, useState, useRef, useEffect } from "react";
-import { AuthContext } from "../../contexts/auth.context.jsx";
+import { AuthContext } from "../../../contexts/auth.context.jsx";
 import {
   uploadUserAvatarApi,
   updateUserAvatarApi,
   getUserAvatarByIdApi,
-} from "../../utils/api.js";
+} from "../../../utils/api.js";
 
 function MenuItem({ text, onClick }) {
   return (

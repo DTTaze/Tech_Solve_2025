@@ -49,12 +49,37 @@ export const avatarColumns = [
 ];
 export const userColumns = [
   { field: "id", headerName: "ID", width: 100 },
-  { field: "full_name", headerName: "Full Name", width: 200 },
-  { field: "email", headerName: "Email", width: 230 },
-  { field: "role_id", headerName: "Role ID", width: 120 },
+  { field: "full_name", headerName: "Full Name", width: 250 },
+  { field: "username", headerName: "User Name", width: 200 },
+  { field: "email", headerName: "Email", width: 250 },
+  {
+    field: "roles",
+    headerName: "Role",
+    width: 120,
+    valueGetter: (params) => params?.name || "Unknown",
+  },
   { field: "status", headerName: "Status", width: 120 },
-  { field: "updated_at", headerName: "Updated At", width: 150 },
-  { field: "created_at", headerName: "Created At", width: 150 },
+  { field: "coins", headerName: "Coins", width: 120 },
+  {
+    field: "updated_at",
+    headerName: "Updated At",
+    width: 150,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Created At",
+    width: 150,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
 ];
 export const roleColumns = [
   { field: "id", headerName: "ID", width: 100 },
