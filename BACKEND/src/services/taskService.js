@@ -10,6 +10,7 @@ const User = db.User;
 const TaskSubmit = db.TaskSubmit;
 const TaskType = db.TaskType;
 const Type = db.Type;
+const Coin = db.Coin;
 const uploadImages = require("./imageService.js").uploadImages;
 
 const createTask = async (data) => {
@@ -182,23 +183,34 @@ const completeTask = async (task_id, user_id) => {
   }
 };
 
-const receiveCoin = async (user_id, coins) => {
+const receiveCoin = async (user_coins_id, coins) => {
   try {
-    if (!user_id) throw new Error("User ID is required");
-    if (!Number.isInteger(coins) || coins <= 0)
+    if (!user_coins_id || !coins) {
+      throw new Error("User ID and coins are required");
+    }
+
+    user_coins_id = Number(user_coins_id);
+    if (!Number.isInteger(user_coins_id)) {
+      throw new Error("Invalid user_coins_id. It must be an integer.");
+    }
+
+    coins = Number(coins);
+    if (!Number.isInteger(coins) || coins <= 0) {
       throw new Error("Coins must be a positive integer");
+    }
 
-    const user = await User.findByPk(user_id);
-    if (!user) throw new Error("User not found");
+    const user_coins = await Coin.findByPk(user_coins_id);
+    if (!user_coins) throw new Error("Coin record not found");
 
-    user.coins = (user.coins || 0) + coins;
-    await user.save();
+    user_coins.amount = (user_coins.amount || 0) + coins;
+    await user_coins.save();
 
     return { message: `Successfully received ${coins} coins.` };
   } catch (e) {
     throw e;
   }
 };
+
 
 const submitTask = async (task_user_id, description, files) => {
   try {
@@ -229,51 +241,18 @@ const submitTask = async (task_user_id, description, files) => {
   }
 };
 
-
-const updateDecisionTaskSubmit = async (task_submit_id, decision) => {
-  try {
-    if (!task_submit_id) throw new Error("Missing task_submit_id.");
-    if (!decision) throw new Error("Missing decision.");
-    if (!["approved", "rejected"].includes(decision)) {
-      throw new Error("Decision must be either 'approved' or 'rejected'.");
-    }
-    const taskSubmit = await TaskSubmit.findByPk(task_submit_id);
-    if (!taskSubmit) throw new Error("Task submit not found.");
-
-    taskSubmit.status = decision;
-    await taskSubmit.save();
-
-    if (decision === "approved") {
-      const taskUser = await TaskUser.findByPk(taskSubmit.task_user_id);
-      if (!taskUser) throw new Error("Task user not found.");
-      taskUser.completed_at = new Date();
-      taskUser.status = "done";
-      taskUser.completed_at = new Date();
-      await taskUser.save();
-
-      const user = await User.findByPk(taskUser.user_id);
-      if (!user) throw new Error("User not found.");
-      user.coins = (user.coins || 0) + taskUser.coins_per_user;
-      await user.save();
-    }
-    if (decision === "rejected") {
-      const taskUser = await TaskUser.findByPk(taskSubmit.task_user_id);
-      if (!taskUser) throw new Error("Task user not found.");
-      taskUser.status = "inProgress";
-    }
-    return taskSubmit;
-  } catch (error) {
-    console.error("Error updating task submit:", error.message);
-    throw error;
-  }
-};
-
 const increaseProgressCount = async (task_user_id) => {
   try {
     if (!task_user_id) throw new Error("Missing task_user_id.");
 
     const taskUser = await TaskUser.findByPk(task_user_id, {
-      include: [{ model: Task, as: "tasks" }],
+      include: [
+        {
+          model: Task,
+          as: "tasks",
+          attributes: ["total", "coins"],
+        },
+      ],
     });
 
     if (!taskUser) throw new Error("Task user not found.");
@@ -285,8 +264,22 @@ const increaseProgressCount = async (task_user_id) => {
 
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
 
-    if(taskUser.progress_count === taskUser.tasks.total){
+    if (taskUser.progress_count === taskUser.tasks.total) {
       taskUser.completed_at = new Date();
+
+      const user = await User.findByPk(taskUser.user_id);
+      if (!user) throw new Error("User not found.");
+
+      const user_coins_id = user.coins_id;
+      const coins = taskUser.tasks.coins;
+
+      const increaseCoin = await receiveCoin(
+        user_coins_id,
+        coins
+      );
+      if (increaseCoin.error) {
+        throw new Error("Failed to increase coins.");
+      }
     }
 
     await taskUser.save();
@@ -297,6 +290,38 @@ const increaseProgressCount = async (task_user_id) => {
     throw error;
   }
 };
+
+const updateDecisionTaskSubmit = async (task_submit_id, decision) => {
+  try {
+    if (!task_submit_id) throw new Error("Missing task_submit_id.");
+    if (!decision) throw new Error("Missing decision.");
+    if (!["approved", "rejected"].includes(decision)) {
+      throw new Error("Decision must be either 'approved' or 'rejected'.");
+    }
+
+    const taskSubmit = await TaskSubmit.findByPk(task_submit_id);
+    if (!taskSubmit) throw new Error("Task submit not found.");
+
+    // Update taskSubmit status
+    taskSubmit.status = decision;
+    await taskSubmit.save();
+
+    if (decision === "approved") {
+      increaseProgressCount(taskSubmit.task_user_id);
+    }
+
+    if (decision === "rejected") {
+      taskUser.status = "inProgress";
+      await taskUser.save();
+    }
+
+    return taskSubmit;
+  } catch (error) {
+    console.error("Error updating task submit:", error.message);
+    throw error;
+  }
+};
+
 
 const getAllTasksByTypeName = async (type_name) => {
   try {

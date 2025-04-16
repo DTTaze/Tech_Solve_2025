@@ -1,6 +1,7 @@
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
+const Coin = db.Coin;
 const Transaction = db.Transaction;
 const { generateCode } = require("../utils/generateCode");
 const purchaseQueue = require("./queue");
@@ -112,9 +113,9 @@ const deleteItem = async (item_id) => {
   }
 };
 
-const purchaseItem = async (user_id, item_id, data) => {
+const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
   try {
-    let { seller_id, name, quantity } = data;
+    let { name, quantity } = data;
     if (!user_id || !item_id || quantity <= 0) {
       throw new Error("Invalid input data");
     }
@@ -122,7 +123,6 @@ const purchaseItem = async (user_id, item_id, data) => {
     const result = await purchaseQueue.add("purchase", {
       user_id,
       item_id,
-      seller_id,
       name,
       quantity,
     });
