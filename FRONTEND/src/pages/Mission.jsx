@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
+import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
 import {
   getAllTasksApi,
   completeTaskApi,
@@ -8,7 +9,7 @@ import {
   getUserApi,
   getTaskByIdApi,
   increaseProgressCountApi,
-  AllTaskByIdApi
+  AllTaskByIdApi,
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
@@ -24,56 +25,13 @@ function Mission() {
   const [loading, setLoading] = useState(true);
   const [completingTask, setCompletingTask] = useState(null); // Track which task is being completed
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const taskPerPage = 3;
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
   const [dailyTasks, setDailyTasks] = useState([]);
   const [otherTasks, setOtherTasks] = useState([]);
-
-  // Function to fetch new tasks
-  const fetchNewTasks = async () => {
-    try {
-      setLoading(true);
-      const taskResponse = await getAllTasksApi();
-
-      if (taskResponse?.data?.success) {
-        const tasksData = taskResponse.data.data.map((task) => ({
-          id: task.id,
-          title: task.title,
-          content: task.content,
-          description: task.description,
-          coins: task.coins,
-          difficulty: task.difficulty,
-          created_at: task.createdAt,
-          updated_at: task.updatedAt,
-          total: task.total || 1,
-        }));
-        setTasks(tasksData);
-
-        // Create user tasks from the tasks data
-        const userTasksData = tasksData.map((task) => ({
-          id: task.id,
-          task_id: task.id,
-          user_id: userResponse.data.id || 1,
-          progress_count: null,
-          completed_at: null,
-          assigned_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          difficulty: task.difficulty,
-        }));
-
-        setUserTasks(userTasksData);
-        toast.success("Đã tải nhiệm vụ mới!");
-      } else {
-        toast.error("Không thể tải nhiệm vụ mới");
-      }
-    } catch (error) {
-      console.error("Failed to fetch new tasks:", error);
-      toast.error("Đã xảy ra lỗi khi tải nhiệm vụ mới");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const [isOpenDropdown, setIsOpenDropdown] = useState(false);
 
   // Fetch data from backend
   useEffect(() => {
@@ -92,7 +50,6 @@ function Mission() {
         console.log("Task response:", taskResponse);
         console.log("User response:", userResponse);
 
-        
         // Process tasks from API response
         let tasksData = [];
 
@@ -172,7 +129,7 @@ function Mission() {
               completed_at: task.completed_at,
               created_at: task.created_at,
               updated_at: task.updated_at,
-              tasks: task.tasks
+              tasks: task.tasks,
             };
           });
 
@@ -193,31 +150,34 @@ function Mission() {
     };
 
     fetchData();
-  },[]);
+  }, []);
 
   // Handle task completion with useCallback to prevent recreating function on each render
   const handleTaskCompletion = useCallback(
-    async (userId, taskId) => {
+    async (userId, taskId, numOfProgress) => {
       try {
         const userTask = userTasks.find(
           (ut) => ut.user_id === userId && ut.task_id === taskId
         );
 
         console.log("User task:", userTask);
-  
+
         if (!userTask) return;
-  
+
         setCompletingTask(taskId);
-  
+
         const task = tasks.find((t) => t.id === taskId);
         if (!task) return;
-  
+
         // Gọi API để tăng tiến độ
-        const updatedTaskUser = await increaseProgressCountApi(userTask.id);
+        let updatedTaskUser = null;
+        for (let i = 0; i < numOfProgress; i++) {
+          updatedTaskUser = await increaseProgressCountApi(userTask.id);
+        }
         console.log("Updated task user:", updatedTaskUser);
-  
+
         // Cập nhật UI từ dữ liệu trả về từ backend
-        if(updatedTaskUser.data) {
+        if (updatedTaskUser.data) {
           setUserTasks((prevUserTasks) =>
             prevUserTasks.map((ut) =>
               ut.id === updatedTaskUser.data.id
@@ -230,16 +190,16 @@ function Mission() {
             )
           );
         }
-        
+
         // Nếu task nhiệm vụ đã hoàn thành
         if (updatedTaskUser.data.completed_at) {
           try {
             const completeResponse = await completeTaskApi(userTask.task_id);
             console.log("Task completion response:", completeResponse);
-  
+
             const coinsResponse = await receiveCoinApi(task.coins);
             console.log("Receive coins response:", coinsResponse);
-  
+
             // Cập nhật lại số xu từ backend
             const responseUser = await getUserApi();
             setUserInfo((prev) => {
@@ -250,7 +210,7 @@ function Mission() {
               console.log("check user info after receive coins", updatedUser);
               return updatedUser;
             });
-  
+
             toast.success(`Nhận được ${task.coins} xu!`);
           } catch (error) {
             console.error("API call failed:", error);
@@ -268,13 +228,24 @@ function Mission() {
     },
     [tasks, userTasks]
   );
-  
+
+  // Handle task selection for modal
+  const handleTaskSelect = useCallback((task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  }, []);
+
+  // Handle modal close
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
+  }, []);
 
   // Memoize filtered and sorted task lists to prevent recalculations on every render
 
   useEffect(() => {
     const fetchDailyTasks = async () => {
-      console.log("UserTask: ", userTasks)
+      console.log("UserTask: ", userTasks);
       const tasks = await Promise.all(
         userTasks.map(async (userTask) => {
           const taskData = await getTaskByIdApi(userTask.task_id);
@@ -503,24 +474,12 @@ function Mission() {
                   <p className="text-gray-500 mb-4">
                     Không có nhiệm vụ hàng ngày nào
                   </p>
-                  <button
-                    onClick={fetchNewTasks}
-                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Lấy Nhiệm Vụ Mới
-                  </button>
                 </div>
               ) : selectedTab === "other" && otherTasks.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500 mb-4">
                     Không có nhiệm vụ phụ nào
                   </p>
-                  <button
-                    onClick={fetchNewTasks}
-                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Lấy Nhiệm Vụ Mới
-                  </button>
                 </div>
               ) : (
                 <TasksList
@@ -536,6 +495,7 @@ function Mission() {
                   loading={loading}
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}
+                  handleTaskSelect={handleTaskSelect}
                   currentPage={currentPage}
                   totalPages={totalPages}
                   goToNextPage={goToNextPage}
@@ -597,6 +557,17 @@ function Mission() {
           </div>
         </div>
       </div>
+
+      {/* Task Submission Modal */}
+      {selectedTask && (
+        <TaskSubmissionModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          task={selectedTask}
+          handleTaskCompletion={handleTaskCompletion}
+          userID={userInfo?.id}
+        />
+      )}
     </div>
   );
 }

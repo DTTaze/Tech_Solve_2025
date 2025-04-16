@@ -11,6 +11,7 @@ const TasksList = ({
   loading,
   completingTask,
   handleTaskCompletion,
+  handleTaskSelect,
   currentPage,
   totalPages,
   goToNextPage,
@@ -19,7 +20,7 @@ const TasksList = ({
   selectedTab,
   taskPerPage,
 }) => {
-  console.log("tasks in TaskList: ",tasks);
+  console.log("tasks in TaskList: ", tasks);
   if (loading) {
     return (
       <>
@@ -66,7 +67,7 @@ const TasksList = ({
                   <TaskCard
                     key={task.id}
                     task={task}
-                    onClick={() => handleTaskCompletion(userId, task.id)}
+                    handleTaskSelect={handleTaskSelect}
                     completingTask={completingTask}
                   />
                 )
@@ -126,7 +127,7 @@ const TasksList = ({
                     <TaskCard
                       key={task.id}
                       task={task}
-                      onClick={() => handleTaskCompletion(userId, task.id)}
+                      handleTaskSelect={handleTaskSelect}
                       completingTask={completingTask}
                     />
                   )
@@ -225,11 +226,7 @@ const TasksList = ({
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center border border-green-200 bg-green-50">
-                    <img
-                      src={imgSrc}
-                      alt="task icon"
-                      className="w-5 h-5"
-                    />
+                    <img src={imgSrc} alt="task icon" className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-700 flex items-center">
