@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
+      User.belongsTo(models.Coin, { foreignKey: "coins_id", as: "coins" });
     }
   }
 
@@ -65,11 +66,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      coins: {
+      coins_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
-        validate: { min: 0 },
       },
       streak: {
         type: DataTypes.INTEGER,

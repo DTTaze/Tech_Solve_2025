@@ -27,7 +27,7 @@ function Mission() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const taskPerPage = 3;
+  const taskPerPage = 4;
   const [selectedTab, setSelectedTab] = useState("daily"); // daily or other
   const [dailyTasks, setDailyTasks] = useState([]);
   const [otherTasks, setOtherTasks] = useState([]);
@@ -41,7 +41,6 @@ function Mission() {
 
         console.log("Fetching data from APIs...");
 
-        // Parallelize API calls for better performance
         const [taskResponse, userResponse] = await Promise.all([
           getAllTasksApi(),
           getUserApi(),
@@ -80,7 +79,7 @@ function Mission() {
             id: userResponse.data.id,
             full_name: userResponse.data.full_name || "User",
             email: userResponse.data.email,
-            coins: userResponse.data.coins || 0,
+            coins: userResponse.data.coins.amount || 0,
             streak: userResponse.data.streak || 0,
             last_logined: userResponse.data.last_logined,
           };
@@ -100,7 +99,6 @@ function Mission() {
           const processedTasks = tasksData.map((task) => ({
             id: task.id,
             title: task.title,
-            content: task.content,
             description: task.description,
             coins: task.coins,
             difficulty: task.difficulty || "easy",
@@ -205,7 +203,7 @@ function Mission() {
             setUserInfo((prev) => {
               const updatedUser = {
                 ...prev,
-                coins: responseUser?.data?.coins || 0,
+                coins: responseUser?.data?.coins.amount || 0,
               };
               console.log("check user info after receive coins", updatedUser);
               return updatedUser;
@@ -246,7 +244,7 @@ function Mission() {
   useEffect(() => {
     const fetchDailyTasks = async () => {
       console.log("UserTask: ", userTasks);
-      const tasks = await Promise.all(
+      const DailyTasks = await Promise.all(
         userTasks.map(async (userTask) => {
           const taskData = await getTaskByIdApi(userTask.task_id);
           const task = taskData.data;
@@ -255,19 +253,35 @@ function Mission() {
                 ...task,
                 completed_at: userTask.completed_at,
                 progress_count: userTask.progress_count,
+                isUserTask: true,
               }
             : null;
         })
       );
 
-      const filteredTasks = tasks.filter(
+      const filteredTasks = DailyTasks.filter(
         (task) =>
           task &&
           task.completed_at === null &&
           (task.difficulty === "medium" || task.difficulty === "hard")
       );
 
-      setDailyTasks(filteredTasks);
+      // Get all tasks and add them to the list
+
+      const additionalTasks = tasks
+        .filter(
+          (task) =>
+            !filteredTasks.some((t) => t.id === task.id) &&
+            (task.difficulty === "medium" || task.difficulty === "hard")
+        )
+        .map((task) => ({
+          ...task,
+          isUserTask: false,
+          progress_count: 0,
+          completed_at: null,
+        }));
+
+      setDailyTasks([...filteredTasks, ...additionalTasks]);
     };
 
     fetchDailyTasks();
@@ -277,7 +291,7 @@ function Mission() {
 
   useEffect(() => {
     const fetchOtherTasks = async () => {
-      const tasks = await Promise.all(
+      const OtherTasks = await Promise.all(
         userTasks.map(async (userTask) => {
           const taskData = await getTaskByIdApi(userTask.task_id);
           const task = taskData.data;
@@ -286,17 +300,33 @@ function Mission() {
                 ...task,
                 completed_at: userTask.completed_at,
                 progress_count: userTask.progress_count,
+                isUserTask: true,
               }
             : null;
         })
       );
 
-      const filteredTasks = tasks.filter(
+      const filteredTasks = OtherTasks.filter(
         (task) =>
           task && task.completed_at === null && task.difficulty === "easy"
       );
 
-      setOtherTasks(filteredTasks);
+      // Get all tasks and add them to the list
+
+      const additionalTasks = tasks
+        .filter(
+          (task) =>
+            !filteredTasks.some((t) => t.id === task.id) &&
+            task.difficulty === "easy"
+        )
+        .map((task) => ({
+          ...task,
+          isUserTask: false,
+          progress_count: 0,
+          completed_at: null,
+        }));
+
+      setOtherTasks([...filteredTasks, ...additionalTasks]);
     };
 
     fetchOtherTasks();
@@ -332,6 +362,13 @@ function Mission() {
       setCurrentPage((prev) => prev - 1);
     }
   }, [currentPage]);
+
+  const goToPage = useCallback((pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  }, [totalPages]);
+  
 
   // Show loading skeleton while data is being fetched
   if (loading) {
@@ -500,6 +537,7 @@ function Mission() {
                   totalPages={totalPages}
                   goToNextPage={goToNextPage}
                   goToPreviousPage={goToPreviousPage}
+                  goToPage={goToPage}
                   userId={userInfo?.id}
                   selectedTab={selectedTab}
                   taskPerPage={taskPerPage}

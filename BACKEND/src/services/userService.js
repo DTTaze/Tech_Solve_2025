@@ -8,29 +8,40 @@ const Role = db.Role;
 const TaskUser = db.TaskUser;
 const Item = db.Item;
 const Transaction = db.Transaction;
+const Coin = db.Coin;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 
 const createUser = async (data) => {
   try {
     let { email, password, username, full_name, phone_number, address } = data;
-    const user = await User.findOne({ where: { email: email } });
-    if (user) {
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
       throw new Error("User already exists");
     }
+
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
+
+    const newCoin = await Coin.create({ amount: 0 });
+
     const hashPassword = bcrypt.hashSync(password, salt);
+
     const newUser = await User.create({
-      email: email,
+      email,
       password: hashPassword,
-      username: username,
-      full_name: full_name,
-      phone_number: phone_number,
-      address: address,
+      username,
+      full_name,
+      phone_number,
+      address,
       last_logined: todayStr,
+      coins_id: newCoin.id,
     });
+
+    await newCoin.update({ user_id: newUser.id });
+
     return newUser;
   } catch (e) {
     throw e;
@@ -79,7 +90,7 @@ const loginUser = async (data) => {
       full_name: user.full_name,
       phone_number: user.phone_number,
       address: user.address,
-      coins: user.coins,
+      coins_id: user.coins_id,
       last_logined: todayStr,
       streak: user.streak,
       avatar_url: user.avatar_url,
@@ -108,6 +119,11 @@ const getAllUsers = async () => {
           model: Role,
           as: "roles",
           attributes: ["id", "name"],
+        },
+        {
+          model: Coin,
+          as: "coins",
+          attributes: ["id", "amount"],
         },
       ],
     });
@@ -143,6 +159,11 @@ const getUserByID = async (id) => {
           as: "roles",
           attributes: ["id", "name"],
         },
+        {
+          model: Coin,
+          as: "coins",
+          attributes: ["id", "amount"],
+        },
       ],
     });
     if (!user) {
@@ -156,8 +177,8 @@ const getUserByID = async (id) => {
 
 const updateUser = async (id, data) => {
   try {
-    let { full_name, address, phone_number, coins, streak } = data;
-    let user = await User.findOne({ where: { id: id } });
+    let { full_name, address, phone_number, streak } = data;
+    let user = await User.findOne({ where: { id: id }, include: "coins" });
     if (!user) {
       throw new Error("User not found");
     }
@@ -165,15 +186,16 @@ const updateUser = async (id, data) => {
       ? (user.username = data.username)
       : (user.username = user.username);
     data.email ? (user.email = data.email) : (user.email = user.email);
-    if (coins === undefined) {
-      user.coins = user.coins;
-    } else {
+
+    if (coins !== undefined) {
       if (coins < 0) {
-        throw new Error("Coins must be possitive");
+        throw new Error("Coins must be positive");
       } else {
-        user.coins = Number(coins);
+        user.coins.amount = Number(coins);
+        await user.coins.save();
       }
     }
+
     if (streak === undefined) {
       user.streak = user.streak;
     } else {
@@ -204,19 +226,35 @@ const updateUser = async (id, data) => {
 
 const findOrCreateUser = async (profile) => {
   try {
-    const [user] = await User.findOrCreate({
+    const existingUser = await User.findOne({
       where: {
-        [Op.or]: [{ email: profile.emails[0].value }, { googleId: profile.id }],
-      },
-      defaults: {
-        googleId: profile.id,
         email: profile.emails[0].value,
-        username: profile.displayName,
-        password: null,
       },
     });
 
-    return user;
+    if (existingUser) {
+      return existingUser;
+    }
+
+    const newCoin = await Coin.create({ amount: 0 });
+
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let todayStr = today.toISOString().split("T")[0];
+
+    const newUser = await User.create({
+      google_id: profile.id,
+      email: profile.emails[0].value,
+      username: profile.displayName,
+      full_name: profile.displayName,
+      password: null,
+      last_logined: todayStr,
+      coins_id: newCoin.id,
+    });
+
+    await newCoin.update({ user_id: newUser.id });
+
+    return newUser;
   } catch (e) {
     throw e;
   }

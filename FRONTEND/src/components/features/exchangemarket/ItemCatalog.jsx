@@ -16,7 +16,7 @@ export default function ItemCatalog({ items }) {
         const response = await getUserApi();
         if (response) {
           setUser(response.data);
-          setUserCoins(response.data.coins || 0);
+          setUserCoins(response.data.coins.amount || 0);
         }
       } catch (error) {
         console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -28,7 +28,7 @@ export default function ItemCatalog({ items }) {
 
   useEffect(() => {
     if (user) {
-      setUserCoins(user.coins || 0);
+      setUserCoins(user.coins.amout || 0);
     }
   }, [user]);
 
@@ -58,7 +58,6 @@ export default function ItemCatalog({ items }) {
   
     try {
       const response = await purchaseItemApi(user.id, selectedItem.id, {
-        seller_id: selectedItem.owner_id,
         name: selectedItem.name,
         quantity: quantity,
       });
