@@ -10,7 +10,7 @@ router.get("/:id", taskController.handleGetTask);
 router.put("/:id", taskController.handleUpdateTask);
 router.delete("/:id", taskController.handleDeleteTask);
 
-router.post("/accept/:UserID/:id", taskController.handleAcceptTask);
+router.post("/accept/:user_id/:id", taskController.handleAcceptTask);
 router.post("/complete/:id", taskController.handleCompleteTask);
 router.post(
   "/progress/increase/:task_user_id",
