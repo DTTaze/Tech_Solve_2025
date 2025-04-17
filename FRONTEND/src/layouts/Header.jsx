@@ -9,7 +9,6 @@ function UserHeader() {
   const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
 
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
@@ -22,10 +21,10 @@ function UserHeader() {
     const fetchUser = async () => {
       try {
         const response = await getUserApi();
-        setUser(response.data);
-  
-        if (auth.user && response.data.coins !== auth.user.coins.amount) {
-
+        if (
+          auth.user &&
+          response.data.coins.amount !== auth.user.coins.amount
+        ) {
           setAuth((prevAuth) => ({
             ...prevAuth,
             user: { ...prevAuth.user, coins: response.data.coins },
@@ -38,11 +37,10 @@ function UserHeader() {
 
     if (auth.isAuthenticated) {
       fetchUser();
-      const interval = setInterval(fetchUser, 5000);
-
+      const interval = setInterval(fetchUser, 50000);
       return () => clearInterval(interval);
     }
-  }, [auth.isAuthenticated, auth.user]);
+  }, [auth.isAuthenticated, auth.user, setAuth]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -71,8 +69,8 @@ function UserHeader() {
   const pages = [
     { key: "", label: "Trang chủ" },
     { key: "missions", label: "Nhiệm vụ" },
-    { key: "market", label: "Chợ trao đổi" },
-    // { key: "mission-video", label: "Video ngắn" },
+    { key: "market", label: "Trao đổi" },
+    { key: "mission-video", label: "Video ngắn" },
   ];
 
   return (
@@ -131,7 +129,7 @@ function UserHeader() {
               <hr className="border border-gray-300 mb-2" />
               <div className="flex items-center ml-2 py-2">
                 <span className="font-bold select-none">
-                  Số Coins: {user?.coins}
+                  Số Coins: {auth.user?.coins?.amount || 0}
                 </span>
                 <Coins className="h-6 w-6 text-amber-600 ml-2" />
               </div>

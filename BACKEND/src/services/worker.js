@@ -6,7 +6,7 @@ const { generateCode } = require("../utils/generateCode");
 const worker = new Worker(
   "purchase",
   async (job) => {
-    const { user_id, item_id, quantity, seller_id, name } = job.data;
+    const { user_id, item_id, quantity, name } = job.data;
 
     const item = await Item.findByPk(item_id);
     if (!item || item.status !== "available" || item.stock < quantity) {
@@ -32,7 +32,6 @@ const worker = new Worker(
 
     const transaction = await Transaction.create({
       id: uniqueCode,
-      seller_id,
       name,
       buyer_id: user.id,
       item_id: item.id,

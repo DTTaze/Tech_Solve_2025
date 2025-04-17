@@ -24,7 +24,7 @@ export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConf
           <img
             src={item.image || "/placeholder.svg"}
             alt={item.name}
-            className="w-20 h-20 object-cover rounded-md"
+            className="w-1/2 h-20 object-cover rounded-md"
           />
           <div>
             <h3 className="font-medium">{item.name}</h3>
