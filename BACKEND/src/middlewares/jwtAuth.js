@@ -9,13 +9,16 @@ const jwtAuth = async (req, res, next) => {
   const white_lists = [
     "/",
     "/auth/login",
+    "/auth/login/google",
+    "/auth/login/google/callback",
     "/auth/register",
-    "/auth/google",
-    "/auth/google/callback",
     "/auth/forgot_password",
     "/auth/reset_password",
   ];
-  if (white_lists.find((item) => "/api" + item === req.originalUrl)) {
+
+  const requestPath = req.originalUrl.split('?')[0];
+
+  if (white_lists.find((item) => "/api" + item === requestPath)) {
     next();
   } else {
     if (req.headers.authorization && req.headers) {

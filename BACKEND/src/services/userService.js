@@ -30,6 +30,7 @@ const createUser = async (data) => {
     const hashPassword = bcrypt.hashSync(password, salt);
 
     const newUser = await User.create({
+      role_id: 2,
       email,
       password: hashPassword,
       username,
@@ -243,6 +244,7 @@ const findOrCreateUser = async (profile) => {
     let todayStr = today.toISOString().split("T")[0];
 
     const newUser = await User.create({
+      role_id: 2,
       google_id: profile.id,
       email: profile.emails[0].value,
       username: profile.displayName,

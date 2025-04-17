@@ -4,8 +4,59 @@ const resend = new Resend(process.env.GMAIL_API_KEY);
 const jwt = require("jsonwebtoken");
 const db = require("../models/index.js");
 const User = db.User;
+const Role = db.Role;
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
+
+const handleGoogleAuthCallback = async (user) => {
+  try {
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let todayStr = today.toISOString().split("T")[0];
+    
+    await user.update({
+      last_logined: todayStr
+    });
+
+    const userWithRoles = await User.findOne({
+      where: { id: user.id },
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["id", "name"],
+        }
+      ]
+    });
+
+    const payload = {
+      id: user.id,
+      role_id: userWithRoles.role_id,
+      role_name: userWithRoles.roles?.name,
+      username: user.username,
+      email: user.email,
+      full_name: user.full_name,
+      phone_number: user.phone_number,
+      address: user.address,
+      coins_id: user.coins_id,
+      last_logined: todayStr,
+      streak: user.streak,
+      avatar_url: user.avatar_url,
+      google_id: user.google_id
+    };
+
+    const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+
+    return {
+      access_token,
+      user: payload
+    };
+  } catch (error) {
+    throw error;
+  }
+};
 
 const generateToken = (email) => {
     return jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
@@ -55,5 +106,5 @@ const resetPassword = async (token, newPassword) => {
 module.exports = { 
     sendResetEmail,
     resetPassword,
-
+    handleGoogleAuthCallback,
 };

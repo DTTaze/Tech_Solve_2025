@@ -1,10 +1,20 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../../styles/components/SocialLoginIcons.css";
 
 const SocialLoginIcons = () => {
+  const navigate = useNavigate();
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/login/google`;
+  };
+
   return (
     <ul className="wrapper flex gap-4 justify-center my-4">
-      <li className="icon gmail flex flex-col items-center cursor-pointer">
+      <li 
+        className="icon gmail flex flex-col items-center cursor-pointer"
+        onClick={handleGoogleLogin}
+      >
         <span className="tooltip text-sm">Gmail</span>
         <i className="fab fa-google text-lg"></i>
       </li>

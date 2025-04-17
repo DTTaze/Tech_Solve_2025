@@ -1,5 +1,7 @@
 const passport = require("../config/passport"); // Đường dẫn tới passport.js
 const oauthService = require("../services/oauthService");
+const jwt = require('jsonwebtoken');
+const { User, Role } = require('../models');
 
 const googleAuth = async (req, res, next) => {
   passport.authenticate("google", { scope: ["profile", "email"] })(
@@ -10,14 +12,18 @@ const googleAuth = async (req, res, next) => {
 };
 
 const googleAuthCallback = async (req, res, next) => {
-  passport.authenticate("google", { failureRedirect: "/" }, (err, user) => {
+  passport.authenticate("google", { failureRedirect: "/" }, async (err, user) => {
     if (err) return next(err);
-    if (!user)
+    if (!user) {
       return res.status(401).json({ message: "Authentication failed" });
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      return res.status(200).json({ message: "Authentication success" });
-    });
+    }
+
+    try {
+      const authResult = await oauthService.handleGoogleAuthCallback(user);
+      res.success("Login success", authResult);
+    } catch (error) {
+      return next(error);
+    }
   })(req, res, next);
 };
 
