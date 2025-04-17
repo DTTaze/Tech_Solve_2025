@@ -72,7 +72,7 @@ const updateTask = async (id, data) => {
     if (!id) throw new Error("Task ID is required");
 
     let { title, content, description, coins, difficulty, total } = data;
-
+    coins = Number(coins);
     if (!title && !description && coins === undefined) {
       throw new Error(
         "At least one field (title, description, coins) must be provided"
@@ -211,11 +211,10 @@ const receiveCoin = async (user_coins_id, coins) => {
   }
 };
 
-
 const submitTask = async (task_user_id, description, files) => {
   try {
     task_user_id = Number(task_user_id);
-    
+
     if (!Number.isInteger(task_user_id)) {
       throw new Error("Invalid task_user_id. It must be an integer.");
     }
@@ -232,7 +231,11 @@ const submitTask = async (task_user_id, description, files) => {
       submitted_at: new Date(),
     });
 
-    const uploadedImages = await uploadImages(files, newTaskSubmit.id, "taskSubmit");
+    const uploadedImages = await uploadImages(
+      files,
+      newTaskSubmit.id,
+      "taskSubmit"
+    );
 
     return { taskSubmit: newTaskSubmit, images: uploadedImages };
   } catch (error) {
@@ -273,10 +276,7 @@ const increaseProgressCount = async (task_user_id) => {
       const user_coins_id = user.coins_id;
       const coins = taskUser.tasks.coins;
 
-      const increaseCoin = await receiveCoin(
-        user_coins_id,
-        coins
-      );
+      const increaseCoin = await receiveCoin(user_coins_id, coins);
       if (increaseCoin.error) {
         throw new Error("Failed to increase coins.");
       }
@@ -321,7 +321,6 @@ const updateDecisionTaskSubmit = async (task_submit_id, decision) => {
     throw error;
   }
 };
-
 
 const getAllTasksByTypeName = async (type_name) => {
   try {

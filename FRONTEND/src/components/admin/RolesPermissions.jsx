@@ -5,160 +5,266 @@ import {
   rolesPermissionsColumns,
   permissionColumns,
 } from "./HeaderColumn";
-import { Box, Typography, Tabs, Tab } from "@mui/material";
-import { getAllRolesApi, getAllPermissionsApi } from "../../utils/api";
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+import { Box, Typography } from "@mui/material";
+import AdminTabs from "./AdminTabs";
+import RoleForm from "../ui/form/RoleForm";
+import PermissionForm from "../ui/form/PermissionForm";
+import RolePermissionForm from "../ui/form/RolePermissionForm";
+import {
+  getAllRolesApi,
+  getAllPermissionsApi,
+  getAllRolesPermissionsApi,
+  createRoleApi,
+  updateRoleApi,
+  deleteRoleApi,
+  createPermissionApi,
+  updatePermissionApi,
+  deletePermissionApi,
+} from "../../utils/api";
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`roles-permissions-tabpanel-${index}`}
-      aria-labelledby={`roles-permissions-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
-    </div>
-  );
-}
-
-export default function RolesPermissions() {
+// Roles Management
+function RolesManagement() {
   const [roles, setRoles] = useState([]);
-  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [tabValue, setTabValue] = useState(0);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formMode, setFormMode] = useState("add");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRoles = async () => {
       setLoading(true);
       try {
-        const [rolesRes, permissionsRes] = await Promise.all([
-          getAllRolesApi(),
-          getAllPermissionsApi(),
-          // getAllRolesPermissionsApi(),
-        ]);
-
-        if (rolesRes.success) {
-          setRoles(rolesRes.data);
-        } else {
-          console.log(rolesRes.error);
-        }
-
-        if (permissionsRes.success) {
-          setPermissions(permissionsRes.data);
-        } else {
-          console.log(permissionsRes.error);
-        }
+        const res = await getAllRolesApi();
+        res.success ? setRoles(res.data) : console.log(res.error);
       } catch (e) {
         console.log(e);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    fetchRoles();
   }, []);
 
   const handleAddRole = () => {
-    console.log("Add role");
-    // Will implement role creation logic
+    setFormMode("add");
+    setEditData(null);
+    setFormOpen(true);
   };
 
   const handleEditRole = (role) => {
-    console.log("Edit role", role);
-    // Will implement role edit logic
+    setFormMode("edit");
+    setEditData(role);
+    setFormOpen(true);
   };
 
-  const handleDeleteRole = (role) => {
-    console.log("Delete role", role);
-    // Will implement role deletion logic
+  const handleDeleteRole = async (role) => {
+    if (confirm("Bạn có chắc chắn muốn xóa Role này không?")) {
+      try {
+        const res = await deleteRoleApi(role.id);
+        if (res.success) {
+          alert("Xóa Role thành công!");
+          setRoles((prev) => prev.filter((r) => r.id !== role.id));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
+
+  const handleSubmitRole = async (data, mode) => {
+    try {
+      const res =
+        mode === "add"
+          ? await createRoleApi(data)
+          : await updateRoleApi(data.id, data);
+
+      if (res.success) {
+        alert(
+          mode === "add" ? "Thêm Role thành công!" : "Cập nhật Role thành công!"
+        );
+      } else {
+        alert("Có lỗi xảy ra!");
+      }
+    } catch (e) {
+      alert(e);
+    }
+    setFormOpen(false);
+  };
+
+  return (
+    <Box>
+      <DataTable
+        title="Roles"
+        columns={roleColumns}
+        rows={roles}
+        onAdd={handleAddRole}
+        onEdit={handleEditRole}
+        onDelete={handleDeleteRole}
+        loading={loading}
+      />
+      <RoleForm
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        handleSubmit={handleSubmitRole}
+        initialData={editData}
+        mode={formMode}
+      />
+    </Box>
+  );
+}
+
+// Permissions Management
+function PermissionsManagement() {
+  const [permissions, setPermissions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formMode, setFormMode] = useState("add");
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllPermissionsApi();
+        res.success ? setPermissions(res.data) : console.log(res.error);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPermissions();
+  }, []);
 
   const handleAddPermission = () => {
-    console.log("Add permission");
-    // Will implement permission creation logic
+    setFormMode("add");
+    setEditData(null);
+    setFormOpen(true);
   };
 
   const handleEditPermission = (permission) => {
-    console.log("Edit permission", permission);
-    // Will implement permission edit logic
+    setFormMode("edit");
+    setEditData(permission);
+    setFormOpen(true);
   };
 
-  const handleDeletePermission = (permission) => {
-    console.log("Delete permission", permission);
-    // Will implement permission deletion logic
+  const handleDeletePermission = async (permission) => {
+    if (confirm("Bạn có chắc chắn muốn xóa Permission này không?")) {
+      try {
+        const res = await deletePermissionApi(permission.id);
+        if (res.success) {
+          alert("Xóa Permission thành công!");
+          setPermissions((prev) => prev.filter((p) => p.id !== permission.id));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
+  const handleSubmitPermission = async (data, mode) => {
+    try {
+      const res =
+        mode === "add"
+          ? await createPermissionApi(data)
+          : await updatePermissionApi(data.id, data);
+
+      if (res.success) {
+        alert(
+          mode === "add"
+            ? "Thêm Permission thành công!"
+            : "Cập nhật Permission thành công!"
+        );
+      } else {
+        alert("Có lỗi xảy ra!");
+      }
+    } catch (e) {
+      alert(e);
+    }
+    setFormOpen(false);
   };
+
+  return (
+    <Box>
+      <DataTable
+        title="Permissions"
+        columns={permissionColumns}
+        rows={permissions}
+        onAdd={handleAddPermission}
+        onEdit={handleEditPermission}
+        onDelete={handleDeletePermission}
+        loading={loading}
+      />
+      <PermissionForm
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        handleSubmit={handleSubmitPermission}
+        initialData={editData}
+        mode={formMode}
+      />
+    </Box>
+  );
+}
+
+// Roles-Permissions Management
+// function RolesPermissionsManagement() {
+//   const [rolesPermissions, setRolesPermissions] = useState([]);
+//   const [loading, setLoading] = useState(false);
+
+//   useEffect(() => {
+//     const fetchRolesPermissions = async () => {
+//       setLoading(true);
+//       try {
+//         const res = await getAllRolesPermissionsApi();
+//         res.success ? setRolesPermissions(res.data) : console.log(res.error);
+//       } catch (e) {
+//         console.log(e);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchRolesPermissions();
+//   }, []);
+
+//   const handleAdd = () => {
+//     console.log("Add Roles-Permissions mapping");
+//   };
+
+//   const handleEdit = (data) => {
+//     console.log("Edit Roles-Permissions mapping", data);
+//   };
+
+//   const handleDelete = (data) => {
+//     console.log("Delete Roles-Permissions mapping", data);
+//   };
+
+//   return (
+//     <DataTable
+//       title="Roles - Permissions"
+//       columns={rolesPermissionsColumns}
+//       rows={rolesPermissions}
+//       onAdd={handleAdd}
+//       onEdit={handleEdit}
+//       onDelete={handleDelete}
+//       loading={loading}
+//     />
+//   );
+// }
+
+// Main Component
+export default function RolesPermissions() {
+  const tabs = [
+    { label: "Roles", content: <RolesManagement /> },
+    { label: "Permissions", content: <PermissionsManagement /> },
+    // { label: "Roles - Permissions", content: <RolesPermissionsManagement /> },
+  ];
 
   return (
     <Box sx={{ width: "100%" }}>
       <Typography variant="h5" component="h1" sx={{ mb: 3, p: 2 }}>
-        Roles & Permissions
+        Roles & Permissions Management
       </Typography>
-
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          aria-label="roles and permissions tabs"
-        >
-          <Tab
-            label="Roles"
-            id="roles-permissions-tab-0"
-            aria-controls="roles-permissions-tabpanel-0"
-          />
-          <Tab
-            label="Permissions"
-            id="roles-permissions-tab-1"
-            aria-controls="roles-permissions-tabpanel-1"
-          />
-          <Tab
-            label="Roles - Permissions"
-            id="roles-permissions-tab-2"
-            aria-controls="roles-permissions-tabpanel-2"
-          />
-        </Tabs>
-      </Box>
-
-      <TabPanel value={tabValue} index={0}>
-        <DataTable
-          title="Roles"
-          columns={roleColumns}
-          rows={roles}
-          onAdd={handleAddRole}
-          onEdit={handleEditRole}
-          onDelete={handleDeleteRole}
-          loading={loading}
-        />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={1}>
-        <DataTable
-          title="Permissions"
-          columns={permissionColumns}
-          rows={permissions}
-          onAdd={handleAddPermission}
-          onEdit={handleEditPermission}
-          onDelete={handleDeletePermission}
-          loading={loading}
-        />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={2}>
-        <DataTable
-          title="Roles - Permissions"
-          columns={rolesPermissionsColumns}
-          rows={roles}
-          onAdd={handleAddPermission}
-          onEdit={handleEditPermission}
-          onDelete={handleDeletePermission}
-          loading={loading}
-        />
-      </TabPanel>
+      <AdminTabs tabs={tabs} />
     </Box>
   );
 }

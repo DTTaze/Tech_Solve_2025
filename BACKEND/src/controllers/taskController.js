@@ -48,7 +48,7 @@ const handleUpdateTask = async (req, res) => {
 const handleAcceptTask = async (req, res) => {
   try {
     const task_id = req.params.id;
-    const user_id = req.params.UserID;
+    const user_id = req.params.user_id;
     let result = await taskService.acceptTask(task_id, user_id);
     return res.success("Accept task success", result);
   } catch (error) {

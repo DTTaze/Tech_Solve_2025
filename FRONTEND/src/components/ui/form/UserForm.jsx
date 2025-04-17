@@ -6,7 +6,6 @@ import {
   DialogActions,
   TextField,
   Button,
-  Typography,
 } from "@mui/material";
 
 export default function UserForm({
@@ -19,7 +18,7 @@ export default function UserForm({
   const [formData, setFormData] = useState({
     role_id: "",
     role_name: "",
-    fullname: "",
+    full_name: "",
     username: "",
     email: "",
     address: "",

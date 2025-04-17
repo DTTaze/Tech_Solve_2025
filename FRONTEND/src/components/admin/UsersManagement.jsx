@@ -53,22 +53,22 @@ export default function UsersManagement() {
 
   const handleDeleteUser = async (user) => {
     const res = await deleteUserApi(user.id);
-    console.log(res);
-    if (res.success) {
-      alert("Xóa người dùng thành công!");
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    if (confirm("Bạn có chắc chắn muốn xóa không?")) {
+      if (res.success) {
+        alert("Xóa người dùng thành công!");
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      }
     }
   };
 
   const handleSubmitUser = async (data, mode) => {
-    console.log("User Data:", data, mode);
     if (mode === "add") {
       try {
         const result = await createUserApi(data);
         if (result.success) {
-          alert(result.message);
+          alert("Thêm người dùng thành công!");
         } else {
-          alert(result.error);
+          alert("Thêm người dùng thất bại!");
         }
       } catch (e) {
         alert(e);
@@ -77,9 +77,9 @@ export default function UsersManagement() {
       try {
         const result = await updateUserApi(data.id, data);
         if (result.success) {
-          alert(result.message);
+          alert("Cập nhật người dùng thành công!");
         } else {
-          alert(result.error);
+          alert("Cập nhật người dùng thất bại!");
         }
       } catch (e) {
         alert(e);

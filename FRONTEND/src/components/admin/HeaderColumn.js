@@ -1,17 +1,43 @@
 export const taskColumns = [
   { field: "id", headerName: "ID", width: 100 },
-  { field: "title", headerName: "Title", width: 230 },
-  { field: "content", headerName: "Content", width: 230 },
-  { field: "description", headerName: "Description", width: 230 },
-  { field: "status", headerName: "Status", width: 130 },
-  { field: "coins", headerName: "Coins", width: 130 },
-  { field: "difficulty", headerName: "Difficulty", width: 130 },
-  { field: "total", headerName: "Total Amount", width: 130 },
+  { field: "title", headerName: "Tiêu đề", width: 230 },
+  { field: "description", headerName: "Mô tả", width: 230 },
+  { field: "status", headerName: "Trạng thái", width: 130 },
+  { field: "coins", headerName: "Xu thưởng", width: 130 },
+  { field: "difficulty", headerName: "Độ khó", width: 130 },
+  { field: "total", headerName: "Tổng tiến trình", width: 130 },
   { field: "assignee", headerName: "Assignee", width: 150 },
   { field: "priority", headerName: "Priority", width: 120 },
-  { field: "dueDate", headerName: "Due Date", width: 150 },
-  { field: "created_at", headerName: "Created At", width: 150 },
-  { field: "updated_at", headerName: "Updated At", width: 150 },
+  {
+    field: "dueDate",
+    headerName: "Ngày hết hạn",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "updated_at",
+    headerName: "Ngày cập nhật",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Ngày khởi tạo",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
 ];
 export const itemColumns = [
   { field: "id", headerName: "ID", width: 100 },
@@ -22,8 +48,26 @@ export const itemColumns = [
   { field: "description", headerName: "Description", width: 230 },
   { field: "status", headerName: "Status", width: 130 },
   { field: "owner_id", headerName: "Owner ID", width: 150 },
-  { field: "created_at", headerName: "Created At", width: 150 },
-  { field: "updated_at", headerName: "Updated At", width: 150 },
+  {
+    field: "updated_at",
+    headerName: "Ngày cập nhật",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Ngày khởi tạo",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
 ];
 
 export const videoColumns = [
@@ -59,11 +103,16 @@ export const userColumns = [
     valueGetter: (params) => params?.name || "Unknown",
   },
   { field: "status", headerName: "Status", width: 120 },
-  { field: "coins", headerName: "Coins", width: 120 },
+  {
+    field: "coins",
+    headerName: "Coins",
+    width: 120,
+    valueGetter: (params) => params?.amount || "Unknown",
+  },
   {
     field: "updated_at",
-    headerName: "Updated At",
-    width: 150,
+    headerName: "Ngày cập nhật",
+    width: 200,
     valueGetter: (params) => {
       let date = new Date(params);
       let str = date.toLocaleString();
@@ -72,8 +121,8 @@ export const userColumns = [
   },
   {
     field: "created_at",
-    headerName: "Created At",
-    width: 150,
+    headerName: "Ngày khởi tạo",
+    width: 200,
     valueGetter: (params) => {
       let date = new Date(params);
       let str = date.toLocaleString();
@@ -83,25 +132,78 @@ export const userColumns = [
 ];
 export const roleColumns = [
   { field: "id", headerName: "ID", width: 100 },
-  { field: "name", headerName: "Name", width: 150 },
-  { field: "description", headerName: "Description", width: 250 },
-  { field: "updated_at", headerName: "Updated At", width: 150 },
-  { field: "created_at", headerName: "Created At", width: 150 },
+  { field: "name", headerName: "Tên vai trò", width: 230 },
+  { field: "description", headerName: "Mô tả", width: 230 },
+  {
+    field: "updated_at",
+    headerName: "Ngày cập nhật",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Ngày khởi tạo",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
 ];
 
 export const permissionColumns = [
   { field: "id", headerName: "ID", width: 100 },
-  { field: "action", headerName: "Action", width: 150 },
-  { field: "subject", headerName: "Subject", width: 150 },
-  { field: "description", headerName: "Description", width: 250 },
-  { field: "updated_at", headerName: "Updated At", width: 150 },
-  { field: "created_at", headerName: "Created At", width: 150 },
+  { field: "action", headerName: "Hành động", width: 230 },
+  { field: "subject", headerName: "Đối tượng", width: 230 },
+  {
+    field: "updated_at",
+    headerName: "Ngày cập nhật",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Ngày khởi tạo",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
 ];
 export const rolesPermissionsColumns = [
   { field: "id", headerName: "ID", width: 100 },
   { field: "action", headerName: "Action", width: 150 },
   { field: "subject", headerName: "Subject", width: 150 },
   { field: "description", headerName: "Description", width: 250 },
-  { field: "updated_at", headerName: "Updated At", width: 150 },
-  { field: "created_at", headerName: "Created At", width: 150 },
+  {
+    field: "updated_at",
+    headerName: "Ngày cập nhật",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Ngày khởi tạo",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
 ];

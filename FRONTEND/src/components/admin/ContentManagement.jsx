@@ -11,14 +11,22 @@ import {
   getAllItemsApi,
   getAllVideosApi,
   getAllUserAvatarsApi,
+  deleteTaskApi,
+  updateTaskApi,
+  createTaskApi,
+  deleteItemApi,
 } from "../../utils/api";
 import { Box, Typography } from "@mui/material";
 import AdminTabs from "./AdminTabs";
-
+import TaskForm from "../ui/form/TaskForm";
+import ItemForm from "../ui/form/ItemForm";
 // Tasks Management Component
 function TasksManagement() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formMode, setFormMode] = useState("add");
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -40,27 +48,71 @@ function TasksManagement() {
     fetchData();
   }, []);
   const handleAddTask = () => {
-    console.log("Add task");
+    setFormMode("add");
+    setEditData(null);
+    setFormOpen(true);
   };
 
   const handleEditTask = (task) => {
-    console.log("Edit task", task);
+    setFormMode("edit");
+    setEditData(task);
+    setFormOpen(true);
   };
 
-  const handleDeleteTask = (task) => {
-    console.log("Delete task", task);
+  const handleDeleteTask = async (task) => {
+    const res = await deleteTaskApi(task.id);
+    if (confirm("Bạn có chắc chắn muốn xóa không?")) {
+      if (res.success) {
+        alert("Xóa nhiệm vụ thành công!");
+        setUsers((prev) => prev.filter((u) => u.id !== task.id));
+      }
+    }
   };
-
+  const handleSubmitTask = async (data, mode) => {
+    if (mode === "add") {
+      try {
+        const result = await createTaskApi(data);
+        if (result.success) {
+          alert("Thêm nhiệm vụ thành công!");
+        } else {
+          alert("Thêm nhiệm vụ thất bại!");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    } else if (mode === "edit") {
+      try {
+        const result = await updateTaskApi(data.id, data);
+        if (result.success) {
+          alert("Cập nhật nhiệm vụ thành công!");
+        } else {
+          alert("Cập nhật nhiệm vụ thất bại!");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }
+    setFormOpen(false);
+  };
   return (
-    <DataTable
-      title="Tasks"
-      columns={taskColumns}
-      rows={tasks}
-      onAdd={handleAddTask}
-      onEdit={handleEditTask}
-      onDelete={handleDeleteTask}
-      loading={loading}
-    />
+    <Box>
+      <DataTable
+        title="Tasks"
+        columns={taskColumns}
+        rows={tasks}
+        onAdd={handleAddTask}
+        onEdit={handleEditTask}
+        onDelete={handleDeleteTask}
+        loading={loading}
+      />
+      <TaskForm
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        handleSubmit={handleSubmitTask}
+        initialData={editData}
+        mode={formMode}
+      />
+    </Box>
   );
 }
 
@@ -68,6 +120,9 @@ function TasksManagement() {
 function ItemsManagement() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formMode, setFormMode] = useState("add");
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -89,27 +144,71 @@ function ItemsManagement() {
     fetchData();
   }, []);
   const handleAddItem = () => {
-    console.log("Add item");
+    setFormMode("add");
+    setEditData(null);
+    setFormOpen(true);
   };
 
   const handleEditItem = (item) => {
-    console.log("Edit item", item);
+    setFormMode("edit");
+    setEditData(item);
+    setFormOpen(true);
   };
 
-  const handleDeleteItem = (item) => {
-    console.log("Delete item", item);
+  const handleDeleteItem = async (item) => {
+    const res = await deleteItemApi(item.id);
+    if (confirm("Bạn có chắc chắn muốn xóa không?")) {
+      if (res.success) {
+        alert("Xóa vật phẩm thành công!");
+        setUsers((prev) => prev.filter((u) => u.id !== item.id));
+      }
+    }
   };
-
+  const handleSubmitItem = async (data, mode) => {
+    if (mode === "add") {
+      try {
+        const result = await createItemApi(data.id, data);
+        if (result.success) {
+          alert("Thêm vật phẩm thành công!");
+        } else {
+          alert("Thêm vật phẩm thất bại!");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    } else if (mode === "edit") {
+      try {
+        const result = await updateItemApi(data.id, data);
+        if (result.success) {
+          alert("Cập nhật vật phẩm thành công!");
+        } else {
+          alert("Cập nhật vật phẩm thất bại!");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }
+    setFormOpen(false);
+  };
   return (
-    <DataTable
-      title="Items"
-      columns={itemColumns}
-      rows={items}
-      onAdd={handleAddItem}
-      onEdit={handleEditItem}
-      onDelete={handleDeleteItem}
-      loading={loading}
-    />
+    <Box>
+      <DataTable
+        title="Items"
+        columns={itemColumns}
+        rows={items}
+        onAdd={handleAddItem}
+        onEdit={handleEditItem}
+        onDelete={handleDeleteItem}
+        loading={loading}
+      />
+      <ItemForm
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        handleSubmit={handleSubmitItem}
+        initialData={editData}
+        mode={formMode}
+      />
+    </Box>
   );
 }
 
