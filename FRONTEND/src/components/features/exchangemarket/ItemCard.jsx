@@ -11,7 +11,7 @@ export default function ItemCard({ item, onPurchase, userCoins = 0 }) {
   }
 
   return (
-    <div className="flex flex-col justify-between border rounded-lg overflow-hidden hover:shadow-xl transition-all">
+    <div className="flex flex-col justify-between border border-gray-300 rounded-lg overflow-hidden hover:shadow-xl transition-all">
       <div className="h-48 w-full">
         <img src={item.image || "../src/assets/images/default-item.webp"} alt={item.name} className="h-full w-full object-cover" />
       </div>

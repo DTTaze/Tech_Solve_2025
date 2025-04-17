@@ -9,6 +9,7 @@ export default function ItemCatalog({ items }) {
   const [userCoins, setUserCoins] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("redeem"); 
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -78,20 +79,49 @@ export default function ItemCatalog({ items }) {
   }, [selectedItem, user, userCoins]);
 
   return (
-    <div>
-      <CoinBalance coins={userCoins} />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-        {items.map((item) => (
-          <ItemCard
-            key={item.id}
-            item={item}
-            onPurchase={handlePurchase}
-            userCoins={userCoins}
-          />
-        ))}
+    <div className="flex">
+      {/* Sidebar */}
+      <div className="w-48 p-4 border-r">
+        <div
+          className={`cursor-pointer mb-4 font-semibold ${activeTab === "redeem" ? "text-blue-500" : ""}`}
+          onClick={() => setActiveTab("redeem")}
+        >
+          Đổi quà
+        </div>
+        <div
+          className={`cursor-pointer font-semibold ${activeTab === "market" ? "text-blue-500" : ""}`}
+          onClick={() => setActiveTab("market")}
+        >
+          Chợ trao đổi
+        </div>
       </div>
-
+  
+      {/* Main Content */}
+      <div className="flex-1 p-4">
+        <CoinBalance coins={userCoins} />
+  
+        {activeTab === "redeem" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
+            {items.map((item) => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                onPurchase={handlePurchase}
+                userCoins={userCoins}
+              />
+            ))}
+          </div>
+        )}
+  
+        {activeTab === "market" && (
+          <div className="mt-8">
+            {/* Nội dung chợ trao đổi ở đây */}
+            <p>Chợ trao đổi đang được phát triển...</p>
+          </div>
+        )}
+      </div>
+  
+      {/* Modal */}
       {selectedItem && (
         <PurchaseModal
           isOpen={isModalOpen}
