@@ -10,7 +10,7 @@ const Pagination = ({
   return (
     <div className="pagination flex justify-center items-center mt-8 gap-2">
       <button
-        onClick={goToPreviousPage}
+        onClick={() => goToPreviousPage()}
         disabled={currentPage === 1}
         className={`h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           currentPage === 1
@@ -36,7 +36,7 @@ const Pagination = ({
       ))}
 
       <button
-        onClick={goToNextPage}
+        onClick={() => goToNextPage()}                   
         disabled={currentPage === totalPages}
         className={`h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           currentPage === totalPages

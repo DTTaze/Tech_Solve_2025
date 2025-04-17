@@ -129,8 +129,10 @@ const TaskCard = React.memo(({ task, handleTaskSelect, completingTask }) => {
             "✓ Đã hoàn thành"
           ) : isCompleted ? (
             "Nhận thưởng"
+          ) : task.isUserTask ? (
+            "Thực hiện"
           ) : (
-            "Thực hiện"
+            "Tham gia"
           )}
         </button>
       </div>
