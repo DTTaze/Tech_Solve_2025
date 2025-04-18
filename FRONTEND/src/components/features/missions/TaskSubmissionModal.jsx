@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { X } from "lucide-react";
+import { acceptTaskByIdApi } from "../../../utils/api.js";
+import { toast } from "react-toastify";
 
 export default function TaskSubmissionModal({
   isOpen,
@@ -9,21 +11,39 @@ export default function TaskSubmissionModal({
   userID,
 }) {
   const [files, setFiles] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleFileChange = (event) => {
-    const selectedFiles = Array.from(event.target.files);
-    setFiles(selectedFiles);
+  const handleFileChange = (e) => {
+    const newFiles = Array.from(e.target.files);
+    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
   };
 
-  const handleConfirm = () => {
-    const fileCount = files.length;
-    const numOfFileRemaining = task.total - task.progress_count;
-    const maxProgress = Math.min(fileCount, numOfFileRemaining);
-    handleTaskCompletion(userID, task.id, maxProgress);
-    setFiles([]);
-    onClose();
+  const handleRemoveFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    if (files.length === 0) {
+      toast.warning("Vui lòng tải lên ít nhất một file");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Then handle task completion with the number of files
+      const prevProgress = task.progress_count || 0;
+      const numOfProgress =  Math.min(files.length, task.total - prevProgress);
+      await handleTaskCompletion(userID, task.id, numOfProgress);
+      toast.success("Nhiệm vụ đã được cập nhật!");
+      onClose();
+    } catch (error) {
+      console.error("Error submitting task:", error);
+      toast.error(error.message || "Đã xảy ra lỗi khi xử lý nhiệm vụ");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,7 +71,8 @@ export default function TaskSubmissionModal({
             <strong>Mô tả:</strong> {task.description}
           </p>
           <p>
-            <strong>Tiền thưởng:</strong> {task.coins} <span className="inline-block">🪙</span>
+            <strong>Tiền thưởng:</strong> {task.coins}{" "}
+            <span className="inline-block">🪙</span>
           </p>
           <p>
             <strong>Tiến độ tối đa:</strong> {task.total}
@@ -90,7 +111,7 @@ export default function TaskSubmissionModal({
         <div className="flex justify-end mt-8">
           <button
             className="bg-green-600 text-white px-6 py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-green-700 transition duration-200 disabled:opacity-50"
-            onClick={() => handleConfirm(Math.min(files.length, task.total))}
+            onClick={handleSubmit}
             disabled={files.length === 0}
           >
             Xác nhận

@@ -193,3 +193,7 @@ export const createRolePermissionApi = (data) => {
 export const updateRolePermissionApi = (id, data) => {
   return axios.put(`api/permissions/${id}`, data);
 };
+
+export const acceptTaskByIdApi = (task_id, user_id) => {
+  return axios.post(`api/tasks/accept/${user_id}/${task_id}`);
+}
