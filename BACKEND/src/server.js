@@ -17,7 +17,7 @@ const HOST = process.env.HOST || "0.0.0.0";
 app.use(
   cors({
     origin: [
-      process.env.URL_REACT,
+      process.env.FRONTEND_URL,
       process.env.URL_REDIS,
       "https://greenflag.id.vn",
     ],

@@ -24,6 +24,7 @@ import { alpha } from "@mui/material/styles";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import IconButton from "@mui/material/IconButton";
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import Badge from "@mui/material/Badge";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Tooltip from "@mui/material/Tooltip";
@@ -37,16 +38,21 @@ export default function TemporaryDrawer() {
   };
 
   const mainMenuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, section: "dashboard" },
-    { text: "Users", icon: <PeopleIcon />, section: "users" },
-    { text: "Roles", icon: <SecurityIcon />, section: "roles" },
-    { text: "Content", icon: <CategoryIcon />, section: "content" },
+    { text: "Trang chủ", icon: <DashboardIcon />, section: "dashboard" },
+    { text: "Quản lý người dùng", icon: <PeopleIcon />, section: "users" },
+    { text: "Phân quyền", icon: <SecurityIcon />, section: "roles" },
+    { text: "Đăng tải nội dung", icon: <CategoryIcon />, section: "content" },
+    {
+      text: "Giao dịch",
+      icon: <CurrencyExchangeIcon />,
+      section: "transactions",
+    },
   ];
 
   const contentMenuItems = [
-    { text: "Tasks", icon: <AssignmentIcon />, section: "content" },
-    { text: "Items", icon: <ShoppingCartIcon />, section: "content" },
-    { text: "Videos", icon: <VideoLibraryIcon />, section: "content" },
+    { text: "Nhiệm vụ", icon: <AssignmentIcon />, section: "content" },
+    { text: "Sản phẩm", icon: <ShoppingCartIcon />, section: "content" },
+    { text: "Video ngắn", icon: <VideoLibraryIcon />, section: "content" },
     { text: "Avatars", icon: <PermIdentityIcon />, section: "content" },
   ];
 
@@ -289,17 +295,6 @@ export default function TemporaryDrawer() {
       >
         <MenuIcon />
       </IconButton>
-
-      <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
-        {/* <Tooltip title="Notifications">
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-        </Tooltip> */}
-      </Box>
-
       <Drawer
         anchor="left"
         open={open}

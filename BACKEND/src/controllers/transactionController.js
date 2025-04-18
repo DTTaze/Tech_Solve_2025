@@ -15,7 +15,7 @@ const handleCreateTransaction = async (req, res) => {
 
 const handleGetTransactionByUserId = async (req, res) => {
   try {
-    const transaction_id = Number(req.params.UserId);
+    const transaction_id = Number(req.params.user_id);
     const transaction =
       await transactionService.getTransactionByUserId(transaction_id);
     return res.success("Transaction retrieved successfully", transaction);

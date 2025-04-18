@@ -12,8 +12,9 @@ import Admin from "./pages/Admin.jsx";
 import MissionVideo from "./pages/MissionVideo.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import App from "./App.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx";
 import "./index.css";
-import { NotificationProvider } from './components/ui/NotificationProvider';
+import { NotificationProvider } from "./components/ui/NotificationProvider";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "auth/success",
+        element: <AuthCallback />,
+      },
     ],
   },
   {
@@ -64,7 +69,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthWrapper>
       <NotificationProvider>
-      <RouterProvider router={router} />
+        <RouterProvider router={router} />
       </NotificationProvider>
     </AuthWrapper>
   </StrictMode>
