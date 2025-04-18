@@ -9,7 +9,6 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
-import MissionVideo from "./pages/MissionVideo.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import App from "./App.jsx";
 import "./index.css";
@@ -60,7 +59,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthWrapper>
       <NotificationProvider>
-      <RouterProvider router={router} />
+        <RouterProvider router={router} />
       </NotificationProvider>
     </AuthWrapper>
   </StrictMode>

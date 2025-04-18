@@ -1,13 +1,13 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../contexts/auth.context";
-// import { Spin } from "antd";
+import Loader from "../ui/Loader";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { auth, appLoading } = useContext(AuthContext);
   const location = useLocation();
 
-  if (appLoading) return <Spin />;
+  if (appLoading) return <Loader />;
   if (!auth.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
