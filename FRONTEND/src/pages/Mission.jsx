@@ -24,7 +24,8 @@ function Mission() {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [completingTask, setCompletingTask] = useState(null); // Track which task is being completed
-  const [currentPage, setCurrentPage] = useState(1);
+  const [dailyCurrentPage, setDailyCurrentPage] = useState(1);
+  const [otherCurrentPage, setOtherCurrentPage] = useState(1);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const taskPerPage = 4;
@@ -340,34 +341,57 @@ function Mission() {
   }, [userTasks]);
 
   // Calculate total pages based on number of tasks
-  const totalPages = useMemo(() => {
-    const relevantTasks =
-      selectedTab === "daily"
-        ? dailyTasks
-        : selectedTab === "other"
-        ? otherTasks
-        : completedTasks;
-    return Math.max(1, Math.ceil(relevantTasks.length / taskPerPage));
-  }, [dailyTasks, otherTasks, completedTasks, selectedTab, taskPerPage]);
+  const dailyTotalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(dailyTasks.length / taskPerPage));
+  }, [dailyTasks, taskPerPage]);
+  
+  const otherTotalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(otherTasks.length / taskPerPage));
+  }, [otherTasks, taskPerPage]);
+
+  const completedPages = useMemo(() => {
+    return Math.max(1, Math.ceil(completedTasks.length / taskPerPage));
+  }, [completedTasks, taskPerPage]);
 
   // Pagination handlers
   const goToNextPage = useCallback(() => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
+    if (selectedTab === "daily") {
+      if (dailyCurrentPage < dailyTotalPages) {
+        setDailyCurrentPage((prev) => prev + 1, dailyTotalPages);
+      }
     }
-  }, [currentPage, totalPages]);
+    else {
+      if (otherCurrentPage < otherTotalPages) {
+        setOtherCurrentPage((prev) => prev + 1, otherTotalPages);
+      }
+    }
+  }, [selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage, selectedTab === "daily" ? dailyTotalPages : otherTotalPages]);
 
   const goToPreviousPage = useCallback(() => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
+    if (selectedTab === "daily") {
+      if (dailyCurrentPage > 1) {
+        setDailyCurrentPage((prev) => prev - 1, dailyTotalPages);
+      }
     }
-  }, [currentPage]);
+    else {
+      if (otherCurrentPage > 1) {
+        setOtherCurrentPage((prev) => prev - 1, otherTotalPages);
+      }
+    }
+  }, [selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage]);
 
   const goToPage = useCallback((pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
+    if (selectedTab === "daily") {
+      if (pageNumber >= 1 && pageNumber <= dailyTotalPages) {
+        setDailyCurrentPage(pageNumber);
+      }
     }
-  }, [totalPages]);
+    else {
+      if (pageNumber >= 1 && pageNumber <= otherTotalPages) {
+        setOtherCurrentPage(pageNumber);
+      }
+    }
+  }, [selectedTab === "daily" ? dailyTotalPages : otherTotalPages]);
   
 
   // Show loading skeleton while data is being fetched
@@ -533,8 +557,14 @@ function Mission() {
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}
                   handleTaskSelect={handleTaskSelect}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
+                  currentPage={selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage}
+                  totalPages={selectedTab === "daily" 
+                              ? dailyTotalPages 
+                              : selectedTab === "other" 
+                              ? otherTotalPages
+                              : selectedTab === "completed"
+                              ? completedPages
+                              : 1}
                   goToNextPage={goToNextPage}
                   goToPreviousPage={goToPreviousPage}
                   goToPage={goToPage}

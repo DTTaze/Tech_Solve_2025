@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getUserApi, updateUserApi } from "../../../utils/api.js";
 import InputField from "../../ui/InputField.jsx";
+import Button from "../../ui/Button.jsx";
 
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
@@ -122,13 +123,7 @@ function PersonalInfoForm() {
           />
         ))}
 
-        <button
-          type="submit"
-          className="btn-submit"
-          disabled={loading || !user}
-        >
-          <span>{loading ? "Đang cập nhật..." : "Cập nhật"}</span>
-        </button>
+        <Button text="Cập nhật" ></Button>
       </form>
     </div>
   );

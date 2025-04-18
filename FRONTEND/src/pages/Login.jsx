@@ -4,6 +4,7 @@ import { loginUserApi } from "../utils/api";
 import { AuthContext } from "../contexts/auth.context";
 import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
+import SocialLoginIcons from "../components/ui/SocialLoginIcons";
 import { useNotification } from "../components/ui/NotificationProvider"; 
 
 const LoginPage = () => {
@@ -79,7 +80,7 @@ const LoginPage = () => {
       </form>
 
       <hr className="my-6 border-gray-300" />
-
+      <SocialLoginIcons></SocialLoginIcons>
       <div className="text-center">
         Chưa có tài khoản?{" "}
         <Link to="/register" className="text-blue-600 hover:underline">

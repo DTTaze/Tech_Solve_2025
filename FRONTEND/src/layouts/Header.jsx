@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
-import { getUserApi } from "../utils/api";
+import { getUserApi, getUserAvatarByIdApi } from "../utils/api";
 import { Coins } from "lucide-react";
 import { useNotification } from "../components/ui/NotificationProvider";
 
@@ -17,30 +17,58 @@ function UserHeader() {
 
   const { notify } = useNotification();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await getUserApi();
-        if (
-          auth.user &&
-          response.data.coins.amount !== auth.user.coins.amount
-        ) {
-          setAuth((prevAuth) => ({
-            ...prevAuth,
-            user: { ...prevAuth.user, coins: response.data.coins },
+  const fetchUser = async () => {
+    try {
+      const response = await getUserApi();
+      if (
+        auth.user &&
+        response.data.coins.amount !== auth.user.coins.amount
+      ) {
+        setAuth((prevAuth) => ({
+          ...prevAuth,
+          user: { ...prevAuth.user, coins: response.data.coins },
+        }));
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+    }
+  };
+
+  const fetchAvatar = async () => {
+    try {
+      if (auth?.user?.id && !auth?.user?.avatar_url) {
+        const response = await getUserAvatarByIdApi(auth.user.id);
+        if (response?.avatar_url) {
+          setAuth((prev) => ({
+            ...prev,
+            user: { ...prev.user, avatar_url: response.avatar_url },
           }));
         }
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
-    };
+    } catch (error) {
+      console.error("Lỗi khi lấy avatar:", error);
+    }
+  };
 
+  useEffect(() => {
     if (auth.isAuthenticated) {
       fetchUser();
-      const interval = setInterval(fetchUser, 50000);
-      return () => clearInterval(interval);
+      fetchAvatar();
+
+      const handleFocus = () => {
+        fetchUser();
+      };
+
+      window.addEventListener("focus", handleFocus);
+      return () => window.removeEventListener("focus", handleFocus);
     }
-  }, [auth.isAuthenticated, auth.user, setAuth]);
+  }, [auth.isAuthenticated, auth.user]);
+
+  useEffect(() => {
+    if (profileMenuOpen && auth.isAuthenticated) {
+      fetchUser();
+    }
+  }, [profileMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,6 +100,10 @@ function UserHeader() {
     { key: "market", label: "Trao đổi" },
     // { key: "mission-video", label: "Video ngắn" },
   ];
+
+  const avatarUrl =
+    (auth.user?.avatar_url || "../src/assets/images/default-avatar.jpg") +
+    `?t=${Date.now()}`;
 
   return (
     <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10 relative">
@@ -113,16 +145,14 @@ function UserHeader() {
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
           >
             <img
-              src={
-                auth.user?.avatar || "../src/assets/images/default-avatar.jpg"
-              }
+              src={avatarUrl}
               alt="Avatar"
               className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
             />
           </div>
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#f6f5f8] rounded-lg shadow-lg w-48 px-2 py-2">
-              <p className="p-2 font-bold ">
+              <p className="p-2 font-bold">
                 Tên người dùng: <br />
                 {auth.user.username}
               </p>
