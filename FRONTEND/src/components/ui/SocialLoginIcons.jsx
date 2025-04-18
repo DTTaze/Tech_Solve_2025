@@ -1,9 +1,6 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import "../../styles/components/SocialLoginIcons.css";
-import { googleAuth } from "../../utils/api";
 const SocialLoginIcons = () => {
-  const navigate = useNavigate();
   const handleGoogleLogin = () => {
     window.location.href = `${
       import.meta.env.VITE_BACKEND_URL
