@@ -17,30 +17,41 @@ function UserHeader() {
 
   const { notify } = useNotification();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await getUserApi();
-        if (
-          auth.user &&
-          response.data.coins.amount !== auth.user.coins.amount
-        ) {
-          setAuth((prevAuth) => ({
-            ...prevAuth,
-            user: { ...prevAuth.user, coins: response.data.coins },
-          }));
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
+  const fetchUser = async () => {
+    try {
+      const response = await getUserApi();
+      if (
+        auth.user &&
+        response.data.coins.amount !== auth.user.coins.amount
+      ) {
+        setAuth((prevAuth) => ({
+          ...prevAuth,
+          user: { ...prevAuth.user, coins: response.data.coins },
+        }));
       }
-    };
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+    }
+  };
 
+  useEffect(() => {
     if (auth.isAuthenticated) {
       fetchUser();
-      const interval = setInterval(fetchUser, 50000);
-      return () => clearInterval(interval);
+
+      const handleFocus = () => {
+        fetchUser();
+      };
+
+      window.addEventListener("focus", handleFocus);
+      return () => window.removeEventListener("focus", handleFocus);
     }
-  }, [auth.isAuthenticated, auth.user, setAuth]);
+  }, [auth.isAuthenticated, auth.user]);
+
+  useEffect(() => {
+    if (profileMenuOpen && auth.isAuthenticated) {
+      fetchUser();
+    }
+  }, [profileMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -121,7 +132,7 @@ function UserHeader() {
           </div>
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#f6f5f8] rounded-lg shadow-lg w-48 px-2 py-2">
-              <p className="p-2 font-bold ">
+              <p className="p-2 font-bold">
                 Tên người dùng: <br />
                 {auth.user.username}
               </p>

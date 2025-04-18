@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/components/HomepageSection.css";
+import { AuthContext } from "../contexts/auth.context";
 
 function SectionHero() {
     const [index, setIndex] = useState(0);
@@ -61,6 +62,7 @@ function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const navigate = useNavigate();
+    const { auth, setAuth } = useContext(AuthContext);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -83,15 +85,11 @@ function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
             ref={sectionRef} 
             className={`w-full min-h-[60vh] sm:min-h-[80vh] flex flex-col lg:flex-row ${reverse ? "lg:flex-row-reverse" : ""} items-center justify-center gap-6 sm:gap-8 lg:gap-12 p-4 sm:p-6 lg:p-8 section`}
         >
-            <div 
-                className={`w-full sm:w-4/5 lg:w-2/5 rounded-[20px] overflow-hidden transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : reverse ? "translate-x-full" : "-translate-x-full"}`}
-            >
-                <img 
-                    src={imagePath} 
-                    alt="ảnh mô tả" 
-                    className="w-full h-[300px] sm:h-[400px] object-fill"
-                />
-            </div>
+            <img
+                src={imagePath}
+                alt="ảnh mô tả"
+                className={`h-full sm:h-3/5 lg:h-100 overflow-hidden transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : reverse ? "translate-x-full" : "-translate-x-full"}`}
+            />
             <header 
                 className={`w-full sm:w-4/5 lg:w-2/5 max-sm:items-center flex flex-col justify-center sm:items-center gap-4 sm:gap-6 text-center lg:text-left transform transition-transform duration-1000 ${isVisible ? "translate-x-0" : reverse ? "-translate-x-full" : "translate-x-full"}`}
             >
@@ -102,8 +100,14 @@ function Section({ imagePath, H2Text, PText, ButtonText, path, reverse }) {
                     {PText}
                 </p>
                 <button onClick={() => {
-                    navigate(path);
-                }}>
+                        if (auth.isAuthenticated) {
+                            navigate(path);
+                            window.scrollTo(0, 0);
+                        } else {
+                            navigate("/register");
+                            window.scrollTo(0, 0);
+                        }
+                    }}>
                     {ButtonText}
                 </button>
             </header>
