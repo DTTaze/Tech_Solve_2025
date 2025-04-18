@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
-import { getUserApi } from "../utils/api";
+import { getUserApi, getUserAvatarByIdApi } from "../utils/api";
 import { Coins } from "lucide-react";
 import { useNotification } from "../components/ui/NotificationProvider";
 
@@ -34,9 +34,26 @@ function UserHeader() {
     }
   };
 
+  const fetchAvatar = async () => {
+    try {
+      if (auth?.user?.id && !auth?.user?.avatar_url) {
+        const response = await getUserAvatarByIdApi(auth.user.id);
+        if (response?.avatar_url) {
+          setAuth((prev) => ({
+            ...prev,
+            user: { ...prev.user, avatar_url: response.avatar_url },
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy avatar:", error);
+    }
+  };
+
   useEffect(() => {
     if (auth.isAuthenticated) {
       fetchUser();
+      fetchAvatar();
 
       const handleFocus = () => {
         fetchUser();
@@ -83,6 +100,10 @@ function UserHeader() {
     { key: "market", label: "Trao đổi" },
   ];
 
+  const avatarUrl =
+    (auth.user?.avatar_url || "../src/assets/images/default-avatar.jpg") +
+    `?t=${Date.now()}`;
+
   return (
     <header className="w-full px-5 pt-2 flex justify-between items-center bg-white z-10 relative">
       {/* Logo */}
@@ -123,9 +144,7 @@ function UserHeader() {
             onClick={() => setProfileMenuOpen(!profileMenuOpen)}
           >
             <img
-              src={
-                auth.user?.avatar || "../src/assets/images/default-avatar.jpg"
-              }
+              src={avatarUrl}
               alt="Avatar"
               className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
             />
