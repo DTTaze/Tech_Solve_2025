@@ -36,10 +36,6 @@ const router = createBrowserRouter([
         path: "market",
         element: <MarketPage />,
       },
-      // {
-      //   path: "mission-video",
-      //   element: <MissionVideo />,
-      // },
       {
         path: "admin",
         element: (
