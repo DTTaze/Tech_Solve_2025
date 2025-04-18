@@ -20,4 +20,4 @@ const responseFormatter = (req, res, next) => {
   next();
 };
 
-export default responseFormatter;
+module.exports = responseFormatter;

@@ -1,5 +1,5 @@
 require("dotenv").config();
-import bcrypt from "bcryptjs";
+const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
@@ -27,6 +27,8 @@ const createUser = async (data) => {
 
     const newCoin = await Coin.create({ amount: 0 });
 
+    const newRank = await Rank.create({ order: 0 });
+
     const hashPassword = bcrypt.hashSync(password, salt);
 
     const newUser = await User.create({
@@ -39,9 +41,10 @@ const createUser = async (data) => {
       address,
       last_logined: todayStr,
       coins_id: newCoin.id,
+      rank_id: newRank.id,
     });
 
-    await newCoin.update({ user_id: newUser.id });
+    await newRank.update({ user_id: newUser.id });
 
     return newUser;
   } catch (e) {
@@ -238,7 +241,7 @@ const findOrCreateUser = async (profile) => {
     }
 
     const newCoin = await Coin.create({ amount: 0 });
-
+    const newRank = await Rank.create({ order: 0 });
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
@@ -252,9 +255,10 @@ const findOrCreateUser = async (profile) => {
       password: null,
       last_logined: todayStr,
       coins_id: newCoin.id,
+      rank_id: newRank.id,
     });
 
-    await newCoin.update({ user_id: newUser.id });
+    await newRank.update({ user_id: newUser.id });
 
     return newUser;
   } catch (e) {

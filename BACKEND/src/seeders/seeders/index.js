@@ -10,12 +10,13 @@ const itemSeeder = require("./seeder-item");
 const transactionSeeder = require("./seeder-transaction");
 const taskUserSeeder = require("./seeder-task_user");
 const coinsSeeder = require("./seeder-coins");
-
+const rankSeeder = require("./seeder-rank");
 const seeders = [
   { model: require("../../models").Role, seeder: roleSeeder },
   { model: require("../../models").Permission, seeder: permissionSeeder },
   {model: require("../../models").RolePermission,seeder: rolePermissionSeeder,},
   { model: require("../../models").Coin, seeder: coinsSeeder },
+  { model: require("../../models").Rank, seeder: rankSeeder },
   { model: require("../../models").User, seeder: userSeeder },
   { model: require("../../models").Item, seeder: itemSeeder },
   { model: require("../../models").Transaction, seeder: transactionSeeder },

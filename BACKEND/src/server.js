@@ -1,6 +1,6 @@
 import express from "express";
 import configViewEngine from "./config/viewEngine";
-import initWebRoutes from "./routes/api";
+const initWebRoutes = require("./routes/api");
 const session = require("express-session");
 const passport = require("passport");
 import bodyParser from "body-parser";
