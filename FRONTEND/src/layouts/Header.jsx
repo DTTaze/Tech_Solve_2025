@@ -20,6 +20,7 @@ function UserHeader() {
   const fetchUser = async () => {
     try {
       const response = await getUserApi();
+      console.log(response);
       if (
         auth.user &&
         response.data.coins.amount !== auth.user.coins.amount

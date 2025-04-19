@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { getUserApi, updateUserApi } from "../../../utils/api.js";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
+import Loader from "../../ui/Loader.jsx";
 
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
@@ -96,7 +97,7 @@ function PersonalInfoForm() {
     }
   };
 
-  if (!user) return <p className="text-gray-500">Đang tải...</p>;
+  if (!user) return <Loader></Loader>;
 
   const inputFields = [
     { id: "username", label: "Tên người dùng" },
