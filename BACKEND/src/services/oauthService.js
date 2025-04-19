@@ -8,7 +8,7 @@ const Role = db.Role;
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 
-const handleGoogleAuthCallback = async (user) => {
+const googleAuthCallback = async (user) => {
   try {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -106,5 +106,5 @@ const resetPassword = async (token, newPassword) => {
 module.exports = { 
     sendResetEmail,
     resetPassword,
-    handleGoogleAuthCallback,
+    googleAuthCallback,
 };

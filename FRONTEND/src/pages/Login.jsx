@@ -46,7 +46,6 @@ const LoginPage = () => {
             username: res.data.user?.username ?? "",
           },
         });
-        console.log(AuthContext.user);
         navigate("/")
       } else {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại."); 

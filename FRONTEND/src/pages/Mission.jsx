@@ -101,6 +101,7 @@ function Mission() {
             id: task.id,
             title: task.title,
             description: task.description,
+            total: task.total,
             coins: task.coins,
             difficulty: task.difficulty || "easy",
             createdAt: task.createdAt,
@@ -249,6 +250,7 @@ function Mission() {
         userTasks.map(async (userTask) => {
           const taskData = await getTaskByIdApi(userTask.task_id);
           const task = taskData.data;
+
           return task
             ? {
                 ...task,
@@ -263,24 +265,24 @@ function Mission() {
       const filteredTasks = DailyTasks.filter(
         (task) =>
           task &&
-          task.completed_at === null &&
+          task.completed_at === null && 
           (task.difficulty === "medium" || task.difficulty === "hard")
       );
 
       // Get all tasks and add them to the list
 
       const additionalTasks = tasks
-        .filter(
-          (task) =>
-            !filteredTasks.some((t) => t.id === task.id) &&
-            (task.difficulty === "medium" || task.difficulty === "hard")
-        )
-        .map((task) => ({
-          ...task,
-          isUserTask: false,
-          progress_count: 0,
-          completed_at: null,
-        }));
+      .filter(
+        (task) =>
+          !userTasks.some((userTask) => userTask.task_id === task.id) &&
+          (task.difficulty === "medium" || task.difficulty === "hard")
+      )
+      .map((task) => ({
+        ...task,
+        isUserTask: false,
+        progress_count: 0,
+        completed_at: null,
+      }));
 
       setDailyTasks([...filteredTasks, ...additionalTasks]);
     };
@@ -317,7 +319,7 @@ function Mission() {
       const additionalTasks = tasks
         .filter(
           (task) =>
-            !filteredTasks.some((t) => t.id === task.id) &&
+            !userTasks.some((userTask) => userTask.task_id === task.id) &&
             task.difficulty === "easy"
         )
         .map((task) => ({
@@ -344,7 +346,7 @@ function Mission() {
   const dailyTotalPages = useMemo(() => {
     return Math.max(1, Math.ceil(dailyTasks.length / taskPerPage));
   }, [dailyTasks, taskPerPage]);
-  
+
   const otherTotalPages = useMemo(() => {
     return Math.max(1, Math.ceil(otherTasks.length / taskPerPage));
   }, [otherTasks, taskPerPage]);
@@ -359,40 +361,42 @@ function Mission() {
       if (dailyCurrentPage < dailyTotalPages) {
         setDailyCurrentPage((prev) => prev + 1, dailyTotalPages);
       }
-    }
-    else {
+    } else {
       if (otherCurrentPage < otherTotalPages) {
         setOtherCurrentPage((prev) => prev + 1, otherTotalPages);
       }
     }
-  }, [selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage, selectedTab === "daily" ? dailyTotalPages : otherTotalPages]);
+  }, [
+    selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage,
+    selectedTab === "daily" ? dailyTotalPages : otherTotalPages,
+  ]);
 
   const goToPreviousPage = useCallback(() => {
     if (selectedTab === "daily") {
       if (dailyCurrentPage > 1) {
         setDailyCurrentPage((prev) => prev - 1, dailyTotalPages);
       }
-    }
-    else {
+    } else {
       if (otherCurrentPage > 1) {
         setOtherCurrentPage((prev) => prev - 1, otherTotalPages);
       }
     }
   }, [selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage]);
 
-  const goToPage = useCallback((pageNumber) => {
-    if (selectedTab === "daily") {
-      if (pageNumber >= 1 && pageNumber <= dailyTotalPages) {
-        setDailyCurrentPage(pageNumber);
+  const goToPage = useCallback(
+    (pageNumber) => {
+      if (selectedTab === "daily") {
+        if (pageNumber >= 1 && pageNumber <= dailyTotalPages) {
+          setDailyCurrentPage(pageNumber);
+        }
+      } else {
+        if (pageNumber >= 1 && pageNumber <= otherTotalPages) {
+          setOtherCurrentPage(pageNumber);
+        }
       }
-    }
-    else {
-      if (pageNumber >= 1 && pageNumber <= otherTotalPages) {
-        setOtherCurrentPage(pageNumber);
-      }
-    }
-  }, [selectedTab === "daily" ? dailyTotalPages : otherTotalPages]);
-  
+    },
+    [selectedTab === "daily" ? dailyTotalPages : otherTotalPages]
+  );
 
   // Show loading skeleton while data is being fetched
   if (loading) {
@@ -557,14 +561,20 @@ function Mission() {
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}
                   handleTaskSelect={handleTaskSelect}
-                  currentPage={selectedTab === "daily" ? dailyCurrentPage : otherCurrentPage}
-                  totalPages={selectedTab === "daily" 
-                              ? dailyTotalPages 
-                              : selectedTab === "other" 
-                              ? otherTotalPages
-                              : selectedTab === "completed"
-                              ? completedPages
-                              : 1}
+                  currentPage={
+                    selectedTab === "daily"
+                      ? dailyCurrentPage
+                      : otherCurrentPage
+                  }
+                  totalPages={
+                    selectedTab === "daily"
+                      ? dailyTotalPages
+                      : selectedTab === "other"
+                      ? otherTotalPages
+                      : selectedTab === "completed"
+                      ? completedPages
+                      : 1
+                  }
                   goToNextPage={goToNextPage}
                   goToPreviousPage={goToPreviousPage}
                   goToPage={goToPage}

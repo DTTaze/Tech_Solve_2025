@@ -77,6 +77,7 @@ const TasksList = ({
                         task={task}
                         handleTaskSelect={handleTaskSelect}
                         completingTask={completingTask}
+                        userId={userId}
                       />
                     )
                 )}
@@ -97,7 +98,6 @@ const TasksList = ({
               </p>
             </div>
           )}
-          
         </div>
         <div>
           {tasks && tasks.length > (taskPerPage || 3) && (
@@ -151,6 +151,7 @@ const TasksList = ({
                         task={task}
                         handleTaskSelect={handleTaskSelect}
                         completingTask={completingTask}
+                        userId={userId}
                       />
                     )
                 )}
@@ -170,7 +171,7 @@ const TasksList = ({
                 ngày trước nhé!
               </p>
             </div>
-            )}
+          )}
         </div>
         <div>
           {tasks && tasks.length > (taskPerPage || 3) && (
@@ -211,7 +212,7 @@ const TasksList = ({
 
         {tasks && tasks.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            {tasks.slice(0, 4).map((task) => (
+            {tasks.map((task) => (
               <div
                 key={task.id}
                 className="bg-gray-50 rounded-xl border border-gray-200 p-4 opacity-80 hover:opacity-100 transition-opacity"
@@ -257,13 +258,7 @@ const TasksList = ({
               ngày.
             </p>
           </div>
-        )}
-
-        {tasks && tasks.length > 4 && (
-          <button className="mt-4 w-full py-2 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 rounded-lg">
-            Xem tất cả {tasks.length} nhiệm vụ đã hoàn thành
-          </button>
-        )}
+        )}    
       </div>
     );
   }
