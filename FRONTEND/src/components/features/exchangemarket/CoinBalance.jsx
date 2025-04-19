@@ -9,7 +9,7 @@ export default function CoinBalance({ coins }) {
         <span className="font-medium text-amber-600 mr-25">Your Balance</span>
       </div>
       <motion.div
-        key={coins} // Kích hoạt animation khi số coin thay đổi
+        key={coins}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
