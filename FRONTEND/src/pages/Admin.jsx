@@ -5,6 +5,7 @@ import AdminDashboard from "../components/admin/AdminDashboard";
 import UsersManagement from "../components/admin/UsersManagement";
 import RolesPermissions from "../components/admin/RolesPermissions";
 import ContentManagement from "../components/admin/ContentManagement";
+import { Outlet } from "react-router-dom";
 import Box from "@mui/material/Box";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";

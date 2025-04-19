@@ -10,31 +10,23 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Avatar from "@mui/material/Avatar";
+import IconButton from "@mui/material/IconButton";
+import { alpha } from "@mui/material/styles";
+
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import SecurityIcon from "@mui/icons-material/Security";
-import CategoryIcon from "@mui/icons-material/Category";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import GroupsIcon from "@mui/icons-material/Groups";
 import RedeemIcon from "@mui/icons-material/Redeem";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import EventIcon from "@mui/icons-material/Event";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
-import PermIdentityIcon from "@mui/icons-material/PermIdentity";
-import SecurityIcon from "@mui/icons-material/Security";
-import CategoryIcon from "@mui/icons-material/Category";
 import MenuIcon from "@mui/icons-material/Menu";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import { alpha } from "@mui/material/styles";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
-import IconButton from "@mui/material/IconButton";
-import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+
 
 
 export default function TemporaryDrawer({userInfo}) {
