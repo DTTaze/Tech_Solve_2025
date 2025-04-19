@@ -193,6 +193,7 @@ export default function DataTable({
             toolbar: {
               showQuickFilter: true,
               quickFilterProps: { debounceMs: 500 },
+              
             },
           }}
           sx={{

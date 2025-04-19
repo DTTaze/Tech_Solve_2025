@@ -1,7 +1,6 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import Button from "@mui/material/Button";
 import List from "@mui/material/List";
 import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
@@ -15,7 +14,6 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import SecurityIcon from "@mui/icons-material/Security";
-import LockIcon from "@mui/icons-material/Lock";
 import CategoryIcon from "@mui/icons-material/Category";
 import MenuIcon from "@mui/icons-material/Menu";
 import Avatar from "@mui/material/Avatar";
@@ -25,11 +23,9 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import IconButton from "@mui/material/IconButton";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import Badge from "@mui/material/Badge";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import Tooltip from "@mui/material/Tooltip";
 
-export default function TemporaryDrawer() {
+
+export default function TemporaryDrawer({userInfo}) {
   const [open, setOpen] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState("Dashboard");
 
@@ -47,13 +43,6 @@ export default function TemporaryDrawer() {
       icon: <CurrencyExchangeIcon />,
       section: "transactions",
     },
-  ];
-
-  const contentMenuItems = [
-    { text: "Nhiệm vụ", icon: <AssignmentIcon />, section: "content" },
-    { text: "Sản phẩm", icon: <ShoppingCartIcon />, section: "content" },
-    { text: "Video ngắn", icon: <VideoLibraryIcon />, section: "content" },
-    { text: "Avatars", icon: <PermIdentityIcon />, section: "content" },
   ];
 
   const handleNavigation = (item) => {
@@ -120,15 +109,15 @@ export default function TemporaryDrawer() {
             mr: 2,
             bgcolor: "primary.main",
           }}
-        >
-          JD
-        </Avatar>
+          src={userInfo?.avatar_url} 
+          alt={userInfo?.username}
+        />
         <Box>
           <Typography variant="subtitle2" fontWeight={600}>
-            John Doe
+            {userInfo?.full_name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Administrator
+            {userInfo?.email}
           </Typography>
         </Box>
       </Box>
@@ -194,65 +183,6 @@ export default function TemporaryDrawer() {
       </List>
 
       <Divider sx={{ my: 1.5 }} />
-
-      <Typography
-        variant="overline"
-        color="text.secondary"
-        sx={{ px: 3, pt: 1, pb: 1 }}
-      >
-        Content
-      </Typography>
-      <List disablePadding>
-        {contentMenuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={selectedItem === item.text}
-              onClick={() => handleNavigation(item)}
-              sx={{
-                mx: 1,
-                borderRadius: 1,
-                mb: 0.5,
-                "&.Mui-selected": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.12),
-                  "&:hover": {
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.primary.main, 0.18),
-                  },
-                },
-                "&:hover": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 40,
-                  color:
-                    selectedItem === item.text ? "primary.main" : "inherit",
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body2"
-                    fontWeight={selectedItem === item.text ? 600 : 400}
-                    sx={{
-                      color:
-                        selectedItem === item.text ? "primary.main" : "inherit",
-                    }}
-                  >
-                    {item.text}
-                  </Typography>
-                }
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
 
       {/* Footer Section with Settings and Logout */}
       <Box
