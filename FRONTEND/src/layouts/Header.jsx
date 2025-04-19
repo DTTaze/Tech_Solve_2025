@@ -150,9 +150,12 @@ function UserHeader() {
             />
           </div>
           {profileMenuOpen && (
-            <div className="absolute right-0 bg-[#f6f5f8] rounded-lg shadow-lg w-48 px-2 py-2">
+            <div className="absolute right-0 bg-white rounded-lg shadow-lg w-48 px-2 py-2">
               <p className="p-2 font-bold">
                 {auth.user.username}
+              </p>
+              <p className="px-2 py-1 text-xs text-gray-600">
+                {auth.user.email}
               </p>
               <hr className="border border-gray-300 mb-2" />
               <div className="flex items-center ml-2 py-2">
