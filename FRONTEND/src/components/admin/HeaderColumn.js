@@ -207,3 +207,43 @@ export const rolesPermissionsColumns = [
     },
   },
 ];
+
+export const transactionsColumns = [
+  { field: "id", headerName: "ID", width: 100 },
+  { field: "name", headerName: "Tên giao dịch", width: 200 },
+  {
+    field: "buyer",
+    headerName: "Tên tài khoản người mua",
+    width: 200,
+    valueGetter: (params) => params?.username || "Unknown",
+  },
+  {
+    field: "item",
+    headerName: "Tên vật phẩm",
+    width: 200,
+    valueGetter: (params) => params?.name || "Unknown",
+  },
+  { field: "total_price", headerName: "Tổng giá trị (xu)", width: 150 },
+  { field: "quantity", headerName: "Số lượng sản phẩm", width: 150 },
+  { field: "status", headerName: "Trạng thái", width: 150 },
+  {
+    field: "updated_at",
+    headerName: "Ngày cập nhật",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+  {
+    field: "created_at",
+    headerName: "Ngày khởi tạo",
+    width: 200,
+    valueGetter: (params) => {
+      let date = new Date(params);
+      let str = date.toLocaleString();
+      return str;
+    },
+  },
+];

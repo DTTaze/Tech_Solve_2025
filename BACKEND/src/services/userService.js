@@ -15,11 +15,43 @@ const jwt = require("jsonwebtoken");
 
 const createUser = async (data) => {
   try {
-    let { email, password, username, full_name, phone_number, address } = data;
+    let {
+      email,
+      password,
+      username,
+      role_id,
+      full_name,
+      phone_number,
+      address,
+    } = data;
+    role_id = Number(role_id);
+    if (isNaN(role_id)) {
+      throw new Error("Invalid Role ID");
+    } else {
+      const checkRole = await Role.findByPk(role_id);
+      if (!checkRole) {
+        throw new Error("Role does not exist");
+      }
+      if (
+        checkRole.dataValues.name.toLowerCase() !== "user" &&
+        checkRole.dataValues.name.toLowerCase() !== "customer"
+      ) {
+        throw new Error("Cannot assign this role");
+      }
+    }
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { username }],
+      },
+    });
 
-    const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      throw new Error("User already exists");
+      if (existingUser.email === email) {
+        throw new Error("Email already exists");
+      }
+      if (existingUser.username === username) {
+        throw new Error("Username already exists");
+      }
     }
 
     let today = new Date();
@@ -31,22 +63,22 @@ const createUser = async (data) => {
 
     // Get the maximum order from existing ranks
     const maxOrderRank = await Rank.findOne({
-      order: [['order', 'DESC']]
+      order: [["order", "DESC"]],
     });
     const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
 
     // Create rank with null user_id first
-    const newRank = await Rank.create({ 
+    const newRank = await Rank.create({
       amount: 0,
       order: newOrder,
-      user_id: null 
+      user_id: null,
     });
 
     const hashPassword = bcrypt.hashSync(password, salt);
 
     // Create user with the new coin and rank IDs
     const newUser = await User.create({
-      role_id: 2,
+      role_id: role_id,
       email,
       password: hashPassword,
       username,
@@ -63,7 +95,7 @@ const createUser = async (data) => {
 
     return newUser;
   } catch (error) {
-    console.error('Error in createUser:', error);
+    console.error("Error in createUser:", error);
     throw error;
   }
 };
@@ -100,7 +132,7 @@ const loginUser = async (data) => {
     await user.update({
       last_logined: todayStr,
     });
-    // Create an access token
+
     const payload = {
       id: user.id,
       role_id: user.role_id,
