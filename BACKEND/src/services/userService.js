@@ -9,6 +9,7 @@ const TaskUser = db.TaskUser;
 const Item = db.Item;
 const Transaction = db.Transaction;
 const Coin = db.Coin;
+const Rank = db.Rank;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 
@@ -25,12 +26,25 @@ const createUser = async (data) => {
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
 
+    // Create coin first
     const newCoin = await Coin.create({ amount: 0 });
 
-    const newRank = await Rank.create({ order: 0 });
+    // Get the maximum order from existing ranks
+    const maxOrderRank = await Rank.findOne({
+      order: [['order', 'DESC']]
+    });
+    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
+
+    // Create rank with null user_id first
+    const newRank = await Rank.create({ 
+      amount: 0,
+      order: newOrder,
+      user_id: null 
+    });
 
     const hashPassword = bcrypt.hashSync(password, salt);
 
+    // Create user with the new coin and rank IDs
     const newUser = await User.create({
       role_id: 2,
       email,
@@ -44,11 +58,13 @@ const createUser = async (data) => {
       rank_id: newRank.id,
     });
 
+    // Update rank with user_id after user is created
     await newRank.update({ user_id: newUser.id });
 
     return newUser;
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    console.error('Error in createUser:', error);
+    throw error;
   }
 };
 
