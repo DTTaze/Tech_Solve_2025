@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 9.2.0, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 9.3.0, for Linux (x86_64)
 --
 -- Host: localhost    Database: techsolve25
 -- ------------------------------------------------------
--- Server version	9.2.0
+-- Server version	9.3.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -49,8 +49,8 @@ CREATE TABLE `event_user_tasks` (
   PRIMARY KEY (`id`),
   KEY `event_user_id` (`event_user_id`),
   KEY `task_id` (`task_id`),
-  CONSTRAINT `event_user_tasks_ibfk_1` FOREIGN KEY (`event_user_id`) REFERENCES `event_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `event_user_tasks_ibfk_2` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `event_user_tasks_ibfk_3` FOREIGN KEY (`event_user_id`) REFERENCES `event_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `event_user_tasks_ibfk_4` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -73,8 +73,8 @@ CREATE TABLE `event_users` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `event_id` (`event_id`),
-  CONSTRAINT `event_users_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `event_users_ibfk_2` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `event_users_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `event_users_ibfk_4` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -161,6 +161,26 @@ CREATE TABLE `permissions` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ranks`
+--
+
+DROP TABLE IF EXISTS `ranks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ranks` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `amount` int NOT NULL DEFAULT '0',
+  `order` int NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `ranks_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `role_permissions`
 --
 
@@ -168,14 +188,11 @@ DROP TABLE IF EXISTS `role_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `role_permissions` (
+  `role_id` int NOT NULL,
+  `permission_id` int NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  `permission_id` int NOT NULL,
-  `role_id` int NOT NULL,
-  PRIMARY KEY (`permission_id`,`role_id`),
-  KEY `role_id` (`role_id`),
-  CONSTRAINT `role_permissions_ibfk_1` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `role_permissions_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY (`role_id`,`permission_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -193,7 +210,9 @@ CREATE TABLE `roles` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `name_2` (`name`),
+  UNIQUE KEY `name_3` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -234,8 +253,8 @@ CREATE TABLE `task_types` (
   PRIMARY KEY (`id`),
   KEY `task_id` (`task_id`),
   KEY `type_id` (`type_id`),
-  CONSTRAINT `task_types_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `task_types_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `task_types_ibfk_3` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `task_types_ibfk_4` FOREIGN KEY (`type_id`) REFERENCES `types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -258,8 +277,8 @@ CREATE TABLE `task_users` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `task_id` (`task_id`),
-  CONSTRAINT `task_users_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `task_users_ibfk_2` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `task_users_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `task_users_ibfk_4` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -280,7 +299,7 @@ CREATE TABLE `tasks` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -303,8 +322,8 @@ CREATE TABLE `transactions` (
   PRIMARY KEY (`id`),
   KEY `buyer_id` (`buyer_id`),
   KEY `item_id` (`item_id`),
-  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`buyer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`buyer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_4` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -321,7 +340,9 @@ CREATE TABLE `types` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `type` (`type`)
+  UNIQUE KEY `type` (`type`),
+  UNIQUE KEY `type_2` (`type`),
+  UNIQUE KEY `type_3` (`type`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -344,6 +365,7 @@ CREATE TABLE `users` (
   `phone_number` varchar(255) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
   `coins_id` int NOT NULL DEFAULT '0',
+  `rank_id` int NOT NULL DEFAULT '0',
   `streak` int NOT NULL DEFAULT '0',
   `last_logined` date NOT NULL,
   `created_at` datetime NOT NULL,
@@ -351,12 +373,22 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email_2` (`email`),
+  UNIQUE KEY `username_2` (`username`),
+  UNIQUE KEY `email_3` (`email`),
+  UNIQUE KEY `username_3` (`username`),
   UNIQUE KEY `google_id` (`google_id`),
   UNIQUE KEY `phone_number` (`phone_number`),
+  UNIQUE KEY `google_id_2` (`google_id`),
+  UNIQUE KEY `phone_number_2` (`phone_number`),
+  UNIQUE KEY `google_id_3` (`google_id`),
+  UNIQUE KEY `phone_number_3` (`phone_number`),
   KEY `role_id` (`role_id`),
   KEY `coins_id` (`coins_id`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `users_ibfk_2` FOREIGN KEY (`coins_id`) REFERENCES `coins` (`id`) ON UPDATE CASCADE
+  KEY `rank_id` (`rank_id`),
+  CONSTRAINT `users_ibfk_4` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `users_ibfk_5` FOREIGN KEY (`coins_id`) REFERENCES `coins` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `users_ibfk_6` FOREIGN KEY (`rank_id`) REFERENCES `ranks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -390,4 +422,4 @@ CREATE TABLE `videos` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-15  8:53:45
+-- Dump completed on 2025-04-19  5:11:19

@@ -10,6 +10,17 @@ const handleGetRankById = async (req, res) => {
   }
 };
 
+const handleRearrangeRanks = async (req, res) => {
+  try {
+    const result = await rankService.rearrangeRanks();
+    console.log(result);
+    res.success("Rearrange ranks success", result);
+  } catch (error) {
+    res.error(500, "Failed to rearrange ranks", error.message);
+  }
+};
+
 module.exports = {
   handleGetRankById,
+  handleRearrangeRanks
 };
