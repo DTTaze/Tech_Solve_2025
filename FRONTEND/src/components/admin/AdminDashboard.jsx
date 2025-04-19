@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Paper, Typography, Divider, Stack, Button } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -6,36 +6,45 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import IconButton from "@mui/material/IconButton";
-import SimpleLineChart from "../admin/ChartAdmin"
+import SimpleLineChart from "../admin/ChartAdmin";
+import { getAllUserApi } from "../../utils/api";
 
 export default function AdminDashboard() {
-  const recentActivities = [
-    {
-      id: 1,
-      user: "John Doe",
-      action: "created a new task",
-      time: "10 minutes ago",
-    },
-    {
-      id: 2,
-      user: "Jane Smith",
-      action: "updated user permissions",
-      time: "1 hour ago",
-    },
-    {
-      id: 3,
-      user: "Mike Brown",
-      action: "uploaded a new video",
-      time: "3 hours ago",
-    },
-    {
-      id: 4,
-      user: "Sarah Lee",
-      action: "added new items",
-      time: "5 hours ago",
-    },
-    { id: 5, user: "Alex Chen", action: "completed a task", time: "Yesterday" },
-  ];
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await getAllUserApi();
+        if (response?.data) {
+          // Transform user data into recent activities format and sort by last_logined
+          const activities = response.data
+            .map((user) => ({
+              id: user.id,
+              user: user.full_name,
+              action: "logged in",
+              time: new Date(user.last_logined).toLocaleString(),
+              last_logined: new Date(user.last_logined),
+            }))
+            .sort((a, b) => b.last_logined - a.last_logined);
+          setRecentActivities(activities);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const displayedActivities = showAll
+    ? recentActivities
+    : recentActivities.slice(0, 5);
 
   return (
     <Box sx={{ flexGrow: 1, p: 0 }}>
@@ -48,21 +57,23 @@ export default function AdminDashboard() {
         </Typography>
       </Box>
 
-      {/* Thay Grid bằng CSS Grid */}
+      {/* Admin Grid Container */}
       <Box
+        className="admin-grid-container"
         sx={{
           display: "grid",
           gridTemplateColumns: {
-            xs: "1fr", // 1 cột trên mobile
-            sm: "repeat(2, 1fr)", // 2 cột trên sm
-            md: "repeat(4, 1fr)", // 4 cột trên md
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(4, 1fr)",
           },
-          gap: 3, // spacing=3 tương đương 24px
+          gap: 3,
         }}
       >
         {/* Statistic Cards */}
         <Box>
           <Paper
+            className="admin-card"
             sx={{
               p: 2,
               display: "flex",
@@ -103,6 +114,7 @@ export default function AdminDashboard() {
 
         <Box>
           <Paper
+            className="admin-card"
             sx={{
               p: 2,
               display: "flex",
@@ -143,6 +155,7 @@ export default function AdminDashboard() {
 
         <Box>
           <Paper
+            className="admin-card"
             sx={{
               p: 2,
               display: "flex",
@@ -183,6 +196,7 @@ export default function AdminDashboard() {
 
         <Box>
           <Paper
+            className="admin-card"
             sx={{
               p: 2,
               display: "flex",
@@ -217,20 +231,21 @@ export default function AdminDashboard() {
         </Box>
       </Box>
 
-      {/* Grid cho phần Charts và Recent Activities */}
+      {/* Charts and Recent Activities Grid */}
       <Box
+        className="admin-grid-container"
         sx={{
           display: "grid",
           gridTemplateColumns: {
-            xs: "1fr", // 1 cột trên mobile
-            md: "2fr 1fr", // tỷ lệ 8:4 trên md
+            xs: "1fr",
+            md: "2fr 1fr",
           },
           gap: 3,
           mt: 3,
         }}
       >
         {/* Charts */}
-        <Paper sx={{ p: 3 }}>
+        <Paper className="admin-chart-container" sx={{ p: 3 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h6">Activity Overview</Typography>
             <Button size="small" variant="outlined">
@@ -238,31 +253,44 @@ export default function AdminDashboard() {
             </Button>
           </Box>
           <SimpleLineChart />
-         
         </Paper>
 
         {/* Recent Activities */}
-        <Paper sx={{ p: 3, height: "100%" }}>
+        <Paper className="admin-section" sx={{ p: 3, height: "100%" }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h6">Recent Activities</Typography>
-            <Button size="small" variant="text">
-              View All
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => setShowAll(!showAll)}
+            >
+              {showAll ? "Show Less" : "View All"}
             </Button>
           </Box>
           <Stack spacing={2} divider={<Divider flexItem />}>
-            {recentActivities.map((activity) => (
-              <Box key={activity.id}>
-                <Typography variant="body2" fontWeight={500}>
-                  {activity.user}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {activity.action}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {activity.time}
-                </Typography>
-              </Box>
-            ))}
+            {loading ? (
+              <Typography variant="body2" color="text.secondary">
+                Loading activities...
+              </Typography>
+            ) : displayedActivities.length > 0 ? (
+              displayedActivities.map((activity) => (
+                <Box key={activity.id}>
+                  <Typography variant="body2" fontWeight={500}>
+                    {activity.user}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {activity.action}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {activity.time}
+                  </Typography>
+                </Box>
+              ))
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No recent activities
+              </Typography>
+            )}
           </Stack>
         </Paper>
       </Box>

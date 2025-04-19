@@ -21,14 +21,13 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      name: {
+      action: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
-      description: {
+      subject: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
     },
     {

@@ -37,7 +37,7 @@ export default function UserForm({
         email: initialData?.email || "",
         address: initialData?.address || "",
         phone_number: initialData?.phone_number || "",
-        coins: initialData?.coins || "",
+        coins: initialData?.coins?.amount || "",
       });
     } else {
       setFormData({

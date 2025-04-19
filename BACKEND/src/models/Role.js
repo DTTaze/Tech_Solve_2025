@@ -9,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "role_id",
         otherKey: "permission_id",
         as: "permissions",
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       });
     }
   }
