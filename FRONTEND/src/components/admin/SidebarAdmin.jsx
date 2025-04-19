@@ -1,73 +1,111 @@
 import * as React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
 import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
+import Avatar from "@mui/material/Avatar";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
+import SecurityIcon from "@mui/icons-material/Security";
+import CategoryIcon from "@mui/icons-material/Category";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import GroupsIcon from "@mui/icons-material/Groups";
+import RedeemIcon from "@mui/icons-material/Redeem";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import EventIcon from "@mui/icons-material/Event";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
-import SecurityIcon from "@mui/icons-material/Security";
-import LockIcon from "@mui/icons-material/Lock";
-import CategoryIcon from "@mui/icons-material/Category";
-import MenuIcon from "@mui/icons-material/Menu";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
-import IconButton from "@mui/material/IconButton";
-import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import Badge from "@mui/material/Badge";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import Tooltip from "@mui/material/Tooltip";
 
-export default function TemporaryDrawer() {
+export default function AdminSidebar() {
   const [open, setOpen] = React.useState(false);
-  const [selectedItem, setSelectedItem] = React.useState("Dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
-  };
+  const toggleDrawer = (newOpen) => () => setOpen(newOpen);
 
-  const mainMenuItems = [
-    { text: "Trang chủ", icon: <DashboardIcon />, section: "dashboard" },
-    { text: "Quản lý người dùng", icon: <PeopleIcon />, section: "users" },
-    { text: "Phân quyền", icon: <SecurityIcon />, section: "roles" },
-    { text: "Đăng tải nội dung", icon: <CategoryIcon />, section: "content" },
+  const menuSections = [
     {
-      text: "Giao dịch",
-      icon: <CurrencyExchangeIcon />,
-      section: "transactions",
+      label: "Quản lý chính",
+      items: [
+        {
+          text: "Trang chủ",
+          icon: <DashboardIcon />,
+          path: "/admin",
+        },
+        {
+          text: "Quản lý người dùng",
+          icon: <PeopleIcon />,
+          path: "/admin/users",
+        },
+        {
+          text: "Quản lý quyền truy cập",
+          icon: <SecurityIcon />,
+          path: "/admin/rbac",
+        },
+      ],
+    },
+    {
+      label: "Quản lý nội dung",
+      items: [
+        {
+          text: "Nhiệm vụ",
+          icon: <AssignmentIcon />,
+          path: "/admin/content/missions",
+        },
+        {
+          text: "Sản phẩm từ đối tác",
+          icon: <RedeemIcon />,
+          path: "/admin/content/items",
+        },
+        {
+          text: "Sản phẩm trao đổi P2P",
+          icon: <ShoppingCartIcon />,
+          path: "/admin/content/marketplace",
+        },
+        {
+          text: "Bài đăng",
+          icon: <VideoLibraryIcon />,
+          path: "/admin/content/posts",
+        },
+        {
+          text: "Sự kiện",
+          icon: <EventIcon />,
+          path: "/admin/content/events",
+        },
+      ],
+    },
+    {
+      label: "Quản lý giao dịch và xu thưởng",
+      items: [
+        {
+          text: "Giao dịch",
+          icon: <CurrencyExchangeIcon />,
+          path: "/admin/transactions",
+        },
+        {
+          text: "Xu thưởng",
+          icon: <MonetizationOnIcon />,
+          path: "/admin/rewards",
+        },
+      ],
     },
   ];
 
-  const contentMenuItems = [
-    { text: "Nhiệm vụ", icon: <AssignmentIcon />, section: "content" },
-    { text: "Sản phẩm", icon: <ShoppingCartIcon />, section: "content" },
-    { text: "Video ngắn", icon: <VideoLibraryIcon />, section: "content" },
-    { text: "Avatars", icon: <PermIdentityIcon />, section: "content" },
-  ];
-
   const handleNavigation = (item) => {
-    setSelectedItem(item.text);
-
-    // Create a custom event to notify the admin page
-    const navigationEvent = new CustomEvent("admin-navigation", {
-      detail: {
-        section: item.section,
-        subsection: item.text,
-      },
-    });
-
-    window.dispatchEvent(navigationEvent);
+    navigate(item.path);
     setOpen(false);
   };
 
@@ -79,9 +117,7 @@ export default function TemporaryDrawer() {
         display: "flex",
         flexDirection: "column",
       }}
-      role="presentation"
     >
-      {/* Header with Logo */}
       <Box
         sx={{
           display: "flex",
@@ -92,17 +128,11 @@ export default function TemporaryDrawer() {
           backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
         }}
       >
-        {/* <img
-          src={Logo || "https://via.placeholder.com/40x40"}
-          alt="Logo"
-          style={{ height: 40, marginRight: 12 }}
-        /> */}
         <Typography variant="h6" fontWeight={600} color="primary">
-          Admin Panel
+          Green Flag Admin
         </Typography>
       </Box>
 
-      {/* User Profile Section */}
       <Box
         sx={{
           p: 2,
@@ -113,15 +143,8 @@ export default function TemporaryDrawer() {
           mb: 1,
         }}
       >
-        <Avatar
-          sx={{
-            width: 40,
-            height: 40,
-            mr: 2,
-            bgcolor: "primary.main",
-          }}
-        >
-          JD
+        <Avatar sx={{ width: 40, height: 40, mr: 2, bgcolor: "primary.main" }}>
+          GF
         </Avatar>
         <Box>
           <Typography variant="subtitle2" fontWeight={600}>
@@ -133,128 +156,69 @@ export default function TemporaryDrawer() {
         </Box>
       </Box>
 
-      {/* Main Navigation */}
-      <Typography
-        variant="overline"
-        color="text.secondary"
-        sx={{ px: 3, pt: 2, pb: 1 }}
-      >
-        Main
-      </Typography>
-      <List disablePadding>
-        {mainMenuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={selectedItem === item.text}
-              onClick={() => handleNavigation(item)}
-              sx={{
-                mx: 1,
-                borderRadius: 1,
-                mb: 0.5,
-                "&.Mui-selected": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.12),
-                  "&:hover": {
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.primary.main, 0.18),
-                  },
-                },
-                "&:hover": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 40,
-                  color:
-                    selectedItem === item.text ? "primary.main" : "inherit",
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body2"
-                    fontWeight={selectedItem === item.text ? 600 : 400}
+      {menuSections.map((section) => (
+        <React.Fragment key={section.label}>
+          <Typography
+            variant="overline"
+            color="text.secondary"
+            sx={{ px: 3, pt: 2, pb: 1 }}
+          >
+            {section.label}
+          </Typography>
+          <List disablePadding>
+            {section.items.map((item) => {
+              const selected = location.pathname === item.path;
+              return (
+                <ListItem key={item.text} disablePadding>
+                  <ListItemButton
+                    selected={selected}
+                    onClick={() => handleNavigation(item)}
                     sx={{
-                      color:
-                        selectedItem === item.text ? "primary.main" : "inherit",
+                      mx: 1,
+                      borderRadius: 1,
+                      mb: 0.5,
+                      "&.Mui-selected": {
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.primary.main, 0.12),
+                        "&:hover": {
+                          backgroundColor: (theme) =>
+                            alpha(theme.palette.primary.main, 0.18),
+                        },
+                      },
+                      "&:hover": {
+                        backgroundColor: (theme) =>
+                          alpha(theme.palette.primary.main, 0.08),
+                      },
                     }}
                   >
-                    {item.text}
-                  </Typography>
-                }
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 40,
+                        color: selected ? "primary.main" : "inherit",
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          fontWeight={selected ? 600 : 400}
+                          sx={{ color: selected ? "primary.main" : "inherit" }}
+                        >
+                          {item.text}
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+          <Divider sx={{ my: 1.5 }} />
+        </React.Fragment>
+      ))}
 
-      <Divider sx={{ my: 1.5 }} />
-
-      <Typography
-        variant="overline"
-        color="text.secondary"
-        sx={{ px: 3, pt: 1, pb: 1 }}
-      >
-        Content
-      </Typography>
-      <List disablePadding>
-        {contentMenuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={selectedItem === item.text}
-              onClick={() => handleNavigation(item)}
-              sx={{
-                mx: 1,
-                borderRadius: 1,
-                mb: 0.5,
-                "&.Mui-selected": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.12),
-                  "&:hover": {
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.primary.main, 0.18),
-                  },
-                },
-                "&:hover": {
-                  backgroundColor: (theme) =>
-                    alpha(theme.palette.primary.main, 0.08),
-                },
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 40,
-                  color:
-                    selectedItem === item.text ? "primary.main" : "inherit",
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body2"
-                    fontWeight={selectedItem === item.text ? 600 : 400}
-                    sx={{
-                      color:
-                        selectedItem === item.text ? "primary.main" : "inherit",
-                    }}
-                  >
-                    {item.text}
-                  </Typography>
-                }
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-
-      {/* Footer Section with Settings and Logout */}
       <Box
         sx={{
           mt: "auto",
@@ -269,7 +233,7 @@ export default function TemporaryDrawer() {
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <SettingsIcon />
               </ListItemIcon>
-              <ListItemText primary="Settings" />
+              <ListItemText primary="Cài đặt" />
             </ListItemButton>
           </ListItem>
           <ListItem disablePadding>
@@ -277,7 +241,7 @@ export default function TemporaryDrawer() {
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <LogoutIcon />
               </ListItemIcon>
-              <ListItemText primary="Logout" />
+              <ListItemText primary="Đăng xuất" />
             </ListItemButton>
           </ListItem>
         </List>

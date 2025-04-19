@@ -20,6 +20,7 @@ import { Box, Typography } from "@mui/material";
 import AdminTabs from "./AdminTabs";
 import TaskForm from "../ui/form/TaskForm";
 import ItemForm from "../ui/form/ItemForm";
+import { Outlet } from "react-router-dom";
 // Tasks Management Component
 function TasksManagement() {
   const [tasks, setTasks] = useState([]);
@@ -324,7 +325,8 @@ export default function ContentManagement() {
       <Typography variant="h5" component="h1" sx={{ mb: 3, p: 2 }}>
         Content Management
       </Typography>
-      <AdminTabs tabs={tabs} />
+      {/* <AdminTabs tabs={tabs} /> */}
+      <Outlet />
     </Box>
   );
 }

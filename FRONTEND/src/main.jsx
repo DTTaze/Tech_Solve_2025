@@ -15,7 +15,13 @@ import App from "./App.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
 import "./index.css";
 import { NotificationProvider } from "./components/ui/NotificationProvider";
-
+import AdminDashboard from "./components/admin/AdminDashboard.jsx";
+import UsersManagement from "./components/admin/UsersManagement.jsx";
+import ContentManagement from "./components/admin/ContentManagement.jsx";
+import RolesPermissions from "./components/admin/RolesPermissions.jsx";
+import MissionsManagement from "./components/admin/MissionsManagement.jsx";
+import ItemsManagement from "./components/admin/ItemsManagement.jsx";
+import TransactionsManagement from "./components/admin/TransactionsManagement.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -48,6 +54,22 @@ const router = createBrowserRouter([
             <Admin />
           </ProtectedRoute>
         ),
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: "users", element: <UsersManagement /> },
+
+          {
+            path: "content",
+            element: <ContentManagement />,
+            children: [
+              { path: "missions", element: <MissionsManagement /> },
+              { path: "items", element: <ItemsManagement /> },
+            ],
+          },
+          { path: "rbac", element: <RolesPermissions /> },
+          { path: "transactions", element: <TransactionsManagement /> },
+          // { path: "rewards", element: <RewardManagement /> },
+        ],
       },
       {
         path: "auth/success",

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
 import "../styles/pages/admin.css";
 import CustomizedBreadcrumbs from "../components/admin/BreadCrumb";
 import TemporaryDrawer from "../components/admin/SidebarAdmin";
@@ -82,36 +83,6 @@ function Admin() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  const renderSection = () => {
-    switch (currentSection) {
-      case "dashboard":
-        return <AdminDashboard />;
-      case "users":
-        return <UsersManagement />;
-      case "roles":
-        return <RolesPermissions />;
-      case "content":
-        return <ContentManagement />;
-      default:
-        return <AdminDashboard />;
-    }
-  };
-
-  // Listen to sidebar navigation events
-  React.useEffect(() => {
-    const handleNavigation = (event) => {
-      if (event.detail && event.detail.section) {
-        setCurrentSection(event.detail.section.toLowerCase());
-      }
-    };
-
-    window.addEventListener("admin-navigation", handleNavigation);
-
-    return () => {
-      window.removeEventListener("admin-navigation", handleNavigation);
-    };
-  }, []);
 
   return (
     <div className="admin-pages-container">
@@ -255,7 +226,9 @@ function Admin() {
       </div>
 
       {/* Main content */}
-      <div className="admin-content-container">{renderSection()}</div>
+      <div className="admin-content-container">
+        <Outlet />
+      </div>
     </div>
   );
 }

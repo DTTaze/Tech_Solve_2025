@@ -196,4 +196,12 @@ export const updateRolePermissionApi = (id, data) => {
 
 export const acceptTaskByIdApi = (task_id, user_id) => {
   return axios.post(`api/tasks/accept/${user_id}/${task_id}`);
-}
+};
+
+export const deleteTransactionsApi = (id) => {
+  return axios.delete(`api/transactions/${id}`);
+};
+
+export const getAllTransactionsApi = () => {
+  return axios.get("api/transactions");
+};

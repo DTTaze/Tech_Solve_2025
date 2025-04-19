@@ -1,6 +1,6 @@
 require("dotenv").config();
 import bcrypt from "bcryptjs";
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
 const Task = db.Task;
@@ -14,11 +14,43 @@ const jwt = require("jsonwebtoken");
 
 const createUser = async (data) => {
   try {
-    let { email, password, username, full_name, phone_number, address } = data;
+    let {
+      email,
+      password,
+      username,
+      role_id,
+      full_name,
+      phone_number,
+      address,
+    } = data;
+    role_id = Number(role_id);
+    if (isNaN(role_id)) {
+      throw new Error("Invalid Role ID");
+    } else {
+      const checkRole = await Role.findByPk(role_id);
+      if (!checkRole) {
+        throw new Error("Role does not exist");
+      }
+      if (
+        checkRole.dataValues.name.toLowerCase() !== "user" &&
+        checkRole.dataValues.name.toLowerCase() !== "customer"
+      ) {
+        throw new Error("Cannot assign this role");
+      }
+    }
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { username }],
+      },
+    });
 
-    const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      throw new Error("User already exists");
+      if (existingUser.email === email) {
+        throw new Error("Email already exists");
+      }
+      if (existingUser.username === username) {
+        throw new Error("Username already exists");
+      }
     }
 
     let today = new Date();
@@ -30,7 +62,7 @@ const createUser = async (data) => {
     const hashPassword = bcrypt.hashSync(password, salt);
 
     const newUser = await User.create({
-      role_id: 2,
+      role_id: role_id,
       email,
       password: hashPassword,
       username,
@@ -81,7 +113,7 @@ const loginUser = async (data) => {
     await user.update({
       last_logined: todayStr,
     });
-    // Create an access token
+
     const payload = {
       id: user.id,
       role_id: user.role_id,

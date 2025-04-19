@@ -1,16 +1,14 @@
 const db = require("../models/index.js");
 const Transaction = db.Transaction;
 const Item = db.Item;
+const User = db.User;
 
 const createTransaction = async (transactionData) => {
   try {
-    const { name, quantity, buyer_id, item_id, status } =
-      transactionData;
+    const { name, quantity, buyer_id, item_id, status } = transactionData;
 
     if (!name || !buyer_id || !item_id) {
-      throw new Error(
-        "Name, buyer_id, and item_id are required fields."
-      );
+      throw new Error("Name, buyer_id, and item_id are required fields.");
     }
 
     const parsedQuantity = Number(quantity);
@@ -18,9 +16,7 @@ const createTransaction = async (transactionData) => {
     const parsedItemId = Number(item_id);
 
     if (isNaN(parsedBuyerId) || isNaN(parsedItemId)) {
-      throw new Error(
-        "buyer_id, and item_id must be valid numbers."
-      );
+      throw new Error("buyer_id, and item_id must be valid numbers.");
     }
 
     // Nếu `quantity` không hợp lệ, mặc định là 1
@@ -70,6 +66,27 @@ const getTransactionByUserId = async (buyerId) => {
   }
 };
 
+const getAllTransactions = async () => {
+  try {
+    return await Transaction.findAll({
+      include: [
+        {
+          model: User,
+          as: "buyer",
+          attributes: ["id", "full_name", "username"],
+        },
+        {
+          model: Item,
+          as: "item",
+          attributes: ["id", "name"],
+        },
+      ],
+    });
+  } catch (e) {
+    throw e;
+  }
+};
+
 const deleteTransaction = async (transaction_id) => {
   try {
     const transaction = await Transaction.destroy({
@@ -88,4 +105,5 @@ module.exports = {
   createTransaction,
   getTransactionByUserId,
   deleteTransaction,
+  getAllTransactions,
 };
