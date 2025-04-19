@@ -69,12 +69,6 @@ module.exports = {
       },
     ]);
 
-    // Then update ranks with corresponding user_ids
-    for (let i = 1; i <= 8; i++) {
-      await queryInterface.sequelize.query(
-        `UPDATE ranks SET user_id = ${i} WHERE id = ${i}`
-      );
-    }
   },
 
   down: async (queryInterface, Sequelize) => {
