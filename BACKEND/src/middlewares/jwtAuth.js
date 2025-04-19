@@ -4,6 +4,7 @@ const db = require("../models/index.js");
 const User = db.User;
 const Role = db.Role;
 const Coin = db.Coin;
+const Rank = db.Rank;
 
 const jwtAuth = async (req, res, next) => {
   const white_lists = [
@@ -39,7 +40,12 @@ const jwtAuth = async (req, res, next) => {
               model: Coin,
               as: "coins",
               attributes: ["id", "amount"],
-            }
+            },
+            {
+              model: Rank,
+              as: "ranks",
+              attributes: ["id", "order"],
+            },
           ],
         });
         if (!user) return res.status(401).json({ message: "User not found" });
@@ -58,4 +64,5 @@ const jwtAuth = async (req, res, next) => {
     }
   }
 };
-export default jwtAuth;
+
+module.exports = jwtAuth;

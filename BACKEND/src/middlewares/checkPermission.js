@@ -31,4 +31,4 @@ const checkPermission = (action, subject) => {
   };
 };
 
-export default checkPermission;
+module.exports = checkPermission;

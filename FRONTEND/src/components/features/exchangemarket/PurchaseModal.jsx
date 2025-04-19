@@ -1,11 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Coins } from "lucide-react";
-import QuantityInput from "../../ui/QuantityInput"
 
 export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConfirm }) {
+  const [quantity, setQuantity] = useState(1);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setQuantity(1); // Reset quantity khi modal đóng
+    }
+  }, [isOpen]);
+
   if (!item || !isOpen) return null;
 
-  const [quantity, setQuantity] = useState(1);
   const totalCost = item.price * quantity;
   const canPurchase = userCoins >= totalCost;
 
@@ -16,7 +39,10 @@ export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConf
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50">
-      <div className="bg-white rounded-lg shadow-lg w-96 p-6">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-lg shadow-lg w-96 p-6"
+      >
         <h2 className="text-xl font-semibold">Xác nhận trao đổi</h2>
         <p className="text-gray-600 text-sm">Bạn đang trao đổi vật phẩm này.</p>
 
@@ -67,17 +93,17 @@ export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConf
 
         {/* Nút xác nhận */}
         <div className="flex justify-between mt-4">
-          <button 
-            onClick={onClose} 
-            className="px-4 py-2 border !rounded-md hover:bg-gray-100 transition"
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border rounded-md hover:bg-gray-100 transition"
           >
             Thoát
           </button>
 
-          <button 
+          <button
             onClick={() => onConfirm(quantity)}
-            disabled={!canPurchase} 
-            className={`w-1/2 p-2 !rounded-md text-white bg-[#0B6E4F]`}
+            disabled={!canPurchase}
+            className={`w-1/2 p-2 rounded-md text-white ${canPurchase ? "bg-[#0B6E4F]" : "bg-gray-400 cursor-not-allowed"}`}
           >
             {canPurchase ? "Xác nhận giao dịch" : "Không đủ coins"}
           </button>

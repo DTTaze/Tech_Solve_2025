@@ -1,20 +1,22 @@
-import express from "express";
-import authRoutes from "../routes/authRoutes.js";
-import userRoutes from "../routes/userRoutes.js";
-import taskRoutes from "../routes/taskRoutes.js";
-import itemRoutes from "../routes/itemRoutes.js";
-import videoRoutes from "../routes/videoRoutes.js";
-import imageRoutes from "../routes/imageRoutes.js";
-import avatarRoutes from "../routes/avatarRoutes.js";
-import jwtAuth from "../middlewares/jwtAuth.js";
-import responseFormatter from "../middlewares/responseFormatter.js";
-import homeController from "../controllers/homeController.js";
-import roleRoutes from "./roleRoutes.js";
-import permissionRoutes from "./permissionRoutes.js";
-import transactionRoutes from "./transactionRoutes.js";
-import coinRoutes from "./coinRoutes.js";
+const express = require("express");
+const authRoutes = require("../routes/authRoutes.js");
+const userRoutes = require("../routes/userRoutes.js");
+const taskRoutes = require("../routes/taskRoutes.js");
+const itemRoutes = require("../routes/itemRoutes.js");
+const videoRoutes = require("../routes/videoRoutes.js");
+const imageRoutes = require("../routes/imageRoutes.js");
+const avatarRoutes = require("../routes/avatarRoutes.js");
+const jwtAuth = require("../middlewares/jwtAuth.js");
+const responseFormatter = require("../middlewares/responseFormatter.js");
+const homeController = require("../controllers/homeController.js");
+const roleRoutes = require("./roleRoutes.js");
+const permissionRoutes = require("./permissionRoutes.js");
+const transactionRoutes = require("./transactionRoutes.js");
+const coinRoutes = require("./coinRoutes.js");
+const rankRoutes = require("./rankRoutes.js");
 const router = express.Router();
 const serverAdapter = require("../services/bullboard.js");
+
 const initWebRoutes = (app) => {
   app.use("/admin/queues", serverAdapter.getRouter());
   app.use(jwtAuth);
@@ -33,8 +35,9 @@ const initWebRoutes = (app) => {
   app.use("/api/images", imageRoutes);
   app.use("/api/transactions", transactionRoutes);
   app.use("/api/coins", coinRoutes);
+  app.use("/api/ranks", rankRoutes);
 
   return app.use("/api", router);
 };
 
-export default initWebRoutes;
+module.exports = initWebRoutes;

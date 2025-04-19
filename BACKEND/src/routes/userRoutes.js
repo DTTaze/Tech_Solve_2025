@@ -1,6 +1,6 @@
-import express from "express";
-import userController from "../controllers/userController";
-import checkPermission from "../middlewares/checkPermission";
+const express = require("express");
+const userController = require("../controllers/userController");
+const checkPermission = require("../middlewares/checkPermission");
 const router = express.Router();
 
 router.get(
@@ -16,4 +16,4 @@ router.delete("/:id", userController.handleDeleteUser);//for admin
 router.post("/task/all/:id", userController.handleGetAllTaskById);//for admin
 router.get("/items/:user_id", userController.handleGetItemByIdUser);//for admin
 
-export default router;
+module.exports = router;

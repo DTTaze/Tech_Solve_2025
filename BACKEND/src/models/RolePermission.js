@@ -6,12 +6,16 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       RolePermission.belongsTo(models.Role, {
         foreignKey: "role_id",
-        as: "roles",
+        as: "role",
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       });
 
       RolePermission.belongsTo(models.Permission, {
         foreignKey: "permission_id",
-        as: "permissions",
+        as: "permission",
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       });
     }
   }
@@ -24,6 +28,8 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
         primaryKey: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       },
       permission_id: {
         type: DataTypes.INTEGER,
@@ -32,6 +38,8 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
         primaryKey: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       },
     },
     {

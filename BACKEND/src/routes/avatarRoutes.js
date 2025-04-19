@@ -17,4 +17,4 @@ router.put(
 );
 router.delete("/:user_id", avatarController.handleDeleteAvatar);
 
-export default router;
+module.exports = router;

@@ -1,4 +1,4 @@
-import express from "express";
+const express = require("express");
 const taskController = require("../controllers/taskController");
 const middlewareImage = require("../middlewares/middlewareImage");
 
@@ -28,4 +28,4 @@ router.get(
   "/difficulty/:difficulty_name",
   taskController.handleGetAllTasksByDifficultyName
 );
-export default router;
+module.exports = router;
