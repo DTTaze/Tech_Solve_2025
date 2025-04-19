@@ -1,5 +1,5 @@
-import express from "express";
-import middlewareVideo from "../middlewares/middlewareVideo";
+const express = require("express");
+const middlewareVideo = require("../middlewares/middlewareVideo");
 const videoController = require("../controllers/videoController");
 
 const router = express.Router();
@@ -18,4 +18,4 @@ router.put(
 );
 router.delete("/:user_id/:video_id", videoController.handleDeleteVideo);
 
-export default router;
+module.exports = router;

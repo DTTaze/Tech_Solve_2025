@@ -1,4 +1,4 @@
-import express from "express";
+const express = require("express");
 const itemController =  require("../controllers/itemController"); 
 
 const router = express.Router();
@@ -10,4 +10,4 @@ router.get("/:id", itemController.handleGetItemByIdItem);
 router.put("/:id", itemController.handleUpdateItem);
 router.delete("/:id", itemController.handleDeleteItem);
 router.post("/purchase/:item_id",itemController.handlePurchaseItem)
-export default router;
+module.exports = router;
