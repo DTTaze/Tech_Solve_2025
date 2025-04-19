@@ -5,10 +5,11 @@ import {
   updateUserAvatarApi,
   getUserAvatarByIdApi,
 } from "../../../utils/api.js";
+import Loader from "../../ui/Loader.jsx";
 
 function MenuItem({ text, onClick }) {
   return (
-    <div 
+    <div
       className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
       onClick={onClick}
     >
@@ -20,30 +21,41 @@ function MenuItem({ text, onClick }) {
 function ProfileCard({ setSelectedTab }) {
   const { auth, appLoading, setAuth } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
-  const [avatar, setAvatar] = useState(auth?.user?.avatar_url || "");
+  const [avatar, setAvatar] = useState("");
   const fileInputRef = useRef(null);
+  const [isFetched, setIsFetched] = useState(false);
 
   useEffect(() => {
-    if (!avatar && auth?.user?.id) {
+    if (!isFetched && auth?.user?.id) {
+      setIsFetched(true);
       (async () => {
         try {
           const response = await getUserAvatarByIdApi(auth.user.id);
-          if (response?.avatar_url) {
-            setAvatar(response.avatar_url);
-            setAuth(prev => ({ ...prev, user: { ...prev.user, avatar_url: response.avatar_url } }));
+          if (response?.data?.avatar_url) {
+            const avatarUrl = `${response.data.avatar_url}?t=${Date.now()}`;
+            setAvatar(avatarUrl);
+            setAuth(prev => ({
+              ...prev,
+              user: { ...prev.user, avatar_url: avatarUrl },
+            }));
           }
         } catch (error) {
           console.error("Error fetching avatar:", error);
         }
       })();
     }
-  }, [auth?.user?.id, avatar, setAuth]);
+  }, [auth?.user?.id, isFetched, setAuth]);
 
-  if (appLoading) return <p>Loading user data...</p>;
+  if (appLoading) return <Loader></Loader>;
   if (!auth.isAuthenticated) return <p>User not logged in.</p>;
 
   const { user } = auth;
-  const avatarUrl = avatar || "../src/assets/images/default-avatar.jpg";
+
+  const avatarUrl = avatar
+    ? avatar
+    : user?.avatar_url
+    ? `${user.avatar_url}?t=${Date.now()}`
+    : "../src/assets/images/default-avatar.jpg";
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -53,10 +65,13 @@ function ProfileCard({ setSelectedTab }) {
       const response = user.avatar_url
         ? await updateUserAvatarApi(user.id, file)
         : await uploadUserAvatarApi(user.id, file);
-
-      if (response?.user?.avatar_url) {
-        setAvatar(response.user.avatar_url);
-        setAuth(prev => ({ ...prev, user: { ...prev.user, avatar_url: response.user.avatar_url } }));
+      if (response?.data?.avatar_url) {
+        const updatedUrl = `${response.data.avatar_url}?t=${Date.now()}`;
+        setAvatar(updatedUrl);
+        setAuth(prev => ({
+          ...prev,
+          user: { ...prev.user, avatar_url: updatedUrl },
+        }));
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
@@ -70,9 +85,10 @@ function ProfileCard({ setSelectedTab }) {
       <div className="flex flex-wrap items-center space-x-4 sm:space-x-6">
         <div className="relative flex h-20 w-20 sm:h-16 sm:w-16 shrink-0">
           <img
+            key={avatarUrl} // ép React re-render ảnh ngay khi URL thay đổi
             alt="Avatar"
-            className={`h-full w-full rounded-lg object-cover cursor-pointer ${loading ? 'opacity-50' : 'opacity-100'}`}
-            src={`${avatarUrl}?t=${Date.now()}`}
+            className={`h-full w-full rounded-lg object-cover cursor-pointer ${loading ? "opacity-50" : "opacity-100"}`}
+            src={avatarUrl}
             onClick={() => fileInputRef.current.click()}
           />
           <input
