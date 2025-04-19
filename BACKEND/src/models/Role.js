@@ -5,9 +5,12 @@ module.exports = (sequelize, DataTypes) => {
   class Role extends Model {
     static associate(models) {
       Role.belongsToMany(models.Permission, {
-        through: "role_permissions",
+        through: models.RolePermission,
         foreignKey: "role_id",
+        otherKey: "permission_id",
         as: "permissions",
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       });
     }
   }
@@ -15,8 +18,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       id: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
         primaryKey: true,
+        autoIncrement: true,
       },
       name: {
         type: DataTypes.STRING,
@@ -34,6 +37,5 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "roles",
     }
   );
-
   return Role;
 };

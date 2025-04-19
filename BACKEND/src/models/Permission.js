@@ -5,9 +5,12 @@ module.exports = (sequelize, DataTypes) => {
   class Permission extends Model {
     static associate(models) {
       Permission.belongsToMany(models.Role, {
-        through: "role_permissions",
+        through: models.RolePermission,
         foreignKey: "permission_id",
+        otherKey: "role_id",
         as: "roles",
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
       });
     }
   }
@@ -15,16 +18,17 @@ module.exports = (sequelize, DataTypes) => {
     {
       id: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
         primaryKey: true,
+        autoIncrement: true,
       },
-      action: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
       },
-      subject: {
+      description: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
     },
     {
@@ -33,6 +37,5 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "permissions",
     }
   );
-
   return Permission;
 };
