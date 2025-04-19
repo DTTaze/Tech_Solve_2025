@@ -98,7 +98,6 @@ function UserHeader() {
     { key: "", label: "Trang chủ" },
     { key: "missions", label: "Nhiệm vụ" },
     { key: "market", label: "Trao đổi" },
-    // { key: "mission-video", label: "Video ngắn" },
   ];
 
   const avatarUrl =
@@ -153,7 +152,6 @@ function UserHeader() {
           {profileMenuOpen && (
             <div className="absolute right-0 bg-[#f6f5f8] rounded-lg shadow-lg w-48 px-2 py-2">
               <p className="p-2 font-bold">
-                Tên người dùng: <br />
                 {auth.user.username}
               </p>
               <hr className="border border-gray-300 mb-2" />

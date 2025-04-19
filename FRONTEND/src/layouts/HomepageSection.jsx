@@ -44,7 +44,7 @@ function SectionHero() {
     }, [index]);
 
     return (
-        <section className="relative min-h-screen w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-12 gap-8 overflow-hidden">
+        <section className="relative min-h-screen w-full flex flex-col lg:flex-row justify-center items-center p-4 sm:p-6 lg:p-12 overflow-hidden">
             <header className="w-full lg:w-1/2 flex justify-center items-center text-center font-bold text-lg sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl text-[#059212] leading-tight px-4">
                 <h1 id="heroTitle" className={`transition-opacity duration-500 ${showText ? "opacity-100" : "opacity-0"}`}>
                     {formattedTitle}
