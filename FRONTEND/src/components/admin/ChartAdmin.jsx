@@ -6,7 +6,7 @@ const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300, 3000, 2000, 2780, 1890,
 const xLabels = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export default function SimpleLineChart() {
-  const [chartWidth, setChartWidth] = React.useState(window.innerWidth * 0.9);
+  const [chartWidth, setChartWidth] = React.useState(window.innerWidth * 0.7);
 
   React.useEffect(() => {
     const handleResize = () => {

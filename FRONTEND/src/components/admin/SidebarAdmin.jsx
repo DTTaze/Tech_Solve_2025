@@ -2,8 +2,6 @@ import * as React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -12,24 +10,26 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Avatar from "@mui/material/Avatar";
+import IconButton from "@mui/material/IconButton";
+import { alpha } from "@mui/material/styles";
+
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import SecurityIcon from "@mui/icons-material/Security";
-import CategoryIcon from "@mui/icons-material/Category";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import GroupsIcon from "@mui/icons-material/Groups";
 import RedeemIcon from "@mui/icons-material/Redeem";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import EventIcon from "@mui/icons-material/Event";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
-import PermIdentityIcon from "@mui/icons-material/PermIdentity";
-import { alpha } from "@mui/material/styles";
+import MenuIcon from "@mui/icons-material/Menu";
 
-export default function AdminSidebar() {
+
+
+export default function TemporaryDrawer({userInfo}) {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -143,15 +143,22 @@ export default function AdminSidebar() {
           mb: 1,
         }}
       >
-        <Avatar sx={{ width: 40, height: 40, mr: 2, bgcolor: "primary.main" }}>
-          GF
-        </Avatar>
+        <Avatar
+          sx={{
+            width: 40,
+            height: 40,
+            mr: 2,
+            bgcolor: "primary.main",
+          }}
+          src={userInfo?.avatar_url} 
+          alt={userInfo?.username}
+        />
         <Box>
           <Typography variant="subtitle2" fontWeight={600}>
-            John Doe
+            {userInfo?.full_name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Administrator
+            {userInfo?.email}
           </Typography>
         </Box>
       </Box>
@@ -219,6 +226,9 @@ export default function AdminSidebar() {
         </React.Fragment>
       ))}
 
+      <Divider sx={{ my: 1.5 }} />
+
+      {/* Footer Section with Settings and Logout */}
       <Box
         sx={{
           mt: "auto",

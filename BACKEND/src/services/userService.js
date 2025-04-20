@@ -15,7 +15,7 @@ const jwt = require("jsonwebtoken");
 
 const createUser = async (data) => {
   try {
-    let {
+    let { 
       email,
       password,
       username,
