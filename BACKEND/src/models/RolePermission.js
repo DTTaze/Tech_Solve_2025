@@ -7,29 +7,33 @@ module.exports = (sequelize, DataTypes) => {
       RolePermission.belongsTo(models.Role, {
         foreignKey: "role_id",
         as: "role",
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       });
 
       RolePermission.belongsTo(models.Permission, {
         foreignKey: "permission_id",
         as: "permission",
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       });
     }
   }
   RolePermission.init(
     {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       role_id: {
         type: DataTypes.INTEGER,
         references: {
           model: "roles",
           key: "id",
         },
-        primaryKey: true,
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       permission_id: {
         type: DataTypes.INTEGER,
@@ -37,9 +41,8 @@ module.exports = (sequelize, DataTypes) => {
           model: "permissions",
           key: "id",
         },
-        primaryKey: true,
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
     },
     {

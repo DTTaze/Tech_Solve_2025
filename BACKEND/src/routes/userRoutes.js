@@ -3,17 +3,25 @@ const userController = require("../controllers/userController");
 const checkPermission = require("../middlewares/checkPermission");
 const router = express.Router();
 
+router.get("/", userController.handleGetAllUsers);
+router.get("/me", userController.handleGetProfile);
 router.get(
-  "/",
-  checkPermission("read", "user"),
-  userController.handleGetAllUsers
+  "/:id",
+  // checkPermission("get", "user_id"),
+  userController.handleGetUser
 );
-router.get("/me", userController.handleGetProfile);//for user
-router.get("/:id", userController.handleGetUser);//for admin
-router.get("/task/completed/:id", userController.handleGetTaskCompleted);//for admin
-router.put("/:id", userController.handleUpdateUser);//for admin
-router.delete("/:id", userController.handleDeleteUser);//for admin
-router.post("/task/all/:id", userController.handleGetAllTaskById);//for admin
-router.get("/items/:user_id", userController.handleGetItemByIdUser);//for admin
+router.get("/task/completed/:id", userController.handleGetTaskCompleted);
+router.put(
+  "/:id",
+  // checkPermission("put", "user_id"),
+  userController.handleUpdateUser
+);
+router.delete(
+  "/:id",
+  // checkPermission("delete", "user_id"),
+  userController.handleDeleteUser
+);
+router.get("/tasks/all/:id", userController.handleGetAllTasksById);
+router.get("/items/:user_id", userController.handleGetItemByIdUser);
 
 module.exports = router;

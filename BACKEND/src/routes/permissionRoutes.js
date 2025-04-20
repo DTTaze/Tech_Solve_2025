@@ -6,27 +6,19 @@ const router = express.Router();
 
 router.post(
   "/create",
-  //   checkPermission("create", "Permission"),
+  // checkPermission("post", "permission"),
   permissionController.handleCreatePermission
 );
-router.get(
-  "/",
-  // checkPermission("read", "Permission"),
-  permissionController.handleGetAllPermissions
-);
-router.get(
-  "/:id",
-  // checkPermission("read", "Permission"),
-  permissionController.handleGetPermission
-);
+router.get("/", permissionController.handleGetAllPermissions);
+router.get("/:id", permissionController.handleGetPermission);
 router.put(
   "/:id",
-  //   checkPermission("update", "Permission"),
+  // checkPermission("put", "permission_id"),
   permissionController.handleUpdatePermission
 );
 router.delete(
   "/:id",
-  //   checkPermission("delete", "Permission"),
+  // checkPermission("delete", "permission_id"),
   permissionController.handleDeletePermission
 );
 

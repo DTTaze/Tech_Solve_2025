@@ -18,9 +18,9 @@ const router = express.Router();
 const serverAdapter = require("../services/bullboard.js");
 
 const initWebRoutes = (app) => {
+  app.use(responseFormatter);
   app.use("/admin/queues", serverAdapter.getRouter());
   app.use(jwtAuth);
-  app.use(responseFormatter);
 
   router.get("/", homeController.handleHome);
 

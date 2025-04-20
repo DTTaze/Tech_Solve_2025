@@ -343,7 +343,7 @@ const getTaskCompleted = async (id) => {
   }
 };
 
-const getAllTaskById = async (id) => {
+const getAllTasksById = async (id) => {
   try {
     const user = await User.findAll({ where: { id: id } });
     if (!user) {
@@ -402,6 +402,6 @@ module.exports = {
   findOrCreateUser,
   loginUser,
   getTaskCompleted,
-  getAllTaskById,
+  getAllTasksById,
   getItemByIdUser,
 };
