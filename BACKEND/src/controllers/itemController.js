@@ -4,7 +4,8 @@ const handleUploadItem = async (req, res) => {
   try {
     const user_id = Number(req.params.user_id);
     const itemData = req.body;
-    const item = await itemService.createItem(itemData, user_id);
+    const images = req.files;
+    const item = await itemService.createItem(itemData, user_id, images);
     return res.success("Item uploaded successfully", item);
   } catch (error) {
     return res.error(500, "Failed to upload item", error.message);

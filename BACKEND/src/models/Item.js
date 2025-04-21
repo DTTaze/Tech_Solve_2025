@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
   class Item extends Model {
     static associate(models) {
       Item.belongsTo(models.User, { foreignKey: "owner_id", onDelete: "CASCADE" });
-
       Item.hasMany(models.Transaction, { foreignKey: "item_id", onDelete: "CASCADE" });
     }
   }
@@ -49,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       status: {
         type: DataTypes.ENUM("available", "sold", "pending"),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "available",
       },
     },
