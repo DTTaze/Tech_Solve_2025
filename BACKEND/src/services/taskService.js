@@ -9,9 +9,9 @@ const User = db.User;
 const TaskSubmit = db.TaskSubmit;
 const TaskType = db.TaskType;
 const Type = db.Type;
-const Coin = db.Coin;
 const uploadImages = require("./imageService.js").uploadImages;
 const coinService = require("./coinService.js");
+const { nanoid } = require("nanoid");
 const createTask = async (data) => {
   try {
     let { title, content, description, coins, difficulty, total } = data;
@@ -32,6 +32,7 @@ const createTask = async (data) => {
       throw new Error("Total must be a positive number");
     }
     let result = await Task.create({
+      public_id: nanoid(),
       title,
       content,
       description,

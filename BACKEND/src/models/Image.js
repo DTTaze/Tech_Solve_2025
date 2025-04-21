@@ -3,8 +3,7 @@ const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class Image extends Model {
-    static associate(models) {
-    }
+    static associate(models) {}
   }
   Image.init(
     {
@@ -22,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       reference_type: {
-        type: DataTypes.ENUM("avatar","taskSubmit"),
+        type: DataTypes.ENUM("avatar", "taskSubmit"),
         allowNull: false,
       },
     },
@@ -32,6 +31,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "images",
     }
   );
-  
+
   return Image;
 };

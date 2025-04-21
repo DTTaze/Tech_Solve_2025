@@ -4,7 +4,7 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Coin extends Model {
     static associate(models) {
-        Coin.hasOne(models.User, { foreignKey: "coins_id", onDelete: "CASCADE" });
+      Coin.hasOne(models.User, { foreignKey: "coins_id", onDelete: "CASCADE" });
     }
   }
 
@@ -28,4 +28,4 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   return Coin;
-}
+};

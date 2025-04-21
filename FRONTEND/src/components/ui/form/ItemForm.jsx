@@ -108,6 +108,7 @@ export default function ItemForm({
             value={formData.status}
             onChange={handleChange}
             fullWidth
+            required
           />
           <TextField
             margin="dense"

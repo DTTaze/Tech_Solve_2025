@@ -27,7 +27,7 @@ const TransactionHistory = () => {
 
   const openModal = (tx) => {
     setTransaction({
-      "Mã giao dịch": tx.id,
+      "Mã giao dịch": tx.public_id,
       "Tên sản phẩm": tx.name,
       "Số lượng": tx.quantity,
       "Tổng số xu": tx.total_price,

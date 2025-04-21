@@ -4,9 +4,15 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Item extends Model {
     static associate(models) {
-      Item.belongsTo(models.User, { foreignKey: "owner_id", onDelete: "CASCADE" });
+      Item.belongsTo(models.User, {
+        foreignKey: "owner_id",
+        onDelete: "CASCADE",
+      });
 
-      Item.hasMany(models.Transaction, { foreignKey: "item_id", onDelete: "CASCADE" });
+      Item.hasMany(models.Transaction, {
+        foreignKey: "item_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -16,6 +22,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+      },
+      public_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
       },
       owner_id: {
         type: DataTypes.INTEGER,

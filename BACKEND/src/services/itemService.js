@@ -1,19 +1,21 @@
+const { nanoid } = require("nanoid");
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
-const Coin = db.Coin;
-const Transaction = db.Transaction;
-const { generateCode } = require("../utils/generateCode");
 const purchaseQueue = require("./queue");
 
 const createItem = async (itemData, user_id) => {
   try {
-    if (!user_id || !itemData.name || !itemData.price) {
+    let { name, price, description, status, stock } = itemData;
+    if (!user_id || !name || !price) {
       throw new Error("Missing required fields (owner_id, name, price)");
     }
 
-    if (itemData.price < 1) {
+    if (price < 1) {
       throw new Error("Price must be at least 1");
+    }
+    if (stock === undefined || stock < 1) {
+      throw new Error("Stock must be at least 1");
     }
 
     const owner = await User.findByPk(user_id);
@@ -21,8 +23,15 @@ const createItem = async (itemData, user_id) => {
       throw new Error("Owner ID does not exist");
     }
 
-    const newItemData = { ...itemData, owner_id: user_id };
-    const newItem = await Item.create(newItemData);
+    const newItem = await Item.create({
+      public_id: nanoid(),
+      owner_id: user_id,
+      name,
+      price,
+      description,
+      status,
+      stock,
+    });
     return newItem;
   } catch (e) {
     throw e;

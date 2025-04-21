@@ -31,7 +31,7 @@ const worker = new Worker(
     } while (exists !== null);
 
     const transaction = await Transaction.create({
-      id: uniqueCode,
+      public_id: uniqueCode,
       name,
       buyer_id: user.id,
       item_id: item.id,

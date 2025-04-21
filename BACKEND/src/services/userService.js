@@ -12,10 +12,11 @@ const Coin = db.Coin;
 const Rank = db.Rank;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
+const { nanoid } = require("nanoid");
 
 const createUser = async (data) => {
   try {
-    let { 
+    let {
       email,
       password,
       username,
@@ -78,6 +79,7 @@ const createUser = async (data) => {
 
     // Create user with the new coin and rank IDs
     const newUser = await User.create({
+      public_id: nanoid(),
       role_id: role_id,
       email,
       password: hashPassword,
@@ -230,7 +232,7 @@ const getUserByID = async (id) => {
 const updateUser = async (id, data) => {
   try {
     let { full_name, address, phone_number, streak } = data;
-    let user = await User.findOne({ where: { id: id }, include: "coins" });
+    let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
     }
@@ -238,15 +240,6 @@ const updateUser = async (id, data) => {
       ? (user.username = data.username)
       : (user.username = user.username);
     data.email ? (user.email = data.email) : (user.email = user.email);
-
-    if (coins !== undefined) {
-      if (coins < 0) {
-        throw new Error("Coins must be positive");
-      } else {
-        user.coins.amount = Number(coins);
-        await user.coins.save();
-      }
-    }
 
     if (streak === undefined) {
       user.streak = user.streak;
