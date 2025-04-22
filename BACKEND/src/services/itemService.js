@@ -8,6 +8,7 @@ const purchaseQueue = require("./queue");
 const { uploadImages } = require("../services/imageService");
 const { sequelize } = require("../models");
 const Image = db.Image;
+const cloudinary = require("cloudinary").v2;
 
 const createItem = async (itemData, user_id, images) => {
   try {
@@ -186,8 +187,23 @@ const deleteItem = async (item_id) => {
       throw new Error("Item not found");
     }
 
+    const images = await Image.findAll({
+      where: {
+        reference_id: item_id,
+        reference_type: 'item'
+      }
+    });
+
+    for (const image of images) {
+      if (image.url) {
+        const publicId = image.url.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`images/${publicId}`);
+      }
+      await image.destroy();    
+    }
+    
     await item.destroy();
-    return { message: "Item deleted successfully" };
+    return { message: "Item and associated images deleted successfully" };
   } catch (e) {
     throw e;
   }
