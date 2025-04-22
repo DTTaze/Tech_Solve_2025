@@ -102,16 +102,16 @@ const getItemByIdItem = async (item_id) => {
     }
 
     const item = await Item.findByPk(item_id);
-    const images = await Image.findAll({
-      where: {
-        reference_id: item_id,
-        type: 'item'
-      }
-    });
-    
     if (!item) {
       throw new Error("Item not found");
     }
+    
+    const images = await Image.findAll({
+      where: {
+        reference_id: item_id,
+        reference_type: 'item'
+      }
+    });
 
     return {
       ...item.toJSON(),
@@ -133,7 +133,7 @@ const getItemByIdUser = async (user_id) => {
     const images = await Image.findAll({
       where: {
         reference_id: itemIds,
-        type: 'item'
+        reference_type: 'item'
       }
     });
 
