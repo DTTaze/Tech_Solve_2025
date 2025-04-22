@@ -34,13 +34,13 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       progress_count: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-          defaultValue: 0,
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
       },
       completed_at: {
-          type: DataTypes.DATE,
-          allowNull: true,
+        type: DataTypes.DATE,
+        allowNull: true,
       },
     },
     {
@@ -51,4 +51,4 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   return EventUserTask;
-}
+};

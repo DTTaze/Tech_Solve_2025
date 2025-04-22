@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { createUserApi } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import InputField from "../components/ui/InputField";
@@ -10,9 +11,9 @@ import { useNotification } from "../components/ui/NotificationProvider";
 const initialFormData = {
   full_name: "",
   username: "",
+  role_id: 2, 
   email: "",
   password: "",
-  role_id: 1, // 1 = Người dùng (default)
 };
 
 function RegisterPage() {
@@ -21,6 +22,7 @@ function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { notify } = useNotification();
+  const [showPassword, setShowPassword] = useState(false);
 
   const validateField = (name, value) => {
     switch (name) {
@@ -29,10 +31,10 @@ function RegisterPage() {
         if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
           return "Họ tên chỉ được chứa chữ cái tiếng Việt và dấu cách!";
         return "";
-      case "username":
+        case "username":
         if (!value.trim()) return "Vui lòng nhập tên tài khoản!";
-        if (!/^[a-zA-Z]+$/.test(value))
-          return "Tên tài khoản chỉ được chứa chữ cái không dấu!";
+        if (!/^[a-zA-Z0-9]+$/.test(value))
+            return "Tên tài khoản chỉ được chứa chữ cái không dấu và số!";
         return "";
       case "email":
         if (!value.trim()) return "Vui lòng nhập email!";
@@ -77,6 +79,7 @@ function RegisterPage() {
     }
 
     setLoading(true);
+    console.log(formData);
     try {
       const res = await createUserApi(formData);
       if (res?.status === 200) {
@@ -135,10 +138,19 @@ function RegisterPage() {
         <InputField
           id="password"
           label="Mật khẩu"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={formData.password}
           onChange={handleChange}
           error={errors.password}
+          suffix={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-gray-600 hover:text-blue-600"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          }
         />
         <SubmitButton text="Đăng ký" loading={loading} />
       </form>

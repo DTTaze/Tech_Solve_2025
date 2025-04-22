@@ -15,50 +15,50 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-EventUser.init(
+  EventUser.init(
     {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
         },
-        user_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-            model: "users",
-            key: "id",
-            },
+      },
+      event_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "events",
+          key: "id",
         },
-        event_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-            model: "events",
-            key: "id",
-            },
-        },
-        joined_at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
-        },
-        progress_count: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            defaultValue: 0,
-        },
-        completed_at: {
-            type: DataTypes.DATE,
-            allowNull: true,
-        },
+      },
+      joined_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      progress_count: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+      },
+      completed_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
-        sequelize,
-        modelName: "EventUser",
-        tableName: "event_users",
+      sequelize,
+      modelName: "EventUser",
+      tableName: "event_users",
     }
-);
+  );
 
   return EventUser;
-}
+};

@@ -1,9 +1,7 @@
+const { nanoid } = require("nanoid");
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
-const Coin = db.Coin;
-const Transaction = db.Transaction;
-const { generateCode } = require("../utils/generateCode");
 const purchaseQueue = require("./queue");
 const { uploadImages } = require("../services/imageService");
 const { sequelize } = require("../models");
@@ -20,6 +18,9 @@ const createItem = async (itemData, user_id, images) => {
     // Validate price
     if (itemData.price < 1) {
       throw new Error("Price must be at least 1");
+    }
+    if (stock === undefined || stock < 1) {
+      throw new Error("Stock must be at least 1");
     }
 
     // Validate stock

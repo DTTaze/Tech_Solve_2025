@@ -107,7 +107,6 @@ export default function ItemCatalog({ items }) {
                 key={item.id}
                 item={item}
                 onPurchase={handlePurchase}
-                userCoins={userCoins}
               />
             ))}
           </div>

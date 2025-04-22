@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const { nanoid } = require("nanoid");
 
 ("use strict");
 module.exports = {
@@ -6,6 +7,7 @@ module.exports = {
     return queryInterface.bulkInsert("users", [
       {
         id: 1,
+        public_id: nanoid(),
         role_id: 1, // Admin
         google_id: null,
         email: "admin@example.com",
@@ -23,6 +25,7 @@ module.exports = {
       },
       {
         id: 2,
+        public_id: nanoid(),
         role_id: 2, // User
         google_id: null,
         email: "user@example.com",
@@ -40,6 +43,7 @@ module.exports = {
       },
       {
         id: 3,
+        public_id: nanoid(),
         role_id: 3, // Customer
         google_id: null,
         email: "customer@example.com",
@@ -57,6 +61,7 @@ module.exports = {
       },
       {
         id: 4,
+        public_id: nanoid(),
         role_id: 2,
         google_id: null,
         email: "john.doe@example.com",
@@ -74,6 +79,7 @@ module.exports = {
       },
       {
         id: 5,
+        public_id: nanoid(),
         role_id: 2,
         google_id: null,
         email: "jane.smith@example.com",
@@ -91,6 +97,7 @@ module.exports = {
       },
       {
         id: 6,
+        public_id: nanoid(),
         role_id: 2,
         google_id: null,
         email: "david.nguyen@example.com",
@@ -108,6 +115,7 @@ module.exports = {
       },
       {
         id: 7,
+        public_id: nanoid(),
         role_id: 2,
         google_id: null,
         email: "sophia.lee@example.com",
@@ -125,6 +133,7 @@ module.exports = {
       },
       {
         id: 8,
+        public_id: nanoid(),
         role_id: 2,
         google_id: null,
         email: "michael.brown@example.com",
@@ -139,7 +148,7 @@ module.exports = {
         last_logined: Sequelize.fn("CURDATE"),
         created_at: new Date(),
         updated_at: new Date(),
-      }
+      },
     ]);
   },
 

@@ -4,7 +4,10 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
     static associate(models) {
-      Task.hasMany(models.TaskType, { foreignKey: "task_id", onDelete: "CASCADE" });
+      Task.hasMany(models.TaskType, {
+        foreignKey: "task_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -15,11 +18,16 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
+      public_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      description: {  
+      description: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -35,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: 1,
-      }
+      },
     },
     {
       sequelize,

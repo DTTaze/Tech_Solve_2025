@@ -25,6 +25,11 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
+      public_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
       role_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
