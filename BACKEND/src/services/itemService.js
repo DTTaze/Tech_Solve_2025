@@ -6,7 +6,7 @@ const Transaction = db.Transaction;
 const { generateCode } = require("../utils/generateCode");
 const purchaseQueue = require("./queue");
 const { uploadImages } = require("../services/imageService");
-const { sequelize } = require("sequelize");
+const { sequelize } = require("../models");
 const Image = db.Image;
 
 const createItem = async (itemData, user_id, images) => {
@@ -72,7 +72,7 @@ const getAllItems = async () => {
     const images = await Image.findAll({
       where: {
         reference_id: itemIds,
-        type: 'item'
+        reference_type: 'item'
       }
     });
     

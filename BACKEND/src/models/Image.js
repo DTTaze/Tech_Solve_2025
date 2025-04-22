@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       reference_type: {
-        type: DataTypes.ENUM("avatar","taskSubmit"),
+        type: DataTypes.ENUM("avatar","taskSubmit","item"),
         allowNull: false,
       },
     },
