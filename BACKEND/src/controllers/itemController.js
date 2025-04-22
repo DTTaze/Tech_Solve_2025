@@ -4,7 +4,8 @@ const handleUploadItem = async (req, res) => {
   try {
     const user_id = Number(req.params.user_id);
     const itemData = req.body;
-    const item = await itemService.createItem(itemData, user_id);
+    const images = req.files;
+    const item = await itemService.createItem(itemData, user_id, images);
     return res.success("Item uploaded successfully", item);
   } catch (error) {
     return res.error(500, "Failed to upload item", error.message);
@@ -44,7 +45,8 @@ const handleUpdateItem = async (req, res) => {
   try {
     const item_id = Number(req.params.id);
     const itemData = req.body;
-    const updatedItem = await itemService.updateItem(item_id, itemData);
+    const images = req.files;
+    const updatedItem = await itemService.updateItem(item_id, itemData, images);
     return res.success("Item updated successfully", updatedItem);
   } catch (error) {
     return res.error(500, "Failed to update item", error.message);
@@ -60,6 +62,7 @@ const handleDeleteItem = async (req, res) => {
     return res.error(500, "Failed to delete item", error.message);
   }
 };
+
 const handlePurchaseItem = async (req, res) => {
   try {
     const user_id = req.user.id;
