@@ -3,44 +3,95 @@ const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
 const purchaseQueue = require("./queue");
+const { uploadImages } = require("../services/imageService");
+const { sequelize } = require("../models");
+const Image = db.Image;
+const cloudinary = require("cloudinary").v2;
 
-const createItem = async (itemData, user_id) => {
+const createItem = async (itemData, user_id, images) => {
   try {
-    let { name, price, description, status, stock } = itemData;
-    if (!user_id || !name || !price) {
-      throw new Error("Missing required fields (owner_id, name, price)");
+    // Validate required fields
+    if (!user_id || !itemData.name || !itemData.price || !itemData.stock) {
+      throw new Error("Missing required fields (owner_id, name, price, stock)");
     }
 
-    if (price < 1) {
+    // Validate price
+    if (itemData.price < 1) {
       throw new Error("Price must be at least 1");
     }
     if (stock === undefined || stock < 1) {
       throw new Error("Stock must be at least 1");
     }
 
+    // Validate stock
+    if (itemData.stock < 0) {
+      throw new Error("Stock cannot be negative");
+    }
+
+    // Check if owner exists
     const owner = await User.findByPk(user_id);
     if (!owner) {
       throw new Error("Owner ID does not exist");
     }
 
-    const newItem = await Item.create({
-      public_id: nanoid(),
-      owner_id: user_id,
-      name,
-      price,
-      description,
-      status,
-      stock,
+    // Create item with transaction
+    const result = await sequelize.transaction(async (t) => {
+      const newItem = await Item.create({
+        name: itemData.name,
+        price: itemData.price,
+        stock: itemData.stock,
+        description: itemData.description,
+        status: itemData.status,
+        owner_id: user_id
+      }, { transaction: t });
+
+    if (images && images.length > 0) {
+      const uploadedImages = await uploadImages(images, newItem.id, "item");
+      if (uploadedImages.length === 0) {
+        throw new Error("Failed to upload images");
+      }
+    }
+
+      return newItem;
     });
-    return newItem;
-  } catch (e) {
-    throw e;
+
+    return result;
+  } catch (error) {
+    // Log error for debugging
+    console.error('Error creating item:', error);
+    throw error;
   }
 };
 
 const getAllItems = async () => {
   try {
-    return await Item.findAll();
+    const items = await Item.findAll();
+    
+    // Get all item IDs
+    const itemIds = items.map(item => item.id);
+    
+    // Find all images for these items
+    const images = await Image.findAll({
+      where: {
+        reference_id: itemIds,
+        reference_type: 'item'
+      }
+    });
+    
+    // Group images by item_id
+    const imagesByItemId = images.reduce((acc, image) => {
+      if (!acc[image.reference_id]) {
+        acc[image.reference_id] = [];
+      }
+      acc[image.reference_id].push(image.url);
+      return acc;
+    }, {});
+    
+    // Add images to each item
+    return items.map(item => ({
+      ...item.toJSON(),
+      images: imagesByItemId[item.id] || []
+    }));
   } catch (e) {
     throw e;
   }
@@ -56,8 +107,18 @@ const getItemByIdItem = async (item_id) => {
     if (!item) {
       throw new Error("Item not found");
     }
+    
+    const images = await Image.findAll({
+      where: {
+        reference_id: item_id,
+        reference_type: 'item'
+      }
+    });
 
-    return item;
+    return {
+      ...item.toJSON(),
+      images: images.map(image => image.url)
+    };
   } catch (e) {
     throw e;
   }
@@ -69,19 +130,34 @@ const getItemByIdUser = async (user_id) => {
       throw new Error("User ID is required");
     }
 
-    return await Item.findAll({ where: { owner_id: user_id } });
+    const items = await Item.findAll({ where: { owner_id: user_id } });
+    const itemIds = items.map(item => item.id);
+    const images = await Image.findAll({
+      where: {
+        reference_id: itemIds,
+        reference_type: 'item'
+      }
+    });
+
+    return items.map(item => ({
+      ...item.toJSON(),
+      images: images.filter(image => image.reference_id === item.id).map(image => image.url)
+    }));
   } catch (e) {
     throw e;
   }
 };
 
-const updateItem = async (id, data) => {
+const updateItem = async (id, data, images) => {
   try {
+    console.log("images", images);
     let { owner_id, name, price, stock, description, status } = data;
     let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
     }
+
+    // Update item fields
     owner_id ? (item.owner_id = owner_id) : (item.owner_id = item.owner_id);
     name ? (item.name = name) : (item.name = item.name);
     status ? (item.status = status) : (item.status = item.status);
@@ -97,8 +173,39 @@ const updateItem = async (id, data) => {
       item.stock = stock;
       item.status = stock > 0 ? "available" : "sold";
     }
+
+    let uploadedImages = [];
+
+    if (images && images.length > 0) {
+      // Find existing images for the item
+      const existingImages = await Image.findAll({
+        where: {
+          reference_id: id,
+          reference_type: "item",
+        },
+      });
+
+      // Delete existing images from Cloudinary and database
+      for (const image of existingImages) {
+        if (image.url) {
+          const publicId = image.url.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`images/${publicId}`);
+        }
+        await image.destroy();
+      }
+
+      // Upload new images and save to database
+      uploadedImages = await uploadImages(images, id, "item");
+      if (!uploadedImages || uploadedImages.length === 0) {
+        throw new Error("Failed to upload images");
+      }
+    }
+
     await item.save();
-    return item;
+    return {
+      ...item.toJSON(),
+      images: uploadedImages.map((image) => image.url),
+    };
   } catch (e) {
     throw e;
   }
@@ -115,8 +222,23 @@ const deleteItem = async (item_id) => {
       throw new Error("Item not found");
     }
 
+    const images = await Image.findAll({
+      where: {
+        reference_id: item_id,
+        reference_type: 'item'
+      }
+    });
+
+    for (const image of images) {
+      if (image.url) {
+        const publicId = image.url.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`images/${publicId}`);
+      }
+      await image.destroy();    
+    }
+    
     await item.destroy();
-    return { message: "Item deleted successfully" };
+    return { message: "Item and associated images deleted successfully" };
   } catch (e) {
     throw e;
   }
