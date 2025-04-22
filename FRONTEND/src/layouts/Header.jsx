@@ -21,10 +21,7 @@ function UserHeader() {
     try {
       const response = await getUserApi();
       console.log(response);
-      if (
-        auth.user &&
-        response.data.coins.amount !== auth.user.coins.amount
-      ) {
+      if (auth.user && response.data.coins.amount !== auth.user.coins.amount) {
         setAuth((prevAuth) => ({
           ...prevAuth,
           user: { ...prevAuth.user, coins: response.data.coins },
@@ -99,6 +96,7 @@ function UserHeader() {
     { key: "", label: "Trang chủ" },
     { key: "missions", label: "Nhiệm vụ" },
     { key: "market", label: "Trao đổi" },
+    { key: "qr", label: "Test tạo QR" },
   ];
 
   const avatarUrl =
@@ -152,9 +150,7 @@ function UserHeader() {
           </div>
           {profileMenuOpen && (
             <div className="absolute right-0 bg-white rounded-lg shadow-lg w-48 px-2 py-2">
-              <p className="p-2 font-bold">
-                {auth.user.username}
-              </p>
+              <p className="p-2 font-bold">{auth.user.username}</p>
               <p className="px-2 py-1 text-xs text-gray-600">
                 {auth.user.email}
               </p>

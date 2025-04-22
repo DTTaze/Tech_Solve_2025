@@ -205,3 +205,9 @@ export const deleteTransactionsApi = (id) => {
 export const getAllTransactionsApi = () => {
   return axios.get("api/transactions");
 };
+
+export const getQRApi = (text) => {
+  return axios.get(`http://localhost:6060/api/qr`, {
+    params: { text },
+  });
+};
