@@ -147,13 +147,16 @@ const getItemByIdUser = async (user_id) => {
   }
 };
 
-const updateItem = async (id, data) => {
+const updateItem = async (id, data, images) => {
   try {
+    console.log("images", images);
     let { owner_id, name, price, stock, description, status } = data;
     let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
     }
+
+    // Update item fields
     owner_id ? (item.owner_id = owner_id) : (item.owner_id = item.owner_id);
     name ? (item.name = name) : (item.name = item.name);
     status ? (item.status = status) : (item.status = item.status);
@@ -169,8 +172,39 @@ const updateItem = async (id, data) => {
       item.stock = stock;
       item.status = stock > 0 ? "available" : "sold";
     }
+
+    let uploadedImages = [];
+
+    if (images && images.length > 0) {
+      // Find existing images for the item
+      const existingImages = await Image.findAll({
+        where: {
+          reference_id: id,
+          reference_type: "item",
+        },
+      });
+
+      // Delete existing images from Cloudinary and database
+      for (const image of existingImages) {
+        if (image.url) {
+          const publicId = image.url.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`images/${publicId}`);
+        }
+        await image.destroy();
+      }
+
+      // Upload new images and save to database
+      uploadedImages = await uploadImages(images, id, "item");
+      if (!uploadedImages || uploadedImages.length === 0) {
+        throw new Error("Failed to upload images");
+      }
+    }
+
     await item.save();
-    return item;
+    return {
+      ...item.toJSON(),
+      images: uploadedImages.map((image) => image.url),
+    };
   } catch (e) {
     throw e;
   }
