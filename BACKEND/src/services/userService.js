@@ -17,11 +17,11 @@ const { nanoid } = require("nanoid");
 const createUser = async (data) => {
   try {
     let {
+      username,
+      full_name,
+      role_id,
       email,
       password,
-      username,
-      role_id,
-      full_name,
       phone_number,
       address,
     } = data;
