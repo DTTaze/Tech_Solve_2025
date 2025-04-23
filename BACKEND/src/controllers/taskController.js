@@ -1,4 +1,5 @@
 const taskService = require("../services/taskService");
+const taskSubmitService = require("../services/taskSubmitService.js");
 
 const handleGetAllTasks = async (req, res) => {
   try {
@@ -11,7 +12,8 @@ const handleGetAllTasks = async (req, res) => {
 
 const handleCreateTask = async (req, res) => {
   try {
-    let result = await taskService.createTask(req.body);
+    const user_id = req.user.id;
+    let result = await taskService.createTask(req.body, user_id);
     return res.success("Create task success", result);
   } catch (error) {
     return res.error(500, "Failed to create task in controller", error.message);
@@ -155,6 +157,26 @@ const handleDeleteTaskByPublicId = async (req, res) => {
     return res.error(500, "Failed to delete task", error.message);
   }
 };
+
+const handleGetTaskSubmitByUserId = async (req,res) => {
+  try {
+    const user_id = req.params.user_id;
+    let result = await taskSubmitService.getTaskSubmitByUserId(user_id);
+    return res.success("Get task submit by user id success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task submit by user id", error.message);
+  }
+};
+
+const handleGetTaskSubmitByCustomerId = async (req,res) => {
+  try {
+    const customer_id = req.params.customer_id;
+    let result = await taskSubmitService.getTaskSubmitByCustomerId(customer_id);
+    return res.success("Get task submit by customer id success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task submit by customer id", error.message);
+  }
+}
 module.exports = {
   handleGetAllTasks,
   handleCreateTask,
@@ -170,4 +192,6 @@ module.exports = {
   handleGetTaskByPublicId,
   handleUpdateTaskByPublicId,
   handleDeleteTaskByPublicId,
+  handleGetTaskSubmitByUserId,
+  handleGetTaskSubmitByCustomerId,
 };

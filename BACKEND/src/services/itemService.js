@@ -8,11 +8,17 @@ const { sequelize } = require("../models");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 
+// Helper function to get random owner ID (1, 3, or 4)
+const getRandomOwnerId = () => {
+  const possibleOwners = [1, 3, 4];
+  return possibleOwners[Math.floor(Math.random() * possibleOwners.length)];
+};
+
 const createItem = async (itemData, user_id, images) => {
   try {
     // Validate required fields
-    if (!user_id || !itemData.name || !itemData.price || !itemData.stock) {
-      throw new Error("Missing required fields (owner_id, name, price, stock)");
+    if (!itemData.name || !itemData.price || !itemData.stock) {
+      throw new Error("Missing required fields (name, price, stock)");
     }
 
     // Validate price
@@ -24,16 +30,8 @@ const createItem = async (itemData, user_id, images) => {
       throw new Error("Stock must be at least 1");
     }
 
-    // Validate stock
-    if (itemData.stock < 0) {
-      throw new Error("Stock cannot be negative");
-    }
-
-    // Check if owner exists
-    const owner = await User.findByPk(user_id);
-    if (!owner) {
-      throw new Error("Owner ID does not exist");
-    }
+    // Get random owner ID
+    const owner_id = getRandomOwnerId();
 
     // Create item with transaction
     const result = await sequelize.transaction(async (t) => {
@@ -62,8 +60,7 @@ const createItem = async (itemData, user_id, images) => {
 
     return result;
   } catch (error) {
-    // Log error for debugging
-    console.error("Error creating item:", error);
+    console.error('Error creating item:', error);
     throw error;
   }
 };
@@ -158,14 +155,15 @@ const getItemByIdUser = async (user_id) => {
 const updateItem = async (id, data, images) => {
   try {
     console.log("images", images);
-    let { owner_id, name, price, stock, description, status } = data;
+    let { name, price, stock, description, status } = data;
     let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
     }
 
-    // Update item fields
-    owner_id ? (item.owner_id = owner_id) : (item.owner_id = item.owner_id);
+    // Update item fields with random owner
+    const owner_id = getRandomOwnerId();
+    item.owner_id = owner_id;
     name ? (item.name = name) : (item.name = item.name);
     status ? (item.status = status) : (item.status = item.status);
     description

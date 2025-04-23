@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       TaskSubmit.belongsTo(models.TaskUser, {
         foreignKey: "task_user_id",
+        as: "task_user",
         onDelete: "CASCADE",
       });
       TaskSubmit.hasMany(models.Image, {

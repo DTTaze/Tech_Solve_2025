@@ -12,19 +12,21 @@ const Type = db.Type;
 const uploadImages = require("./imageService.js").uploadImages;
 const coinService = require("./coinService.js");
 const { nanoid } = require("nanoid");
-const createTask = async (data) => {
+
+const createTask = async (data, user_id) => {
   try {
     let { title, content, description, coins, difficulty, total } = data;
     coins = Number(coins);
     total = Number(total);
     if (
+      !user_id ||
       !title ||
       !content ||
       !description ||
       coins === undefined ||
       !["easy", "medium", "hard"].includes(difficulty)
     ) {
-      throw new Error("Title, description, and coins are required");
+      throw new Error("user_id, title, description, and coins are required");
     }
     if (typeof coins !== "number" || coins < 0) {
       throw new Error("Coins must be a positive number");
@@ -40,6 +42,7 @@ const createTask = async (data) => {
       coins,
       difficulty,
       total,
+      owner_id: user_id,
     });
     return result;
   } catch (e) {
