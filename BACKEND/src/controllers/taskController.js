@@ -48,7 +48,7 @@ const handleUpdateTask = async (req, res) => {
 const handleAcceptTask = async (req, res) => {
   try {
     const task_id = req.params.id;
-    const user_id = req.params.user_id;
+    const user_id = req.user.id;
     let result = await taskService.acceptTask(task_id, user_id);
     return res.success("Accept task success", result);
   } catch (error) {
@@ -56,37 +56,21 @@ const handleAcceptTask = async (req, res) => {
   }
 };
 
-const handleCompleteTask = async (req, res) => {
-  try {
-    const task_id = req.params.id;
-    const user_id = req.user.id;
-    let result = await taskService.completeTask(task_id, user_id);
-    return res.success("Complete task success", result);
-  } catch (error) {
-    return res.error(500, "Failed to complete task", error.message);
-  }
-};
-
-const handleReceiveCoin = async (req, res) => {
-  try {
-    const user_coins_id = req.body.coins_id;
-    const coins = Number(req.body.coins);
-    let result = await taskService.receiveCoin(user_coins_id, coins);
-    return res.success("Recieve coin success", result);
-  } catch (error) {
-    return res.error(500, "Failed to recieve coin", error.message);
-  }
-};
-
 const handleSubmitTask = async (req, res) => {
   try {
-    const task_user_id = req.params.task_user_id;
-    let description = req.body.description;
+    const task_id = req.params.task_id;
+    const user_id = req.user.id;
+    const description = req.body.description;
     description = description ? String(description) : "";
 
     const files = req.files;
 
-    let result = await taskService.submitTask(task_user_id, description, files);
+    let result = await taskService.submitTask(
+      task_id,
+      user_id,
+      description,
+      files
+    );
 
     return res.success("Submit task success", result);
   } catch (error) {
@@ -178,8 +162,6 @@ module.exports = {
   handleGetTask,
   handleUpdateTask,
   handleAcceptTask,
-  handleCompleteTask,
-  handleReceiveCoin,
   handleSubmitTask,
   handleDecisionTaskSubmit,
   handleIncreaseProgressCount,
