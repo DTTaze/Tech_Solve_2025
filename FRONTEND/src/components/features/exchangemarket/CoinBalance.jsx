@@ -1,19 +1,21 @@
-import { Coins } from "lucide-react"
-import { motion } from "framer-motion"
+import { Coins } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function CoinBalance({ coins }) {
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-emerald-200 rounded-lg shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-2">
       <div className="flex items-center">
-        <Coins className="h-6 w-6 text-amber-600 mr-2" />
-        <span className="font-medium text-amber-600 mr-25">Your Balance</span>
+        <div className="bg-emerald-100 p-2 rounded-full mr-3">
+          <Coins className="h-5 w-5 text-emerald-600" />
+        </div>
+        <span className="font-medium text-emerald-700">Số dư của bạn</span>
       </div>
       <motion.div
         key={coins}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="text-xl font-bold text-amber-600"
+        className="text-xl font-bold text-emerald-600 bg-white px-4 py-1 rounded-full shadow-sm border border-emerald-100"
       >
         {coins} coins
       </motion.div>
