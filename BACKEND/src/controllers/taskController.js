@@ -58,14 +58,16 @@ const handleAcceptTask = async (req, res) => {
 
 const handleSubmitTask = async (req, res) => {
   try {
-    const task_user_id = req.params.task_user_id;
+    const task_id = req.params.task_id;
+    const user_id = req.user.id;
     let description = req.body.description;
     description = description ? String(description) : "";
     
     const files = req.files;
 
     let result = await taskService.submitTask(
-      task_user_id,
+      task_id,
+      user_id,
       description,
       files,
     );

@@ -143,21 +143,17 @@ const acceptTask = async (task_id, user_id) => {
 };
 
 
-const submitTask = async (task_user_id, description, files) => {
+const submitTask = async (task_id,user_id, description, files) => {
   try {
-    task_user_id = Number(task_user_id);
-
-    if (!Number.isInteger(task_user_id)) {
-      throw new Error("Invalid task_user_id. It must be an integer.");
-    }
-
+    const taskId = Number(task_id);
+    const userId = Number(user_id);
+    const taskUser = await acceptTask(taskId, userId);
     console.log("Files:", files);
 
-    if (!task_user_id) throw new Error("Missing task_user_id.");
     if (!files || files.length === 0) throw new Error("No files provided.");
 
     const newTaskSubmit = await TaskSubmit.create({
-      task_user_id: task_user_id,
+      task_user_id: taskUser.id,
       description: description || "",
       status: "pending",
       submitted_at: new Date(),
@@ -289,11 +285,6 @@ const updateDecisionTaskSubmit = async (task_submit_id, decision) => {
 
     if (decision === "approved") {
       increaseProgressCount(taskSubmit.task_user_id);
-    }
-
-    if (decision === "rejected") {
-      taskUser.status = "inProgress";
-      await taskUser.save();
     }
 
     return taskSubmit;

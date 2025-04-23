@@ -33,7 +33,7 @@ router.post(
   taskController.handleIncreaseProgressCount
 );
 router.post(
-  "/submit/:task_user_id",
+  "/submit/:task_id",
   middlewareImage.array("images", 5),
   taskController.handleSubmitTask
 );
