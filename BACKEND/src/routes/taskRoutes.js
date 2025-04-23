@@ -1,6 +1,7 @@
 const express = require("express");
 const taskController = require("../controllers/taskController");
 const middlewareImage = require("../middlewares/middlewareImage");
+const checkPermission = require("../middlewares/checkPermission");
 
 const router = express.Router();
 
@@ -10,7 +11,11 @@ router.post(
   taskController.handleCreateTask
 );
 router.get("/", taskController.handleGetAllTasks);
-router.get("/:id", taskController.handleGetTask);
+router.get(
+  "/:id",
+  // checkPermission("get", "task_id"),
+  taskController.handleGetTask
+);
 router.put(
   "/:id",
   // checkPermission("put", "task_id"),
@@ -57,4 +62,8 @@ router.get(
   "/difficulty/:difficulty_name",
   taskController.handleGetAllTasksByDifficultyName
 );
+
+router.get("/public/:public_id", taskController.handleGetTaskByPublicId);
+router.put("/public/:public_id", taskController.handleUpdateTaskByPublicId);
+router.delete("/public/:public_id", taskController.handleDeleteTaskByPublicId);
 module.exports = router;

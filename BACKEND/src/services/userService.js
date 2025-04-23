@@ -203,6 +203,22 @@ const deleteUser = async (id) => {
   }
 };
 
+const deleteUserByPublicID = async (public_id) => {
+  try {
+    const result = await User.destroy({
+      where: { public_id: public_id },
+    });
+
+    if (result === 0) {
+      throw new Error("User not found");
+    }
+
+    return { message: "User deleted successfully" };
+  } catch (e) {
+    throw e;
+  }
+};
+
 const getUserByID = async (id) => {
   try {
     const user = await User.findOne({
@@ -229,9 +245,35 @@ const getUserByID = async (id) => {
   }
 };
 
+const getUserByPublicID = async (public_id) => {
+  try {
+    const user = await User.findOne({
+      where: { public_id: public_id },
+      include: [
+        {
+          model: Role,
+          as: "roles",
+          attributes: ["id", "name"],
+        },
+        {
+          model: Coin,
+          as: "coins",
+          attributes: ["id", "amount"],
+        },
+      ],
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  } catch (e) {
+    throw e;
+  }
+};
+
 const updateUser = async (id, data) => {
   try {
-    let { full_name, address, phone_number, streak } = data;
+    let { full_name, address, coins, phone_number, streak } = data;
     let user = await User.findOne({ where: { id: id } });
     if (!user) {
       throw new Error("User not found");
@@ -241,14 +283,58 @@ const updateUser = async (id, data) => {
       : (user.username = user.username);
     data.email ? (user.email = data.email) : (user.email = user.email);
 
-    if (streak === undefined) {
-      user.streak = user.streak;
-    } else {
-      if (streak < 0) {
-        throw new Error("Streak must be possitive");
-      } else {
-        user.streak = Number(streak);
+    if (coins !== undefined) {
+      const parsedCoins = Number(coins);
+      if (isNaN(parsedCoins) || parsedCoins < 0) {
+        throw new Error("Coins must be a non-negative number");
       }
+      user.coins = parsedCoins;
+    }
+
+    if (streak !== undefined) {
+      const parsedStreak = Number(streak);
+      if (isNaN(parsedStreak) || parsedStreak < 0) {
+        throw new Error("Streak must be a non-negative number");
+      }
+      user.streak = parsedStreak;
+    }
+
+    full_name
+      ? (user.full_name = full_name)
+      : (user.full_name = user.full_name);
+    address ? (user.address = address) : (user.address = user.address);
+    phone_number
+      ? (user.phone_number = phone_number)
+      : (user.phone_number = user.phone_number);
+    user.username == ""
+      ? (user.username = username)
+      : (user.username = user.username);
+    user.email == "" ? (user.email = email) : (user.email = user.email);
+    await user.save();
+    return user;
+  } catch (e) {
+    throw e;
+  }
+};
+
+const updateUserByPublicID = async (public_id, data) => {
+  try {
+    let { full_name, address, phone_number, streak } = data;
+    let user = await User.findOne({ where: { public_id: public_id } });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    data.username
+      ? (user.username = data.username)
+      : (user.username = user.username);
+    data.email ? (user.email = data.email) : (user.email = user.email);
+
+    if (streak !== undefined) {
+      const parsedStreak = Number(streak);
+      if (isNaN(parsedStreak) || parsedStreak < 0) {
+        throw new Error("Streak must be a non-negative number");
+      }
+      user.streak = parsedStreak;
     }
     full_name
       ? (user.full_name = full_name)
@@ -289,6 +375,7 @@ const findOrCreateUser = async (profile) => {
 
     const newUser = await User.create({
       role_id: 2,
+      public_id: nanoid(),
       google_id: profile.id,
       email: profile.emails[0].value,
       username: profile.displayName,
@@ -391,6 +478,9 @@ module.exports = {
   getAllUsers,
   deleteUser,
   getUserByID,
+  getUserByPublicID,
+  updateUserByPublicID,
+  deleteUserByPublicID,
   updateUser,
   findOrCreateUser,
   loginUser,

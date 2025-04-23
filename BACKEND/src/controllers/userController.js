@@ -65,7 +65,7 @@ const handleGetTaskCompleted = async (req, res) => {
   } catch (error) {
     return res.error(500, "Failed to get task completed", error.message);
   }
-}
+};
 
 const handleGetAllTasksById = async (req, res) => {
   try {
@@ -83,7 +83,37 @@ const handleGetItemByIdUser = async (req, res) => {
   } catch (error) {
     return res.error(500, "Failed to get item by user ID", error.message);
   }
-}
+};
+
+const handleGetUserByPublicId = async (req, res) => {
+  try {
+    let result = await userService.getUserByPublicID(req.params.public_id);
+    return res.success("Get user by public ID success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get user by public ID", error.message);
+  }
+};
+
+const handleUpdateUserByPublicId = async (req, res) => {
+  try {
+    let result = await userService.updateUserByPublicID(
+      req.params.public_id,
+      req.body
+    );
+    return res.success("Update user success", result);
+  } catch (error) {
+    return res.error(500, "Failed to update user", error.message);
+  }
+};
+
+const handleDeleteUserByPublicId = async (req, res) => {
+  try {
+    let result = await userService.deleteUserByPublicID(req.params.public_id);
+    return res.success("Delete user success", result);
+  } catch (error) {
+    return res.error(500, "Failed to delete user", error.message);
+  }
+};
 
 module.exports = {
   handleGetAllUsers,
@@ -96,4 +126,7 @@ module.exports = {
   handleGetTaskCompleted,
   handleGetAllTasksById,
   handleGetItemByIdUser,
+  handleGetUserByPublicId,
+  handleUpdateUserByPublicId,
+  handleDeleteUserByPublicId,
 };

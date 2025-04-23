@@ -362,6 +362,45 @@ const getAllTasksByDifficultyName = async (difficulty_name) => {
   }
 };
 
+const getTaskByPublicId = async (public_id) => {
+  try {
+    if (!public_id) throw new Error("Task Public ID is required");
+
+    const task = await Task.findOne({ where: { public_id } });
+    if (!task) throw new Error("Task not found");
+
+    return task;
+  } catch (e) {
+    throw e;
+  }
+};
+
+const updateTaskByPublicId = async (public_id, data) => {
+  try {
+    if (!public_id) throw new Error("Task Public ID is required");
+
+    const task = await Task.findOne({ where: { public_id } });
+    if (!task) throw new Error("Task not found");
+
+    return await updateTask(task.id, data);
+  } catch (e) {
+    throw e;
+  }
+};
+
+const deleteTaskByPublicId = async (public_id) => {
+  try {
+    if (!public_id) throw new Error("Task Public ID is required");
+
+    const task = await Task.findOne({ where: { public_id } });
+    if (!task) throw new Error("Task not found");
+
+    return await deleteTask(task.id);
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -376,4 +415,7 @@ module.exports = {
   increaseProgressCount,
   getAllTasksByTypeName,
   getAllTasksByDifficultyName,
+  getTaskByPublicId,
+  updateTaskByPublicId,
+  deleteTaskByPublicId,
 };

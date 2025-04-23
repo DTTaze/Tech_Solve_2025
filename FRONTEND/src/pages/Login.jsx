@@ -1,16 +1,18 @@
 import React, { useContext, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUserApi } from "../utils/api";
 import { AuthContext } from "../contexts/auth.context";
 import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
-import { useNotification } from "../components/ui/NotificationProvider"; 
+import { useNotification } from "../components/ui/NotificationProvider";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useContext(AuthContext);
   const { notify } = useNotification();
+  const [showPassword, setShowPassword] = useState(false);
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -20,14 +22,17 @@ const LoginPage = () => {
     e.preventDefault();
 
     const newErrors = {};
-    if (!identifier.trim()) newErrors.identifier = "Vui lòng nhập email hoặc username.";
+    if (!identifier.trim())
+      newErrors.identifier = "Vui lòng nhập email hoặc username.";
     if (!password) newErrors.password = "Vui lòng nhập mật khẩu.";
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(identifier);
+      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(
+        identifier
+      );
       const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
@@ -37,7 +42,7 @@ const LoginPage = () => {
       if (res && res.status === 200) {
         localStorage.setItem("access_token", res.data.access_token);
 
-        notify("success", "Đăng nhập thành công!"); 
+        notify("success", "Đăng nhập thành công!");
 
         setAuth({
           isAuthenticated: true,
@@ -46,12 +51,12 @@ const LoginPage = () => {
             username: res.data.user?.username ?? "",
           },
         });
-        navigate("/")
+        navigate("/");
       } else {
-        notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại."); 
+        notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }
     } catch (error) {
-      notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại."); 
+      notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
     }
   };
 
@@ -70,10 +75,19 @@ const LoginPage = () => {
         <InputField
           id="password"
           label="Mật khẩu"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
+          suffix={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-gray-600 hover:text-blue-600"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          }
         />
 
         <Button text="Đăng nhập" />

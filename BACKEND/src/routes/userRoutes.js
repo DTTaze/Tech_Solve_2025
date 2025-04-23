@@ -24,4 +24,7 @@ router.delete(
 router.get("/tasks/all/:id", userController.handleGetAllTasksById);
 router.get("/items/:user_id", userController.handleGetItemByIdUser);
 
+router.get("/public/:public_id", userController.handleGetUserByPublicId);
+router.put("/public/:public_id", userController.handleUpdateUserByPublicId);
+router.delete("/public/:public_id", userController.handleDeleteUserByPublicId);
 module.exports = router;

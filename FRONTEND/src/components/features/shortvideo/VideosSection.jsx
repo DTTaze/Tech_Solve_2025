@@ -469,10 +469,10 @@ export default function VideosSection() {
                 ...prevUser,
                 coins: prevUser.coins + 3,
               }));
-              notification.success({
-                message: "Earned 3 EcoCoins!",
-                description: "Thank you for watching eco-friendly content!",
-              });
+              // notification.success({
+              //   message: "Earned 3 EcoCoins!",
+              //   description: "Thank you for watching eco-friendly content!",
+              // });
               return 30;
             }
             return prev - 1;

@@ -19,6 +19,7 @@ const createItem = async (itemData, user_id, images) => {
     if (itemData.price < 1) {
       throw new Error("Price must be at least 1");
     }
+    const stock = itemData.stock;
     if (stock === undefined || stock < 1) {
       throw new Error("Stock must be at least 1");
     }
@@ -36,21 +37,25 @@ const createItem = async (itemData, user_id, images) => {
 
     // Create item with transaction
     const result = await sequelize.transaction(async (t) => {
-      const newItem = await Item.create({
-        name: itemData.name,
-        price: itemData.price,
-        stock: itemData.stock,
-        description: itemData.description,
-        status: itemData.status,
-        owner_id: user_id
-      }, { transaction: t });
+      const newItem = await Item.create(
+        {
+          public_id: nanoid(),
+          name: itemData.name,
+          price: itemData.price,
+          stock: itemData.stock,
+          description: itemData.description,
+          status: itemData.status,
+          owner_id: user_id,
+        },
+        { transaction: t }
+      );
 
-    if (images && images.length > 0) {
-      const uploadedImages = await uploadImages(images, newItem.id, "item");
-      if (uploadedImages.length === 0) {
-        throw new Error("Failed to upload images");
+      if (images && images.length > 0) {
+        const uploadedImages = await uploadImages(images, newItem.id, "item");
+        if (uploadedImages.length === 0) {
+          throw new Error("Failed to upload images");
+        }
       }
-    }
 
       return newItem;
     });
@@ -58,7 +63,7 @@ const createItem = async (itemData, user_id, images) => {
     return result;
   } catch (error) {
     // Log error for debugging
-    console.error('Error creating item:', error);
+    console.error("Error creating item:", error);
     throw error;
   }
 };
@@ -66,18 +71,18 @@ const createItem = async (itemData, user_id, images) => {
 const getAllItems = async () => {
   try {
     const items = await Item.findAll();
-    
+
     // Get all item IDs
-    const itemIds = items.map(item => item.id);
-    
+    const itemIds = items.map((item) => item.id);
+
     // Find all images for these items
     const images = await Image.findAll({
       where: {
         reference_id: itemIds,
-        reference_type: 'item'
-      }
+        reference_type: "item",
+      },
     });
-    
+
     // Group images by item_id
     const imagesByItemId = images.reduce((acc, image) => {
       if (!acc[image.reference_id]) {
@@ -86,11 +91,11 @@ const getAllItems = async () => {
       acc[image.reference_id].push(image.url);
       return acc;
     }, {});
-    
+
     // Add images to each item
-    return items.map(item => ({
+    return items.map((item) => ({
       ...item.toJSON(),
-      images: imagesByItemId[item.id] || []
+      images: imagesByItemId[item.id] || [],
     }));
   } catch (e) {
     throw e;
@@ -107,17 +112,17 @@ const getItemByIdItem = async (item_id) => {
     if (!item) {
       throw new Error("Item not found");
     }
-    
+
     const images = await Image.findAll({
       where: {
         reference_id: item_id,
-        reference_type: 'item'
-      }
+        reference_type: "item",
+      },
     });
 
     return {
       ...item.toJSON(),
-      images: images.map(image => image.url)
+      images: images.map((image) => image.url),
     };
   } catch (e) {
     throw e;
@@ -131,17 +136,19 @@ const getItemByIdUser = async (user_id) => {
     }
 
     const items = await Item.findAll({ where: { owner_id: user_id } });
-    const itemIds = items.map(item => item.id);
+    const itemIds = items.map((item) => item.id);
     const images = await Image.findAll({
       where: {
         reference_id: itemIds,
-        reference_type: 'item'
-      }
+        reference_type: "item",
+      },
     });
 
-    return items.map(item => ({
+    return items.map((item) => ({
       ...item.toJSON(),
-      images: images.filter(image => image.reference_id === item.id).map(image => image.url)
+      images: images
+        .filter((image) => image.reference_id === item.id)
+        .map((image) => image.url),
     }));
   } catch (e) {
     throw e;
@@ -225,8 +232,8 @@ const deleteItem = async (item_id) => {
     const images = await Image.findAll({
       where: {
         reference_id: item_id,
-        reference_type: 'item'
-      }
+        reference_type: "item",
+      },
     });
 
     for (const image of images) {
@@ -234,9 +241,9 @@ const deleteItem = async (item_id) => {
         const publicId = image.url.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(`images/${publicId}`);
       }
-      await image.destroy();    
+      await image.destroy();
     }
-    
+
     await item.destroy();
     return { message: "Item and associated images deleted successfully" };
   } catch (e) {
@@ -262,6 +269,60 @@ const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
     throw error;
   }
 };
+
+const getItemByPublicId = async (public_id) => {
+  try {
+    if (!public_id) {
+      throw new Error("Public ID is required");
+    }
+
+    const item = await Item.findOne({ where: { public_id } });
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    const images = await Image.findAll({
+      where: {
+        reference_id: item.id,
+        reference_type: "item",
+      },
+    });
+
+    return {
+      ...item.toJSON(),
+      images: images.map((image) => image.url),
+    };
+  } catch (e) {
+    throw e;
+  }
+};
+
+const updateItemByPublicId = async (public_id, data, images) => {
+  try {
+    const item = await Item.findOne({ where: { public_id } });
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    return await updateItem(item.id, data, images);
+  } catch (e) {
+    throw e;
+  }
+};
+
+const deleteItemByPublicId = async (public_id) => {
+  try {
+    const item = await Item.findOne({ where: { public_id } });
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    return await deleteItem(item.id);
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createItem,
   getAllItems,
@@ -270,4 +331,7 @@ module.exports = {
   updateItem,
   deleteItem,
   purchaseItem,
+  getItemByPublicId,
+  updateItemByPublicId,
+  deleteItemByPublicId,
 };
