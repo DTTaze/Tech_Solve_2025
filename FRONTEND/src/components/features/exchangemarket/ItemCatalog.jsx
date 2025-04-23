@@ -115,12 +115,12 @@ export default function ItemCatalog({ items }) {
   return (
     <div className="flex flex-col">
       {/* Balance and Hero Section */}
-      <div className="bg-gradient-to-r from-emerald-700 to-green-600 rounded-xl p-6 mb-8 shadow-md">
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl p-6 mb-8 shadow-md">
         <h1 className="text-2xl md:text-3xl font-bold text-white mb-3 flex items-center">
           <Leaf className="h-6 w-6 mr-2" />
           Trung tâm trao đổi xanh
         </h1>
-        <p className="text-emerald-100 mb-6 max-w-2xl">
+        <p className="text-emerald-50 mb-6 max-w-2xl">
           Chuyển đổi coins của bạn thành các vật phẩm bền vững và thân thiện với
           môi trường. Mỗi trao đổi đều góp phần vào sứ mệnh bảo vệ môi trường
           toàn cầu.
@@ -135,7 +135,7 @@ export default function ItemCatalog({ items }) {
             className={`relative px-6 py-3 font-medium text-sm transition-colors
               ${
                 activeTab === "redeem"
-                  ? "text-emerald-700 font-semibold border-b-2 border-emerald-500"
+                  ? "text-emerald-600 font-semibold border-b-2 border-emerald-600"
                   : "text-gray-600 hover:text-emerald-600"
               }`}
             onClick={() => setActiveTab("redeem")}
@@ -149,7 +149,7 @@ export default function ItemCatalog({ items }) {
             className={`relative px-6 py-3 font-medium text-sm transition-colors
               ${
                 activeTab === "market"
-                  ? "text-emerald-700 font-semibold border-b-2 border-emerald-500"
+                  ? "text-emerald-600 font-semibold border-b-2 border-emerald-600"
                   : "text-gray-600 hover:text-emerald-600"
               }`}
             onClick={() => setActiveTab("market")}
@@ -174,7 +174,7 @@ export default function ItemCatalog({ items }) {
               placeholder="Tìm kiếm vật phẩm..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors"
             />
           </div>
 
@@ -193,7 +193,7 @@ export default function ItemCatalog({ items }) {
                   <button
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
                       sortOption === "default"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-emerald-50 text-emerald-600"
                         : "text-gray-700"
                     }`}
                     onClick={() => {
@@ -206,7 +206,7 @@ export default function ItemCatalog({ items }) {
                   <button
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
                       sortOption === "price-asc"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-emerald-50 text-emerald-600"
                         : "text-gray-700"
                     }`}
                     onClick={() => {
@@ -219,7 +219,7 @@ export default function ItemCatalog({ items }) {
                   <button
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
                       sortOption === "price-desc"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-emerald-50 text-emerald-600"
                         : "text-gray-700"
                     }`}
                     onClick={() => {
@@ -232,7 +232,7 @@ export default function ItemCatalog({ items }) {
                   <button
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
                       sortOption === "name-asc"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-emerald-50 text-emerald-600"
                         : "text-gray-700"
                     }`}
                     onClick={() => {
@@ -245,7 +245,7 @@ export default function ItemCatalog({ items }) {
                   <button
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
                       sortOption === "name-desc"
-                        ? "bg-emerald-50 text-emerald-700"
+                        ? "bg-emerald-50 text-emerald-600"
                         : "text-gray-700"
                     }`}
                     onClick={() => {
@@ -290,7 +290,7 @@ export default function ItemCatalog({ items }) {
 
       {activeTab === "market" && (
         <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
-          <Leaf className="h-12 w-12 mx-auto text-emerald-300 mb-4" />
+          <Leaf className="h-12 w-12 mx-auto text-emerald-400 mb-4" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
             Chợ trao đổi đang phát triển
           </h3>

@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 
 export default function CoinBalance({ coins }) {
   return (
-    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-emerald-200 rounded-lg shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+    <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100 rounded-lg shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-2">
       <div className="flex items-center">
         <div className="bg-emerald-100 p-2 rounded-full mr-3">
           <Coins className="h-5 w-5 text-emerald-600" />
         </div>
-        <span className="font-medium text-emerald-700">Số dư của bạn</span>
+        <span className="font-medium text-emerald-600">Số dư của bạn</span>
       </div>
       <motion.div
         key={coins}

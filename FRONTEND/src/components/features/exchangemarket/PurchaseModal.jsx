@@ -63,7 +63,7 @@ export default function PurchaseModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -76,7 +76,7 @@ export default function PurchaseModal({
             <div className="bg-emerald-600 py-4 px-6 text-white relative">
               <button
                 onClick={onClose}
-                className="absolute right-4 top-4 text-white hover:text-emerald-200 transition-colors"
+                className="absolute right-4 top-4 text-white hover:text-emerald-100 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -129,7 +129,7 @@ export default function PurchaseModal({
                     type="number"
                     value={quantity}
                     onChange={handleQuantityChange}
-                    className="border-y border-gray-300 h-8 w-12 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="border-y border-gray-300 h-8 w-12 text-center focus:outline-none focus:ring-1 focus:ring-emerald-600"
                     min="1"
                     max={maxQuantity}
                   />
@@ -148,21 +148,21 @@ export default function PurchaseModal({
               <div className="bg-emerald-50 p-4 rounded-lg mt-5 border border-emerald-100">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Tổng giá:</span>
-                  <span className="font-medium text-emerald-700">
+                  <span className="font-medium text-emerald-600">
                     {totalCost} coins
                   </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Số dư hiện tại:</span>
-                  <span className="font-medium text-emerald-700">
+                  <span className="font-medium text-emerald-600">
                     {userCoins} coins
                   </span>
                 </div>
-                <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-200">
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
                   <span className="text-gray-600">Số dư sau giao dịch:</span>
                   <span
                     className={`font-medium ${
-                      canPurchase ? "text-emerald-700" : "text-red-500"
+                      canPurchase ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
                     {userCoins - totalCost} coins

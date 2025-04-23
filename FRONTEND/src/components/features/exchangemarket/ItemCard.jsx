@@ -22,7 +22,7 @@ export default function ItemCard({ item, onPurchase }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         {item.isEco && (
-          <div className="absolute top-2 left-2 bg-emerald-500 text-white px-2 py-1 rounded-full text-xs flex items-center">
+          <div className="absolute top-2 left-2 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs flex items-center">
             <Leaf className="h-3 w-3 mr-1" />
             Eco
           </div>
