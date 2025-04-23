@@ -23,14 +23,9 @@ router.delete(
 );
 
 router.post(
-  "/accept/:user_id/:id",
+  "/accept/:id",
   // checkPermission("accept", "task_id"),
   taskController.handleAcceptTask
-);
-router.post(
-  "/complete/:id",
-  // checkPermission("complete", "task_id"),
-  taskController.handleCompleteTask
 );
 router.post(
   "/progress/increase/:task_user_id",
@@ -46,11 +41,6 @@ router.put(
   "/submit/decision/:id",
   // checkPermission("delete", "task_id"),
   taskController.handleDecisionTaskSubmit
-);
-router.post(
-  "/coin/receive",
-  // checkPermission("delete", "task_id"),
-  taskController.handleReceiveCoin
 );
 router.get("/type/:type_name", taskController.handleGetAllTasksByTypeName);
 router.get(
