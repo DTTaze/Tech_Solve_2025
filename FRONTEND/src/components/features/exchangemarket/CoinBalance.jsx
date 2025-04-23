@@ -8,7 +8,7 @@ export default function CoinBalance({ coins }) {
         <div className="bg-emerald-100 p-2 rounded-full mr-3">
           <Coins className="h-5 w-5 text-emerald-600" />
         </div>
-        <span className="font-medium text-emerald-600">Số dư của bạn</span>
+        <span className="font-medium text-emerald-600 pr-16">Số dư của bạn</span>
       </div>
       <motion.div
         key={coins}
@@ -17,7 +17,7 @@ export default function CoinBalance({ coins }) {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="text-xl font-bold text-emerald-600 bg-white px-4 py-1 rounded-full shadow-sm border border-emerald-100"
       >
-        {coins} coins
+        {coins} xu
       </motion.div>
     </div>
   );
