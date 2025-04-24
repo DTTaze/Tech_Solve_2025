@@ -265,7 +265,7 @@ export default function TemporaryDrawer({userInfo}) {
         color="primary"
         onClick={toggleDrawer(true)}
         edge="start"
-        sx={{ mr: 1 }}
+        sx={{ m: 0 }}
       >
         <MenuIcon />
       </IconButton>

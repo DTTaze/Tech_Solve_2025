@@ -103,7 +103,7 @@ export const getAllTaskCompletedById = (id) => {
 };
 
 export const AllTaskByIdApi = (id) => {
-  return axios.post(`api/users/task/all/${id}`);
+  return axios.get(`api/users/tasks/all/${id}`);
 };
 
 export const receiveCoinApi = (coins) => {
