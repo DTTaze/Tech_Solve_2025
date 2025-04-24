@@ -8,7 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "event_id",
         onDelete: "CASCADE",
       });
-    }
+      Event.belongsTo(models.User, {
+        as: "owner",
+        foreignKey: "owner_id",
+        onDelete: "CASCADE",
+      });
+    }    
   }
 
   Event.init(
@@ -23,6 +28,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
+      owner_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
+        },
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -31,22 +44,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      total_tasks: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 1,
-      },
       location: {
         type: DataTypes.STRING,
-        allowNull: true,
-      },
-      image_url: {
-        type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       capacity: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
       },
       start_time: {
         type: DataTypes.DATE,

@@ -8,17 +8,17 @@ const { sequelize } = require("../models");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 
-// Helper function to get random owner ID (1, 3, or 4)
-const getRandomOwnerId = () => {
-  const possibleOwners = [1, 3, 4];
-  return possibleOwners[Math.floor(Math.random() * possibleOwners.length)];
-};
+
 
 const createItem = async (itemData, user_id, images) => {
   try {
     // Validate required fields
     if (!itemData.name || !itemData.price || !itemData.stock) {
       throw new Error("Missing required fields (name, price, stock)");
+    }
+
+    if (!user_id) {
+      throw new Error("Owner ID is required");
     }
 
     // Validate price
@@ -29,9 +29,6 @@ const createItem = async (itemData, user_id, images) => {
     if (stock === undefined || stock < 1) {
       throw new Error("Stock must be at least 1");
     }
-
-    // Get random owner ID
-    const owner_id = getRandomOwnerId();
 
     // Create item with transaction
     const result = await sequelize.transaction(async (t) => {
@@ -160,10 +157,6 @@ const updateItem = async (id, data, images) => {
     if (!item) {
       throw new Error("Item not found");
     }
-
-    // Update item fields with random owner
-    const owner_id = getRandomOwnerId();
-    item.owner_id = owner_id;
     name ? (item.name = name) : (item.name = item.name);
     status ? (item.status = status) : (item.status = item.status);
     description
