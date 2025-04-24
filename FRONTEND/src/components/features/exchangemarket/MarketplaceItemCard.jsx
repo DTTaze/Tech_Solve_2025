@@ -6,7 +6,20 @@ import {
   ExternalLink,
   AlertTriangle,
   Coins,
+  Tag,
 } from "lucide-react";
+
+// Helper function to translate category keys to display names
+const getCategoryDisplayName = (key) => {
+  const categories = {
+    handicraft: "Đồ thủ công",
+    recycled: "Đồ tái chế",
+    organic: "Sản phẩm hữu cơ",
+    plants: "Cây trồng",
+    other: "Khác",
+  };
+  return categories[key] || "Không xác định";
+};
 
 export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -59,6 +72,14 @@ export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
 
       {/* Content */}
       <div className="p-4 flex-grow">
+        {/* Category */}
+        <div className="mb-2 flex items-center">
+          <Tag className="h-3 w-3 mr-1 text-sky-600" />
+          <span className="text-xs font-medium text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">
+            {getCategoryDisplayName(item.category)}
+          </span>
+        </div>
+
         <h3 className="text-lg font-medium text-gray-800">{item.name}</h3>
         <p className="text-sm text-gray-600 line-clamp-2 mt-1">
           {item.description}

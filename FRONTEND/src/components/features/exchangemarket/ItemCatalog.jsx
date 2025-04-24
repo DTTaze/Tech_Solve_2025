@@ -16,6 +16,15 @@ import {
   LayoutList,
 } from "lucide-react";
 
+const marketplaceCategories = [
+  { key: "all", name: "Tất cả" },
+  { key: "recycled", name: "Đồ tái chế" },
+  { key: "handicraft", name: "Đồ thủ công" },
+  { key: "organic", name: "Sản phẩm hữu cơ" },
+  { key: "plants", name: "Cây trồng" },
+  { key: "other", name: "Khác" },
+];
+
 export default function ItemCatalog({ items }) {
   const [user, setUser] = useState(null);
   const [userCoins, setUserCoins] = useState(0);
@@ -80,6 +89,36 @@ export default function ItemCatalog({ items }) {
         category: "handicraft",
         condition: "new",
         viewCount: 8,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "m3",
+        name: "Phân bón hữu cơ compost",
+        description: "Phân bón từ rác thải hữu cơ, tốt cho cây trồng",
+        price: 20,
+        stock: 10,
+        image:
+          "https://images.unsplash.com/photo-1617594930337-0452649f4f7c?w=600&auto=format&fit=crop",
+        userId: "user123",
+        status: "available",
+        category: "organic",
+        condition: "new",
+        viewCount: 5,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "m4",
+        name: "Cây sen đá mini",
+        description: "Sen đá nhỏ xinh, dễ chăm sóc, trang trí bàn làm việc",
+        price: 40,
+        stock: 2,
+        image:
+          "https://images.unsplash.com/photo-1590159762570-75899e3a928d?w=600&auto=format&fit=crop",
+        userId: "user123",
+        status: "available",
+        category: "plants",
+        condition: "new",
+        viewCount: 15,
         createdAt: new Date().toISOString(),
       },
     ];
@@ -451,36 +490,19 @@ export default function ItemCatalog({ items }) {
               {/* Marketplace filters */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`px-3 py-1.5 rounded-lg text-sm ${
-                      marketCategory === "all"
-                        ? "bg-emerald-100 text-emerald-700 font-medium"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setMarketCategory("all")}
-                  >
-                    Tất cả
-                  </button>
-                  <button
-                    className={`px-3 py-1.5 rounded-lg text-sm ${
-                      marketCategory === "recycled"
-                        ? "bg-emerald-100 text-emerald-700 font-medium"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setMarketCategory("recycled")}
-                  >
-                    Đồ tái chế
-                  </button>
-                  <button
-                    className={`px-3 py-1.5 rounded-lg text-sm ${
-                      marketCategory === "handicraft"
-                        ? "bg-emerald-100 text-emerald-700 font-medium"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setMarketCategory("handicraft")}
-                  >
-                    Đồ thủ công
-                  </button>
+                  {marketplaceCategories.map((category) => (
+                    <button
+                      key={category.key}
+                      className={`px-3 py-1.5 rounded-lg text-sm ${
+                        marketCategory === category.key
+                          ? "bg-emerald-100 text-emerald-700 font-medium"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                      onClick={() => setMarketCategory(category.key)}
+                    >
+                      {category.name}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="flex border border-gray-200 rounded-lg overflow-hidden">
