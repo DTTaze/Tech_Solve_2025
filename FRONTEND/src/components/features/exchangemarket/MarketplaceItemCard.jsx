@@ -7,7 +7,21 @@ import {
   AlertTriangle,
   Coins,
   Tag,
+  EyeOff,
+  FileWarning,
+  Clock,
+  ClipboardEdit,
+  CheckCircle,
 } from "lucide-react";
+
+// Status definitions
+const statusConfig = {
+  displaying: { name: "Đang hiển thị", color: "emerald", Icon: CheckCircle },
+  pending: { name: "Chờ duyệt", color: "amber", Icon: Clock },
+  rejected: { name: "Bị từ chối", color: "red", Icon: FileWarning },
+  hidden: { name: "Đã ẩn", color: "gray", Icon: EyeOff },
+  draft: { name: "Tin nháp", color: "slate", Icon: ClipboardEdit },
+};
 
 // Helper function to translate category keys to display names
 const getCategoryDisplayName = (key) => {
@@ -41,6 +55,8 @@ export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
     setShowConfirmDelete(false);
   };
 
+  const currentStatus = statusConfig[item.status] || statusConfig.draft; // Default to draft if status is unknown
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all h-full flex flex-col">
       {/* Image container */}
@@ -53,20 +69,11 @@ export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
 
         {/* Status tag */}
         <div
-          className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium 
-          ${
-            item.status === "available"
-              ? "bg-emerald-100 text-emerald-600"
-              : item.status === "pending"
-              ? "bg-amber-100 text-amber-600"
-              : "bg-red-100 text-red-600"
-          }`}
+          className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium flex items-center 
+            bg-${currentStatus.color}-100 text-${currentStatus.color}-600`}
         >
-          {item.status === "available"
-            ? "Có sẵn"
-            : item.status === "pending"
-            ? "Đang giao dịch"
-            : "Đã bán"}
+          <currentStatus.Icon className="h-3 w-3 mr-1" />
+          {currentStatus.name}
         </div>
       </div>
 
@@ -94,7 +101,7 @@ export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
         <div className="flex items-center text-xs text-gray-500 mt-3">
           <User className="h-3 w-3 mr-1" />
           <span>{item.viewCount || 0} lượt xem</span>
-          {item.status === "available" && (
+          {item.status === "displaying" && (
             <span className="ml-auto bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-xs font-medium">
               Còn {item.stock} sản phẩm
             </span>

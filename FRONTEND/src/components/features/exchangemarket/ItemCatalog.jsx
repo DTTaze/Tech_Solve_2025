@@ -14,6 +14,8 @@ import {
   Filter,
   Grid2X2,
   LayoutList,
+  Store,
+  Package,
 } from "lucide-react";
 
 const marketplaceCategories = [
@@ -23,6 +25,15 @@ const marketplaceCategories = [
   { key: "organic", name: "Sản phẩm hữu cơ" },
   { key: "plants", name: "Cây trồng" },
   { key: "other", name: "Khác" },
+];
+
+const userItemStatuses = [
+  { key: "all", name: "Tất cả" },
+  { key: "displaying", name: "Đang hiển thị" },
+  { key: "pending", name: "Chờ duyệt" },
+  { key: "hidden", name: "Đã ẩn" },
+  { key: "rejected", name: "Bị từ chối" },
+  { key: "draft", name: "Tin nháp" },
 ];
 
 export default function ItemCatalog({ items }) {
@@ -36,12 +47,13 @@ export default function ItemCatalog({ items }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Marketplace state
-  const [marketView, setMarketView] = useState("browse");
+  const [marketView, setMarketView] = useState("my_items");
   const [myItems, setMyItems] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
   const [marketListView, setMarketListView] = useState("grid");
   const [marketCategory, setMarketCategory] = useState("all");
+  const [marketStatusFilter, setMarketStatusFilter] = useState("all");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -70,7 +82,7 @@ export default function ItemCatalog({ items }) {
         image:
           "https://images.unsplash.com/photo-1696492655666-703f94a2d944?w=600&auto=format&fit=crop",
         userId: "user123",
-        status: "available",
+        status: "displaying",
         category: "recycled",
         condition: "new",
         viewCount: 12,
@@ -85,7 +97,7 @@ export default function ItemCatalog({ items }) {
         image:
           "https://images.unsplash.com/photo-1696342940032-dbd0c599c97b?w=600&auto=format&fit=crop",
         userId: "user123",
-        status: "available",
+        status: "pending",
         category: "handicraft",
         condition: "new",
         viewCount: 8,
@@ -100,7 +112,7 @@ export default function ItemCatalog({ items }) {
         image:
           "https://images.unsplash.com/photo-1617594930337-0452649f4f7c?w=600&auto=format&fit=crop",
         userId: "user123",
-        status: "available",
+        status: "hidden",
         category: "organic",
         condition: "new",
         viewCount: 5,
@@ -115,7 +127,7 @@ export default function ItemCatalog({ items }) {
         image:
           "https://images.unsplash.com/photo-1590159762570-75899e3a928d?w=600&auto=format&fit=crop",
         userId: "user123",
-        status: "available",
+        status: "rejected",
         category: "plants",
         condition: "new",
         viewCount: 15,
@@ -301,7 +313,7 @@ export default function ItemCatalog({ items }) {
             onClick={() => setActiveTab("market")}
           >
             <div className="flex items-center">
-              <Leaf className="h-4 w-4 mr-2" />
+              <Store className="h-4 w-4 mr-2" />
               Chợ trao đổi
             </div>
           </button>
@@ -439,40 +451,42 @@ export default function ItemCatalog({ items }) {
       {/* Content Area - Market Tab */}
       {activeTab === "market" && (
         <div className="space-y-6">
-          {/* Market Navigation */}
+          {/* Market View Navigation & Add Button */}
           <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row justify-between gap-4">
             <div className="flex flex-wrap gap-2">
               <button
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
-                  marketView === "browse"
-                    ? "bg-emerald-600 text-white"
+                  marketView === "my_items"
+                    ? "bg-emerald-600 text-white shadow-sm"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
-                onClick={() => setMarketView("browse")}
+                onClick={() => setMarketView("my_items")}
               >
+                <Package className="h-4 w-4 mr-1.5" />
                 Sản phẩm của tôi
               </button>
               <button
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
-                  marketView === "all"
-                    ? "bg-emerald-600 text-white"
+                  marketView === "all_items"
+                    ? "bg-emerald-600 text-white shadow-sm"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
-                onClick={() => setMarketView("all")}
+                onClick={() => setMarketView("all_items")}
               >
+                <Store className="h-4 w-4 mr-1.5" />
                 Tất cả sản phẩm
               </button>
             </div>
-
-            <div className="flex gap-2">
+            {/* Add item button shown only in 'my_items' view and when form is not open */}
+            {marketView === "my_items" && !showCreateForm && (
               <button
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium flex items-center"
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium flex items-center justify-center sm:justify-start"
                 onClick={handleAddItem}
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Thêm sản phẩm
               </button>
-            </div>
+            )}
           </div>
 
           {/* Create/Edit form */}
@@ -485,31 +499,51 @@ export default function ItemCatalog({ items }) {
           )}
 
           {/* Marketplace content */}
-          {marketView === "browse" && !showCreateForm && (
+          {!showCreateForm && (
             <>
-              {/* Marketplace filters */}
+              {/* Filters Bar (Context-dependent) */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                {/* Filters */}
                 <div className="flex flex-wrap gap-2">
-                  {marketplaceCategories.map((category) => (
-                    <button
-                      key={category.key}
-                      className={`px-3 py-1.5 rounded-lg text-sm ${
-                        marketCategory === category.key
-                          ? "bg-emerald-100 text-emerald-700 font-medium"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                      onClick={() => setMarketCategory(category.key)}
-                    >
-                      {category.name}
-                    </button>
-                  ))}
+                  {(marketView === "my_items"
+                    ? userItemStatuses
+                    : marketplaceCategories
+                  ).map((filterItem) => {
+                    const isActive =
+                      marketView === "my_items"
+                        ? marketStatusFilter === filterItem.key
+                        : marketCategory === filterItem.key;
+                    const filterKey = filterItem.key;
+                    const filterName = filterItem.name;
+
+                    return (
+                      <button
+                        key={filterKey}
+                        className={`px-3 py-1.5 rounded-lg text-sm ${
+                          isActive
+                            ? "bg-emerald-100 text-emerald-700 font-medium"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                        onClick={() => {
+                          if (marketView === "my_items") {
+                            setMarketStatusFilter(filterKey);
+                          } else {
+                            setMarketCategory(filterKey);
+                          }
+                        }}
+                      >
+                        {filterName}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                {/* View Toggle */}
+                <div className="flex border border-gray-200 rounded-lg overflow-hidden mt-3 sm:mt-0">
                   <button
                     className={`p-2 ${
                       marketListView === "grid" ? "bg-gray-100" : "bg-white"
-                    }`}
+                    } hover:bg-gray-50`}
                     onClick={() => setMarketListView("grid")}
                   >
                     <Grid2X2 className="h-4 w-4 text-gray-600" />
@@ -517,7 +551,7 @@ export default function ItemCatalog({ items }) {
                   <button
                     className={`p-2 ${
                       marketListView === "list" ? "bg-gray-100" : "bg-white"
-                    }`}
+                    } hover:bg-gray-50`}
                     onClick={() => setMarketListView("list")}
                   >
                     <LayoutList className="h-4 w-4 text-gray-600" />
@@ -525,24 +559,30 @@ export default function ItemCatalog({ items }) {
                 </div>
               </div>
 
-              {/* Marketplace items */}
+              {/* Items Grid/List */}
               {filteredMarketItems.length === 0 ? (
                 <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
                   <Leaf className="h-12 w-12 mx-auto text-gray-300 mb-4" />
                   <h3 className="text-lg font-medium text-gray-700 mb-2">
-                    Chưa có sản phẩm nào
+                    Không có sản phẩm nào phù hợp
                   </h3>
                   <p className="text-gray-500 max-w-md mx-auto mb-6">
-                    Bạn chưa đăng sản phẩm nào để trao đổi. Hãy chia sẻ sản phẩm
-                    xanh của bạn với cộng đồng!
+                    {marketView === "my_items"
+                      ? "Bạn chưa có sản phẩm nào với trạng thái này."
+                      : "Hiện chưa có sản phẩm nào trong danh mục này."}
+                    {marketView === "my_items" &&
+                      marketStatusFilter === "all" &&
+                      "Hãy thử thêm sản phẩm mới!"}
                   </p>
-                  <button
-                    onClick={handleAddItem}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium"
-                  >
-                    <Plus className="h-4 w-4 inline mr-1" />
-                    Thêm sản phẩm đầu tiên
-                  </button>
+                  {marketView === "my_items" && (
+                    <button
+                      onClick={handleAddItem}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium"
+                    >
+                      <Plus className="h-4 w-4 inline mr-1" />
+                      Thêm sản phẩm
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div
@@ -563,21 +603,6 @@ export default function ItemCatalog({ items }) {
                 </div>
               )}
             </>
-          )}
-
-          {/* All products view - Coming soon */}
-          {marketView === "all" && !showCreateForm && (
-            <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
-              <Leaf className="h-12 w-12 mx-auto text-emerald-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                Tính năng đang phát triển
-              </h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                Chúng tôi đang hoàn thiện tính năng xem tất cả sản phẩm từ cộng
-                đồng. Bạn đã có thể tạo sản phẩm cho riêng mình trong tab "Sản
-                phẩm của tôi".
-              </p>
-            </div>
           )}
         </div>
       )}
