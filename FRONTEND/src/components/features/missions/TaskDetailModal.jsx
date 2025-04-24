@@ -18,7 +18,7 @@ export default function TaskDetailModal({
   const handleAcceptTask = async () => {
     setIsSubmitting(true);
     try {
-      const response = await acceptTaskByIdApi(task.id, userID);
+      const response = await acceptTaskByIdApi(task.id);
       if (response.success) {
         toast.success("Đã tham gia nhiệm vụ thành công!");
         onTaskAccepted(task);

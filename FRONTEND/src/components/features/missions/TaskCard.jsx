@@ -109,9 +109,9 @@ const TaskCard = React.memo(
               }}
               disabled={task.completed_at || isLoading}
               className={`w-full mt-3 rounded-lg py-1.5 text-sm font-medium text-white transition-colors ${
-                isCompleted
-                  ? "bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700"
-                  : "bg-green-600 hover:bg-green-700 active:bg-green-800"
+                isUserTask
+                  ? "bg-green-600 hover:bg-green-700 active:bg-green-800"
+                  : "bg-blue-500 hover:bg-blue-600 active:bg-blue-700"
               } ${
                 task.completed_at || isLoading
                   ? "opacity-50 cursor-not-allowed"

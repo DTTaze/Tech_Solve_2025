@@ -4,7 +4,6 @@ import Ranking from "../components/features/missions/ChartRank.jsx";
 import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
 import {
   getAllTasksApi,
-  completeTaskApi,
   receiveCoinApi,
   getUserApi,
   getTaskByIdApi,
@@ -194,8 +193,6 @@ function Mission() {
         // Nếu task nhiệm vụ đã hoàn thành
         if (updatedTaskUser.data.completed_at) {
           try {
-            const completeResponse = await completeTaskApi(userTask.task_id);
-            console.log("Task completion response:", completeResponse);
 
             const coinsResponse = await receiveCoinApi(task.coins);
             console.log("Receive coins response:", coinsResponse);

@@ -17,7 +17,7 @@ router.post(
   // checkPermission("post", "task"),
   taskController.handleCreateTask
 );
-router.post(
+router.post( 
   "/accept/:id",
   // checkPermission("accept", "task_id"),
   taskController.handleAcceptTask
