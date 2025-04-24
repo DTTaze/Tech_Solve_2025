@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "../styles/pages/admin.css";
 import TemporaryDrawer from "../components/admin/SidebarAdmin";
-import AdminDashboard from "../components/admin/AdminDashboard";
-import UsersManagement from "../components/admin/UsersManagement";
-import RolesPermissions from "../components/admin/RolesPermissions";
-import ContentManagement from "../components/admin/ContentManagement";
 import { Outlet } from "react-router-dom";
-import Box from "@mui/material/Box";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
+
 import { getUserApi } from "../utils/api";
 
 function Admin() {
@@ -65,25 +58,11 @@ function Admin() {
   return (
     <div className="admin-page admin-pages-container">
       {/* Header AppBar */}
-      <AppBar
-        position="static"
-        color="white"
-        elevation={0}
-        sx={{ height: "64px", width: "250px", padding: "0px 10px" }}
-      >
-        <Toolbar sx={{ minHeight: "64px", padding: "0 16px" }}>
-          <TemporaryDrawer userInfo={userInfo}/>
-          <Typography
-            variant="h4"
-            component="div"
-            sx={{ display: { xs: "none", sm: "block" } }}
-          >
-            Admin
-          </Typography>
-
-          <Box sx={{ flexGrow: 1 }} />
-        </Toolbar>
-      </AppBar>
+      <div className="flex justify-start items-center p-1.5">
+        <div className="rounded-full bg-gray-100 w-10 h-10 flex justify-center items-center">
+          <TemporaryDrawer userInfo={userInfo}/> 
+        </div>
+      </div>
 
       {/* Main content */}
       <div className="admin-content-container">

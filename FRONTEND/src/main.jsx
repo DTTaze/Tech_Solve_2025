@@ -9,6 +9,7 @@ import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
+import Customer from "./pages/Customer.jsx";
 import MissionVideo from "./pages/MissionVideo.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import App from "./App.jsx";
@@ -80,8 +81,13 @@ const router = createBrowserRouter([
         path: "auth/success",
         element: <AuthCallback />,
       },
+      {
+        path: "customer/*",
+        element: <Customer />
+      },
     ],
   },
+  
   {
     path: "register",
     element: <RegisterPage />,

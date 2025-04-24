@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import { AuthContext } from "./contexts/auth.context";
 import UserHeader from "./layouts/Header";
 import { getUserApi } from "./utils/api";
-import Loader from './components/ui/Loader';  
+import Loader from "./components/ui/Loader";
 
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
@@ -36,12 +36,12 @@ function App() {
     <div>
       {appLoading ? (
         <div style={styles.spinnerWrapper}>
-          <Loader /> 
+          <Loader />
         </div>
       ) : (
         <>
           <UserHeader />
-          <Outlet /> 
+          <Outlet />
         </>
       )}
     </div>
