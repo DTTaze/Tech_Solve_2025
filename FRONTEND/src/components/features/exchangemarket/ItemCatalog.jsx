@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import CoinBalance from "./CoinBalance";
 import ItemCard from "./ItemCard";
 import PurchaseModal from "./PurchaseModal";
@@ -16,6 +16,11 @@ import {
   LayoutList,
   Store,
   Package,
+  CheckCircle,
+  Clock,
+  FileWarning,
+  EyeOff,
+  ClipboardEdit,
 } from "lucide-react";
 
 const marketplaceCategories = [
@@ -27,16 +32,47 @@ const marketplaceCategories = [
   { key: "other", name: "Khác" },
 ];
 
+// Status definitions
+const statusConfig = {
+  displaying: { name: "Đang hiển thị", color: "emerald", Icon: CheckCircle },
+  pending: { name: "Chờ duyệt", color: "amber", Icon: Clock },
+  rejected: { name: "Bị từ chối", color: "red", Icon: FileWarning },
+  hidden: { name: "Đã ẩn", color: "gray", Icon: EyeOff },
+  draft: { name: "Tin nháp", color: "slate", Icon: ClipboardEdit },
+};
+
 const userItemStatuses = [
-  { key: "all", name: "Tất cả" },
-  { key: "displaying", name: "Đang hiển thị" },
-  { key: "pending", name: "Chờ duyệt" },
-  { key: "hidden", name: "Đã ẩn" },
-  { key: "rejected", name: "Bị từ chối" },
-  { key: "draft", name: "Tin nháp" },
+  { key: "all", name: "Tất cả", icon: Filter },
+  { key: "displaying", name: "Đang hiển thị", icon: CheckCircle },
+  { key: "pending", name: "Chờ duyệt", icon: Clock },
+  { key: "rejected", name: "Bị từ chối", icon: FileWarning },
+  { key: "hidden", name: "Đã ẩn", icon: EyeOff },
+  { key: "draft", name: "Tin nháp", icon: ClipboardEdit },
 ];
 
-export default function ItemCatalog({ items }) {
+// Status colors for pill badges
+const statusColors = {
+  displaying: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  rejected: "bg-red-100 text-red-700",
+  hidden: "bg-gray-100 text-gray-700",
+  draft: "bg-slate-100 text-slate-700",
+  all: "bg-blue-100 text-blue-700",
+};
+
+// Helper function to translate category keys to display names
+const getCategoryDisplayName = (key) => {
+  const categories = {
+    handicraft: "Đồ thủ công",
+    recycled: "Đồ tái chế",
+    organic: "Sản phẩm hữu cơ",
+    plants: "Cây trồng",
+    other: "Khác",
+  };
+  return categories[key] || "Không xác định";
+};
+
+export default function ItemCatalog({ items: propItems }) {
   const [user, setUser] = useState(null);
   const [userCoins, setUserCoins] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -47,6 +83,8 @@ export default function ItemCatalog({ items }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Marketplace state
+  const [items, setItems] = useState(propItems || []); // Keep this for compatibility
+  const [allItems, setAllItems] = useState([]); // Store items for the "all_items" view
   const [marketView, setMarketView] = useState("my_items");
   const [myItems, setMyItems] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -54,6 +92,8 @@ export default function ItemCatalog({ items }) {
   const [marketListView, setMarketListView] = useState("grid");
   const [marketCategory, setMarketCategory] = useState("all");
   const [marketStatusFilter, setMarketStatusFilter] = useState("all");
+  const [marketSearchText, setMarketSearchText] = useState("");
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -70,7 +110,7 @@ export default function ItemCatalog({ items }) {
 
     fetchUser();
 
-    // Mock data for marketplace items
+    // Mock data for marketplace items (my items)
     const mockUserItems = [
       {
         id: "m1",
@@ -87,6 +127,7 @@ export default function ItemCatalog({ items }) {
         condition: "new",
         viewCount: 12,
         createdAt: new Date().toISOString(),
+        canPurchase: true,
       },
       {
         id: "m2",
@@ -102,6 +143,7 @@ export default function ItemCatalog({ items }) {
         condition: "new",
         viewCount: 8,
         createdAt: new Date().toISOString(),
+        canPurchase: false,
       },
       {
         id: "m3",
@@ -117,6 +159,7 @@ export default function ItemCatalog({ items }) {
         condition: "new",
         viewCount: 5,
         createdAt: new Date().toISOString(),
+        canPurchase: false,
       },
       {
         id: "m4",
@@ -132,11 +175,103 @@ export default function ItemCatalog({ items }) {
         condition: "new",
         viewCount: 15,
         createdAt: new Date().toISOString(),
+        canPurchase: false,
+      },
+    ];
+
+    // Mock data for marketplace items (all items)
+    const mockMarketItems = [
+      {
+        id: "market1",
+        name: "Túi đeo chéo từ vải tái chế",
+        description:
+          "Túi đeo chéo thời trang làm từ vải tái chế thân thiện với môi trường",
+        price: 65,
+        stock: 8,
+        image:
+          "https://images.unsplash.com/photo-1622560480605-d83c661b6d4d?w=600&auto=format&fit=crop",
+        userId: "otheruser1",
+        userName: "GreenCrafter",
+        status: "displaying",
+        category: "recycled",
+        condition: "new",
+        viewCount: 48,
+        createdAt: new Date("2023-09-15").toISOString(),
+        canPurchase: true,
+      },
+      {
+        id: "market2",
+        name: "Bộ hộp cơm tre tự nhiên",
+        description:
+          "Bộ hộp đựng cơm làm từ tre tự nhiên, không độc hại, thay thế hộp nhựa",
+        price: 85,
+        stock: 12,
+        image:
+          "https://images.unsplash.com/photo-1584473457493-83958d172d3c?w=600&auto=format&fit=crop",
+        userId: "otheruser2",
+        userName: "EcoStore",
+        status: "displaying",
+        category: "organic",
+        condition: "new",
+        viewCount: 73,
+        createdAt: new Date("2023-10-22").toISOString(),
+        canPurchase: true,
+      },
+      {
+        id: "market3",
+        name: "Bình nước thủy tinh tái chế",
+        description: "Bình nước thủy tinh 100% tái chế, giảm rác thải nhựa",
+        price: 45,
+        stock: 20,
+        image:
+          "https://images.unsplash.com/photo-1616483039669-2b6737a02e1a?w=600&auto=format&fit=crop",
+        userId: "otheruser3",
+        userName: "EcoBuddy",
+        status: "displaying",
+        category: "recycled",
+        condition: "new",
+        viewCount: 102,
+        createdAt: new Date("2023-11-05").toISOString(),
+        canPurchase: true,
+      },
+      {
+        id: "market4",
+        name: "Chậu cây từ giấy tái chế",
+        description: "Chậu cây làm từ giấy tái chế, tự phân hủy 100%",
+        price: 30,
+        stock: 15,
+        image:
+          "https://images.unsplash.com/photo-1614050231891-38b54b91abcb?w=600&auto=format&fit=crop",
+        userId: "otheruser2",
+        userName: "EcoStore",
+        status: "displaying",
+        category: "plants",
+        condition: "new",
+        viewCount: 55,
+        createdAt: new Date("2023-12-10").toISOString(),
+        canPurchase: true,
       },
     ];
 
     setMyItems(mockUserItems);
-  }, []);
+
+    // Use provided items or mock data for all items view
+    if (propItems && propItems.length > 0) {
+      setAllItems(propItems);
+      setItems(propItems);
+    } else {
+      setAllItems(mockMarketItems);
+      setItems(mockMarketItems);
+    }
+
+    console.log("MockUserItems:", mockUserItems);
+    console.log("MockMarketItems:", mockMarketItems);
+
+    // Add inside the useEffect, after setting both states
+    console.log("Items state initialized:", items);
+    console.log("AllItems state initialized:", allItems);
+    console.log("MyItems state initialized:", myItems);
+  }, [propItems]);
 
   useEffect(() => {
     if (user) {
@@ -146,6 +281,8 @@ export default function ItemCatalog({ items }) {
 
   const handlePurchase = useCallback(
     (item) => {
+      console.log("Handling purchase for item:", item);
+
       if (!item || item.stock <= 0) {
         alert("Mặt hàng này hiện đã hết!");
         return;
@@ -195,29 +332,35 @@ export default function ItemCatalog({ items }) {
     [selectedItem, user, userCoins]
   );
 
-  // Filter and sort items
-  const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
-    return (
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  // Filter and sort items (for the Redeem tab)
+  const filteredItems = useMemo(() => {
+    if (!items || items.length === 0) return [];
 
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    switch (sortOption) {
-      case "price-asc":
-        return a.price - b.price;
-      case "price-desc":
-        return b.price - a.price;
-      case "name-asc":
-        return a.name.localeCompare(b.name);
-      case "name-desc":
-        return b.name.localeCompare(a.name);
-      default:
-        return 0;
-    }
-  });
+    return items.filter((item) => {
+      if (!searchQuery) return true;
+      return (
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [items, searchQuery]);
+
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      switch (sortOption) {
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        default:
+          return 0;
+      }
+    });
+  }, [filteredItems, sortOption]);
 
   // Marketplace functions
   const handleAddItem = () => {
@@ -264,11 +407,60 @@ export default function ItemCatalog({ items }) {
     setItemToEdit(null);
   };
 
-  // Filter marketplace items by category
-  const filteredMarketItems = myItems.filter((item) => {
-    if (marketCategory === "all") return true;
-    return item.category === marketCategory;
-  });
+  // Filter market items based on view and filters
+  const filteredMarketItems = useMemo(() => {
+    // Use myItems for "my_items" view, and allItems for "all_items" view
+    const sourceItems =
+      marketView === "my_items" ? myItems || [] : allItems || [];
+    console.log(`Filtering for ${marketView} view, source items:`, sourceItems);
+
+    if (!sourceItems || sourceItems.length === 0) {
+      console.log(`No source items found for ${marketView} view`);
+      return [];
+    }
+
+    let filtered = [...sourceItems]; // Create a copy of the array to avoid mutation issues
+
+    if (marketView === "my_items") {
+      // Filter by status if a specific status is selected
+      if (marketStatusFilter !== "all") {
+        filtered = filtered.filter(
+          (item) => item.status === marketStatusFilter
+        );
+      }
+    } else {
+      // All items view - only show items with 'displaying' status
+      filtered = filtered.filter((item) => item.status === "displaying");
+
+      // Filter by category if a specific category is selected
+      if (marketCategory !== "all") {
+        filtered = filtered.filter((item) => item.category === marketCategory);
+      }
+    }
+
+    // Apply search filter if search text exists
+    if (marketSearchText) {
+      const searchLower = marketSearchText.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchLower) ||
+          item.description.toLowerCase().includes(searchLower)
+      );
+    }
+
+    console.log(
+      `Filtered ${filtered.length} items for ${marketView} view:`,
+      filtered
+    );
+    return filtered;
+  }, [
+    allItems,
+    myItems,
+    marketView,
+    marketCategory,
+    marketStatusFilter,
+    marketSearchText,
+  ]);
 
   return (
     <div className="flex flex-col">
@@ -502,7 +694,54 @@ export default function ItemCatalog({ items }) {
           {!showCreateForm && (
             <>
               {/* Filters Bar (Context-dependent) */}
-              <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+                {/* Search and view toggle row */}
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+                  {/* Search for marketplace items */}
+                  <div className="relative w-full sm:w-auto sm:flex-grow max-w-md">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Tìm kiếm sản phẩm..."
+                      value={marketSearchText}
+                      onChange={(e) => setMarketSearchText(e.target.value)}
+                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors"
+                    />
+                    {marketSearchText && (
+                      <button
+                        onClick={() => setMarketSearchText("")}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        <span className="text-gray-400 hover:text-gray-600">
+                          ✕
+                        </span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* View Toggle */}
+                  <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      className={`p-2 ${
+                        marketListView === "grid" ? "bg-gray-100" : "bg-white"
+                      } hover:bg-gray-50`}
+                      onClick={() => setMarketListView("grid")}
+                    >
+                      <Grid2X2 className="h-4 w-4 text-gray-600" />
+                    </button>
+                    <button
+                      className={`p-2 ${
+                        marketListView === "list" ? "bg-gray-100" : "bg-white"
+                      } hover:bg-gray-50`}
+                      onClick={() => setMarketListView("list")}
+                    >
+                      <LayoutList className="h-4 w-4 text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+
                 {/* Filters */}
                 <div className="flex flex-wrap gap-2">
                   {(marketView === "my_items"
@@ -515,13 +754,22 @@ export default function ItemCatalog({ items }) {
                         : marketCategory === filterItem.key;
                     const filterKey = filterItem.key;
                     const filterName = filterItem.name;
+                    const Icon = marketView === "my_items" && filterItem.icon;
+                    const statusColor =
+                      marketView === "my_items"
+                        ? statusColors[filterKey] || statusColors.all
+                        : isActive
+                        ? "bg-emerald-100 text-emerald-700 font-medium"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200";
 
                     return (
                       <button
                         key={filterKey}
-                        className={`px-3 py-1.5 rounded-lg text-sm ${
+                        className={`px-3 py-1.5 rounded-lg text-sm flex items-center transition-all duration-150 ${
                           isActive
-                            ? "bg-emerald-100 text-emerald-700 font-medium"
+                            ? marketView === "my_items"
+                              ? `${statusColor} font-medium shadow-sm`
+                              : "bg-emerald-100 text-emerald-700 font-medium"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                         onClick={() => {
@@ -532,30 +780,22 @@ export default function ItemCatalog({ items }) {
                           }
                         }}
                       >
+                        {Icon && <Icon className="h-3.5 w-3.5 mr-1.5" />}
                         {filterName}
+                        {isActive && marketView === "my_items" && (
+                          <span className="ml-1.5 bg-white bg-opacity-30 text-xs font-normal rounded-full px-1.5 py-0.5">
+                            {
+                              filteredMarketItems.filter((item) =>
+                                filterKey === "all"
+                                  ? true
+                                  : item.status === filterKey
+                              ).length
+                            }
+                          </span>
+                        )}
                       </button>
                     );
                   })}
-                </div>
-
-                {/* View Toggle */}
-                <div className="flex border border-gray-200 rounded-lg overflow-hidden mt-3 sm:mt-0">
-                  <button
-                    className={`p-2 ${
-                      marketListView === "grid" ? "bg-gray-100" : "bg-white"
-                    } hover:bg-gray-50`}
-                    onClick={() => setMarketListView("grid")}
-                  >
-                    <Grid2X2 className="h-4 w-4 text-gray-600" />
-                  </button>
-                  <button
-                    className={`p-2 ${
-                      marketListView === "list" ? "bg-gray-100" : "bg-white"
-                    } hover:bg-gray-50`}
-                    onClick={() => setMarketListView("list")}
-                  >
-                    <LayoutList className="h-4 w-4 text-gray-600" />
-                  </button>
                 </div>
               </div>
 
@@ -592,14 +832,171 @@ export default function ItemCatalog({ items }) {
                       : "space-y-4"
                   }
                 >
-                  {filteredMarketItems.map((item) => (
-                    <MarketplaceItemCard
-                      key={item.id}
-                      item={item}
-                      onEdit={handleEditItem}
-                      onDelete={handleDeleteItem}
-                    />
-                  ))}
+                  {marketListView === "list" ? (
+                    // List View
+                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Sản phẩm
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Danh mục
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Giá
+                            </th>
+                            {marketView === "my_items" && (
+                              <th
+                                scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                              >
+                                Trạng thái
+                              </th>
+                            )}
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Ngày đăng
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                              Thao tác
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredMarketItems.map((item) => (
+                            <tr key={item.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="h-10 w-10 flex-shrink-0">
+                                    <img
+                                      className="h-10 w-10 rounded-md object-cover"
+                                      src={item.image || "/placeholder.svg"}
+                                      alt={item.name}
+                                    />
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900 line-clamp-1">
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-500">
+                                  {getCategoryDisplayName(item.category)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center text-sm font-medium text-amber-600">
+                                  {item.price}
+                                  <img
+                                    src="/assets/icons/coin.png"
+                                    alt="coins"
+                                    className="ml-1 h-4 w-4"
+                                  />
+                                </div>
+                              </td>
+                              {marketView === "my_items" && (
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span
+                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                      statusColors[item.status] ||
+                                      statusColors.draft
+                                    }`}
+                                  >
+                                    {statusConfig[item.status]?.name ||
+                                      statusConfig.draft.name}
+                                  </span>
+                                </td>
+                              )}
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {item.createdAt &&
+                                  new Date(item.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex justify-end gap-2">
+                                  {marketView === "my_items" ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleEditItem(item)}
+                                        className="text-indigo-600 hover:text-indigo-900"
+                                      >
+                                        Sửa
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          handleDeleteItem(item.id)
+                                        }
+                                        className="text-red-600 hover:text-red-900"
+                                      >
+                                        Xóa
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setSelectedItem(item);
+                                          setShowDetailsModal(true);
+                                        }}
+                                        className="text-emerald-600 hover:text-emerald-800"
+                                      >
+                                        Xem chi tiết
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setSelectedItem(item);
+                                          handlePurchase(item);
+                                        }}
+                                        className="text-indigo-600 hover:text-indigo-900"
+                                        disabled={!item.canPurchase}
+                                      >
+                                        Mua
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    // Grid View (original)
+                    filteredMarketItems.map((item) => (
+                      <MarketplaceItemCard
+                        key={item.id}
+                        item={item}
+                        onEdit={handleEditItem}
+                        onDelete={handleDeleteItem}
+                        onPurchase={handlePurchase}
+                        showDetailedStatus={marketView === "my_items"}
+                        viewMode={marketView}
+                        fetchItems={() => {
+                          // This would normally refresh the items list
+                          // For now just providing a placeholder function
+                          console.log("Refreshing items");
+                        }}
+                      />
+                    ))
+                  )}
                 </div>
               )}
             </>
@@ -609,13 +1006,197 @@ export default function ItemCatalog({ items }) {
 
       {/* Modal */}
       {selectedItem && (
-        <PurchaseModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          item={selectedItem}
-          userCoins={userCoins}
-          onConfirm={confirmPurchase}
-        />
+        <>
+          <PurchaseModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            item={selectedItem}
+            userCoins={userCoins}
+            onConfirm={confirmPurchase}
+          />
+
+          {/* Details Modal */}
+          <div
+            className={`fixed inset-0 z-50 flex items-center justify-center ${
+              showDetailsModal ? "visible" : "invisible"
+            }`}
+          >
+            <div
+              className="absolute inset-0 bg-black bg-opacity-30"
+              onClick={() => setShowDetailsModal(false)}
+            ></div>
+            <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6 z-10 mx-4">
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                <span className="text-xl">✕</span>
+              </button>
+
+              <h2 className="text-2xl font-semibold mb-4">
+                {selectedItem.name}
+              </h2>
+
+              <div className="mb-4">
+                <img
+                  src={selectedItem.image || "/placeholder.svg"}
+                  alt={selectedItem.name}
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+              </div>
+
+              <div className="mb-3 flex justify-between items-center">
+                <span className="text-lg font-semibold text-amber-600 flex items-center">
+                  {selectedItem.price}
+                  <img
+                    src="/assets/icons/coin.png"
+                    alt="coins"
+                    className="ml-1 h-5 w-5"
+                  />
+                </span>
+                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                  {getCategoryDisplayName(selectedItem.category)}
+                </span>
+              </div>
+
+              <div className="mb-4">
+                <h3 className="font-medium text-gray-700 mb-1">Mô tả</h3>
+                <p className="text-gray-600">{selectedItem.description}</p>
+              </div>
+
+              <div className="mb-4">
+                <h3 className="font-medium text-gray-700 mb-1">
+                  Thông tin sản phẩm
+                </h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-gray-500">Số lượng còn lại:</div>
+                  <div className="text-gray-700 font-medium">
+                    {selectedItem.stock || "Không xác định"}
+                  </div>
+
+                  <div className="text-gray-500">Tình trạng:</div>
+                  <div className="text-gray-700 font-medium">
+                    {selectedItem.condition === "new" ? "Mới" : "Cũ"}
+                  </div>
+
+                  <div className="text-gray-500">Ngày đăng:</div>
+                  <div className="text-gray-700 font-medium">
+                    {selectedItem.createdAt &&
+                      new Date(selectedItem.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  Đóng
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setIsModalOpen(true);
+                  }}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selectedItem.canPurchase}
+                >
+                  Mua ngay
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Item Details Modal */}
+      {selectedItem && showDetailsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black bg-opacity-30"
+            onClick={() => setShowDetailsModal(false)}
+          ></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6 z-10 mx-4">
+            <button
+              onClick={() => setShowDetailsModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <span className="text-xl">✕</span>
+            </button>
+
+            <h2 className="text-2xl font-semibold mb-4">{selectedItem.name}</h2>
+
+            <div className="mb-4">
+              <img
+                src={selectedItem.image || "/placeholder.svg"}
+                alt={selectedItem.name}
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            </div>
+
+            <div className="mb-3 flex justify-between items-center">
+              <span className="text-lg font-semibold text-amber-600 flex items-center">
+                {selectedItem.price}
+                <img
+                  src="/assets/icons/coin.png"
+                  alt="coins"
+                  className="ml-1 h-5 w-5"
+                />
+              </span>
+              <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                {getCategoryDisplayName(selectedItem.category)}
+              </span>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="font-medium text-gray-700 mb-1">Mô tả</h3>
+              <p className="text-gray-600">{selectedItem.description}</p>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="font-medium text-gray-700 mb-1">
+                Thông tin sản phẩm
+              </h3>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-gray-500">Số lượng còn lại:</div>
+                <div className="text-gray-700 font-medium">
+                  {selectedItem.stock || "Không xác định"}
+                </div>
+
+                <div className="text-gray-500">Tình trạng:</div>
+                <div className="text-gray-700 font-medium">
+                  {selectedItem.condition === "new" ? "Mới" : "Cũ"}
+                </div>
+
+                <div className="text-gray-500">Ngày đăng:</div>
+                <div className="text-gray-700 font-medium">
+                  {selectedItem.createdAt &&
+                    new Date(selectedItem.createdAt).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowDetailsModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Đóng
+              </button>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  handlePurchase(selectedItem);
+                }}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!selectedItem.canPurchase}
+              >
+                Mua ngay
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

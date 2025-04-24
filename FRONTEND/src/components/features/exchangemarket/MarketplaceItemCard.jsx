@@ -13,6 +13,22 @@ import {
   ClipboardEdit,
   CheckCircle,
 } from "lucide-react";
+import { FiEdit, FiTrash2, FiEye } from "react-icons/fi";
+import DeleteConfirmModal from "../../common/DeleteConfirmModal";
+import PurchaseModal from "./PurchaseModal";
+import {
+  Paper,
+  Box,
+  Chip,
+  Typography,
+  IconButton,
+  Tooltip,
+  Button,
+  Modal,
+} from "@mui/material";
+import { format } from "date-fns";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 // Status definitions
 const statusConfig = {
@@ -21,6 +37,23 @@ const statusConfig = {
   rejected: { name: "Bị từ chối", color: "red", Icon: FileWarning },
   hidden: { name: "Đã ẩn", color: "gray", Icon: EyeOff },
   draft: { name: "Tin nháp", color: "slate", Icon: ClipboardEdit },
+};
+
+// Helper function to get status class
+const getStatusClass = (status) => {
+  const statusClasses = {
+    displaying: "border-emerald-200 bg-emerald-50",
+    pending: "border-amber-200 bg-amber-50",
+    rejected: "border-red-200 bg-red-50",
+    hidden: "border-gray-200 bg-gray-50",
+    draft: "border-slate-200 bg-slate-50",
+  };
+  return statusClasses[status] || statusClasses.draft;
+};
+
+// Helper function to get status text
+const getStatusText = (status) => {
+  return statusConfig[status]?.name || statusConfig.draft.name;
 };
 
 // Helper function to translate category keys to display names
@@ -35,122 +68,278 @@ const getCategoryDisplayName = (key) => {
   return categories[key] || "Không xác định";
 };
 
-export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+const MarketplaceItemCard = ({
+  item,
+  onEdit,
+  onDelete,
+  onPurchase,
+  viewMode = "all_items",
+  fetchItems,
+}) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const handleEditClick = () => {
     onEdit(item);
   };
 
   const handleDeleteClick = () => {
-    setShowConfirmDelete(true);
+    setShowDeleteModal(true);
   };
 
   const confirmDelete = () => {
     onDelete(item.id);
-    setShowConfirmDelete(false);
+    setShowDeleteModal(false);
   };
 
   const cancelDelete = () => {
-    setShowConfirmDelete(false);
+    setShowDeleteModal(false);
+  };
+
+  const handlePurchaseClick = () => {
+    if (onPurchase) {
+      onPurchase(item);
+    } else {
+      setShowPurchaseModal(true);
+    }
+  };
+
+  const handleViewDetails = () => {
+    setShowDetailsModal(true);
   };
 
   const currentStatus = statusConfig[item.status] || statusConfig.draft; // Default to draft if status is unknown
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all h-full flex flex-col">
-      {/* Image container */}
-      <div className="relative h-48 w-full overflow-hidden">
+    <Paper
+      className={`rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
+        item.status
+      )}`}
+    >
+      {/* Item Image */}
+      <div className="relative mb-3 h-48 w-full overflow-hidden rounded-md">
         <img
           src={item.image || "/placeholder.svg"}
           alt={item.name}
           className="h-full w-full object-cover"
         />
-
-        {/* Status tag */}
-        <div
-          className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium flex items-center 
-            bg-${currentStatus.color}-100 text-${currentStatus.color}-600`}
-        >
-          <currentStatus.Icon className="h-3 w-3 mr-1" />
-          {currentStatus.name}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4 flex-grow">
-        {/* Category */}
-        <div className="mb-2 flex items-center">
-          <Tag className="h-3 w-3 mr-1 text-sky-600" />
-          <span className="text-xs font-medium text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">
-            {getCategoryDisplayName(item.category)}
-          </span>
-        </div>
-
-        <h3 className="text-lg font-medium text-gray-800">{item.name}</h3>
-        <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-          {item.description}
-        </p>
-
-        <div className="flex items-center mt-3">
-          <Coins className="h-4 w-4 text-emerald-600 mr-1" />
-          <span className="font-semibold text-emerald-600">{item.price}</span>
-          <span className="ml-1 text-gray-600 text-sm">coins</span>
-        </div>
-
-        <div className="flex items-center text-xs text-gray-500 mt-3">
-          <User className="h-3 w-3 mr-1" />
-          <span>{item.viewCount || 0} lượt xem</span>
-          {item.status === "displaying" && (
-            <span className="ml-auto bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-xs font-medium">
-              Còn {item.stock} sản phẩm
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="p-3 border-t border-gray-100">
-        {!showConfirmDelete ? (
-          <div className="flex justify-between">
-            <button
-              onClick={handleEditClick}
-              className="flex items-center text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
-            >
-              <Edit2 className="h-4 w-4 mr-1" />
-              Chỉnh sửa
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="flex items-center text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Xóa
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col">
-            <div className="flex items-center text-red-600 mb-2">
-              <AlertTriangle className="h-4 w-4 mr-1" />
-              <span className="text-sm font-medium">Xác nhận xóa?</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={confirmDelete}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-1 rounded-md"
-              >
-                Xóa
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium py-1 rounded-md"
-              >
-                Hủy
-              </button>
-            </div>
+        {viewMode === "my_items" && (
+          <div className="absolute top-2 right-2 rounded-full bg-white px-2 py-1 text-xs font-medium">
+            {getStatusText(item.status)}
           </div>
         )}
       </div>
-    </div>
+
+      {/* Item Details */}
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold">{item.name}</h3>
+        <p className="text-sm text-gray-600">
+          {getCategoryDisplayName(item.category)}
+        </p>
+        <p className="mt-1 text-sm text-gray-700 line-clamp-2">
+          {item.description}
+        </p>
+        <div className="mt-2 flex items-center">
+          <span className="font-medium text-amber-600">{item.price}</span>
+          <img
+            src="/assets/icons/coin.png"
+            alt="coins"
+            className="ml-1 h-5 w-5"
+          />
+        </div>
+      </div>
+
+      {/* Card footer with actions */}
+      <Box
+        sx={{
+          mt: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Chip
+            label={statusConfig[item.status].name}
+            color={statusConfig[item.status].color}
+            size="small"
+            sx={{ mr: 1 }}
+          />
+          <Typography variant="body2" color="text.secondary">
+            {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 1, mt: { xs: 1, sm: 0 } }}>
+          {viewMode === "my_items" ? (
+            <>
+              <Tooltip title="Chỉnh sửa">
+                <IconButton
+                  size="small"
+                  onClick={() => onEdit(item)}
+                  color="primary"
+                >
+                  <FiEdit className="mr-1" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Xóa">
+                <IconButton
+                  size="small"
+                  onClick={handleDeleteClick}
+                  color="error"
+                >
+                  <FiTrash2 className="mr-1" />
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<VisibilityIcon />}
+                onClick={handleViewDetails}
+                sx={{ mr: 1 }}
+              >
+                Xem chi tiết
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<ShoppingCartIcon />}
+                onClick={handlePurchaseClick}
+                disabled={!item.canPurchase}
+              >
+                Mua
+              </Button>
+            </>
+          )}
+        </Box>
+      </Box>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Delete Item"
+          message="Are you sure you want to delete this item? This action cannot be undone."
+        />
+      )}
+
+      {/* Purchase Modal */}
+      {showPurchaseModal && (
+        <PurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={() => setShowPurchaseModal(false)}
+          item={item}
+          onSuccess={() => {
+            if (fetchItems) fetchItems();
+          }}
+        />
+      )}
+
+      {/* Details modal */}
+      <Modal open={showDetailsModal} onClose={() => setShowDetailsModal(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 500 },
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography variant="h6" component="h2" gutterBottom>
+            Chi tiết sản phẩm
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+            <img
+              src={item.image || "/placeholder-image.jpg"}
+              alt={item.name}
+              style={{
+                width: "100%",
+                height: 200,
+                objectFit: "cover",
+                borderRadius: 8,
+              }}
+            />
+
+            <Typography variant="h5" gutterBottom>
+              {item.name}
+            </Typography>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                variant="body1"
+                color="primary.main"
+                fontWeight="bold"
+              >
+                {item.price} điểm
+              </Typography>
+              <Chip
+                label={getCategoryDisplayName(item.category)}
+                color="primary"
+                variant="outlined"
+                size="small"
+              />
+            </Box>
+
+            <Typography variant="body1">{item.description}</Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Người đăng: {item.userName || "Người dùng hệ thống"}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Ngày đăng:{" "}
+              {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
+            </Typography>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                mt: 2,
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={() => setShowDetailsModal(false)}
+              >
+                Đóng
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<ShoppingCartIcon />}
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  handlePurchaseClick();
+                }}
+                disabled={!item.canPurchase}
+              >
+                Mua
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
+    </Paper>
   );
-}
+};
+
+export default MarketplaceItemCard;

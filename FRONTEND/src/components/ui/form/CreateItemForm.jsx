@@ -10,6 +10,7 @@ export default function CreateItemForm({ item, onSubmit, onCancel }) {
     image: "",
     category: "other",
     condition: "new",
+    status: "pending", // Default status for new items
   });
 
   const [errors, setErrors] = useState({});
@@ -25,6 +26,7 @@ export default function CreateItemForm({ item, onSubmit, onCancel }) {
         image: item.image || "",
         category: item.category || "other",
         condition: item.condition || "new",
+        status: item.status || "pending",
       });
       setIsEditing(true);
     }
@@ -92,7 +94,6 @@ export default function CreateItemForm({ item, onSubmit, onCancel }) {
         ...formData,
         price: Number(formData.price),
         stock: Number(formData.stock),
-        status: "available",
       };
 
       onSubmit(formattedData, isEditing);
@@ -309,6 +310,29 @@ export default function CreateItemForm({ item, onSubmit, onCancel }) {
               <option value="refurbished">Tân trang</option>
             </select>
           </div>
+
+          {isEditing && (
+            <div>
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Trạng thái
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              >
+                <option value="displaying">Đang hiển thị</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="hidden">Đã ẩn</option>
+                <option value="draft">Tin nháp</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Submit Buttons */}
