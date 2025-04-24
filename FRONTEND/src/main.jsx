@@ -24,6 +24,10 @@ import MissionsManagement from "./components/admin/MissionsManagement.jsx";
 import ItemsManagement from "./components/admin/ItemsManagement.jsx";
 import TransactionsManagement from "./components/admin/TransactionsManagement.jsx";
 import QRCodeDisplay from "./components/common/QRCodeDisplay.jsx";
+import CustomerDashboard from "./components/customer/CustomerDashboard.jsx";
+import CustomerProfile from "./components/customer/CustomerProfile.jsx";
+import CustomerOrders from "./components/customer/CustomerOrders.jsx";
+import CustomerRewards from "./components/customer/CustomerRewards.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -83,11 +87,24 @@ const router = createBrowserRouter([
       },
       {
         path: "customer/*",
-        element: <Customer />
+        element: <Customer />,
+      },
+      {
+        path: "customer",
+        element: (
+          <ProtectedRoute requiredRole={["Customer", "Admin"]}>
+            <Customer />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <CustomerDashboard /> },
+          { path: "profile", element: <CustomerProfile /> },
+          { path: "orders", element: <CustomerOrders /> },
+          { path: "rewards", element: <CustomerRewards /> },
+        ],
       },
     ],
   },
-  
   {
     path: "register",
     element: <RegisterPage />,

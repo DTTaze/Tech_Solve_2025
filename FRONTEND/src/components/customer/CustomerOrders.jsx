@@ -12,6 +12,7 @@ import {
   Chip,
   Button,
 } from "@mui/material";
+import { useOutletContext } from "react-router-dom";
 
 // Mock data for orders
 const mockOrders = [
@@ -51,7 +52,8 @@ const getStatusColor = (status) => {
   }
 };
 
-export default function CustomerOrders({ context: userInfo }) {
+export default function CustomerOrders() {
+  const userInfo = useOutletContext();
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>

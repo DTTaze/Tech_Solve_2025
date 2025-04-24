@@ -10,6 +10,7 @@ import {
   Button,
   LinearProgress,
 } from "@mui/material";
+import { useOutletContext } from "react-router-dom";
 
 // Mock data for rewards
 const mockRewards = [
@@ -33,7 +34,8 @@ const mockRewards = [
   },
 ];
 
-export default function CustomerRewards({ context: userInfo }) {
+export default function CustomerRewards() {
+  const userInfo = useOutletContext();
   return (
     <Box>
       <Box sx={{ mb: 4 }}>

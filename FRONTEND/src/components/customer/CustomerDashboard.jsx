@@ -1,12 +1,13 @@
 import React from "react";
 import { Box, Paper, Typography, Stack, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ForestIcon from "@mui/icons-material/Forest";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import TimelineIcon from "@mui/icons-material/Timeline";
 
-export default function CustomerDashboard({ context: userInfo }) {
+export default function CustomerDashboard() {
+  const userInfo = useOutletContext();
   const navigate = useNavigate();
 
   return (
