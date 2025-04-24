@@ -45,7 +45,7 @@ export default function ItemCard({ item, onPurchase }) {
         <div className="flex justify-between items-center">
           <div className="flex items-center text-emerald-600 font-bold">
             <Coins className="h-4 w-4 mr-1" />
-            {item.price} coins
+            {item.price} xu
           </div>
           {!isOutOfStock && (
             <div className="text-sm text-gray-500">
