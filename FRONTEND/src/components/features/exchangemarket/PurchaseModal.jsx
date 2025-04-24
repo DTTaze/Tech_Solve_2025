@@ -1,8 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { Coins } from "lucide-react";
+import { Coins, X, ShoppingBag, CheckCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConfirm }) {
+export default function PurchaseModal({
+  isOpen,
+  onClose,
+  item,
+  userCoins,
+  onConfirm,
+}) {
   const [quantity, setQuantity] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -14,101 +22,190 @@ export default function PurchaseModal({ isOpen, onClose, item, userCoins, onConf
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "auto";
     };
   }, [isOpen, onClose]);
 
   useEffect(() => {
     if (!isOpen) {
-      setQuantity(1); // Reset quantity khi modal đóng
+      setQuantity(1);
+      setIsProcessing(false);
     }
   }, [isOpen]);
 
   if (!item || !isOpen) return null;
 
   const totalCost = item.price * quantity;
-  const canPurchase = userCoins >= totalCost;
+  const canPurchase = userCoins >= totalCost && quantity <= item.stock;
+  const maxQuantity = Math.min(Math.floor(userCoins / item.price), item.stock);
 
   const handleQuantityChange = (e) => {
-    const value = Math.max(1, parseInt(e.target.value) || 1);
+    const value = Math.max(
+      1,
+      Math.min(maxQuantity, parseInt(e.target.value) || 1)
+    );
     setQuantity(value);
   };
 
+  const handleConfirm = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      onConfirm(quantity);
+      setIsProcessing(false);
+    }, 800);
+  };
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50">
-      <div
-        ref={modalRef}
-        className="bg-white rounded-lg shadow-lg w-96 p-6"
-      >
-        <h2 className="text-xl font-semibold">Xác nhận trao đổi</h2>
-        <p className="text-gray-600 text-sm">Bạn đang trao đổi vật phẩm này.</p>
-
-        <div className="flex items-center gap-4 py-4">
-          <img
-            src={item.image || "/placeholder.svg"}
-            alt={item.name}
-            className="w-1/2 h-20 object-cover rounded-md"
-          />
-          <div>
-            <h3 className="font-medium">{item.name}</h3>
-            <div className="flex items-center text-amber-600 mt-1">
-              <Coins className="h-4 w-4 mr-1" />
-              {item.price} coins / cái
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            ref={modalRef}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+          >
+            {/* Header */}
+            <div className="bg-emerald-600 py-4 px-6 text-white relative">
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-4 text-white hover:text-emerald-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <h2 className="text-xl font-semibold flex items-center">
+                <ShoppingBag className="h-5 w-5 mr-2" />
+                Xác nhận trao đổi
+              </h2>
+              <p className="text-emerald-100 text-sm mt-1">
+                Vui lòng xác nhận thông tin giao dịch của bạn
+              </p>
             </div>
-          </div>
-        </div>
 
-        {/* Nhập số lượng */}
-        <div className="flex justify-between items-center mt-4">
-          <span>Số lượng:</span>
-          <input
-            type="number"
-            value={quantity}
-            onChange={handleQuantityChange}
-            className="border px-2 py-1 rounded-md w-16 text-center"
-            min="1"
-          />
-        </div>
+            {/* Content */}
+            <div className="p-6">
+              {/* Item details */}
+              <div className="flex items-center gap-4 py-2 border-b border-gray-100 pb-4">
+                <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                  <img
+                    src={item.image || "/placeholder.svg"}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-800 text-lg">
+                    {item.name}
+                  </h3>
+                  <div className="flex items-center text-emerald-600 mt-1">
+                    <Coins className="h-4 w-4 mr-1" />
+                    <span className="font-semibold">{item.price}</span> coins /
+                    đơn vị
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Còn lại: {item.stock} sản phẩm
+                  </div>
+                </div>
+              </div>
 
-        {/* Tính toán số dư */}
-        <div className="bg-gray-50 p-3 rounded-md mt-4">
-          <div className="flex justify-between items-center">
-            <span>Tổng giá:</span>
-            <span className="font-medium">{totalCost} coins</span>
-          </div>
-          <div className="flex justify-between items-center mt-1">
-            <span>Số dư hiện tại:</span>
-            <span className="font-medium">{userCoins} coins</span>
-          </div>
-          <div className="flex justify-between items-center mt-1">
-            <span>Số dư sau thay đổi:</span>
-            <span className={`font-medium ${canPurchase ? "" : "text-red-500"}`}>
-              {userCoins - totalCost} coins
-            </span>
-          </div>
-        </div>
+              {/* Quantity selector */}
+              <div className="flex justify-between items-center mt-5">
+                <span className="text-gray-700">Số lượng:</span>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    className="border-y border-gray-300 h-8 w-12 text-center focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                    min="1"
+                    max={maxQuantity}
+                  />
+                  <button
+                    onClick={() =>
+                      setQuantity(Math.min(maxQuantity, quantity + 1))
+                    }
+                    className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
 
-        {/* Nút xác nhận */}
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border rounded-md hover:bg-gray-100 transition"
-          >
-            Thoát
-          </button>
+              {/* Transaction summary */}
+              <div className="bg-emerald-50 p-4 rounded-lg mt-5 border border-emerald-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Tổng giá:</span>
+                  <span className="font-medium text-emerald-600">
+                    {totalCost} coins
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-gray-600">Số dư hiện tại:</span>
+                  <span className="font-medium text-emerald-600">
+                    {userCoins} coins
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
+                  <span className="text-gray-600">Số dư sau giao dịch:</span>
+                  <span
+                    className={`font-medium ${
+                      canPurchase ? "text-emerald-600" : "text-red-500"
+                    }`}
+                  >
+                    {userCoins - totalCost} coins
+                  </span>
+                </div>
+              </div>
 
-          <button
-            onClick={() => onConfirm(quantity)}
-            disabled={!canPurchase}
-            className={`w-1/2 p-2 rounded-md text-white ${canPurchase ? "bg-[#0B6E4F]" : "bg-gray-400 cursor-not-allowed"}`}
-          >
-            {canPurchase ? "Xác nhận giao dịch" : "Không đủ coins"}
-          </button>
+              {/* Action buttons */}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={onClose}
+                  className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-gray-700"
+                >
+                  Hủy
+                </button>
+
+                <button
+                  onClick={handleConfirm}
+                  disabled={!canPurchase || isProcessing}
+                  className={`flex-1 py-2.5 rounded-lg text-white font-medium flex items-center justify-center ${
+                    canPurchase && !isProcessing
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  {isProcessing ? (
+                    <>
+                      <span className="animate-pulse">Đang xử lý...</span>
+                    </>
+                  ) : !canPurchase ? (
+                    "Không đủ điều kiện"
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      Xác nhận
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

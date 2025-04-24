@@ -1,39 +1,73 @@
-import { Coins } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Coins, Leaf } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function ItemCard({ item, onPurchase }) {
   const handlePurchase = () => {
     onPurchase(item);
   };
 
+  const isOutOfStock = item.stock <= 0;
+
   return (
-    <div className="flex flex-col justify-between border border-gray-300 rounded-lg overflow-hidden hover:shadow-xl transition-all">
-      <div className="h-48 w-full">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="group flex flex-col justify-between border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all bg-white h-full"
+    >
+      <div className="relative h-48 w-full overflow-hidden">
         <img
           src={item.image || "../src/assets/images/default-item.webp"}
           alt={item.name}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
+        {item.isEco && (
+          <div className="absolute top-2 left-2 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs flex items-center">
+            <Leaf className="h-3 w-3 mr-1" />
+            Eco
+          </div>
+        )}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+            <span className="text-white font-semibold text-lg">Hết hàng</span>
+          </div>
+        )}
       </div>
 
-      <div className="p-4">
-        <h2 className="text-xl font-semibold mb-2">{item.name}</h2>
-        <p className="text-gray-600 text-sm mb-4">{item.description}</p>
+      <div className="p-4 flex-grow">
+        <h2 className="text-xl font-semibold mb-2 text-gray-800">
+          {item.name}
+        </h2>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          {item.description}
+        </p>
 
-        <div className="flex items-center text-amber-600 font-bold">
-          <Coins className="h-4 w-4 mr-1" />
-          {item.price} coins
+        <div className="flex justify-between items-center">
+          <div className="flex items-center text-emerald-600 font-bold">
+            <Coins className="h-4 w-4 mr-1" />
+            {item.price} coins
+          </div>
+          {!isOutOfStock && (
+            <div className="text-sm text-gray-500">
+              Còn {item.stock} sản phẩm
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="p-4 pt-0">
+      <div className="p-4 pt-2">
         <button
           onClick={handlePurchase}
-          className="w-full px-4 rounded-3xl py-2 text-white bg-[#0B6E4F] cursor-pointer"
+          disabled={isOutOfStock}
+          className={`w-full px-4 rounded-full py-2.5 text-white transition-all ${
+            isOutOfStock
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-emerald-600 hover:bg-emerald-700 shadow-sm hover:shadow"
+          }`}
         >
-          Trao đổi
+          {isOutOfStock ? "Hết hàng" : "Trao đổi ngay"}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

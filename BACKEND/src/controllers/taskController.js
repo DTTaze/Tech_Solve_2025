@@ -1,4 +1,5 @@
 const taskService = require("../services/taskService");
+const taskSubmitService = require("../services/taskSubmitService.js");
 
 const handleGetAllTasks = async (req, res) => {
   try {
@@ -11,7 +12,8 @@ const handleGetAllTasks = async (req, res) => {
 
 const handleCreateTask = async (req, res) => {
   try {
-    let result = await taskService.createTask(req.body);
+    const user_id = req.user.id;
+    let result = await taskService.createTask(req.body, user_id);
     return res.success("Create task success", result);
   } catch (error) {
     return res.error(500, "Failed to create task in controller", error.message);
@@ -48,7 +50,7 @@ const handleUpdateTask = async (req, res) => {
 const handleAcceptTask = async (req, res) => {
   try {
     const task_id = req.params.id;
-    const user_id = req.params.user_id;
+    const user_id = req.user.id;
     let result = await taskService.acceptTask(task_id, user_id);
     return res.success("Accept task success", result);
   } catch (error) {
@@ -56,40 +58,20 @@ const handleAcceptTask = async (req, res) => {
   }
 };
 
-const handleCompleteTask = async (req, res) => {
-  try {
-    const task_id = req.params.id;
-    const user_id = req.user.id;
-    let result = await taskService.completeTask(task_id, user_id);
-    return res.success("Complete task success", result);
-  } catch (error) {
-    return res.error(500, "Failed to complete task", error.message);
-  }
-};
-
-const handleReceiveCoin = async (req, res) => {
-  try {
-    const user_coins_id = req.body.coins_id;
-    const coins = Number(req.body.coins);
-    let result = await taskService.receiveCoin(user_coins_id, coins);
-    return res.success("Recieve coin success", result);
-  } catch (error) {
-    return res.error(500, "Failed to recieve coin", error.message);
-  }
-};
-
 const handleSubmitTask = async (req, res) => {
   try {
-    const task_user_id = req.params.task_user_id;
-    let description = req.body.description;
+    const task_id = req.params.task_id;
+    const user_id = req.user.id;
+    const description = req.body.description;
     description = description ? String(description) : "";
-    
+
     const files = req.files;
 
     let result = await taskService.submitTask(
-      task_user_id,
+      task_id,
+      user_id,
       description,
-      files,
+      files
     );
 
     return res.success("Submit task success", result);
@@ -138,9 +120,63 @@ const handleGetAllTasksByDifficultyName = async (req, res) => {
     let result = await taskService.getAllTasksByDifficultyName(difficulty_name);
     return res.success("Get task by difficulty name success", result);
   } catch (error) {
-    return res.error(500, "Failed to get task by difficulty name", error.message);
+    return res.error(
+      500,
+      "Failed to get task by difficulty name",
+      error.message
+    );
   }
 };
+
+const handleGetTaskByPublicId = async (req, res) => {
+  try {
+    let result = await taskService.getTaskByPublicId(req.params.public_id);
+    return res.success("Get task by public ID success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task by public ID", error.message);
+  }
+};
+
+const handleUpdateTaskByPublicId = async (req, res) => {
+  try {
+    let result = await taskService.updateTaskByPublicId(
+      req.params.public_id,
+      req.body
+    );
+    return res.success("Update task success", result);
+  } catch (error) {
+    return res.error(500, "Failed to update task", error.message);
+  }
+};
+
+const handleDeleteTaskByPublicId = async (req, res) => {
+  try {
+    let result = await taskService.deleteTaskByPublicId(req.params.public_id);
+    return res.success("Delete task success", result);
+  } catch (error) {
+    return res.error(500, "Failed to delete task", error.message);
+  }
+};
+
+const handleGetTaskSubmitByUserId = async (req,res) => {
+  try {
+    const user_id = req.params.user_id;
+    let result = await taskSubmitService.getTaskSubmitByUserId(user_id);
+    return res.success("Get task submit by user id success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task submit by user id", error.message);
+  }
+};
+
+const handleGetTaskSubmitByCustomerId = async (req,res) => {
+  try {
+    const customer_id = req.params.customer_id;
+    let result = await taskSubmitService.getTaskSubmitByCustomerId(customer_id);
+    return res.success("Get task submit by customer id success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get task submit by customer id", error.message);
+  }
+}
 module.exports = {
   handleGetAllTasks,
   handleCreateTask,
@@ -148,11 +184,14 @@ module.exports = {
   handleGetTask,
   handleUpdateTask,
   handleAcceptTask,
-  handleCompleteTask,
-  handleReceiveCoin,
   handleSubmitTask,
   handleDecisionTaskSubmit,
   handleIncreaseProgressCount,
   handleGetAllTasksByTypeName,
   handleGetAllTasksByDifficultyName,
+  handleGetTaskByPublicId,
+  handleUpdateTaskByPublicId,
+  handleDeleteTaskByPublicId,
+  handleGetTaskSubmitByUserId,
+  handleGetTaskSubmitByCustomerId,
 };

@@ -23,6 +23,7 @@ import RolesPermissions from "./components/admin/RolesPermissions.jsx";
 import MissionsManagement from "./components/admin/MissionsManagement.jsx";
 import ItemsManagement from "./components/admin/ItemsManagement.jsx";
 import TransactionsManagement from "./components/admin/TransactionsManagement.jsx";
+import QRCodeDisplay from "./components/common/QRCodeDisplay.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: "market",
         element: <MarketPage />,
+      },
+      {
+        path: "qr",
+        element: <QRCodeDisplay />,
       },
       // {
       //   path: "mission-video",

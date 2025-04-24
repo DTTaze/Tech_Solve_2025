@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getUserApi, updateUserApi } from "../../../utils/api.js";
+import { getUserApi, updateUserPublicApi } from "../../../utils/api.js";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
 import Loader from "../../ui/Loader.jsx";
@@ -17,7 +17,7 @@ function PersonalInfoForm() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy thông tin người dùng:", error);
-      notification.error({ message: "Không thể tải thông tin người dùng" });
+      alert("Không thể tải thông tin người dùng");
     }
   }, []);
 
@@ -78,20 +78,20 @@ function PersonalInfoForm() {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) {
-      notification.error({ message: "Vui lòng kiểm tra lại thông tin" });
+      alert("Vui lòng kiểm tra lại thông tin");
       return;
     }
 
     setLoading(true);
     try {
       console.log("Dữ liệu gửi đi:", user);
-      const res = await updateUserApi(user.id, user);
-      console.log("Phản hồi từ updateUserApi:", res.data);
+      const res = await updateUserPublicApi(user.public_id, user);
+      console.log("Phản hồi từ updateUserPublicApi:", res.data);
       await fetchUser();
-      notification.success({ message: "Cập nhật thông tin thành công!" });
+      alert("Cập nhật thông tin thành công!");
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
-      notification.error({ message: "Cập nhật thất bại!" });
+      alert("Cập nhật thất bại!");
     } finally {
       setLoading(false);
     }
@@ -124,7 +124,7 @@ function PersonalInfoForm() {
           />
         ))}
 
-        <Button text="Cập nhật" ></Button>
+        <Button text="Cập nhật"></Button>
       </form>
     </div>
   );

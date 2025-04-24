@@ -62,7 +62,7 @@ module.exports = {
       {
         id: 4,
         public_id: nanoid(),
-        role_id: 2,
+        role_id: 3,
         google_id: null,
         email: "john.doe@example.com",
         password: bcrypt.hashSync("123", bcrypt.genSaltSync(10)),

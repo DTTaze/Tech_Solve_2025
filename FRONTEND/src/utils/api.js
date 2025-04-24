@@ -20,6 +20,14 @@ export const updateUserApi = (id, data) => {
   return axios.put(`api/users/${id}`, data);
 };
 
+export const updateUserPublicApi = (public_id, data) => {
+  return axios.put(`api/users/public/${public_id}`, data);
+};
+
+export const getUserByIDPublicApi = (public_id) => {
+  return axios.get(`api/users/public/${public_id}`);
+};
+
 export const deleteUserApi = (id) => {
   return axios.delete(`api/users/${id}`);
 };
@@ -204,4 +212,10 @@ export const deleteTransactionsApi = (id) => {
 
 export const getAllTransactionsApi = () => {
   return axios.get("api/transactions");
+};
+
+export const getQRApi = (text) => {
+  return axios.get(`http://localhost:6060/api/qr`, {
+    params: { text },
+  });
 };
