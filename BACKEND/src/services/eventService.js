@@ -1,5 +1,7 @@
 const db = require('../models/index');
 const Event = db.Event;
+const EventUser = db.EventUser;
+const User = db.User;
 const { nanoid } = require('nanoid');
 const uploadImages = require('./imageService').uploadImages;
 
@@ -72,6 +74,8 @@ const getAllEvents = async () => {
     }
 }
 
+const getEventByUserId = async (userId) => {}
+
 const createEvent = async (Data, user_id, images) => {
     try {
         const { title, description, location, capacity, start_time, end_time } = Data;
@@ -115,8 +119,36 @@ const createEvent = async (Data, user_id, images) => {
     }
 };
 
+const acceptEvent = async (eventId, userId) => {
+    try {
+        const event = await Event.findByPk(eventId);
+ 
+        if (!event) {
+            throw new Error("Event not found");
+        }
+
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const eventUser = await EventUser.create({
+            event_id: eventId,
+            user_id: userId,
+        });
+
+        return eventUser;
+    } catch (error) {
+        console.error("Error accepting event:", error);
+        throw error;
+    }
+}
+
 module.exports = {
     getEventById,
     getAllEvents,
+    getEventByUserId,
     createEvent,
+    acceptEvent
 }

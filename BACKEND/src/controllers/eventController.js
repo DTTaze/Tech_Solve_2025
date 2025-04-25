@@ -24,6 +24,20 @@ const handleGetAllEvents = async (req, res) => {
     }
 }
 
+const handleGetEventByUserId = async (req, res) => {
+    try {
+        const userId = req.params.user_id;
+        const events = await eventService.getEventByUserId(userId);
+        if (!events) {
+            return res.error(404, "Events not found");
+        }
+        return res.success("Events retrieved successfully", events);
+    } catch (error) {
+        console.error("Error retrieving events:", error);
+        return res.error(500, "Error retrieving events", error);
+    }
+}
+
 const handleCreateEvent = async (req, res) => {
     try {
         const images = req.files;
@@ -39,8 +53,24 @@ const handleCreateEvent = async (req, res) => {
     }
 }
 
+const handleAcceptEvent = async (req, res) => {
+    try {
+        const eventId = req.params.event_id;
+        const userId = req.user.id;
+        const event = await eventService.acceptEvent(eventId,userId);
+        if (!event) {
+            return res.error(404, "Event not found");
+        }
+        return res.success("Event accepted successfully", event);
+    } catch (error) {
+        console.error("Error accepting event:", error);
+        return res.error(500, "Error accepting event", error);
+    }
+}
 module.exports = {
     handleGetEventbyId,
     handleGetAllEvents,
+    handleGetEventByUserId,
     handleCreateEvent,
+    handleAcceptEvent
 }

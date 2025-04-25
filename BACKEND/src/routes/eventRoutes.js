@@ -15,10 +15,20 @@ router.get('/',
     eventController.handleGetAllEvents
 );
 
+router.get('/user/:user_id',
+    // checkPermission('read', 'event'),
+    eventController.handleGetEventByUserId
+);
+
 router.post('/create',
 //   checkPermission('create', 'event'),
     middlewareImage.array('images',5),
     eventController.handleCreateEvent
+);
+
+router.post('/accept/:event_id',
+    // checkPermission('update', 'event'),
+    eventController.handleAcceptEvent
 );
 
 module.exports = router;
