@@ -5,14 +5,13 @@ const User = db.User;
 const purchaseQueue = require("./queue");
 const { uploadImages } = require("../services/imageService");
 const { sequelize } = require("../models");
+const { where } = require("sequelize");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 
 
-
 const createItem = async (itemData, user_id, images) => {
   try {
-    // Validate required fields
     if (!itemData.name || !itemData.price || !itemData.stock) {
       throw new Error("Missing required fields (name, price, stock)");
     }
@@ -21,16 +20,20 @@ const createItem = async (itemData, user_id, images) => {
       throw new Error("Owner ID is required");
     }
 
-    // Validate price
+    if (itemData.purchase_limit_per_day < 1) {
+      throw new Error("Purchase limit per day must be at least 1");
+    }
+    
     if (itemData.price < 1) {
       throw new Error("Price must be at least 1");
     }
+    
     const stock = itemData.stock;
     if (stock === undefined || stock < 1) {
       throw new Error("Stock must be at least 1");
     }
 
-    // Create item with transaction
+
     const result = await sequelize.transaction(async (t) => {
       const newItem = await Item.create(
         {
@@ -41,6 +44,7 @@ const createItem = async (itemData, user_id, images) => {
           description: itemData.description,
           status: itemData.status,
           owner_id: user_id,
+          purchase_limit_per_day: itemData.purchase_limit_per_day,
         },
         { transaction: t }
       );
@@ -57,19 +61,22 @@ const createItem = async (itemData, user_id, images) => {
 
     return result;
   } catch (error) {
-    console.error('Error creating item:', error);
+    console.error("Error creating item:", error);
     throw error;
   }
 };
 
 const getAllItems = async () => {
   try {
-    const items = await Item.findAll();
-
-    // Get all item IDs
+    const items = await Item.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username"],
+        },
+      ],
+    });
     const itemIds = items.map((item) => item.id);
-
-    // Find all images for these items
     const images = await Image.findAll({
       where: {
         reference_id: itemIds,
@@ -77,7 +84,6 @@ const getAllItems = async () => {
       },
     });
 
-    // Group images by item_id
     const imagesByItemId = images.reduce((acc, image) => {
       if (!acc[image.reference_id]) {
         acc[image.reference_id] = [];
@@ -86,7 +92,6 @@ const getAllItems = async () => {
       return acc;
     }, {});
 
-    // Add images to each item
     return items.map((item) => ({
       ...item.toJSON(),
       images: imagesByItemId[item.id] || [],
@@ -151,13 +156,16 @@ const getItemByIdUser = async (user_id) => {
 
 const updateItem = async (id, data, images) => {
   try {
-    console.log("images", images);
-    let { name, price, stock, description, status } = data;
+    let { name, price, stock, description, status, purchase_limit_per_day } =
+      data;
     let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
     }
     name ? (item.name = name) : (item.name = item.name);
+    purchase_limit_per_day
+      ? (item.purchase_limit_per_day = purchase_limit_per_day)
+      : (item.purchase_limit_per_day = item.purchase_limit_per_day);
     status ? (item.status = status) : (item.status = item.status);
     description
       ? (item.description = description)
@@ -169,21 +177,18 @@ const updateItem = async (id, data, images) => {
         throw new Error("Stock cannot be negative");
       }
       item.stock = stock;
-      item.status = stock > 0 ? "available" : "sold";
+      item.status = stock > 0 ? "available" : "sold_out";
     }
 
     let uploadedImages = [];
 
     if (images && images.length > 0) {
-      // Find existing images for the item
       const existingImages = await Image.findAll({
         where: {
           reference_id: id,
           reference_type: "item",
         },
       });
-
-      // Delete existing images from Cloudinary and database
       for (const image of existingImages) {
         if (image.url) {
           const publicId = image.url.split("/").pop().split(".")[0];
@@ -192,7 +197,6 @@ const updateItem = async (id, data, images) => {
         await image.destroy();
       }
 
-      // Upload new images and save to database
       uploadedImages = await uploadImages(images, id, "item");
       if (!uploadedImages || uploadedImages.length === 0) {
         throw new Error("Failed to upload images");
@@ -242,7 +246,7 @@ const deleteItem = async (item_id) => {
   }
 };
 
-const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
+const purchaseItem = async (user_id, item_id, data) => {
   try {
     let { name, quantity } = data;
     if (!user_id || !item_id || quantity <= 0) {
@@ -255,7 +259,7 @@ const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
       name,
       quantity,
     });
-    return { message: "Purchase request is in queue", jobId: result.id };
+    return { message: "Purchase request is in queue", job_id: result.id };
   } catch (error) {
     throw error;
   }
@@ -290,12 +294,53 @@ const getItemByPublicId = async (public_id) => {
 
 const updateItemByPublicId = async (public_id, data, images) => {
   try {
-    const item = await Item.findOne({ where: { public_id } });
+    let { name, price, stock, description } = data;
+    let item = await Item.findOne({ where: { public_id } });
     if (!item) {
       throw new Error("Item not found");
     }
+    name ? (item.name = name) : (item.name = item.name);
+    item.status = "pending";
+    description
+      ? (item.description = description)
+      : (item.description = item.description);
+    price ? (item.price = price) : (item.price = item.price);
 
-    return await updateItem(item.id, data, images);
+    if (stock !== undefined) {
+      if (stock < 0) {
+        throw new Error("Stock cannot be negative");
+      }
+      item.stock = stock;
+    }
+
+    let uploadedImages = [];
+
+    if (images && images.length > 0) {
+      const existingImages = await Image.findAll({
+        where: {
+          reference_id: item.id,
+          reference_type: "item",
+        },
+      });
+      for (const image of existingImages) {
+        if (image.url) {
+          const publicId = image.url.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`images/${publicId}`);
+        }
+        await image.destroy();
+      }
+
+      uploadedImages = await uploadImages(images, item.id, "item");
+      if (!uploadedImages || uploadedImages.length === 0) {
+        throw new Error("Failed to upload images");
+      }
+    }
+
+    await item.save();
+    return {
+      ...item.toJSON(),
+      images: uploadedImages.map((image) => image.url),
+    };
   } catch (e) {
     throw e;
   }

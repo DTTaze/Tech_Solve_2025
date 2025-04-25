@@ -52,7 +52,14 @@ const createTask = async (data, user_id) => {
 
 const getAllTasks = async () => {
   try {
-    return await Task.findAll();
+    return await Task.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username"],
+        },
+      ],
+    });
   } catch (e) {
     throw e;
   }
@@ -145,8 +152,7 @@ const acceptTask = async (task_id, user_id) => {
   }
 };
 
-
-const submitTask = async (task_id,user_id, description, files) => {
+const submitTask = async (task_id, user_id, description, files) => {
   try {
     const taskId = Number(task_id);
     const userId = Number(user_id);
@@ -241,7 +247,6 @@ const increaseProgressCount = async (task_user_id) => {
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
 
     if (taskUser.progress_count === taskUser.tasks.total) {
-
       await completeTask(taskUser);
 
       const user = await User.findByPk(taskUser.user_id);

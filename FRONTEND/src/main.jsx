@@ -28,6 +28,8 @@ import CustomerDashboard from "./components/customer/CustomerDashboard.jsx";
 import CustomerProfile from "./components/customer/CustomerProfile.jsx";
 import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
+import AdminQueue from "./pages/AdminQueue.jsx";
+import ProductsManagement from "./components/admin/ProductsManagement.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -74,20 +76,21 @@ const router = createBrowserRouter([
             children: [
               { path: "missions", element: <MissionsManagement /> },
               { path: "items", element: <ItemsManagement /> },
+              { path: "products", element: <ProductsManagement /> },
             ],
           },
           { path: "rbac", element: <RolesPermissions /> },
           { path: "transactions", element: <TransactionsManagement /> },
+          {
+            path: "queues",
+            element: <AdminQueue />,
+          },
           // { path: "rewards", element: <RewardManagement /> },
         ],
       },
       {
         path: "auth/success",
         element: <AuthCallback />,
-      },
-      {
-        path: "customer/*",
-        element: <Customer />,
       },
       {
         path: "customer",

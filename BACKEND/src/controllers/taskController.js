@@ -83,7 +83,7 @@ const handleSubmitTask = async (req, res) => {
 const handleDecisionTaskSubmit = async (req, res) => {
   try {
     const task_submit_id = req.params.id;
-    const decision = req.body.decision; // "approved" or "rejected"
+    const decision = req.body.decision;
     let result = await taskService.updateDecisionTaskSubmit(
       task_submit_id,
       decision

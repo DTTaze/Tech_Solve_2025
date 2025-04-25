@@ -94,6 +94,7 @@ CREATE TABLE `images` (
   `url` varchar(255) NOT NULL,
   `reference_id` int NOT NULL,
   `reference_type` enum('avatar','taskSubmit','item','event') NOT NULL,
+
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
@@ -116,6 +117,7 @@ CREATE TABLE `items` (
   `price` int NOT NULL,
   `stock` int NOT NULL,
   `status` enum('available','sold','pending') DEFAULT 'available',
+
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -141,6 +143,34 @@ CREATE TABLE `permissions` (
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `products`
+--
+
+DROP TABLE IF EXISTS `products`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `products` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `public_id` varchar(255) NOT NULL,
+  `seller_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `price` int NOT NULL,
+  `category` enum('recycled','handicraft','organic','plants','other') NOT NULL,
+  `product_status` enum('new','used') NOT NULL DEFAULT 'new',
+  `post_status` enum('public','private','pending','rejected') NOT NULL DEFAULT 'pending',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `public_id` (`public_id`),
+  UNIQUE KEY `public_id_2` (`public_id`),
+  UNIQUE KEY `public_id_3` (`public_id`),
+  KEY `seller_id` (`seller_id`),
+  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -290,6 +320,7 @@ CREATE TABLE `tasks` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `public_id` (`public_id`),
   UNIQUE KEY `public_id_2` (`public_id`)
+
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -415,3 +446,4 @@ CREATE TABLE `videos` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-04-24 18:06:05
+
