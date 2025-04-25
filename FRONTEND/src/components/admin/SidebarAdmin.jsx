@@ -13,6 +13,7 @@ import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import { alpha } from "@mui/material/styles";
 
+import AddToQueueIcon from "@mui/icons-material/AddToQueue";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -27,9 +28,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import MenuIcon from "@mui/icons-material/Menu";
 
-
-
-export default function TemporaryDrawer({userInfo}) {
+export default function TemporaryDrawer({ userInfo }) {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,7 +72,7 @@ export default function TemporaryDrawer({userInfo}) {
         {
           text: "Sản phẩm trao đổi P2P",
           icon: <ShoppingCartIcon />,
-          path: "/admin/content/marketplace",
+          path: "/admin/content/products",
         },
         {
           text: "Bài đăng",
@@ -99,6 +98,16 @@ export default function TemporaryDrawer({userInfo}) {
           text: "Xu thưởng",
           icon: <MonetizationOnIcon />,
           path: "/admin/rewards",
+        },
+      ],
+    },
+    {
+      label: "Khác",
+      items: [
+        {
+          text: "Hàng đợi",
+          icon: <AddToQueueIcon />,
+          path: "/admin/queues",
         },
       ],
     },
@@ -150,7 +159,7 @@ export default function TemporaryDrawer({userInfo}) {
             mr: 2,
             bgcolor: "primary.main",
           }}
-          src={userInfo?.avatar_url} 
+          src={userInfo?.avatar_url}
           alt={userInfo?.username}
         />
         <Box>

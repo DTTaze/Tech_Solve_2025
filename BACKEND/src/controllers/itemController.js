@@ -2,7 +2,7 @@ const itemService = require("../services/itemService");
 
 const handleUploadItem = async (req, res) => {
   try {
-    const user_id = Number(req.params.user_id);
+    const user_id = Number(req.user.id);
     const itemData = req.body;
     const images = req.files;
     const item = await itemService.createItem(itemData, user_id, images);

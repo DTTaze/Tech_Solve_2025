@@ -7,6 +7,7 @@ const typeSeeder = require("./seeder-type");
 const taskTypeSeeder = require("./seeder-task_type");
 const taskSeeder = require("./seeder-task");
 const itemSeeder = require("./seeder-item");
+const productSeeder = require("./seeder-product");
 const transactionSeeder = require("./seeder-transaction");
 const taskUserSeeder = require("./seeder-task_user");
 const coinsSeeder = require("./seeder-coins");
@@ -16,12 +17,16 @@ const userankSeeder = require("./seeder-userank");
 const seeders = [
   { model: require("../../models").Role, seeder: roleSeeder },
   { model: require("../../models").Permission, seeder: permissionSeeder },
-  { model: require("../../models").RolePermission, seeder: rolePermissionSeeder },
+  {
+    model: require("../../models").RolePermission,
+    seeder: rolePermissionSeeder,
+  },
   { model: require("../../models").Coin, seeder: coinsSeeder },
   { model: require("../../models").Rank, seeder: rankSeeder },
   { model: require("../../models").User, seeder: userSeeder },
-  { seeder: userankSeeder },  // Special case for userank seeder that doesn't need a model
+  { seeder: userankSeeder },
   { model: require("../../models").Item, seeder: itemSeeder },
+  { model: require("../../models").Product, seeder: productSeeder },
   { model: require("../../models").Transaction, seeder: transactionSeeder },
   { model: require("../../models").Task, seeder: taskSeeder },
   { model: require("../../models").Type, seeder: typeSeeder },

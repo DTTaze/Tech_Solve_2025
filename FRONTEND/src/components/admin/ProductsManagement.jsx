@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
-import { itemColumns } from "./HeaderColumn";
+import { productColumns } from "./HeaderColumn";
 import {
-  getAllItemsApi,
+  getAllProductsApi,
   deleteItemApi,
   createItemApi,
   updateItemApi,
 } from "../../utils/api";
 import { Box } from "@mui/material";
-import ItemForm from "../ui/form/ItemForm";
+import ProductForm from "../ui/form/ProductForm";
 
-export default function ItemsManagement() {
-  const [items, setItems] = useState([]);
+export default function ProductsManagement() {
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editData, setEditData] = useState(null);
@@ -20,10 +20,10 @@ export default function ItemsManagement() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await getAllItemsApi();
+        const res = await getAllProductsApi();
 
         if (res.success) {
-          setItems(res.data);
+          setProducts(res.data);
         } else {
           console.log(res.error);
         }
@@ -60,7 +60,7 @@ export default function ItemsManagement() {
   const handleSubmitItem = async (data, mode) => {
     if (mode === "add") {
       try {
-        const result = await createItemApi(data);
+        const result = await createItemApi(data.id, data);
         if (result.success) {
           alert("Thêm vật phẩm thành công!");
         } else {
@@ -86,15 +86,15 @@ export default function ItemsManagement() {
   return (
     <Box>
       <DataTable
-        title="Items"
-        columns={itemColumns}
-        rows={items}
+        title="Products"
+        columns={productColumns}
+        rows={products}
         onAdd={handleAddItem}
         onEdit={handleEditItem}
         onDelete={handleDeleteItem}
         loading={loading}
       />
-      <ItemForm
+      <ProductForm
         open={formOpen}
         handleClose={() => setFormOpen(false)}
         handleSubmit={handleSubmitItem}

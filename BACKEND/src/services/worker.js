@@ -21,7 +21,7 @@ const worker = new Worker(
     await user.update({ coins: user.coins - item.price * quantity });
     await item.update({
       stock: item.stock - quantity,
-      status: item.stock - quantity === 0 ? "sold" : "available",
+      status: item.stock - quantity === 0 ? "sold_out" : "available",
     });
 
     let uniqueCode, exists;

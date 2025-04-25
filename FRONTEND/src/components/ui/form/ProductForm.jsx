@@ -12,7 +12,7 @@ import {
   FormControl,
 } from "@mui/material";
 
-export default function ItemForm({
+export default function ProductForm({
   open,
   handleClose,
   handleSubmit,
@@ -20,38 +20,37 @@ export default function ItemForm({
   mode,
 }) {
   const [formData, setFormData] = useState({
-    owner_id: "",
+    seller_id: "",
     name: "",
     description: "",
     price: "",
-    stock: "",
-    status: "",
-    purchase_limit_per_day: "",
+    category: "",
+    product_status: "",
+    post_status: "",
   });
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
       setFormData({
         id: initialData?.id || null,
-        owner_id: initialData?.owner_id || null,
+        seller_id: initialData?.seller_id || "",
         name: initialData?.name || "",
         description: initialData?.description || "",
-        price: initialData?.price || null,
-        stock: initialData?.stock || null,
-        status: initialData?.status || "",
-        purchase_limit_per_day:
-          initialData?.purchase_limit_per_day || "Không giới hạn",
+        price: initialData?.price || "",
+        category: initialData?.category || "",
+        product_status: initialData?.product_status || "",
+        post_status: initialData?.post_status || "",
       });
     } else {
       setFormData({
         id: "",
-        owner_id: "",
+        seller_id: "",
         name: "",
         description: "",
         price: "",
-        stock: "",
-        status: "",
-        purchase_limit_per_day: "",
+        category: "",
+        product_status: "",
+        post_status: "",
       });
     }
   }, [initialData, mode]);
@@ -71,12 +70,14 @@ export default function ItemForm({
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>{mode === "add" ? "Add New Item" : "Edit Item"}</DialogTitle>
+      <DialogTitle>
+        {mode === "add" ? "Add New Product" : "Edit Product"}
+      </DialogTitle>
       <form onSubmit={onSubmit}>
         <DialogContent dividers>
           <TextField
             margin="dense"
-            label="Tên vật phẩm"
+            label="Tên sản phẩm"
             name="name"
             value={formData.name}
             onChange={handleChange}
@@ -93,54 +94,71 @@ export default function ItemForm({
           />
           <TextField
             margin="dense"
-            label="Giá trị (xu)"
+            label="Giá trị (VNĐ)"
             name="price"
             value={formData.price}
             onChange={handleChange}
             fullWidth
             required
           />
-          <TextField
-            margin="dense"
-            label="Tồn kho"
-            name="stock"
-            value={formData.stock}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
+
           <FormControl fullWidth margin="dense" required>
-            <InputLabel id="status-label">Trạng thái</InputLabel>
+            <InputLabel id="category-label">Danh mục</InputLabel>
             <Select
-              labelId="status-label"
-              name="status"
-              value={formData.status}
+              labelId="category-label"
+              name="category"
+              value={formData.category}
               onChange={handleChange}
-              label="Trạng thái"
+              label="Danh mục"
             >
-              <MenuItem value="available">Sẵn hàng</MenuItem>
+              <MenuItem value="recycled">Tái chế</MenuItem>
+              <MenuItem value="handicraft">Thủ công</MenuItem>
+              <MenuItem value="organic">Hữu cơ</MenuItem>
+              <MenuItem value="plants">Cây trồng</MenuItem>
+              <MenuItem value="other">Khác</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="product_status-label">
+              Tình trạng sản phẩm
+            </InputLabel>
+            <Select
+              labelId="product_status-label"
+              name="product_status"
+              value={formData.product_status}
+              onChange={handleChange}
+              label="Tình trạng sản phẩm"
+            >
+              <MenuItem value="new">Mới</MenuItem>
+              <MenuItem value="used">Đã sử dụng</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="post_status-label">Trạng thái bài đăng</InputLabel>
+            <Select
+              labelId="post_status-label"
+              name="post_status"
+              value={formData.post_status}
+              onChange={handleChange}
+              label="Trạng thái bài đăng"
+            >
+              <MenuItem value="public">Công khai</MenuItem>
+              <MenuItem value="private">Riêng tư</MenuItem>
               <MenuItem value="pending">Chờ duyệt</MenuItem>
-              <MenuItem value="sold_out">Hết hàng</MenuItem>
+              <MenuItem value="rejected">Từ chối</MenuItem>
             </Select>
           </FormControl>
 
           <TextField
             margin="dense"
             label="Chủ sở hữu"
-            name="owner_id"
-            value={formData.owner_id}
+            name="seller_id"
+            value={formData.seller_id}
             onChange={handleChange}
             fullWidth
             required
-          />
-
-          <TextField
-            margin="dense"
-            label="Giới hạn lượt mua/ngày"
-            name="purchase_limit_per_day"
-            value={formData.purchase_limit_per_day}
-            onChange={handleChange}
-            fullWidth
           />
         </DialogContent>
         <DialogActions>

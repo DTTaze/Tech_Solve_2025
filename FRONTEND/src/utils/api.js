@@ -158,12 +158,12 @@ export const deleteItemApi = (id) => {
   return axios.delete(`api/items/${id}`);
 };
 
-export const createItemApi = (item_id, data) => {
-  return axios.post(`api/items/upload/${item_id}`, data);
+export const createItemApi = (data) => {
+  return axios.post("api/items/upload", data);
 };
 
-export const updateItemApi = (item_id, data) => {
-  return axios.put(`api/items/${item_id}`, data);
+export const updateItemApi = (id, data) => {
+  return axios.put(`api/items/${id}`, data);
 };
 
 export const deleteRoleApi = (id) => {
@@ -215,7 +215,27 @@ export const getAllTransactionsApi = () => {
 };
 
 export const getQRApi = (text) => {
-  return axios.get(`http://localhost:6060/api/qr`, {
+  return axios.get("api/qr", {
     params: { text },
   });
+};
+
+export const getAdminQueueApi = () => {
+  return axios.get("api/admin/queues");
+};
+
+export const getAllProductsApi = () => {
+  return axios.get("api/products");
+};
+
+export const deleteProductApi = (id) => {
+  return axios.delete(`api/products/${id}`);
+};
+
+export const createProductApi = (data) => {
+  return axios.post("api/products/upload", data);
+};
+
+export const updateProductApi = (id, data) => {
+  return axios.put(`api/products/${id}`, data);
 };

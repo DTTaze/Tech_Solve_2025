@@ -92,7 +92,7 @@ export default function DataTable({
   // Action column with better styling
   const actionColumn = {
     field: "actions",
-    headerName: "Actions",
+    headerName: "Thao tác",
     width: 150,
     sortable: false,
     filterable: false,

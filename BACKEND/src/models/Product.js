@@ -2,21 +2,16 @@
 const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
-  class Item extends Model {
+  class Product extends Model {
     static associate(models) {
-      Item.belongsTo(models.User, {
-        foreignKey: "owner_id",
-        onDelete: "CASCADE",
-      });
-
-      Item.hasMany(models.Transaction, {
-        foreignKey: "item_id",
+      Product.belongsTo(models.User, {
+        foreignKey: "seller_id",
         onDelete: "CASCADE",
       });
     }
   }
 
-  Item.init(
+  Product.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -28,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      owner_id: {
+      seller_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -51,33 +46,38 @@ module.exports = (sequelize, DataTypes) => {
           min: 0,
         },
       },
-      stock: {
-        type: DataTypes.INTEGER,
+      category: {
+        type: DataTypes.ENUM(
+          "recycled",
+          "handicraft",
+          "organic",
+          "plants",
+          "other"
+        ),
         allowNull: false,
-        validate: {
-          min: 0,
-        },
       },
-      status: {
-        type: DataTypes.ENUM("available", "sold_out", "pending"),
-        allowNull: true,
+      product_status: {
+        type: DataTypes.ENUM("new", "used"),
+        allowNull: false,
+        defaultValue: "new",
+      },
+      post_status: {
+        type: DataTypes.ENUM(
+          "public",
+          "private",
+          "pending",
+          "rejected"
+        ),
+        allowNull: false,
         defaultValue: "pending",
-      },
-      purchase_limit_per_day: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: null,
-        validate: {
-          min: 1,
-        },
       },
     },
     {
       sequelize,
-      modelName: "Item",
-      tableName: "items",
+      modelName: "Product",
+      tableName: "products",
     }
   );
 
-  return Item;
+  return Product;
 };

@@ -2,11 +2,12 @@ const express = require("express");
 const itemController = require("../controllers/itemController");
 const middlewareImage = require("../middlewares/middlewareImage");
 const checkPermission = require("../middlewares/checkPermission");
+const checkItemDailyLimit = require("../middlewares/checkItemDailyLimit");
 
 const router = express.Router();
 
 router.post(
-  "/upload/:user_id",
+  "/upload",
   middlewareImage.array("images", 5),
   itemController.handleUploadItem
 );
@@ -28,7 +29,11 @@ router.delete(
   // checkPermission("delete", "item_id"),
   itemController.handleDeleteItem
 );
-router.post("/purchase/:item_id", itemController.handlePurchaseItem);
+router.post(
+  "/purchase/:item_id",
+  checkItemDailyLimit,
+  itemController.handlePurchaseItem
+);
 
 router.get("/public/:public_id", itemController.handleGetItemByPublicId);
 router.put(

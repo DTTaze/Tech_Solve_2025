@@ -8,6 +8,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "owner_id",
         onDelete: "CASCADE",
       });
+      User.hasMany(models.Task, {
+        foreignKey: "owner_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.Product, {
+        foreignKey: "seller_id",
+        onDelete: "CASCADE",
+      });
       User.hasMany(models.Transaction, {
         foreignKey: "buyer_id",
         onDelete: "CASCADE",

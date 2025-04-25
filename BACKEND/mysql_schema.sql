@@ -117,7 +117,7 @@ CREATE TABLE `images` (
   `id` int NOT NULL AUTO_INCREMENT,
   `url` varchar(255) NOT NULL,
   `reference_id` int NOT NULL,
-  `reference_type` enum('avatar','taskSubmit') NOT NULL,
+  `reference_type` enum('avatar','taskSubmit','item') NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
@@ -139,7 +139,7 @@ CREATE TABLE `items` (
   `description` text,
   `price` int NOT NULL,
   `stock` int NOT NULL,
-  `status` enum('available','sold','pending') NOT NULL DEFAULT 'available',
+  `status` enum('available','sold','pending') DEFAULT 'available',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -292,7 +292,7 @@ CREATE TABLE `task_users` (
   KEY `task_id` (`task_id`),
   CONSTRAINT `task_users_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `task_users_ibfk_4` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -305,6 +305,7 @@ DROP TABLE IF EXISTS `tasks`;
 CREATE TABLE `tasks` (
   `id` int NOT NULL AUTO_INCREMENT,
   `public_id` varchar(255) NOT NULL,
+  `owner_id` int NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `coins` int NOT NULL,
@@ -447,4 +448,4 @@ CREATE TABLE `videos` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-21 15:39:04
+-- Dump completed on 2025-04-24 13:07:13
