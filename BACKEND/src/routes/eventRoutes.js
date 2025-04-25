@@ -5,19 +5,24 @@ const middlewareImage = require('../middlewares/middlewareImage');
 const eventController = require('../controllers/eventController');
 const checkPermission = require('../middlewares/checkPermission');
 
-router.get('/:event_id',
+router.get('/information/:event_id',
     // checkPermission('read', 'event'),
     eventController.handleGetEventbyId
 );
 
-router.get('/',
+router.get('/informations',
     // checkPermission('read', 'event'),
     eventController.handleGetAllEvents
 );
 
-router.get('/user/:user_id',
+router.get('/signed',
     // checkPermission('read', 'event'),
-    eventController.handleGetEventByUserId
+    eventController.handleGetEventSigned
+);
+
+router.get('/owner',
+    // checkPermission('read', 'event'),
+    eventController.handGetEventsOfOwner
 );
 
 router.post('/create',
@@ -29,6 +34,12 @@ router.post('/create',
 router.post('/accept/:event_id',
     // checkPermission('update', 'event'),
     eventController.handleAcceptEvent
+);
+
+router.put('/update/:event_id',
+    // checkPermission('update', 'event'),
+    middlewareImage.array('images',5),
+    eventController.handleUpdateEvent
 );
 
 module.exports = router;

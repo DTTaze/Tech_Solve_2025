@@ -2,8 +2,11 @@ const db = require('../models/index');
 const Event = db.Event;
 const EventUser = db.EventUser;
 const User = db.User;
+const Image = db.Image;
 const { nanoid } = require('nanoid');
 const uploadImages = require('./imageService').uploadImages;
+const cloudinary = require("../config/cloudinary");
+
 
 const getEventById = async (eventId) => {
     try {
@@ -74,7 +77,38 @@ const getAllEvents = async () => {
     }
 }
 
-const getEventByUserId = async (userId) => {}
+const getEventSigned = async (userId) => {
+    try {
+        const allEvents = await EventUser.findAll({
+            where: { user_id: userId },
+            include: [
+                {
+                    model: db.Event,
+                    as: 'event',
+                    attributes: ['title', 'description', 'location', 'capacity', 'status', 'start_time', 'end_time'],
+                }
+            ]
+        });
+
+        return allEvents;
+    } catch (error) {
+        console.error("Error retrieving signed events:", error);
+        throw error;
+    }
+}
+
+const getEventsOfOwner = async (owner_id) => {
+    try {
+        const events = await Event.findAll({
+            where: { owner_id },
+        });
+
+        return events;
+    } catch (error) {
+        console.error("Error get events of owner:", error);
+        throw error;
+    }
+}
 
 const createEvent = async (Data, user_id, images) => {
     try {
@@ -145,10 +179,112 @@ const acceptEvent = async (eventId, userId) => {
     }
 }
 
+const updateEvent = async (event_id, Data, images) => {
+    try {
+        const { title, description, location, capacity, start_time, end_time, status } = Data;
+        let updateFields = {};
+
+        if (title) {
+            updateFields.title = title;
+        }
+        if (description) {
+            updateFields.description = description;
+        }
+        if (location) {
+            updateFields.location = location;
+        }
+
+        if (capacity){
+            if (Number((capacity) !== capacity)) {
+                throw new Error("Capacity must be a number");
+            }
+            if ( capacity < 0) {
+                throw new Error("Capacity must be greater than 0");
+            }
+            updateFields.capacity = capacity;
+        }
+
+        const isValidDate = (date) => !isNaN(Date.parse(date));
+        if (start_time){
+            if (!isValidDate(start_time) ) {
+                console.log("start_time", start_time);
+                throw new Error("Invalid date format for start_time");
+            }
+            updateFields.start_time = new Date(start_time);
+        }
+
+        if (end_time){
+            if (!isValidDate(end_time) ) {
+                console.log("end_time", end_time);
+                throw new Error("Invalid date format for end_time");
+            }
+            updateFields.end_time = new Date(end_time);
+        }
+
+        if (status) {
+            const validStatuses = ["upcoming", "ongoing", "finished"];
+            if (!validStatuses.includes(status)) {
+                throw new Error("Invalid status value");
+            }
+            updateFields.status = status;
+        }
+
+        const event = await Event.findByPk(event_id);
+
+        if (!event) {
+            throw new Error("Event not found");
+        }
+
+        await event.update(updateFields);
+
+        let uploadedImages = [];
+
+        if (images && images.length > 0) {
+          const existingImages = await Image.findAll({
+            where: {
+              reference_id: event.id,
+              reference_type: "event",
+            },
+          });
+    
+          for (const image of existingImages) {
+            if (image.url) {
+              const publicId = image.url.split("/").pop().split(".")[0];
+              await cloudinary.uploader.destroy(`images/${publicId}`);
+            }
+            await image.destroy();
+          }
+    
+          uploadedImages = await uploadImages(images, event.id, "event");
+          if (!uploadedImages || uploadedImages.length === 0) {
+            throw new Error("Failed to upload images");
+          }
+        }else{
+            uploadedImages = await db.Image.findAll({
+                where: {
+                    reference_id: event.id,
+                    reference_type: "event"
+                },
+                attributes: ['url'],
+            });
+        }
+
+        return {
+            ...event.toJSON(),
+            images: uploadedImages.map((image) => image.url),
+        };
+    } catch (error) {
+        console.error("Error updating event:", error);
+        throw error;
+    }
+};
+
 module.exports = {
     getEventById,
     getAllEvents,
-    getEventByUserId,
+    getEventSigned,
+    getEventsOfOwner,
     createEvent,
-    acceptEvent
+    acceptEvent,
+    updateEvent,
 }

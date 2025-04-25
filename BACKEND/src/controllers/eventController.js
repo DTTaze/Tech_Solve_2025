@@ -24,13 +24,21 @@ const handleGetAllEvents = async (req, res) => {
     }
 }
 
-const handleGetEventByUserId = async (req, res) => {
+const handleGetEventSigned = async (req, res) => {
     try {
-        const userId = req.params.user_id;
-        const events = await eventService.getEventByUserId(userId);
-        if (!events) {
-            return res.error(404, "Events not found");
-        }
+        const userId = req.user.id;
+        const events = await eventService.getEventSigned(userId);
+        return res.success("Events retrieved successfully", events);
+    } catch (error) {
+        console.error("Error retrieving events:", error);
+        return res.error(500, "Error retrieving events", error);
+    }
+}
+
+const handGetEventsOfOwner = async (req, res) => {
+    try {
+        const owner_id = req.user.id;
+        const events = await eventService.getEventsOfOwner(owner_id);
         return res.success("Events retrieved successfully", events);
     } catch (error) {
         console.error("Error retrieving events:", error);
@@ -67,10 +75,28 @@ const handleAcceptEvent = async (req, res) => {
         return res.error(500, "Error accepting event", error);
     }
 }
+
+const handleUpdateEvent = async (req, res) => {
+    try {
+        const event_id = req.params.event_id;
+        const images = req.files;
+        const event = await eventService.updateEvent(event_id, req.body, images);
+        if (!event) {
+            return res.error(404, "Event not found");
+        }
+        return res.success("Event updated successfully", event);
+    } catch (error) {
+        console.error("Error updating event:", error);
+        return res.error(500, "Error updating event", error);
+    }
+}
+
 module.exports = {
     handleGetEventbyId,
     handleGetAllEvents,
-    handleGetEventByUserId,
+    handleGetEventSigned,
+    handGetEventsOfOwner,
     handleCreateEvent,
-    handleAcceptEvent
+    handleAcceptEvent,
+    handleUpdateEvent,
 }
