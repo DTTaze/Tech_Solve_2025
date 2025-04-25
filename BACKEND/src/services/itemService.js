@@ -9,21 +9,30 @@ const { where } = require("sequelize");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 
+
 const createItem = async (itemData, user_id, images) => {
   try {
     if (!itemData.name || !itemData.price || !itemData.stock) {
       throw new Error("Missing required fields (name, price, stock)");
     }
+
+    if (!user_id) {
+      throw new Error("Owner ID is required");
+    }
+
     if (itemData.purchase_limit_per_day < 1) {
       throw new Error("Purchase limit per day must be at least 1");
     }
+    
     if (itemData.price < 1) {
       throw new Error("Price must be at least 1");
     }
+    
     const stock = itemData.stock;
     if (stock === undefined || stock < 1) {
       throw new Error("Stock must be at least 1");
     }
+
 
     const result = await sequelize.transaction(async (t) => {
       const newItem = await Item.create(

@@ -88,10 +88,36 @@ const deleteImage = async (id) => {
     }
 }
 
+const deleteImages = async (reference_id, reference_type) => {
+    try {
+        let imagesBeforeDelete = [];
+        const images = await Image.findAll({
+            where: {
+                reference_id,
+                reference_type,
+            },
+        });
+    
+        for (const image of images) {
+            if (image.url) {
+                imagesBeforeDelete.push(image.url);
+                const publicId = image.url.split("/").pop().split(".")[0];
+                await cloudinary.uploader.destroy(`images/${publicId}`);
+            }
+            await image.destroy();
+        }
+        
+        return imagesBeforeDelete;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
 module.exports = { 
     uploadImages,
     getImageById,
     getAllImages,
     updateImage,
     deleteImage,
+    deleteImages,
 };
