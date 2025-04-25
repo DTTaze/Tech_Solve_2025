@@ -91,6 +91,20 @@ const handleUpdateEvent = async (req, res) => {
     }
 }
 
+const handleDeleteEvent = async (req, res) => {
+    try {
+        const eventId = req.params.event_id;
+        const event = await eventService.deleteEvent(eventId);
+        if (!event) {
+            return res.error(404, "Event not found");
+        }
+        return res.success("Event deleted successfully", event);
+    } catch (error) {
+        console.error("Error deleting event:", error);
+        return res.error(500, "Error deleting event", error);
+    }
+}
+
 module.exports = {
     handleGetEventbyId,
     handleGetAllEvents,
@@ -99,4 +113,5 @@ module.exports = {
     handleCreateEvent,
     handleAcceptEvent,
     handleUpdateEvent,
+    handleDeleteEvent,
 }

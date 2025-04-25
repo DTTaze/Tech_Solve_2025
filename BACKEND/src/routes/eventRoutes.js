@@ -42,4 +42,9 @@ router.put('/update/:event_id',
     eventController.handleUpdateEvent
 );
 
+router.delete('/delete/:event_id',
+    // checkPermission('delete', 'event'),
+    eventController.handleDeleteEvent
+);
+
 module.exports = router;

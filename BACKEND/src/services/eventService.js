@@ -4,7 +4,7 @@ const EventUser = db.EventUser;
 const User = db.User;
 const Image = db.Image;
 const { nanoid } = require('nanoid');
-const uploadImages = require('./imageService').uploadImages;
+const {uploadImages, deleteImages} = require('./imageService');
 const cloudinary = require("../config/cloudinary");
 
 
@@ -240,25 +240,13 @@ const updateEvent = async (event_id, Data, images) => {
         let uploadedImages = [];
 
         if (images && images.length > 0) {
-          const existingImages = await Image.findAll({
-            where: {
-              reference_id: event.id,
-              reference_type: "event",
-            },
-          });
+            await deleteImages(event.id, "event");
     
-          for (const image of existingImages) {
-            if (image.url) {
-              const publicId = image.url.split("/").pop().split(".")[0];
-              await cloudinary.uploader.destroy(`images/${publicId}`);
+            uploadedImages = await uploadImages(images, event.id, "event");
+
+            if (!uploadedImages || uploadedImages.length === 0) {
+                throw new Error("Failed to upload images");
             }
-            await image.destroy();
-          }
-    
-          uploadedImages = await uploadImages(images, event.id, "event");
-          if (!uploadedImages || uploadedImages.length === 0) {
-            throw new Error("Failed to upload images");
-          }
         }else{
             uploadedImages = await db.Image.findAll({
                 where: {
@@ -279,6 +267,26 @@ const updateEvent = async (event_id, Data, images) => {
     }
 };
 
+const deleteEvent = async (event_id) => {
+    try {
+        const event = await Event.findByPk(event_id);
+        if (!event) {
+            throw new Error("Event not found");
+        }
+
+        const listImagesBeforeDelete = await deleteImages(event_id, "event");
+
+        await event.destroy();
+        return {
+            ...event.toJSON(),
+            images: listImagesBeforeDelete,
+        };
+    } catch (error) {
+        console.error("Error deleting event:", error);
+        throw error;
+    }
+};
+
 module.exports = {
     getEventById,
     getAllEvents,
@@ -287,4 +295,5 @@ module.exports = {
     createEvent,
     acceptEvent,
     updateEvent,
+    deleteEvent,
 }
