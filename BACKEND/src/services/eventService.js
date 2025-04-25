@@ -38,6 +38,40 @@ const getEventById = async (eventId) => {
     }
 }
 
+const getAllEvents = async () => {
+    try {
+        const events = await Event.findAll({
+            include: [
+                {
+                    model: db.User,
+                    as: 'owner',
+                    attributes: ['username']
+                },
+            ]
+        });
+
+        const eventsWithImages = await Promise.all(events.map(async (event) => {
+            const uploadedImages = await db.Image.findAll({
+                where: {
+                    reference_id: event.id,
+                    reference_type: 'event'
+                },
+                attributes: ['url'],
+            });
+
+            return {
+                ...event.toJSON(),
+                images: uploadedImages.map((image) => image.url)
+            };
+        }));
+
+        return eventsWithImages;
+    } catch (error) {
+        console.error("Error retrieving events:", error);
+        throw error;
+    }
+}
+
 const createEvent = async (Data, user_id, images) => {
     try {
         const { title, description, location, capacity, start_time, end_time } = Data;
@@ -83,5 +117,6 @@ const createEvent = async (Data, user_id, images) => {
 
 module.exports = {
     getEventById,
+    getAllEvents,
     createEvent,
 }

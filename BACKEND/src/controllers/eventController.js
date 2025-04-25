@@ -14,6 +14,16 @@ const handleGetEventbyId = async (req, res) => {
     }
 }
 
+const handleGetAllEvents = async (req, res) => {
+    try {
+        const events = await eventService.getAllEvents();
+        return res.success("Events retrieved successfully", events);
+    } catch (error) {
+        console.error("Error retrieving events:", error);
+        return res.error(500, "Error retrieving events", error);
+    }
+}
+
 const handleCreateEvent = async (req, res) => {
     try {
         const images = req.files;
@@ -31,5 +41,6 @@ const handleCreateEvent = async (req, res) => {
 
 module.exports = {
     handleGetEventbyId,
+    handleGetAllEvents,
     handleCreateEvent,
 }

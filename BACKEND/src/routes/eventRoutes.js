@@ -10,6 +10,11 @@ router.get('/:event_id',
     eventController.handleGetEventbyId
 );
 
+router.get('/',
+    // checkPermission('read', 'event'),
+    eventController.handleGetAllEvents
+);
+
 router.post('/create',
 //   checkPermission('create', 'event'),
     middlewareImage.array('images',5),
