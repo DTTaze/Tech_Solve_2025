@@ -3,7 +3,7 @@ const { Transaction, Item } = require("../models");
 
 const checkItemDailyLimit = async (req, res, next) => {
   const userId = req.user.id;
-  const itemId = req.body.item_id;
+  const itemId = req.params.item_id;
 
   const item = await Item.findByPk(itemId);
   if (!item) return res.error(400, "Item not found");
@@ -17,9 +17,9 @@ const checkItemDailyLimit = async (req, res, next) => {
 
   const purchasedToday = await Transaction.count({
     where: {
-      user_id: userId,
+      buyer_id: userId,
       item_id: itemId,
-      createdAt: {
+      created_at: {
         [Op.between]: [todayStart, todayEnd],
       },
     },

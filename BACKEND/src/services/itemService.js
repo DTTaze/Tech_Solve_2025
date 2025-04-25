@@ -237,7 +237,7 @@ const deleteItem = async (item_id) => {
   }
 };
 
-const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
+const purchaseItem = async (user_id, item_id, data) => {
   try {
     let { name, quantity } = data;
     if (!user_id || !item_id || quantity <= 0) {
@@ -250,7 +250,7 @@ const purchaseItem = async (user_id, user_coin_id, item_id, data) => {
       name,
       quantity,
     });
-    return { message: "Purchase request is in queue", jobId: result.id };
+    return { message: "Purchase request is in queue", job_id: result.id };
   } catch (error) {
     throw error;
   }
