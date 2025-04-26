@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ItemCatalog from "../components/features/exchangemarket/ItemCatalog";
 import ItemCatalogSkeleton from "../components/features/exchangemarket/ItemCatalogSkeleton";
-import { getAllItemsApi } from "../utils/api";
+import { getAllItemsApi} from "../utils/api";
 
 export default function ExchangeMarket() {
   const [items, setItems] = useState([]);

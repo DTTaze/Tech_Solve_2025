@@ -228,6 +228,10 @@ export const getAllProductsApi = () => {
   return axios.get("api/products");
 };
 
+export const getProductByIdUser = (id) => {
+  return axios.get(`api/products/users/${id}`);
+}
+
 export const deleteProductApi = (id) => {
   return axios.delete(`api/products/${id}`);
 };

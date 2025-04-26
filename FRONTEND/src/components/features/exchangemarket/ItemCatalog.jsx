@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { getUserApi, purchaseItemApi } from "../../../utils/api";
+import { getUserApi, purchaseItemApi, getProductByIdUser } from "../../../utils/api";
 import CatalogHeader from "./CatalogHeader";
 import TabsNavigation from "./TabsNavigation";
 import SearchFilterBar from "./SearchFilterBar";
 import RedeemTab from "./RedeemTab";
 import MarketViewNavigation from "./MarketViewNavigation";
-import CreateItemModal from "./CreateItemModal"; // Import đúng component
+import CreateItemModal from "./CreateItemModal";
 import MarketplaceItemCard from "./MarketplaceItemCard";
 import PurchaseModal from "./PurchaseModal";
 import { Search, Grid2X2, LayoutList, Leaf, Plus, Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
@@ -26,11 +26,12 @@ const statusColors = {
   hidden: "bg-gray-100 text-gray-700",
   draft: "bg-slate-100 text-slate-700",
   all: "bg-blue-100 text-blue-700",
+  public: "bg-emerald-100 text-emerald-700", 
 };
 
 const userItemStatuses = [
   { key: "all", name: "Tất cả", icon: Filter },
-  { key: "displaying", name: "Đang hiển thị", icon: CheckCircle },
+  { key: "public", name: "Đang hiển thị", icon: CheckCircle },
   { key: "pending", name: "Chờ duyệt", icon: Clock },
   { key: "rejected", name: "Bị từ chối", icon: FileWarning },
   { key: "hidden", name: "Đã ẩn", icon: EyeOff },
@@ -38,7 +39,7 @@ const userItemStatuses = [
 ];
 
 const statusConfig = {
-  displaying: { name: "Đang hiển thị", color: "emerald" },
+  public: { name: "Đang hiển thị", color: "emerald" },
   pending: { name: "Chờ duyệt", color: "amber" },
   rejected: { name: "Bị từ chối", color: "red" },
   hidden: { name: "Đã ẩn", color: "gray" },
@@ -78,22 +79,45 @@ function ItemCatalog({ items: propItems }) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndItems = async () => {
       try {
-        const response = await getUserApi();
-        if (response) {
-          setUser(response.data);
-          setUserCoins(response.data.coins?.amount || 0);
+        const userResponse = await getUserApi();
+        if (userResponse) {
+          setUser(userResponse.data);
+          setUserCoins(userResponse.data.coins?.amount || 0);
+
+          if (userResponse.data?.id) {
+            const productResponse = await getProductByIdUser(userResponse.data.id);
+            console.log(productResponse);
+            if (productResponse && productResponse.data) {
+              const mappedItems = productResponse.data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                category: item.category,
+                status: item.post_status,
+                condition: item.product_status,
+                createdAt: item.created_at,
+                image: item.images.length > 0 ? item.images[0] : null, 
+                stock: item.stock || null, 
+                canPurchase: item.post_status === "public", 
+              }));
+              setMyItems(mappedItems);
+            }
+          }
         }
       } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
+        console.error("Lỗi khi lấy thông tin người dùng hoặc sản phẩm:", error);
+      }
+
+      if (propItems && propItems.length > 0) {
+        setAllItems(propItems);
+        setItems(propItems);
       }
     };
-    fetchUser();
-    if (propItems && propItems.length > 0) {
-      setAllItems(propItems);
-      setItems(propItems);
-    }
+
+    fetchUserAndItems();
   }, [propItems]);
 
   useEffect(() => {
@@ -176,12 +200,12 @@ function ItemCatalog({ items: propItems }) {
 
   const handleAddItem = () => {
     setItemToEdit(null);
-    setShowCreateModal(true); 
+    setShowCreateModal(true);
   };
 
   const handleEditItem = (item) => {
     setItemToEdit(item);
-    setShowCreateModal(true); 
+    setShowCreateModal(true);
   };
 
   const handleDeleteItem = (itemId) => {
@@ -208,11 +232,11 @@ function ItemCatalog({ items: propItems }) {
       setMyItems((prev) => [...prev, newItem]);
       alert("Thêm sản phẩm mới thành công!");
     }
-    setShowCreateModal(false); 
+    setShowCreateModal(false);
   };
 
   const handleCancelForm = () => {
-    setShowCreateModal(false); 
+    setShowCreateModal(false);
     setItemToEdit(null);
   };
 
@@ -225,7 +249,7 @@ function ItemCatalog({ items: propItems }) {
         filtered = filtered.filter((item) => item.status === marketStatusFilter);
       }
     } else {
-      filtered = filtered.filter((item) => item.status === "displaying");
+      filtered = filtered.filter((item) => item.status === "public"); 
       if (marketCategory !== "all") {
         filtered = filtered.filter((item) => item.category === marketCategory);
       }
@@ -263,7 +287,7 @@ function ItemCatalog({ items: propItems }) {
           <MarketViewNavigation
             marketView={marketView}
             setMarketView={setMarketView}
-            showCreateForm={showCreateModal} // Cập nhật prop
+            showCreateForm={showCreateModal}
             handleAddItem={handleAddItem}
           />
           <CreateItemModal
@@ -588,8 +612,8 @@ function ItemCatalog({ items: propItems }) {
                     {selectedItem.stock || "Không xác định"}
                   </div>
                   <div className="text-gray-500">Tình trạng:</div>
-                  <div className="text-gray reus-700 font-medium">
-                    {selectedItem.condition === "new" ? "Mới" : "Cũ"}
+                  <div className="text-gray-700 font-medium">
+                    {selectedItem.condition === "used" ? "Cũ" : "Mới"}
                   </div>
                   <div className="text-gray-500">Ngày đăng:</div>
                   <div className="text-gray-700 font-medium">
