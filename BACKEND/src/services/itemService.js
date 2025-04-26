@@ -9,7 +9,6 @@ const { where } = require("sequelize");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 
-
 const createItem = async (itemData, user_id, images) => {
   try {
     if (!itemData.name || !itemData.price || !itemData.stock) {
@@ -23,16 +22,15 @@ const createItem = async (itemData, user_id, images) => {
     if (itemData.purchase_limit_per_day < 1) {
       throw new Error("Purchase limit per day must be at least 1");
     }
-    
+
     if (itemData.price < 1) {
       throw new Error("Price must be at least 1");
     }
-    
+
     const stock = itemData.stock;
     if (stock === undefined || stock < 1) {
       throw new Error("Stock must be at least 1");
     }
-
 
     const result = await sequelize.transaction(async (t) => {
       const newItem = await Item.create(
@@ -43,7 +41,7 @@ const createItem = async (itemData, user_id, images) => {
           stock: itemData.stock,
           description: itemData.description,
           status: itemData.status,
-          owner_id: user_id,
+          creator_id: user_id,
           purchase_limit_per_day: itemData.purchase_limit_per_day,
         },
         { transaction: t }
@@ -134,7 +132,7 @@ const getItemByIdUser = async (user_id) => {
       throw new Error("User ID is required");
     }
 
-    const items = await Item.findAll({ where: { owner_id: user_id } });
+    const items = await Item.findAll({ where: { creator_id: user_id } });
     const itemIds = items.map((item) => item.id);
     const images = await Image.findAll({
       where: {

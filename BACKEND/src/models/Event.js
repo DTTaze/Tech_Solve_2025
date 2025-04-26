@@ -10,10 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       });
       Event.belongsTo(models.User, {
         as: "owner",
-        foreignKey: "owner_id",
+        foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
-    }    
+    }
   }
 
   Event.init(
@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      owner_id: {
+      creator_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {

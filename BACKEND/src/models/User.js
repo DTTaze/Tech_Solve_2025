@@ -5,11 +5,11 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       User.hasMany(models.Item, {
-        foreignKey: "owner_id",
+        foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
       User.hasMany(models.Task, {
-        foreignKey: "owner_id",
+        foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
       User.hasMany(models.Product, {
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
       User.hasMany(models.EventUser, {
-        foreignKey: "owner_id",
+        foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
