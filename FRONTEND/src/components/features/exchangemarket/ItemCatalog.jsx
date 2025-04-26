@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { getUserApi, purchaseItemApi, getProductByIdUser } from "../../../utils/api";
+import { getUserApi, purchaseItemApi, getProductByIdUser, getAllProductsApi, getAllItemsApi } from "../../../utils/api";
 import CatalogHeader from "./CatalogHeader";
 import TabsNavigation from "./TabsNavigation";
 import SearchFilterBar from "./SearchFilterBar";
@@ -26,7 +26,7 @@ const statusColors = {
   hidden: "bg-gray-100 text-gray-700",
   draft: "bg-slate-100 text-slate-700",
   all: "bg-blue-100 text-blue-700",
-  public: "bg-emerald-100 text-emerald-700", 
+  public: "bg-emerald-100 text-emerald-700",
 };
 
 const userItemStatuses = [
@@ -68,10 +68,10 @@ function ItemCatalog({ items: propItems }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [items, setItems] = useState(propItems || []);
   const [allItems, setAllItems] = useState([]);
-  const [marketView, setMarketView] = useState("my_items");
   const [myItems, setMyItems] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
+  const [marketView, setMarketView] = useState("my_items");
   const [marketListView, setMarketListView] = useState("grid");
   const [marketCategory, setMarketCategory] = useState("all");
   const [marketStatusFilter, setMarketStatusFilter] = useState("all");
@@ -79,18 +79,64 @@ function ItemCatalog({ items: propItems }) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
-    const fetchUserAndItems = async () => {
+    const fetchUser = async () => {
       try {
         const userResponse = await getUserApi();
         if (userResponse) {
           setUser(userResponse.data);
           setUserCoins(userResponse.data.coins?.amount || 0);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu người dùng:", error);
+        alert("Có lỗi xảy ra khi tải dữ liệu người dùng, vui lòng thử lại sau!");
+      }
+    };
 
-          if (userResponse.data?.id) {
-            const productResponse = await getProductByIdUser(userResponse.data.id);
-            console.log(productResponse);
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchRedeemItems = async () => {
+      if (activeTab === "redeem") {
+        try {
+          const itemsResponse = await getAllItemsApi();
+          console.log("Dữ liệu từ getAllItemsApi:", itemsResponse);
+          if (itemsResponse && itemsResponse.data) {
+            const mappedItems = itemsResponse.data.map((item) => ({
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              price: item.price,
+              category: item.category,
+              status: item.post_status,
+              condition: item.product_status,
+              createdAt: item.created_at,
+              image: item.images.length > 0 ? item.images[0] : null,
+              stock: item.stock || null,
+              canPurchase: item.post_status === "public",
+              seller: item.User?.username || "Không xác định",
+            }));
+            setItems(mappedItems);
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy sản phẩm cho tab đổi quà:", error);
+          alert("Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà, vui lòng thử lại sau!");
+        }
+      }
+    };
+
+    fetchRedeemItems();
+  }, [activeTab]);
+
+  useEffect(() => {
+    const fetchMarketItems = async () => {
+      if (activeTab === "market") {
+        try {
+          if (user && user.id && marketView === "my_items") {
+            const productResponse = await getProductByIdUser(user.id);
+            console.log("Dữ liệu từ getProductByIdUser: ", productResponse);
             if (productResponse && productResponse.data) {
-              const mappedItems = productResponse.data.map((item) => ({
+              const mappedMyItems = productResponse.data.map((item) => ({
                 id: item.id,
                 name: item.name,
                 description: item.description,
@@ -99,26 +145,45 @@ function ItemCatalog({ items: propItems }) {
                 status: item.post_status,
                 condition: item.product_status,
                 createdAt: item.created_at,
-                image: item.images.length > 0 ? item.images[0] : null, 
-                stock: item.stock || null, 
-                canPurchase: item.post_status === "public", 
+                image: item.images.length > 0 ? item.images[0] : null,
+                stock: item.stock || null,
+                canPurchase: item.post_status === "public",
+                seller: item.User?.username || "Không xác định",
               }));
-              setMyItems(mappedItems);
+              setMyItems(mappedMyItems);
             }
           }
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng hoặc sản phẩm:", error);
-      }
 
-      if (propItems && propItems.length > 0) {
-        setAllItems(propItems);
-        setItems(propItems);
+          if (marketView !== "my_items") {
+            const allProductsResponse = await getAllProductsApi();
+            console.log("Dữ liệu từ getAllProductsApi:", allProductsResponse);
+            if (allProductsResponse && allProductsResponse.data) {
+              const mappedAllItems = allProductsResponse.data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                category: item.category,
+                status: item.post_status,
+                condition: item.product_status,
+                createdAt: item.created_at,
+                image: item.images.length > 0 ? item.images[0] : null,
+                stock: item.stock || null,
+                canPurchase: item.post_status === "public",
+                seller: item.User?.username || "Không xác định",
+              }));
+              setAllItems(mappedAllItems);
+            }
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy dữ liệu sản phẩm cho chợ trao đổi:", error);
+          alert("Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi, vui lòng thử lại sau!");
+        }
       }
     };
 
-    fetchUserAndItems();
-  }, [propItems]);
+    fetchMarketItems();
+  }, [activeTab, marketView, user]);
 
   useEffect(() => {
     if (user) setUserCoins(user.coins?.amount || 0);
@@ -249,7 +314,7 @@ function ItemCatalog({ items: propItems }) {
         filtered = filtered.filter((item) => item.status === marketStatusFilter);
       }
     } else {
-      filtered = filtered.filter((item) => item.status === "public"); 
+      filtered = filtered.filter((item) => item.status === "public");
       if (marketCategory !== "all") {
         filtered = filtered.filter((item) => item.category === marketCategory);
       }
@@ -434,6 +499,9 @@ function ItemCatalog({ items: propItems }) {
                           </th>
                         )}
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Người bán
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Ngày đăng
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -486,6 +554,9 @@ function ItemCatalog({ items: propItems }) {
                               </span>
                             </td>
                           )}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">{item.seller}</div>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {item.createdAt && new Date(item.createdAt).toLocaleDateString()}
                           </td>
@@ -615,6 +686,8 @@ function ItemCatalog({ items: propItems }) {
                   <div className="text-gray-700 font-medium">
                     {selectedItem.condition === "used" ? "Cũ" : "Mới"}
                   </div>
+                  <div className="text-gray-500">Người bán:</div>
+                  <div className="text-gray-700 font-medium">{selectedItem.seller}</div>
                   <div className="text-gray-500">Ngày đăng:</div>
                   <div className="text-gray-700 font-medium">
                     {selectedItem.createdAt &&
