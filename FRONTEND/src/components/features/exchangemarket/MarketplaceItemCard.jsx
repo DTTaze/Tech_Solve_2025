@@ -32,21 +32,19 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 
 // Status definitions
 const statusConfig = {
-  displaying: { name: "Đang hiển thị", color: "emerald", Icon: CheckCircle },
+  public: { name: "Đang hiển thị", color: "emerald", Icon: CheckCircle },
+  private: { name: "Đã ẩn", color: "gray", Icon: EyeOff },
   pending: { name: "Chờ duyệt", color: "amber", Icon: Clock },
   rejected: { name: "Bị từ chối", color: "red", Icon: FileWarning },
-  hidden: { name: "Đã ẩn", color: "gray", Icon: EyeOff },
-  draft: { name: "Tin nháp", color: "slate", Icon: ClipboardEdit },
 };
 
 // Helper function to get status class
 const getStatusClass = (status) => {
   const statusClasses = {
-    displaying: "border-emerald-200 bg-emerald-50",
+    public: "border-emerald-200 bg-emerald-50",
+    private: "border-gray-200 bg-gray-50",
     pending: "border-amber-200 bg-amber-50",
     rejected: "border-red-200 bg-red-50",
-    hidden: "border-gray-200 bg-gray-50",
-    draft: "border-slate-200 bg-slate-50",
   };
   return statusClasses[status] || statusClasses.draft;
 };

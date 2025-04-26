@@ -62,12 +62,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "new",
       },
       post_status: {
-        type: DataTypes.ENUM(
-          "public",
-          "private",
-          "pending",
-          "rejected"
-        ),
+        type: DataTypes.ENUM("public", "private", "pending", "rejected"),
         allowNull: false,
         defaultValue: "pending",
       },
