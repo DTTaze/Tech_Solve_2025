@@ -35,10 +35,10 @@ const handleGetEventSigned = async (req, res) => {
   }
 };
 
-const handGetEventsOfOwner = async (req, res) => {
+const handGetEventsOfCreator = async (req, res) => {
   try {
     const creator_id = req.user.id;
-    const events = await eventService.getEventsOfOwner(creator_id);
+    const events = await eventService.getEventsOfCreator(creator_id);
     return res.success("Events retrieved successfully", events);
   } catch (error) {
     console.error("Error retrieving events:", error);
@@ -109,7 +109,7 @@ module.exports = {
   handleGetEventbyId,
   handleGetAllEvents,
   handleGetEventSigned,
-  handGetEventsOfOwner,
+  handGetEventsOfCreator,
   handleCreateEvent,
   handleAcceptEvent,
   handleUpdateEvent,

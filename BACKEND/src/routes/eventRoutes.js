@@ -20,9 +20,9 @@ router.get('/signed',
     eventController.handleGetEventSigned
 );
 
-router.get('/owner',
+router.get('/creator',
     // checkPermission('read', 'event'),
-    eventController.handGetEventsOfOwner
+    eventController.handGetEventsOfCreator
 );
 
 router.post('/create',

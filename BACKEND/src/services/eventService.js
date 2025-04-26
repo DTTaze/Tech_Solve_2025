@@ -14,7 +14,7 @@ const getEventById = async (eventId) => {
       include: [
         {
           model: db.User,
-          as: "owner",
+          as: "creator",
           attributes: ["username"],
         },
       ],
@@ -48,7 +48,7 @@ const getAllEvents = async () => {
       include: [
         {
           model: db.User,
-          as: "owner",
+          as: "creator",
           attributes: ["username"],
         },
       ],
@@ -106,7 +106,7 @@ const getEventSigned = async (userId) => {
   }
 };
 
-const getEventsOfOwner = async (creator_id) => {
+const getEventsOfCreator = async (creator_id) => {
   try {
     const events = await Event.findAll({
       where: { creator_id },
@@ -114,7 +114,7 @@ const getEventsOfOwner = async (creator_id) => {
 
     return events;
   } catch (error) {
-    console.error("Error get events of owner:", error);
+    console.error("Error get events of creator:", error);
     throw error;
   }
 };
@@ -316,7 +316,7 @@ module.exports = {
   getEventById,
   getAllEvents,
   getEventSigned,
-  getEventsOfOwner,
+  getEventsOfCreator,
   createEvent,
   acceptEvent,
   updateEvent,
