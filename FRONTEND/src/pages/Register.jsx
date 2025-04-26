@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { createUserApi } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
+import { useNotification } from "../components/ui/NotificationProvider";
 import InputField from "../components/ui/InputField";
 import SubmitButton from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
 import SelectField from "../components/ui/SelectField";
-import { useNotification } from "../components/ui/NotificationProvider";
 
 const initialFormData = {
   full_name: "",
@@ -20,9 +20,9 @@ function RegisterPage() {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { notify } = useNotification();
   const [showPassword, setShowPassword] = useState(false);
+  const { notify } = useNotification();
+  const navigate = useNavigate();
 
   const validateField = (name, value) => {
     switch (name) {
