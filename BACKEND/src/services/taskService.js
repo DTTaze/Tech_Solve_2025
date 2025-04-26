@@ -42,7 +42,7 @@ const createTask = async (data, user_id) => {
       coins,
       difficulty,
       total,
-      owner_id: user_id,
+      creator_id: user_id,
     });
     return result;
   } catch (e) {
