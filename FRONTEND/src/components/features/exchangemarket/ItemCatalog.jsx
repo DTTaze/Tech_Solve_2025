@@ -1,14 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { getUserApi, purchaseItemApi, getProductByIdUser, getAllProductsApi, getAllItemsApi } from "../../../utils/api";
+import { getUserApi, purchaseItemApi, createProductApi, updateProductApi, getProductByIdUser, getAllProductsApi, getAllItemsApi } from "../../../utils/api";
 import CatalogHeader from "./CatalogHeader";
 import TabsNavigation from "./TabsNavigation";
 import SearchFilterBar from "./SearchFilterBar";
 import RedeemTab from "./RedeemTab";
 import MarketViewNavigation from "./MarketViewNavigation";
 import CreateItemModal from "./CreateItemModal";
-import MarketplaceItemCard from "./MarketplaceItemCard";
 import PurchaseModal from "./PurchaseModal";
-import { Search, Grid2X2, LayoutList, Leaf, Plus, Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
+import MarketSearchBar from "./MarketSearchBar";
+import MarketFilterButtons from "./MarketFilterButtons";
+import MarketItemList from "./MarketItemList";
+import MarketEmptyState from "./MarketEmptyState";
+import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 
 const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
@@ -76,7 +79,6 @@ function ItemCatalog({ items: propItems }) {
   const [marketCategory, setMarketCategory] = useState("all");
   const [marketStatusFilter, setMarketStatusFilter] = useState("all");
   const [marketSearchText, setMarketSearchText] = useState("");
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -100,7 +102,6 @@ function ItemCatalog({ items: propItems }) {
       if (activeTab === "redeem") {
         try {
           const itemsResponse = await getAllItemsApi();
-          console.log("Dữ liệu từ getAllItemsApi:", itemsResponse);
           if (itemsResponse && itemsResponse.data) {
             const mappedItems = itemsResponse.data.map((item) => ({
               id: item.id,
@@ -108,7 +109,7 @@ function ItemCatalog({ items: propItems }) {
               description: item.description,
               price: item.price,
               category: item.category,
-              status: item.post_status,
+              postStatus: item.post_status,
               condition: item.product_status,
               createdAt: item.created_at,
               image: item.images.length > 0 ? item.images[0] : null,
@@ -134,7 +135,6 @@ function ItemCatalog({ items: propItems }) {
         try {
           if (user && user.id && marketView === "my_items") {
             const productResponse = await getProductByIdUser(user.id);
-            console.log("Dữ liệu từ getProductByIdUser: ", productResponse);
             if (productResponse && productResponse.data) {
               const mappedMyItems = productResponse.data.map((item) => ({
                 id: item.id,
@@ -142,13 +142,13 @@ function ItemCatalog({ items: propItems }) {
                 description: item.description,
                 price: item.price,
                 category: item.category,
-                status: item.post_status,
+                postStatus: item.post_status,
                 condition: item.product_status,
                 createdAt: item.created_at,
                 image: item.images.length > 0 ? item.images[0] : null,
                 stock: item.stock || null,
                 canPurchase: item.post_status === "public",
-                seller: item.User?.username || "Không xác định",
+                seller: item.seller_id || "Không xác định",
               }));
               setMyItems(mappedMyItems);
             }
@@ -156,7 +156,6 @@ function ItemCatalog({ items: propItems }) {
 
           if (marketView !== "my_items") {
             const allProductsResponse = await getAllProductsApi();
-            console.log("Dữ liệu từ getAllProductsApi:", allProductsResponse);
             if (allProductsResponse && allProductsResponse.data) {
               const mappedAllItems = allProductsResponse.data.map((item) => ({
                 id: item.id,
@@ -164,7 +163,7 @@ function ItemCatalog({ items: propItems }) {
                 description: item.description,
                 price: item.price,
                 category: item.category,
-                status: item.post_status,
+                postStatus: item.post_status,
                 condition: item.product_status,
                 createdAt: item.created_at,
                 image: item.images.length > 0 ? item.images[0] : null,
@@ -278,26 +277,77 @@ function ItemCatalog({ items: propItems }) {
     alert("Sản phẩm đã được xóa thành công!");
   };
 
-  const handleSubmitItem = (formData, isEditing) => {
-    if (isEditing) {
-      setMyItems((prev) =>
-        prev.map((item) =>
-          item.id === itemToEdit.id ? { ...item, ...formData } : item
-        )
-      );
-      alert("Cập nhật sản phẩm thành công!");
-    } else {
-      const newItem = {
-        ...formData,
-        id: `m${Date.now()}`,
-        userId: user?.id || "user123",
-        createdAt: new Date().toISOString(),
-        viewCount: 0,
-      };
-      setMyItems((prev) => [...prev, newItem]);
-      alert("Thêm sản phẩm mới thành công!");
+  const handleSubmitItem = async (formData, isEditing) => {
+    try {
+      const { images, ...productData } = formData;
+      if (
+        !productData.name ||
+        !productData.price ||
+        !productData.stock ||
+        !productData.category ||
+        !productData.product_status
+      ) {
+        alert("Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, số lượng, danh mục, tình trạng sản phẩm!");
+        return;
+      }
+
+      if (productData.price < 1) {
+        alert("Giá sản phẩm phải lớn hơn hoặc bằng 1!");
+        return;
+      }
+
+      if (productData.stock < 1) {
+        alert("Số lượng sản phẩm phải lớn hơn hoặc bằng 1!");
+        return;
+      }
+
+      if (isEditing) {
+        const response = await updateProductApi(itemToEdit.id, productData, images || []);
+        if (response) {
+          setMyItems((prev) =>
+            prev.map((item) =>
+              item.id === itemToEdit.id
+                ? {
+                    ...item,
+                    ...productData,
+                    postStatus: response.post_status || item.postStatus,
+                    image: response.images?.[0] || item.image,
+                    createdAt: response.created_at || item.createdAt,
+                    stock: response.stock || item.stock,
+                    canPurchase: response.post_status === "public",
+                  }
+                : item
+            )
+          );
+          alert("Cập nhật sản phẩm thành công!");
+        } else {
+          alert("Cập nhật sản phẩm thất bại, vui lòng thử lại!");
+        }
+      } else {
+        const response = await createProductApi(productData, user?.id, images || []);
+        if (response) {
+          const newItem = {
+            id: response.data.id,
+            ...productData,
+            postStatus: response.data.post_status || "draft",
+            image: response.data.images?.[0] || null,
+            createdAt: response.data.created_at || new Date().toISOString(),
+            stock: response.data.stock || null,
+            canPurchase: response.data.post_status === "public",
+            seller: user?.username || "Không xác định",
+          };
+          setMyItems((prev) => [...prev, newItem]);
+          alert("Thêm sản phẩm mới thành công!");
+        } else {
+          alert("Thêm sản phẩm thất bại, vui lòng thử lại!");
+        }
+      }
+      setShowCreateModal(false);
+      setItemToEdit(null);
+    } catch (error) {
+      console.error("Lỗi khi xử lý sản phẩm:", error);
+      alert(error.message || "Có lỗi xảy ra, vui lòng thử lại!");
     }
-    setShowCreateModal(false);
   };
 
   const handleCancelForm = () => {
@@ -311,10 +361,10 @@ function ItemCatalog({ items: propItems }) {
     let filtered = [...sourceItems];
     if (marketView === "my_items") {
       if (marketStatusFilter !== "all") {
-        filtered = filtered.filter((item) => item.status === marketStatusFilter);
+        filtered = filtered.filter((item) => item.postStatus === marketStatusFilter);
       }
     } else {
-      filtered = filtered.filter((item) => item.status === "public");
+      filtered = filtered.filter((item) => item.postStatus === "public");
       if (marketCategory !== "all") {
         filtered = filtered.filter((item) => item.category === marketCategory);
       }
@@ -362,360 +412,53 @@ function ItemCatalog({ items: propItems }) {
             onCancel={handleCancelForm}
           />
           <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-              <div className="relative w-full sm:w-auto sm:flex-grow max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm sản phẩm..."
-                  value={marketSearchText}
-                  onChange={(e) => setMarketSearchText(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600"
-                />
-                {marketSearchText && (
-                  <button
-                    onClick={() => setMarketSearchText("")}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <span className="text-gray-400 hover:text-gray-600">✕</span>
-                  </button>
-                )}
-              </div>
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-                <button
-                  className={`p-2 ${marketListView === "grid" ? "bg-gray-100" : "bg-white"} hover:bg-gray-50`}
-                  onClick={() => setMarketListView("grid")}
-                >
-                  <Grid2X2 className="h-4 w-4 text-gray-600" />
-                </button>
-                <button
-                  className={`p-2 ${marketListView === "list" ? "bg-gray-100" : "bg-white"} hover:bg-gray-50`}
-                  onClick={() => setMarketListView("list")}
-                >
-                  <LayoutList className="h-4 w-4 text-gray-600" />
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {(marketView === "my_items" ? userItemStatuses : marketplaceCategories).map(
-                (filterItem) => {
-                  const isActive =
-                    marketView === "my_items"
-                      ? marketStatusFilter === filterItem.key
-                      : marketCategory === filterItem.key;
-                  const filterKey = filterItem.key;
-                  const filterName = filterItem.name;
-                  const Icon = marketView === "my_items" && filterItem.icon;
-                  const statusColor = marketView === "my_items"
-                    ? statusColors[filterKey] || statusColors.all
-                    : isActive
-                    ? "bg-emerald-100 text-emerald-700 font-medium"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200";
-
-                  return (
-                    <button
-                      key={filterKey}
-                      className={`px-3 py-1.5 rounded-lg text-sm flex items-center transition-all duration-150 ${
-                        isActive
-                          ? marketView === "my_items"
-                            ? `${statusColor} font-medium shadow-sm`
-                            : "bg-emerald-100 text-emerald-700 font-medium"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                      onClick={() =>
-                        marketView === "my_items"
-                          ? setMarketStatusFilter(filterKey)
-                          : setMarketCategory(filterKey)
-                      }
-                    >
-                      {Icon && <Icon className="h-3.5 w-3.5 mr-1.5" />}
-                      {filterName}
-                      {isActive && marketView === "my_items" && (
-                        <span className="ml-1.5 bg-white bg-opacity-30 text-xs font-normal rounded-full px-1.5 py-0.5">
-                          {
-                            filteredMarketItems.filter((item) =>
-                              filterKey === "all" ? true : item.status === filterKey
-                            ).length
-                          }
-                        </span>
-                      )}
-                    </button>
-                  );
-                }
-              )}
-            </div>
+            <MarketSearchBar
+              marketSearchText={marketSearchText}
+              setMarketSearchText={setMarketSearchText}
+              marketListView={marketListView}
+              setMarketListView={setMarketListView}
+            />
+            <MarketFilterButtons
+              marketView={marketView}
+              marketCategory={marketCategory}
+              setMarketCategory={setMarketCategory}
+              marketStatusFilter={marketStatusFilter}
+              setMarketStatusFilter={setMarketStatusFilter}
+              filteredMarketItems={filteredMarketItems}
+              marketplaceCategories={marketplaceCategories}
+              userItemStatuses={userItemStatuses}
+              statusColors={statusColors}
+            />
           </div>
           {filteredMarketItems.length === 0 ? (
-            <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-              <Leaf className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-700 mb-2">
-                Không có sản phẩm nào phù hợp
-              </h3>
-              <p className="text-gray-500 max-w-md mx-auto mb-6">
-                {marketView === "my_items"
-                  ? "Bạn chưa có sản phẩm nào với trạng thái này."
-                  : "Hiện chưa có sản phẩm nào trong danh mục này."}
-                {marketView === "my_items" &&
-                  marketStatusFilter === "all" &&
-                  "Hãy thử thêm sản phẩm mới!"}
-              </p>
-              {marketView === "my_items" && (
-                <button
-                  onClick={handleAddItem}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium"
-                >
-                  <Plus className="h-4 w-4 inline mr-1" />
-                  Thêm sản phẩm
-                </button>
-              )}
-            </div>
+            <MarketEmptyState
+              marketView={marketView}
+              marketStatusFilter={marketStatusFilter}
+              handleAddItem={handleAddItem}
+            />
           ) : (
-            <div
-              className={
-                marketListView === "grid"
-                  ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-                  : "space-y-4"
-              }
-            >
-              {marketListView === "list" ? (
-                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Sản phẩm
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Danh mục
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Giá
-                        </th>
-                        {marketView === "my_items" && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Trạng thái
-                          </th>
-                        )}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Người bán
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ngày đăng
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Thao tác
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredMarketItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="h-10 w-10 flex-shrink-0">
-                                <img
-                                  className="h-10 w-10 rounded-md object-cover"
-                                  src={item.image || "/placeholder.svg"}
-                                  alt={item.name}
-                                />
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900 line-clamp-1">
-                                  {item.name}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {getCategoryDisplayName(item.category)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center text-sm font-medium text-amber-600">
-                              {item.price}
-                              <img
-                                src="/assets/icons/coin.png"
-                                alt="coins"
-                                className="ml-1 h-4 w-4"
-                              />
-                            </div>
-                          </td>
-                          {marketView === "my_items" && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  statusColors[item.status] || statusColors.draft
-                                }`}
-                              >
-                                {statusConfig[item.status]?.name || statusConfig.draft.name}
-                              </span>
-                            </td>
-                          )}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">{item.seller}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.createdAt && new Date(item.createdAt).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end gap-2">
-                              {marketView === "my_items" ? (
-                                <>
-                                  <button
-                                    onClick={() => handleEditItem(item)}
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                  >
-                                    Sửa
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="text-red-600 hover:text-red-900"
-                                  >
-                                    Xóa
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setShowDetailsModal(true);
-                                    }}
-                                    className="text-emerald-600 hover:text-emerald-800"
-                                  >
-                                    Xem chi tiết
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      handlePurchase(item);
-                                    }}
-                                    className="text-indigo-600 hover:text-indigo-900"
-                                    disabled={!item.canPurchase}
-                                  >
-                                    Mua
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                filteredMarketItems.map((item) => (
-                  <MarketplaceItemCard
-                    key={item.id}
-                    item={item}
-                    onEdit={handleEditItem}
-                    onDelete={handleDeleteItem}
-                    onPurchase={handlePurchase}
-                    showDetailedStatus={marketView === "my_items"}
-                    viewMode={marketView}
-                    fetchItems={() => console.log("Refreshing items")}
-                  />
-                ))
-              )}
-            </div>
+            <MarketItemList
+              marketListView={marketListView}
+              marketView={marketView}
+              filteredMarketItems={filteredMarketItems}
+              handleEditItem={handleEditItem}
+              handleDeleteItem={handleDeleteItem}
+              handlePurchase={handlePurchase}
+              getCategoryDisplayName={getCategoryDisplayName}
+              statusColors={statusColors}
+              statusConfig={statusConfig}
+            />
           )}
         </div>
       )}
       {selectedItem && (
-        <>
-          <PurchaseModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            item={selectedItem}
-            userCoins={userCoins}
-            onConfirm={confirmPurchase}
-          />
-          <div
-            className={`fixed inset-0 z-50 flex items-center justify-center ${
-              showDetailsModal ? "visible" : "invisible"
-            }`}
-          >
-            <div
-              className="absolute inset-0 bg-black bg-opacity-30"
-              onClick={() => setShowDetailsModal(false)}
-            ></div>
-            <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full p-6 z-10 mx-4">
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-xl">✕</span>
-              </button>
-              <h2 className="text-2xl font-semibold mb-4">{selectedItem.name}</h2>
-              <div className="mb-4">
-                <img
-                  src={selectedItem.image || "/placeholder.svg"}
-                  alt={selectedItem.name}
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-              </div>
-              <div className="mb-3 flex justify-between items-center">
-                <span className="text-lg font-semibold text-amber-600 flex items-center">
-                  {selectedItem.price}
-                  <img
-                    src="/assets/icons/coin.png"
-                    alt="coins"
-                    className="ml-1 h-5 w-5"
-                  />
-                </span>
-                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-                  {getCategoryDisplayName(selectedItem.category)}
-                </span>
-              </div>
-              <div className="mb-4">
-                <h3 className="font-medium text-gray-700 mb-1">Mô tả</h3>
-                <p className="text-gray-600">{selectedItem.description}</p>
-              </div>
-              <div className="mb-4">
-                <h3 className="font-medium text-gray-700 mb-1">Thông tin sản phẩm</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-gray-500">Số lượng còn lại:</div>
-                  <div className="text-gray-700 font-medium">
-                    {selectedItem.stock || "Không xác định"}
-                  </div>
-                  <div className="text-gray-500">Tình trạng:</div>
-                  <div className="text-gray-700 font-medium">
-                    {selectedItem.condition === "used" ? "Cũ" : "Mới"}
-                  </div>
-                  <div className="text-gray-500">Người bán:</div>
-                  <div className="text-gray-700 font-medium">{selectedItem.seller}</div>
-                  <div className="text-gray-500">Ngày đăng:</div>
-                  <div className="text-gray-700 font-medium">
-                    {selectedItem.createdAt &&
-                      new Date(selectedItem.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowDetailsModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                >
-                  Đóng
-                </button>
-                <button
-                  onClick={() => {
-                    setShowDetailsModal(false);
-                    setIsModalOpen(true);
-                  }}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!selectedItem.canPurchase}
-                >
-                  Mua ngay
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
+        <PurchaseModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          item={selectedItem}
+          userCoins={userCoins}
+          onConfirm={confirmPurchase}
+        />
       )}
     </div>
   );

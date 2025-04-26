@@ -1,19 +1,12 @@
 import { useState } from "react";
 import {
-  Edit2,
-  Trash2,
-  User,
-  ExternalLink,
-  AlertTriangle,
-  Coins,
-  Tag,
-  EyeOff,
-  FileWarning,
-  Clock,
-  ClipboardEdit,
   CheckCircle,
+  EyeOff,
+  Clock,
+  FileWarning,
+  ClipboardEdit
 } from "lucide-react";
-import { FiEdit, FiTrash2, FiEye } from "react-icons/fi";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
 import {
@@ -27,34 +20,31 @@ import {
   Modal,
 } from "@mui/material";
 import { format } from "date-fns";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-// Status definitions
 const statusConfig = {
-  public: { name: "Đang hiển thị", color: "emerald", Icon: CheckCircle },
-  private: { name: "Đã ẩn", color: "gray", Icon: EyeOff },
-  pending: { name: "Chờ duyệt", color: "amber", Icon: Clock },
-  rejected: { name: "Bị từ chối", color: "red", Icon: FileWarning },
+  public: { name: "Đang hiển thị", color: "success", Icon: CheckCircle },
+  private: { name: "Đã ẩn", color: "default", Icon: EyeOff },
+  pending: { name: "Chờ duyệt", color: "warning", Icon: Clock },
+  rejected: { name: "Bị từ chối", color: "error", Icon: FileWarning },
+  draft: { name: "Tin nháp", color: "info", Icon: ClipboardEdit },
 };
 
-// Helper function to get status class
 const getStatusClass = (status) => {
   const statusClasses = {
     public: "border-emerald-200 bg-emerald-50",
     private: "border-gray-200 bg-gray-50",
     pending: "border-amber-200 bg-amber-50",
     rejected: "border-red-200 bg-red-50",
+    draft: "border-slate-200 bg-slate-50", 
   };
   return statusClasses[status] || statusClasses.draft;
 };
 
-// Helper function to get status text
 const getStatusText = (status) => {
   return statusConfig[status]?.name || statusConfig.draft.name;
 };
 
-// Helper function to translate category keys to display names
 const getCategoryDisplayName = (key) => {
   const categories = {
     handicraft: "Đồ thủ công",
@@ -107,12 +97,12 @@ const MarketplaceItemCard = ({
     setShowDetailsModal(true);
   };
 
-  const currentStatus = statusConfig[item.status] || statusConfig.draft; // Default to draft if status is unknown
+  const currentStatus = statusConfig[item.postStatus] || statusConfig.draft;
 
   return (
     <Paper
       className={`rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
-        item.status
+        item.postStatus
       )}`}
     >
       {/* Item Image */}
@@ -124,7 +114,7 @@ const MarketplaceItemCard = ({
         />
         {viewMode === "my_items" && (
           <div className="absolute top-2 right-2 rounded-full bg-white px-2 py-1 text-xs font-medium">
-            {getStatusText(item.status)}
+            {getStatusText(item.postStatus)}
           </div>
         )}
       </div>
@@ -159,8 +149,8 @@ const MarketplaceItemCard = ({
       >
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Chip
-            label={statusConfig[item.status].name}
-            color={statusConfig[item.status].color}
+            label={currentStatus.name}
+            color={currentStatus.color}
             size="small"
             sx={{ mr: 1 }}
           />
@@ -202,15 +192,6 @@ const MarketplaceItemCard = ({
               >
                 Xem chi tiết
               </Button>
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<ShoppingCartIcon />}
-                onClick={handlePurchaseClick}
-                disabled={!item.canPurchase}
-              >
-                Mua
-              </Button>
             </>
           )}
         </Box>
@@ -222,8 +203,8 @@ const MarketplaceItemCard = ({
           isOpen={showDeleteModal}
           onClose={cancelDelete}
           onConfirm={confirmDelete}
-          title="Delete Item"
-          message="Are you sure you want to delete this item? This action cannot be undone."
+          title="Xóa sản phẩm"
+          message="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
         />
       )}
 
@@ -299,7 +280,7 @@ const MarketplaceItemCard = ({
             <Typography variant="body1">{item.description}</Typography>
 
             <Typography variant="body2" color="text.secondary">
-              Người đăng: {item.userName || "Người dùng hệ thống"}
+              Người đăng: {item.seller || "Người dùng hệ thống"}
             </Typography>
 
             <Typography variant="body2" color="text.secondary">
@@ -320,17 +301,6 @@ const MarketplaceItemCard = ({
                 onClick={() => setShowDetailsModal(false)}
               >
                 Đóng
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<ShoppingCartIcon />}
-                onClick={() => {
-                  setShowDetailsModal(false);
-                  handlePurchaseClick();
-                }}
-                disabled={!item.canPurchase}
-              >
-                Mua
               </Button>
             </Box>
           </Box>
