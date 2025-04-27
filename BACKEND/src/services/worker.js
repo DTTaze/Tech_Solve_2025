@@ -2,7 +2,7 @@ const { Worker } = require("bullmq");
 const redis = require("../config/configRedis");
 const { Item, User, Transaction } = require("../models");
 const { generateCode } = require("../utils/generateCode");
-const { emitStockUpdate, emitTransactionComplete } = require("./socketManager");
+const { emitStockUpdate } = require("./socketService");
 
 const worker = new Worker(
   "purchase",
@@ -30,7 +30,7 @@ const worker = new Worker(
     emitStockUpdate(item_id, newStock, {
       name: item.name,
       price: item.price,
-      status: newStock === 0 ? "sold_out" : "available",
+      status: newStock === 0 ? "sold_out" : "available"
     });
 
     let uniqueCode, exists;
@@ -47,15 +47,6 @@ const worker = new Worker(
       quantity,
       total_price: item.price * quantity,
       status: "completed",
-    });
-
-    // Emit transaction complete event
-    emitTransactionComplete({
-      transactionId: transaction.id,
-      itemName: item.name,
-      quantity,
-      totalPrice: item.price * quantity,
-      buyerName: user.username,
     });
 
     return transaction;

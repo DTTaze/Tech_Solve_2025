@@ -12,7 +12,7 @@ import cors from "cors";
 import { execSync } from "child_process";
 import http from "http";
 import { Server } from "socket.io";
-import { initSocketManager } from "./services/socketManager";
+import { initSocketManager } from "./services/socketService";
 
 const app = express();
 const PORT = process.env.PORT || 4040;

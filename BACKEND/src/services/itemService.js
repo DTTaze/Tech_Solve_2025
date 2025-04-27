@@ -8,7 +8,7 @@ const { sequelize } = require("../models");
 const { where } = require("sequelize");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
-const { emitStockUpdate } = require("./socketManager");
+const { emitStockUpdate } = require("./socketService");
 
 const createItem = async (itemData, user_id, images) => {
   try {

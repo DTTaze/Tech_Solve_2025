@@ -20,11 +20,18 @@ function UserHeader() {
   const fetchUser = async () => {
     try {
       const response = await getUserApi();
-      if (auth.user && response.data.coins.amount !== auth.user.coins.amount) {
-        setAuth((prevAuth) => ({
-          ...prevAuth,
-          user: { ...prevAuth.user, coins: response.data.coins },
-        }));
+      if (response?.data) {
+        // Only update if we have new coins data and it's different from current
+        if (response.data.coins?.amount !== undefined && 
+            (!auth.user?.coins || response.data.coins.amount !== auth.user.coins.amount)) {
+          setAuth((prevAuth) => ({
+            ...prevAuth,
+            user: { 
+              ...prevAuth.user, 
+              coins: response.data.coins 
+            },
+          }));
+        }
       }
     } catch (error) {
       console.error("Lỗi khi lấy thông tin người dùng:", error);
