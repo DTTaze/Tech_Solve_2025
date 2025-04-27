@@ -8,6 +8,7 @@ const { sequelize } = require("../models");
 const { where } = require("sequelize");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
+const { emitStockUpdate } = require("./socketManager");
 
 const createItem = async (itemData, user_id, images) => {
   try {
@@ -160,6 +161,10 @@ const updateItem = async (id, data, images) => {
     if (!item) {
       throw new Error("Item not found");
     }
+
+    const originalStock = item.stock;
+    const originalStatus = item.status;
+
     name ? (item.name = name) : (item.name = item.name);
     purchase_limit_per_day
       ? (item.purchase_limit_per_day = purchase_limit_per_day)
@@ -176,6 +181,15 @@ const updateItem = async (id, data, images) => {
       }
       item.stock = stock;
       item.status = stock > 0 ? "available" : "sold_out";
+    }
+
+    // Nếu có thay đổi về stock hoặc status, emit sự kiện
+    if (originalStock !== item.stock || originalStatus !== item.status) {
+      emitStockUpdate(id, item.stock, {
+        name: item.name,
+        price: item.price,
+        status: item.status,
+      });
     }
 
     let uploadedImages = [];

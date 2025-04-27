@@ -30,6 +30,7 @@ import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
 import AdminQueue from "./pages/AdminQueue.jsx";
 import ProductsManagement from "./components/admin/ProductsManagement.jsx";
+import SocketTest from "./components/SocketTest.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Homepage />,
+      },
+      {
+        path: "socket",
+        element: <SocketTest />,
       },
       {
         path: "profile",
