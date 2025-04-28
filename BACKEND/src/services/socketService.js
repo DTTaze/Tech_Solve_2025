@@ -1,19 +1,57 @@
+const Redis = require("ioredis");
 let io;
+let subscriber;
+
+const emitStockUpdate = (itemId, newStock, itemDetails) => {
+  console.log("Emitting stock update event to item:", itemId);
+  if (io) {
+    io.to(`item-${itemId}`).emit('stock-update', {
+      itemId,
+      stock: newStock,
+      ...itemDetails
+    });
+  }
+};
 
 const initSocketManager = (socketIo) => {
   io = socketIo;
   
+  // Initialize Redis subscriber
+  subscriber = new Redis(process.env.URL_REDIS);
+  
+  // Set up subscription
+  subscriber.subscribe("stock-update", (err, count) => {
+    if (err) {
+      console.error("Failed to subscribe to stock-update channel:", err);
+      return;
+    }
+    console.log(`Subscribed to stock-update channel. Count: ${count}`);
+  });
+
+  subscriber.on("message", (channel, message) => {
+    if (channel === "stock-update") {
+      const data = JSON.parse(message);
+      emitStockUpdate(data.itemId, data.newStock, data);
+    }
+  });
+
   io.on('connection', (socket) => {
     console.log('A user connected with id:', socket.id);
 
     // Test event
     socket.on('client-message', (data) => {
+      socket.join('test-room');
       console.log('Received message from client:', data);
       // Emit back to client
-      io.emit('server-response', {
+      io.to('test-room').emit('server-response', {
         message: 'Server received: ' + data.message,
         timestamp: new Date()
       });
+    });
+
+    socket.on('leave-test-room', () => {
+      socket.leave('test-room');
+      console.log('User left test room');
     });
 
     // Join room for specific item updates
@@ -32,17 +70,6 @@ const initSocketManager = (socketIo) => {
       console.log('User disconnected:', socket.id);
     });
   });
-};
-
-// Function to emit stock updates to specific item room
-const emitStockUpdate = (itemId, newStock, itemDetails) => {
-  if (io) {
-    io.to(`item-${itemId}`).emit('stock-update', {
-      itemId,
-      stock: newStock,
-      ...itemDetails
-    });
-  }
 };
 
 module.exports = {

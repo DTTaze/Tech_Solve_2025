@@ -149,6 +149,7 @@ function ItemCatalog({ items: propItems }) {
         return;
       }
       try {
+        console.log("Purchasing item:", selectedItem.id, user.id, quantity);
         const response = await purchaseItemApi(user.id, selectedItem.id, {
           name: selectedItem.name,
           quantity: quantity,

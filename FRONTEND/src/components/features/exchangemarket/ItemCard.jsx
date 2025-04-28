@@ -14,6 +14,7 @@ export default function ItemCard({ item, onPurchase }) {
     // Listen for stock updates
     socket.on('stock-update', (data) => {
       if (data.itemId === item.id) {
+        console.log('Stock update received:', data);
         setCurrentStock(data.stock);
         setCurrentStatus(data.status);
       }

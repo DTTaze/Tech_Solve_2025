@@ -16,6 +16,7 @@ export default function SocketTest() {
 
     return () => {
       socket.off('server-response');
+      socket.emit('leave-test-room');
     };
   }, [socket]);
 

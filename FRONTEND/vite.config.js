@@ -11,24 +11,25 @@ export default defineConfig({
   server: {
     port: 5173,
     host: "0.0.0.0",
+    // strictPort: false,
+    // cors: {
+    //   origin: "https://greenflag.id.vn",
+    //   credentials: true,
+    // },
     proxy: {
       '/socket.io': {
         target: 'http://localhost:6060',
         ws: true,
-        changeOrigin: true,
-        secure: false
-      },
-      '/api': {
-        target: 'http://localhost:6060',
-        changeOrigin: true,
-        secure: false
+        changeOrigin: true
       }
     },
     cors: {
-      origin: true,
+      origin: [
+        "https://localhost:6060",
+        "http://localhost:6060",
+      ],
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
-    }
+    },
+    allowedHosts: ["greenflag.id.vn"],
   },
 });

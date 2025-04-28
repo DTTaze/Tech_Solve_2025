@@ -3,6 +3,8 @@ const redis = require("../config/configRedis");
 const { Item, User, Transaction } = require("../models");
 const { generateCode } = require("../utils/generateCode");
 const { emitStockUpdate } = require("./socketService");
+const Redis = require("ioredis");
+const publisher = new Redis(process.env.URL_REDIS);
 
 const worker = new Worker(
   "purchase",
@@ -26,12 +28,14 @@ const worker = new Worker(
       status: newStock === 0 ? "sold_out" : "available",
     });
 
-    // Emit stock update event
-    emitStockUpdate(item_id, newStock, {
+    console.log("Publishing stock update event");
+    await publisher.publish("stock-update", JSON.stringify({
+      itemId: item_id,
+      newStock: newStock,
       name: item.name,
       price: item.price,
       status: newStock === 0 ? "sold_out" : "available"
-    });
+    }));
 
     let uniqueCode, exists;
     do {

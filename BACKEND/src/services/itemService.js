@@ -271,6 +271,7 @@ const purchaseItem = async (user_id, item_id, data) => {
       name,
       quantity,
     });
+    
     return { message: "Purchase request is in queue", job_id: result.id };
   } catch (error) {
     throw error;
