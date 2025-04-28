@@ -4,30 +4,20 @@ import {
   EyeOff,
   Clock,
   FileWarning,
-  ClipboardEdit
+  ClipboardEdit,
+  Eye, 
 } from "lucide-react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
-import {
-  Paper,
-  Box,
-  Chip,
-  Typography,
-  IconButton,
-  Tooltip,
-  Button,
-  Modal,
-} from "@mui/material";
 import { format } from "date-fns";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const statusConfig = {
-  public: { name: "Đang hiển thị", color: "success", Icon: CheckCircle },
-  private: { name: "Đã ẩn", color: "default", Icon: EyeOff },
-  pending: { name: "Chờ duyệt", color: "warning", Icon: Clock },
-  rejected: { name: "Bị từ chối", color: "error", Icon: FileWarning },
-  draft: { name: "Tin nháp", color: "info", Icon: ClipboardEdit },
+  public: { name: "Đang hiển thị", color: "text-green-600", Icon: CheckCircle },
+  private: { name: "Đã ẩn", color: "text-gray-600", Icon: EyeOff },
+  pending: { name: "Chờ duyệt", color: "text-yellow-600", Icon: Clock },
+  rejected: { name: "Bị từ chối", color: "text-red-600", Icon: FileWarning },
+  draft: { name: "Tin nháp", color: "text-blue-600", Icon: ClipboardEdit },
 };
 
 const getStatusClass = (status) => {
@@ -36,13 +26,9 @@ const getStatusClass = (status) => {
     private: "border-gray-200 bg-gray-50",
     pending: "border-amber-200 bg-amber-50",
     rejected: "border-red-200 bg-red-50",
-    draft: "border-slate-200 bg-slate-50", 
+    draft: "border-slate-200 bg-slate-50",
   };
   return statusClasses[status] || statusClasses.draft;
-};
-
-const getStatusText = (status) => {
-  return statusConfig[status]?.name || statusConfig.draft.name;
 };
 
 const getCategoryDisplayName = (key) => {
@@ -100,7 +86,7 @@ const MarketplaceItemCard = ({
   const currentStatus = statusConfig[item.postStatus] || statusConfig.draft;
 
   return (
-    <Paper
+    <div
       className={`rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
         item.postStatus
       )}`}
@@ -112,11 +98,6 @@ const MarketplaceItemCard = ({
           alt={item.name}
           className="h-full w-full object-cover"
         />
-        {viewMode === "my_items" && (
-          <div className="absolute top-2 right-2 rounded-full bg-white px-2 py-1 text-xs font-medium">
-            {getStatusText(item.postStatus)}
-          </div>
-        )}
       </div>
 
       {/* Item Details */}
@@ -138,64 +119,43 @@ const MarketplaceItemCard = ({
         </div>
       </div>
 
-      {/* Card footer with actions */}
-      <Box
-        sx={{
-          mt: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Chip
-            label={currentStatus.name}
-            color={currentStatus.color}
-            size="small"
-            sx={{ mr: 1 }}
-          />
-          <Typography variant="body2" color="text.secondary">
+      <div className="mt-2 flex flex-wrap justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className={`text-xs font-semibold px-2 py-1 rounded ${currentStatus.color} bg-gray-100`}>
+            {currentStatus.name}
+          </div>
+          <span className="text-xs text-gray-500">
             {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
-          </Typography>
-        </Box>
+          </span>
+        </div>
 
-        <Box sx={{ display: "flex", gap: 1, mt: { xs: 1, sm: 0 } }}>
+        <div className="flex gap-2 mt-2 sm:mt-0">
           {viewMode === "my_items" ? (
             <>
-              <Tooltip title="Chỉnh sửa">
-                <IconButton
-                  size="small"
-                  onClick={() => onEdit(item)}
-                  color="primary"
-                >
-                  <FiEdit className="mr-1" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Xóa">
-                <IconButton
-                  size="small"
-                  onClick={handleDeleteClick}
-                  color="error"
-                >
-                  <FiTrash2 className="mr-1" />
-                </IconButton>
-              </Tooltip>
+              <button
+                onClick={handleEditClick}
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+              >
+                <FiEdit />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
+              >
+                <FiTrash2 />
+              </button>
             </>
           ) : (
-            <>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<VisibilityIcon />}
-                onClick={handleViewDetails}
-                sx={{ mr: 1 }}
-              >
-                Xem chi tiết
-              </Button>
-            </>
+            <button
+              onClick={handleViewDetails}
+              className="flex mt-5 items-center gap-1 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-100"
+            >
+              <Eye size={16} />
+              Xem chi tiết
+            </button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
@@ -221,92 +181,52 @@ const MarketplaceItemCard = ({
       )}
 
       {/* Details modal */}
-      <Modal open={showDetailsModal} onClose={() => setShowDetailsModal(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 500 },
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography variant="h6" component="h2" gutterBottom>
-            Chi tiết sản phẩm
-          </Typography>
+      {showDetailsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-11/12 max-w-md relative">
+            <h2 className="text-xl font-semibold mb-4">Chi tiết sản phẩm</h2>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-            <img
-              src={item.image || "/placeholder-image.jpg"}
-              alt={item.name}
-              style={{
-                width: "100%",
-                height: 200,
-                objectFit: "cover",
-                borderRadius: 8,
-              }}
-            />
-
-            <Typography variant="h5" gutterBottom>
-              {item.name}
-            </Typography>
-
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                variant="body1"
-                color="primary.main"
-                fontWeight="bold"
-              >
-                {item.price} điểm
-              </Typography>
-              <Chip
-                label={getCategoryDisplayName(item.category)}
-                color="primary"
-                variant="outlined"
-                size="small"
+            <div className="flex flex-col gap-2">
+              <img
+                src={item.image || "/placeholder-image.jpg"}
+                alt={item.name}
+                className="w-full h-48 object-cover rounded"
               />
-            </Box>
 
-            <Typography variant="body1">{item.description}</Typography>
+              <h3 className="text-lg font-bold">{item.name}</h3>
 
-            <Typography variant="body2" color="text.secondary">
-              Người đăng: {item.seller || "Người dùng hệ thống"}
-            </Typography>
+              <div className="flex justify-between items-center">
+                <span className="text-primary font-semibold">
+                  {item.price} điểm
+                </span>
+                <div className="text-xs border px-2 py-1 rounded text-primary">
+                  {getCategoryDisplayName(item.category)}
+                </div>
+              </div>
 
-            <Typography variant="body2" color="text.secondary">
-              Ngày đăng:{" "}
-              {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
-            </Typography>
+              <p className="text-gray-700">{item.description}</p>
 
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 2,
-                mt: 2,
-              }}
-            >
-              <Button
-                variant="outlined"
+              <p className="text-sm text-gray-500">
+                Người đăng: {item.seller || "Người dùng hệ thống"}
+              </p>
+
+              <p className="text-sm text-gray-500">
+                Ngày đăng: {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button
                 onClick={() => setShowDetailsModal(false)}
+                className="border px-4 py-2 rounded hover:bg-gray-100"
               >
                 Đóng
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Modal>
-    </Paper>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -1,6 +1,5 @@
 import MarketplaceItemCard from "./MarketplaceItemCard";
 import ItemActions from "./ItemActions";
-import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 
 function MarketItemList({
   marketListView,
@@ -13,8 +12,6 @@ function MarketItemList({
   statusColors,
   statusConfig,
 }) {
-  // // Log items to debug (remove in production)
-  // console.log("filteredMarketItems:", filteredMarketItems);
 
   return (
     <div
