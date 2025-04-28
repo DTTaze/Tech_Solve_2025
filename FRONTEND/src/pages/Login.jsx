@@ -40,8 +40,6 @@ const LoginPage = () => {
       const res = await loginUserApi(loginData);
 
       if (res && res.status === 200) {
-        localStorage.setItem("access_token", res.data.access_token);
-
         notify("success", "Đăng nhập thành công!");
 
         setAuth({

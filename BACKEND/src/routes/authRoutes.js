@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/register", userController.handleCreateUser);
 router.post("/login", userController.handleLoginUser);
+router.post("/logout", userController.handleLogoutUser);
 
 router.get("/login/google", oauthController.handleGoogleAuth);
 router.get("/login/google/callback", oauthController.handleGoogleAuthCallback);

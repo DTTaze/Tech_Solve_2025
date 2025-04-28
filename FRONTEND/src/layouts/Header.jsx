@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
-import { getUserApi, getUserAvatarByIdApi } from "../utils/api";
+import { getUserApi, getUserAvatarByIdApi, logoutUserApi } from "../utils/api";
 import { Coins } from "lucide-react";
 import { useNotification } from "../components/ui/NotificationProvider";
 
@@ -84,11 +84,16 @@ function UserHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    setAuth({ isAuthenticated: false, user: null });
-    notify("success", "Đăng xuất thành công");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logoutUserApi();
+      setAuth({ isAuthenticated: false, user: null });
+      notify("success", "Đăng xuất thành công");
+      navigate("/");
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+      notify("error", "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");
+    }
   };
 
   const pages = [

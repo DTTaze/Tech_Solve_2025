@@ -10,6 +10,7 @@ require("dotenv").config();
 require("./config/passport");
 import cors from "cors";
 import { execSync } from "child_process";
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = process.env.PORT || 4040;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -42,7 +43,7 @@ app.use(
     cookie: { secure: false }, // Nếu dùng HTTPS thì đặt true
   })
 );
-
+app.use(cookieParser());
 // Cấu hình Passport
 app.use(passport.initialize());
 app.use(passport.session());

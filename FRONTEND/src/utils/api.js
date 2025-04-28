@@ -4,6 +4,10 @@ export const loginUserApi = (data) => {
   return axios.post("api/auth/login", data);
 };
 
+export const logoutUserApi = () => {
+  return axios.post("api/auth/logout");
+};
+
 export const createUserApi = (data) => {
   return axios.post("api/auth/register", data);
 };
@@ -234,7 +238,7 @@ export const getAllProductsApi = () => {
 
 export const getProductByIdUser = (id) => {
   return axios.get(`api/products/users/${id}`);
-}
+};
 
 export const updateProductApi = (id, data) => {
   return axios.put(`api/products/${id}`, data);
@@ -243,4 +247,3 @@ export const updateProductApi = (id, data) => {
 export const deleteProductApi = (id) => {
   return axios.delete(`api/products/${id}`);
 };
-

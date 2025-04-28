@@ -21,9 +21,30 @@ const handleCreateUser = async (req, res) => {
 const handleLoginUser = async (req, res) => {
   try {
     let result = await userService.loginUser(req.body);
+    res.cookie("access_token", result.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 60 * 1000,
+      path: "/",
+    });
     return res.success("Login success", result);
   } catch (error) {
     return res.error(401, "Failed to login user", error.message);
+  }
+};
+
+const handleLogoutUser = async (req, res) => {
+  try {
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+    return res.success("Logout success");
+  } catch (error) {
+    return res.error(500, "Failed to logout user", error.message);
   }
 };
 
@@ -118,6 +139,7 @@ const handleDeleteUserByPublicId = async (req, res) => {
 module.exports = {
   handleGetAllUsers,
   handleCreateUser,
+  handleLogoutUser,
   handleDeleteUser,
   handleGetUser,
   handleUpdateUser,
