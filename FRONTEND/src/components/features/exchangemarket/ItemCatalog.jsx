@@ -102,7 +102,7 @@ function ItemCatalog({ items: propItems }) {
       if (activeTab === "redeem") {
         try {
           const itemsResponse = await getAllItemsApi();
-          // console.log(itemsResponse);
+          console.log(itemsResponse);
           if (itemsResponse && itemsResponse.data) {
             const mappedItems = itemsResponse.data.map((item) => ({
               id: item.id,
@@ -158,6 +158,7 @@ function ItemCatalog({ items: propItems }) {
 
           if (marketView !== "my_items") {
             const allProductsResponse = await getAllProductsApi();
+            console.log(allProductsResponse);
             if (allProductsResponse && allProductsResponse.data) {
               const mappedAllItems = allProductsResponse.data.map((item) => ({
                 id: item.id,

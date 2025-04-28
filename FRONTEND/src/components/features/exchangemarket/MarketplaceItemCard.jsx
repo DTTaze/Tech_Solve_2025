@@ -5,14 +5,15 @@ import {
   Clock,
   FileWarning,
   ClipboardEdit,
-  Eye, 
+  Eye,
 } from "lucide-react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { format } from "date-fns"; // Added import for format
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
-import { format } from "date-fns";
+import DetailsModal from "./DetailsModal";
 
-const statusConfig = {
+export const statusConfig = {
   public: { name: "Đang hiển thị", color: "text-green-600", Icon: CheckCircle },
   private: { name: "Đã ẩn", color: "text-gray-600", Icon: EyeOff },
   pending: { name: "Chờ duyệt", color: "text-yellow-600", Icon: Clock },
@@ -20,7 +21,7 @@ const statusConfig = {
   draft: { name: "Tin nháp", color: "text-blue-600", Icon: ClipboardEdit },
 };
 
-const getStatusClass = (status) => {
+export const getStatusClass = (status) => {
   const statusClasses = {
     public: "border-emerald-200 bg-emerald-50",
     private: "border-gray-200 bg-gray-50",
@@ -31,7 +32,7 @@ const getStatusClass = (status) => {
   return statusClasses[status] || statusClasses.draft;
 };
 
-const getCategoryDisplayName = (key) => {
+export const getCategoryDisplayName = (key) => {
   const categories = {
     handicraft: "Đồ thủ công",
     recycled: "Đồ tái chế",
@@ -87,12 +88,16 @@ const MarketplaceItemCard = ({
 
   return (
     <div
-      className={`rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
+      className={`relative rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
         item.postStatus
-      )}`}
+      )} group`}
     >
       {/* Item Image */}
-      <div className="relative mb-3 h-48 w-full overflow-hidden rounded-md">
+      <div
+        className={`relative mb-3 h-48 w-full overflow-hidden rounded-md transition-all duration-200 ${
+          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
+        } ${showDetailsModal ? "blur-sm" : ""}`}
+      >
         <img
           src={item.image || "/placeholder.svg"}
           alt={item.name}
@@ -101,7 +106,11 @@ const MarketplaceItemCard = ({
       </div>
 
       {/* Item Details */}
-      <div className="mb-4">
+      <div
+        className={`mb-4 transition-all duration-200 ${
+          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
+        } ${showDetailsModal ? "blur-sm" : ""}`}
+      >
         <h3 className="text-lg font-semibold">{item.name}</h3>
         <p className="text-sm text-gray-600">
           {getCategoryDisplayName(item.category)}
@@ -119,18 +128,30 @@ const MarketplaceItemCard = ({
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className={`text-xs font-semibold px-2 py-1 rounded ${currentStatus.color} bg-gray-100`}>
-            {currentStatus.name}
-          </div>
+      {/* View Details Button (Appears on Hover, only for all_items viewMode) */}
+      {viewMode === "all_items" && (
+        <button
+          onClick={handleViewDetails}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center rounded-md gap-1 border border-gray-300 p-3 text-sm bg-white hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+        >
+          <Eye size={16} />
+          Xem chi tiết
+        </button>
+      )}
+
+      <div
+        className={`mt-2 flex flex-wrap justify-between items-center transition-all duration-200 ${
+          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
+        } ${showDetailsModal ? "blur-sm" : ""}`}
+      >
+        <div className="flex items-center">
           <span className="text-xs text-gray-500">
             {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
           </span>
         </div>
 
         <div className="flex gap-2 mt-2 sm:mt-0">
-          {viewMode === "my_items" ? (
+          {viewMode === "my_items" && (
             <>
               <button
                 onClick={handleEditClick}
@@ -145,14 +166,6 @@ const MarketplaceItemCard = ({
                 <FiTrash2 />
               </button>
             </>
-          ) : (
-            <button
-              onClick={handleViewDetails}
-              className="flex mt-5 items-center gap-1 border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-100"
-            >
-              <Eye size={16} />
-              Xem chi tiết
-            </button>
           )}
         </div>
       </div>
@@ -180,52 +193,13 @@ const MarketplaceItemCard = ({
         />
       )}
 
-      {/* Details modal */}
-      {showDetailsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-11/12 max-w-md relative">
-            <h2 className="text-xl font-semibold mb-4">Chi tiết sản phẩm</h2>
-
-            <div className="flex flex-col gap-2">
-              <img
-                src={item.image || "/placeholder-image.jpg"}
-                alt={item.name}
-                className="w-full h-48 object-cover rounded"
-              />
-
-              <h3 className="text-lg font-bold">{item.name}</h3>
-
-              <div className="flex justify-between items-center">
-                <span className="text-primary font-semibold">
-                  {item.price} điểm
-                </span>
-                <div className="text-xs border px-2 py-1 rounded text-primary">
-                  {getCategoryDisplayName(item.category)}
-                </div>
-              </div>
-
-              <p className="text-gray-700">{item.description}</p>
-
-              <p className="text-sm text-gray-500">
-                Người đăng: {item.seller || "Người dùng hệ thống"}
-              </p>
-
-              <p className="text-sm text-gray-500">
-                Ngày đăng: {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="border px-4 py-2 rounded hover:bg-gray-100"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Details Modal */}
+      <DetailsModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        item={item}
+        getCategoryDisplayName={getCategoryDisplayName}
+      />
     </div>
   );
 };

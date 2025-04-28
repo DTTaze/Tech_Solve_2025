@@ -12,7 +12,6 @@ function MarketItemList({
   statusColors,
   statusConfig,
 }) {
-
   return (
     <div
       className={
@@ -92,7 +91,8 @@ function MarketItemList({
                           statusColors[item.postStatus] || statusColors.draft
                         }`}
                       >
-                        {statusConfig[item.postStatus]?.name || statusConfig.draft.name}
+                        {statusConfig[item.postStatus]?.name ||
+                          statusConfig.draft.name}
                       </span>
                     </td>
                   )}
@@ -100,15 +100,18 @@ function MarketItemList({
                     <div className="text-sm text-gray-500">{item.seller}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.createdAt && new Date(item.createdAt).toLocaleDateString()}
+                    {item.createdAt &&
+                      new Date(item.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <ItemActions
                       marketView={marketView}
+                      marketListView={marketListView}
                       item={item}
                       handleEditItem={handleEditItem}
                       handleDeleteItem={handleDeleteItem}
                       handlePurchase={handlePurchase}
+                      getCategoryDisplayName={getCategoryDisplayName} // Pass getCategoryDisplayName
                     />
                   </td>
                 </tr>

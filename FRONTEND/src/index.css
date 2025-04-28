@@ -1,7 +1,4 @@
 @import "tailwindcss";
-
-@tailwind base;
-@tailwind components;
 @tailwind utilities;
 
 /* Custom Styles */
@@ -30,4 +27,4 @@
       transform: translateX(100%);
     }
   }
-}
+} 
