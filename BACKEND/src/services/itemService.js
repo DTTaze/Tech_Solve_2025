@@ -70,6 +70,7 @@ const getAllItems = async () => {
       include: [
         {
           model: User,
+          as: "creator",
           attributes: ["id", "username"],
         },
       ],
