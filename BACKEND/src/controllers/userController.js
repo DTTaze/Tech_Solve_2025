@@ -1,4 +1,5 @@
 const userService = require("../services/userService");
+const ms = require("ms");
 
 const handleGetAllUsers = async (req, res) => {
   try {
@@ -25,8 +26,15 @@ const handleLoginUser = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 30 * 60 * 1000,
+      maxAge: ms(process.env.JWT_AT_EXPIRE),
       path: "/",
+    });
+    res.cookie("refresh_token", result.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: ms(process.env.JWT_RF_EXPIRE),
     });
     return res.success("Login success", result);
   } catch (error) {
@@ -34,9 +42,35 @@ const handleLoginUser = async (req, res) => {
   }
 };
 
+const handleRefreshAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refresh_token;
+    const newAccessToken = userService.refreshAccessToken(refreshToken);
+
+    res.cookie("access_token", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: ms(process.env.JWT_AT_EXPIRE),
+    });
+
+    res.json({ message: "Access token refreshed" });
+  } catch (error) {
+    console.error("Refresh token error:", error.message);
+    res.status(401).json({ message: "Invalid refresh token" });
+  }
+};
+
 const handleLogoutUser = async (req, res) => {
   try {
     res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+    res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -151,4 +185,5 @@ module.exports = {
   handleGetUserByPublicId,
   handleUpdateUserByPublicId,
   handleDeleteUserByPublicId,
+  handleRefreshAccessToken,
 };

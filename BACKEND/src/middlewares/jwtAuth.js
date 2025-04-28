@@ -15,6 +15,7 @@ const jwtAuth = async (req, res, next) => {
     "/auth/register",
     "/auth/forgot_password",
     "/auth/reset_password",
+    "/auth/refresh_token",
   ];
 
   const requestPath = req.originalUrl.split("?")[0];
@@ -23,8 +24,9 @@ const jwtAuth = async (req, res, next) => {
     return next();
   }
   let token = null;
-
-  if (req.cookies?.access_token) {
+  if (req.headers.authorization && req.headers) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies?.access_token) {
     token = req.cookies.access_token;
   }
 

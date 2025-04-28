@@ -165,6 +165,21 @@ const loginUser = async (data) => {
   }
 };
 
+const refreshAccessToken = (refreshToken) => {
+  if (!refreshToken) {
+    throw new Error("No refresh token provided");
+  }
+
+  const decoded = jwt.verify(refreshToken, process.env.JWT_RF_SECRET);
+  const newAccessToken = jwt.sign(
+    { id: decoded.id },
+    process.env.JWT_AT_SECRET,
+    { expiresIn: process.env.JWT_AT_EXPIRE }
+  );
+
+  return newAccessToken;
+};
+
 const getAllUsers = async () => {
   try {
     const users = await User.findAll({
@@ -490,4 +505,5 @@ module.exports = {
   getTaskCompleted,
   getAllTasksById,
   getItemByIdUser,
+  refreshAccessToken,
 };
