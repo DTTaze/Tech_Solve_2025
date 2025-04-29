@@ -13,7 +13,7 @@ const Rank = db.Rank;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
-
+const rateLimitService = require("./rateLimitService");
 const createUser = async (data) => {
   try {
     let {
@@ -124,12 +124,13 @@ const loginUser = async (data) => {
       ],
     });
     if (!user) {
-      throw new Error("Invalid email or password");
+      throw new Error("Invalid email or username");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new Error("Invalid email or password");
+      await rateLimitService.recordFailedLogin(user.email);
+      throw new Error("Invalid password");
     }
     await user.update({
       last_logined: todayStr,
@@ -155,6 +156,7 @@ const loginUser = async (data) => {
     const refresh_token = jwt.sign(payload, process.env.JWT_RF_SECRET, {
       expiresIn: process.env.JWT_RF_EXPIRE,
     });
+    await rateLimitService.resetLoginAttempts(user.email);
     return {
       access_token,
       refresh_token,

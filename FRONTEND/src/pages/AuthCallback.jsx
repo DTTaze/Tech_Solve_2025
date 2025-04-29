@@ -11,34 +11,35 @@ const AuthCallback = () => {
 
   useEffect(() => {
     if (handled.current) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await getUserApi();
-
-        if (res && res.status === 200) {
-          setAuth({
-            isAuthenticated: true,
-            user: res.data,
-          });
-
-          if (res.data.avatar_url) {
-            localStorage.setItem("user_avatar_url", res.data.avatar_url);
+    if (window.location.pathname === "/auth/success") {
+      const fetchUser = async () => {
+        try {
+          const res = await getUserApi();
+          if (res && res.status === 200) {
+            setAuth({
+              isAuthenticated: true,
+              user: res.data,
+            });
+            if (res.data.avatar_url) {
+              localStorage.setItem("user_avatar_url", res.data.avatar_url);
+            }
+            navigate("/", { replace: true });
+          } else {
+            alert("Login failed!");
+            navigate("/login");
           }
-
-          navigate("/", { replace: true });
-        } else {
+        } catch (err) {
+          console.error("Failed to fetch user info after login:", err);
           alert("Login failed!");
           navigate("/login");
         }
-      } catch (err) {
-        console.error("Failed to fetch user info after login:", err);
-        alert("Login failed!");
-        navigate("/login");
-      }
-    };
+      };
 
-    fetchUser();
+      fetchUser();
+    } else {
+      alert("Login failed!");
+      navigate("/login");
+    }
     handled.current = true;
   }, [navigate, setAuth]);
 

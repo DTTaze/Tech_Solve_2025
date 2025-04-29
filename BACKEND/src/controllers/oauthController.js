@@ -3,11 +3,10 @@ const oauthService = require("../services/oauthService");
 const ms = require("ms");
 
 const handleGoogleAuth = async (req, res, next) => {
-  passport.authenticate("google", { scope: ["profile", "email"] })(
-    req,
-    res,
-    next
-  );
+  passport.authenticate("google", { 
+    scope: ["profile", "email"],
+    prompt: "select_account"
+  })(req, res, next);
 };
 
 const handleGoogleAuthCallback = async (req, res, next) => {

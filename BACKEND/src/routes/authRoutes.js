@@ -1,11 +1,12 @@
 const express = require("express");
 const oauthController = require("../controllers/oauthController");
 const userController = require("../controllers/userController");
+const rateLimit = require("../middlewares/rateLimit");
 
 const router = express.Router();
 
 router.post("/register", userController.handleCreateUser);
-router.post("/login", userController.handleLoginUser);
+router.post("/login", rateLimit.loginLimiterByEmail, userController.handleLoginUser);
 router.post("/logout", userController.handleLogoutUser);
 router.post("/refresh_token", userController.handleRefreshAccessToken);
 
