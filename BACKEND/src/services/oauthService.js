@@ -49,8 +49,13 @@ const googleAuthCallback = async (user) => {
       expiresIn: process.env.JWT_AT_EXPIRE,
     });
 
+    const refresh_token = jwt.sign(payload, process.env.JWT_RF_SECRET, {
+      expiresIn: process.env.JWT_RF_EXPIRE,
+    });
+
     return {
       access_token,
+      refresh_token,
       user: payload,
     };
   } catch (error) {

@@ -10,10 +10,9 @@ const AuthCallback = () => {
 
   useEffect(() => {
     if (handled.current) return;
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    if (token) {
-      localStorage.setItem("access_token", token);
+    
+    // Check if we're on the success path
+    if (window.location.pathname === '/auth/success') {
       const fetchUser = async () => {
         try {
           const res = await getUserApi();

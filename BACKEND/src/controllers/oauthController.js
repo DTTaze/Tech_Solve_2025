@@ -1,12 +1,12 @@
 const passport = require("../config/passport");
 const oauthService = require("../services/oauthService");
+const ms = require("ms");
 
 const handleGoogleAuth = async (req, res, next) => {
-  passport.authenticate("google", { scope: ["profile", "email"] })(
-    req,
-    res,
-    next
-  );
+  passport.authenticate("google", { 
+    scope: ["profile", "email"],
+    prompt: "select_account"
+  })(req, res, next);
 };
 
 const handleGoogleAuthCallback = async (req, res, next) => {
@@ -17,18 +17,30 @@ const handleGoogleAuthCallback = async (req, res, next) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({ message: "Authentication failed" });
-        // return res.redirect(`${process.env.FRONTEND_URL}/auth/failure`);
       }
 
       try {
         const authResult = await oauthService.googleAuthCallback(user);
-        const token = authResult.access_token;
-        console.log(token);
-        // res.success("Login success", authResult);
-        return res.redirect(
-          `${process.env.FRONTEND_URL}/auth/success?token=${token}`
-          // `${process.env.FRONTEND_URL}/`
-        );
+        
+        // Set access token cookie
+        res.cookie("access_token", authResult.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: ms(process.env.JWT_AT_EXPIRE),
+          path: "/",
+        });
+
+        // Set refresh token cookie
+        res.cookie("refresh_token", authResult.refresh_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+          maxAge: ms(process.env.JWT_RF_EXPIRE),
+        });
+
+        return res.redirect(`${process.env.FRONTEND_URL}/auth/success`);
       } catch (error) {
         return next(error);
       }
