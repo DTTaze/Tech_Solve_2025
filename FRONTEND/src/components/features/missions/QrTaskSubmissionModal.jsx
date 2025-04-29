@@ -1,39 +1,48 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
+import QRscanner from "./QRscanner";
 
-export default function TaskSubmissionModal({
+export default function QrTaskSubmissionModal({
   isOpen,
   onClose,
   task,
   handleTaskCompletion,
   userID,
 }) {
-  const [files, setFiles] = useState([]);
+  const [scannedQRCodes, setScannedQRCodes] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+  const handleScan = (data) => {
+    if (data && !scannedQRCodes.includes(data)) {
+      setScannedQRCodes((prev) => [...prev, data]);
+      toast.success("Đã quét mã QR thành công!");
+    } else if (data) {
+      toast.info("Mã QR này đã được quét trước đó!");
+    }
   };
 
-  const handleRemoveFile = (index) => {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  const handleError = (error) => {
+    console.error("QR Scanner error:", error);
+    toast.error("Có lỗi xảy ra khi quét mã QR");
   };
 
   const handleSubmit = async () => {
-    if (files.length === 0) {
-      toast.warning("Vui lòng tải lên ít nhất một file");
+    if (scannedQRCodes.length === 0) {
+      toast.warning("Vui lòng quét ít nhất một mã QR");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Then handle task completion with the number of files
+      // Tăng tiến độ theo số mã QR đã quét, không vượt quá task.total
       const prevProgress = task.progress_count || 0;
-      const numOfProgress =  Math.min(files.length, task.total - prevProgress);
+      const numOfProgress = Math.min(
+        scannedQRCodes.length,
+        task.total - prevProgress
+      );
       await handleTaskCompletion(userID, task.id, numOfProgress);
       toast.success("Nhiệm vụ đã được cập nhật!");
       onClose();
@@ -47,7 +56,7 @@ export default function TaskSubmissionModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-white/40 backdrop-blur-sm z-50 p-4">
-      <div className="bg-green-50 p-6 rounded-2xl shadow-2xl w-full max-w-lg sm:max-w-xl md:max-w-2xl border border-green-200">
+      <div className="bg-green-50 p-6 rounded-2xl shadow-2xl w-full max-w-lg sm:max-w-xl md:max-w-2xl border border-green-200 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-green-800">
@@ -78,28 +87,27 @@ export default function TaskSubmissionModal({
           </p>
         </div>
 
-        {/* Upload ảnh */}
+        {/* QR Scanner */}
         <div className="mt-6">
           <label className="block text-base font-medium text-green-800 mb-3">
-            Tải lên bằng chứng (ảnh):
+            Quét mã QR:
           </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="block w-full text-base text-green-700 bg-white border border-green-300 rounded-xl px-4 py-2 cursor-pointer
-            file:mr-4 file:py-2 file:px-5 file:rounded-full file:border-0 file:bg-green-100 file:text-green-700 hover:file:bg-green-200 transition"
-          />
+          <div className="w-full h-full bg-white rounded-xl overflow-hidden border border-green-300">
+            <QRscanner
+              onScan={handleScan}
+              onError={handleError}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
 
-          {/* Info về file đã chọn */}
-          {files.length > 0 && (
+          {/* Info về mã đã quét */}
+          {scannedQRCodes.length > 0 && (
             <div className="mt-3 space-y-1 text-green-600 text-sm sm:text-base">
-              <p>📸 Đã chọn {files.length} ảnh.</p>
+              <p>✅ Đã quét {scannedQRCodes.length} mã QR.</p>
               <p>
                 Tiến độ tăng thêm:{" "}
                 <strong>
-                  {Math.min(files.length, task.total)}/{task.total}
+                  {Math.min(scannedQRCodes.length, task.total)}/{task.total}
                 </strong>
               </p>
             </div>
@@ -111,9 +119,9 @@ export default function TaskSubmissionModal({
           <button
             className="bg-green-600 text-white px-6 py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-green-700 transition duration-200 disabled:opacity-50"
             onClick={handleSubmit}
-            disabled={files.length === 0}
+            disabled={scannedQRCodes.length === 0 || isSubmitting}
           >
-            Xác nhận
+            {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
           </button>
         </div>
       </div>

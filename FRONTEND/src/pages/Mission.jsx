@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
 import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
+import QrTaskSubmissionModal from "../components/features/missions/QrTaskSubmissionModal.jsx";
 import {
   getAllTasksApi,
   receiveCoinApi,
@@ -9,6 +10,7 @@ import {
   getTaskByIdApi,
   increaseProgressCountApi,
   AllTaskByIdApi,
+  getAllTasksByTypeNameApi,
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
@@ -193,7 +195,6 @@ function Mission() {
         // Nếu task nhiệm vụ đã hoàn thành
         if (updatedTaskUser.data.completed_at) {
           try {
-
             const coinsResponse = await receiveCoinApi(task.coins);
             console.log("Receive coins response:", coinsResponse);
 
@@ -238,50 +239,111 @@ function Mission() {
     setSelectedTask(null);
   }, []);
 
+  // Determine which modal to show based on task difficulty
+  const renderTaskModal = () => {
+    if (!selectedTask) return null;
+
+    const isQrTask =
+      selectedTask.difficulty === "medium" ||
+      selectedTask.difficulty === "hard";
+
+    if (isQrTask) {
+      return (
+        <QrTaskSubmissionModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          task={selectedTask}
+          handleTaskCompletion={handleTaskCompletion}
+          userID={userInfo?.id}
+        />
+      );
+    } else {
+      return (
+        <TaskSubmissionModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          task={selectedTask}
+          handleTaskCompletion={handleTaskCompletion}
+          userID={userInfo?.id}
+        />
+      );
+    }
+  };
+
   // Memoize filtered and sorted task lists to prevent recalculations on every render
 
   useEffect(() => {
     const fetchDailyTasks = async () => {
-      console.log("UserTask: ", userTasks);
-      const DailyTasks = await Promise.all(
-        userTasks.map(async (userTask) => {
-          const taskData = await getTaskByIdApi(userTask.task_id);
-          const task = taskData.data;
+      try {
+        // Get tasks by type name
+        const TasksByTypeName = await getAllTasksByTypeNameApi("daily");
+        console.log("Tasks by type name:", TasksByTypeName);
 
-          return task
-            ? {
-                ...task,
-                completed_at: userTask.completed_at,
-                progress_count: userTask.progress_count,
-                isUserTask: true,
-              }
-            : null;
-        })
-      );
+        // Get detailed task information for each task ID
+        const dailyTasksData = await Promise.all(
+          TasksByTypeName.data.map(async (task) => {
+            const taskData = await getTaskByIdApi(task.task_id);
+            return taskData.data;
+          })
+        );
 
-      const filteredTasks = DailyTasks.filter(
-        (task) =>
-          task &&
-          task.completed_at === null && 
-          (task.difficulty === "medium" || task.difficulty === "hard")
-      );
+        // Process user tasks that are in daily tasks and not completed
+        const userDailyTasks = await Promise.all(
+          userTasks
+            .filter(
+              (userTask) =>
+                userTask.completed_at === null && // Only get uncompleted tasks
+                TasksByTypeName.data.some(
+                  (task) => task.task_id === userTask.task_id
+                )
+            )
+            .map(async (userTask) => {
+              const taskData = await getTaskByIdApi(userTask.task_id);
+              const task = taskData.data;
+              return task
+                ? {
+                    ...task,
+                    completed_at: userTask.completed_at,
+                    progress_count: userTask.progress_count,
+                    isUserTask: true,
+                  }
+                : null;
+            })
+        );
 
-      // Get all tasks and add them to the list
+        // Filter out null values
+        const validUserDailyTasks = userDailyTasks.filter(
+          (task) => task !== null
+        );
 
-      const additionalTasks = tasks
-      .filter(
-        (task) =>
-          !userTasks.some((userTask) => userTask.task_id === task.id) &&
-          (task.difficulty === "medium" || task.difficulty === "hard")
-      )
-      .map((task) => ({
-        ...task,
-        isUserTask: false,
-        progress_count: 0,
-        completed_at: null,
-      }));
+        // Combine tasks that user is doing with tasks they haven't started
+        const allDailyTasks = [
+          ...validUserDailyTasks,
+          ...dailyTasksData
+            .filter(
+              (task) =>
+                !validUserDailyTasks.some(
+                  (userTask) => userTask.id === task.id
+                ) &&
+                !userTasks.some(
+                  (userTask) =>
+                    userTask.task_id === task.id &&
+                    userTask.completed_at !== null
+                ) // Exclude completed tasks
+            )
+            .map((task) => ({
+              ...task,
+              isUserTask: false,
+              progress_count: 0,
+              completed_at: null,
+            })),
+        ];
 
-      setDailyTasks([...filteredTasks, ...additionalTasks]);
+        setDailyTasks(allDailyTasks);
+      } catch (error) {
+        console.error("Error fetching daily tasks:", error);
+        toast.error("Không thể tải nhiệm vụ hàng ngày");
+      }
     };
 
     fetchDailyTasks();
@@ -291,42 +353,76 @@ function Mission() {
 
   useEffect(() => {
     const fetchOtherTasks = async () => {
-      const OtherTasks = await Promise.all(
-        userTasks.map(async (userTask) => {
-          const taskData = await getTaskByIdApi(userTask.task_id);
-          const task = taskData.data;
-          return task
-            ? {
-                ...task,
-                completed_at: userTask.completed_at,
-                progress_count: userTask.progress_count,
-                isUserTask: true,
-              }
-            : null;
-        })
-      );
+      try {
+        // Get tasks by type name
+        const TasksByTypeName = await getAllTasksByTypeNameApi("others");
+        console.log("Tasks by type name:", TasksByTypeName);
 
-      const filteredTasks = OtherTasks.filter(
-        (task) =>
-          task && task.completed_at === null && task.difficulty === "easy"
-      );
+        // Get detailed task information for each task ID
+        const otherTasksData = await Promise.all(
+          TasksByTypeName.data.map(async (task) => {
+            const taskData = await getTaskByIdApi(task.task_id);
+            return taskData.data;
+          })
+        );
 
-      // Get all tasks and add them to the list
+        // Process user tasks that are in other tasks and not completed
+        const userOtherTasks = await Promise.all(
+          userTasks
+            .filter(
+              (userTask) =>
+                userTask.completed_at === null && // Only get uncompleted tasks
+                TasksByTypeName.data.some(
+                  (task) => task.task_id === userTask.task_id
+                )
+            )
+            .map(async (userTask) => {
+              const taskData = await getTaskByIdApi(userTask.task_id);
+              const task = taskData.data;
+              return task
+                ? {
+                    ...task,
+                    completed_at: userTask.completed_at,
+                    progress_count: userTask.progress_count,
+                    isUserTask: true,
+                  }
+                : null;
+            })
+        );
 
-      const additionalTasks = tasks
-        .filter(
-          (task) =>
-            !userTasks.some((userTask) => userTask.task_id === task.id) &&
-            task.difficulty === "easy"
-        )
-        .map((task) => ({
-          ...task,
-          isUserTask: false,
-          progress_count: 0,
-          completed_at: null,
-        }));
+        // Filter out null values
+        const validUserOtherTasks = userOtherTasks.filter(
+          (task) => task !== null
+        );
 
-      setOtherTasks([...filteredTasks, ...additionalTasks]);
+        // Combine tasks that user is doing with tasks they haven't started
+        const allOtherTasks = [
+          ...validUserOtherTasks,
+          ...otherTasksData
+            .filter(
+              (task) =>
+                !validUserOtherTasks.some(
+                  (userTask) => userTask.id === task.id
+                ) &&
+                !userTasks.some(
+                  (userTask) =>
+                    userTask.task_id === task.id &&
+                    userTask.completed_at !== null
+                ) // Exclude completed tasks
+            )
+            .map((task) => ({
+              ...task,
+              isUserTask: false,
+              progress_count: 0,
+              completed_at: null,
+            })),
+        ];
+
+        setOtherTasks(allOtherTasks);
+      } catch (error) {
+        console.error("Error fetching other tasks:", error);
+        toast.error("Không thể tải nhiệm vụ phụ");
+      }
     };
 
     fetchOtherTasks();
@@ -634,15 +730,7 @@ function Mission() {
       </div>
 
       {/* Task Submission Modal */}
-      {selectedTask && (
-        <TaskSubmissionModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          task={selectedTask}
-          handleTaskCompletion={handleTaskCompletion}
-          userID={userInfo?.id}
-        />
-      )}
+      {selectedTask && renderTaskModal()}
     </div>
   );
 }

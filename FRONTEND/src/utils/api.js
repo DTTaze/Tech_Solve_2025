@@ -219,3 +219,15 @@ export const getQRApi = (text) => {
     params: { text },
   });
 };
+
+export const getAllTasksByTypeNameApi = (type_name) => {
+  return axios.get(`api/tasks/type/${type_name}`);
+}
+
+export const rearrangeRankApi = () => {
+  return axios.post("api/ranks/rearrange");
+}
+
+export const getUserByIdApi = (id) => {
+  return axios.get(`api/users/${id}`);
+}
