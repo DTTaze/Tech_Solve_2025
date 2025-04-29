@@ -100,7 +100,7 @@ export default function CustomerAppBar({
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
         borderBottom: "1px solid var(--light-green)",
         width: "100%",
-        zIndex: (theme) => theme.zIndex.drawer + 1,
+        zIndex: 1300,
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>

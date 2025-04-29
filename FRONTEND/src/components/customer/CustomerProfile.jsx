@@ -55,6 +55,7 @@ import {
   getQRApi,
   logoutUserApi,
 } from "../../utils/api";
+import getAmount from "../../utils/getAmount";
 
 export default function CustomerProfile() {
   const userInfo = useOutletContext();
@@ -232,20 +233,6 @@ export default function CustomerProfile() {
     setAnchorEl(null);
   };
 
-  // Helper function to safely get transaction amount as a number
-  const getTransactionAmount = (transaction) => {
-    if (
-      transaction &&
-      typeof transaction.amount === "object" &&
-      transaction.amount !== null
-    ) {
-      // If amount is an object, try to get the numerical value
-      return transaction.amount.amount || 0;
-    }
-    // If it's already a number or other primitive, return it directly
-    return transaction?.amount || 0;
-  };
-
   if (loadingUserData) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
@@ -405,7 +392,7 @@ export default function CustomerProfile() {
                   color="var(--primary-green)"
                   fontWeight="bold"
                 >
-                  {userData?.coins?.amount || userData?.coins || 0} Coins
+                  {getAmount(userData?.coins)} Coins
                 </Typography>
               </Box>
 
@@ -719,8 +706,7 @@ export default function CustomerProfile() {
                     ))
                   ) : transactions.length > 0 ? (
                     transactions.map((transaction) => {
-                      const transactionAmount =
-                        getTransactionAmount(transaction);
+                      const transactionAmount = getAmount(transaction.amount);
                       return (
                         <Box
                           key={transaction.id}

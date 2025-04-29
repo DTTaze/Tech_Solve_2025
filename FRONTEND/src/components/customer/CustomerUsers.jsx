@@ -48,6 +48,7 @@ import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
+import getAmount from "../../utils/getAmount";
 
 // Sample data for users
 const SAMPLE_USERS = [
@@ -536,7 +537,9 @@ export default function CustomerUsers() {
                             color="warning"
                             fontSize="small"
                           />
-                          <Typography fontWeight={500}>{user.coins}</Typography>
+                          <Typography fontWeight={500}>
+                            {getAmount(user.coins)}
+                          </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
@@ -662,7 +665,9 @@ export default function CustomerUsers() {
                             color="warning"
                             fontSize="small"
                           />
-                          <Typography fontWeight={500}>{user.coins}</Typography>
+                          <Typography fontWeight={500}>
+                            {getAmount(user.coins)}
+                          </Typography>
                         </Box>
                       </Grid>
                     </Grid>

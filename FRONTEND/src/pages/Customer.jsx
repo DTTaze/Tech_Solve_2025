@@ -27,10 +27,11 @@ export default function Customer() {
             full_name: userResponse.data.full_name || "Customer",
             avatar_url: userResponse.data.avatar_url,
             username: userResponse.data.username || "Guest",
-            coins: userResponse.data.coins.amount || 0,
+            coins: userResponse.data.coins, // Store the entire coins object
             email: userResponse.data.email,
             phone_number: userResponse.data.phone_number,
             last_logined: userResponse.data.last_logined,
+            role: userResponse.data.role,
           });
         }
       } catch (error) {
@@ -46,7 +47,13 @@ export default function Customer() {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        position: "relative", // Add position relative to establish a stacking context
+      }}
+    >
       {/* App Bar */}
       <CustomerAppBar
         open={open}
@@ -72,6 +79,8 @@ export default function Customer() {
           width: "100%",
           mt: "64px",
           backgroundColor: "var(--background-light)",
+          position: "relative", // Add position relative
+          zIndex: 1, // Set low z-index for main content
         }}
       >
         <Outlet context={userInfo} />

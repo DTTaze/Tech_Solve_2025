@@ -66,6 +66,13 @@ const menuItems = [
   },
 ];
 
+// Helper to always get a number from coins
+function getAmount(val) {
+  if (val == null) return 0;
+  if (typeof val === "object") return val.amount || 0;
+  return val;
+}
+
 export default function CustomerDrawer({
   drawerWidth,
   open,
@@ -85,6 +92,7 @@ export default function CustomerDrawer({
           gap: 2,
           backgroundColor: "var(--primary-green)",
           color: "white",
+          marginTop: "64px",
         }}
       >
         <Avatar
@@ -97,7 +105,7 @@ export default function CustomerDrawer({
             {userInfo?.full_name || "Customer"}
           </Typography>
           <Typography variant="body2" color="white" sx={{ opacity: 0.9 }}>
-            {userInfo?.coins || 0} Coins
+            {getAmount(userInfo?.coins)} Coins
           </Typography>
         </Box>
       </Box>
@@ -167,10 +175,12 @@ export default function CustomerDrawer({
           boxSizing: "border-box",
           borderRight: "1px solid var(--light-green)",
           boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.05)",
+          paddingTop: 0,
         },
+        zIndex: 1200,
       }}
       ModalProps={{
-        keepMounted: true, // Better open performance on mobile
+        keepMounted: true,
       }}
     >
       {drawerContent}
