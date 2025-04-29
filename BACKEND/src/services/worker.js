@@ -1,10 +1,57 @@
 const { Worker } = require("bullmq");
 const redis = require("../config/configRedis");
-const { Item, User, Transaction } = require("../models");
+const db = require("../models/index");
+const Item = db.Item;
+const User = db.User;
+const Transaction = db.Transaction;
+const Inventory = db.Inventory;
 const { generateCode } = require("../utils/generateCode");
 const { emitStockUpdate } = require("./socketService");
 const Redis = require("ioredis");
 const publisher = new Redis(process.env.URL_REDIS);
+const crypto = require("crypto");
+require("dotenv").config();
+
+const generateEncodeItem = async (item_info, user_info, quantity) => {
+  const timestamp = Date.now();
+
+  const dataToEncode = {
+    item: {
+      public_id: item_info.public_id,
+      creator_id: item_info.creator_id,
+      name: item_info.name,
+      description: item_info.description,
+      price: item_info.price,
+      quantity: quantity,
+      timestamp: timestamp
+    },
+    user: {
+      public_id: user_info.public_id,
+      google_id: user_info.google_id,
+      email: user_info.email,
+      username: user_info.username,
+      full_name: user_info.full_name,
+      phone_number: user_info.phone_number,
+      address: user_info.address,
+      timestamp: timestamp
+    }
+  };
+
+  const jsonString = JSON.stringify(dataToEncode);
+
+  const secretKey = process.env.ENCODE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("ENCODE_SECRET_KEY is not set");
+  }
+
+  const hash = crypto.createHmac("sha256", secretKey)
+    .update(jsonString)
+    .digest("hex");
+
+  const finalCode = `${hash.substring(0, 16)}-${timestamp.toString(36)}`;
+
+  return finalCode;
+};
 
 const worker = new Worker(
   "purchase",
@@ -51,6 +98,14 @@ const worker = new Worker(
       quantity,
       total_price: item.price * quantity,
       status: "completed",
+    });
+
+
+    const encodeItem = await generateEncodeItem(item, user, quantity);
+
+    Inventory.create({
+      user_id: user.id,
+      item_encode: encodeItem,
     });
 
     return transaction;

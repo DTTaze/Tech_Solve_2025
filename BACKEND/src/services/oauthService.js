@@ -1,6 +1,6 @@
 const { Resend } = require("resend");
-require("dotenv").config
-const resend = new Resend(process.env.GMAIL_API_KEY); 
+require("dotenv").config;
+const resend = new Resend(process.env.GMAIL_API_KEY);
 const jwt = require("jsonwebtoken");
 const db = require("../models/index.js");
 const User = db.User;
@@ -13,9 +13,9 @@ const googleAuthCallback = async (user) => {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
-    
+
     await user.update({
-      last_logined: todayStr
+      last_logined: todayStr,
     });
 
     const userWithRoles = await User.findOne({
@@ -25,8 +25,8 @@ const googleAuthCallback = async (user) => {
           model: Role,
           as: "roles",
           attributes: ["id", "name"],
-        }
-      ]
+        },
+      ],
     });
 
     const payload = {
@@ -42,16 +42,16 @@ const googleAuthCallback = async (user) => {
       last_logined: todayStr,
       streak: user.streak,
       avatar_url: user.avatar_url,
-      google_id: user.google_id
+      google_id: user.google_id,
     };
 
-    const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
+    const access_token = jwt.sign(payload, process.env.JWT_AT_SECRET, {
+      expiresIn: process.env.JWT_AT_EXPIRE,
     });
 
     return {
       access_token,
-      user: payload
+      user: payload,
     };
   } catch (error) {
     throw error;
@@ -59,20 +59,20 @@ const googleAuthCallback = async (user) => {
 };
 
 const generateToken = (email) => {
-    return jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ email }, process.env.JWT_AT_SECRET, { expiresIn: "1h" });
 };
 
 const sendResetEmail = async (Email) => {
   try {
     const token = generateToken(Email);
     const backendURL = process.env.BACKEND_URL;
-    const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`; 
+    const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`;
     console.log("Sending email to:", Email); // Debug email đầu vào
     const response = await resend.emails.send({
-        from: "onboarding@resend.dev",
-        to: Email,
-        subject: "Reset your email",
-        html: `<p>Click vào <a href="${resetLink}">đây</a> để đặt lại mật khẩu.</p>`,
+      from: "onboarding@resend.dev",
+      to: Email,
+      subject: "Reset your email",
+      html: `<p>Click vào <a href="${resetLink}">đây</a> để đặt lại mật khẩu.</p>`,
     });
 
     console.log("Email sent successfully!", response);
@@ -83,28 +83,28 @@ const sendResetEmail = async (Email) => {
 };
 
 const resetPassword = async (token, newPassword) => {
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const email = decoded.email;
-        if (!email) throw Error ("Missing email from decoded email token")
-        const hashedPassword = bcrypt.hashSync(newPassword, salt);
-        
-        const user = await User.findOne({ where: email });
-        if (!user) {
-            throw new Error("Invalid email or password");
-        }
-        
-        await user.update({
-            password : hashedPassword,
-        })
-        return { email, newPassword };
-      } catch (error) {
-        throw new Error("Invalid or expired token");
-      }    
-}
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_AT_SECRET);
+    const email = decoded.email;
+    if (!email) throw Error("Missing email from decoded email token");
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
 
-module.exports = { 
-    sendResetEmail,
-    resetPassword,
-    googleAuthCallback,
+    const user = await User.findOne({ where: email });
+    if (!user) {
+      throw new Error("Invalid email or password");
+    }
+
+    await user.update({
+      password: hashedPassword,
+    });
+    return { email, newPassword };
+  } catch (error) {
+    throw new Error("Invalid or expired token");
+  }
+};
+
+module.exports = {
+  sendResetEmail,
+  resetPassword,
+  googleAuthCallback,
 };

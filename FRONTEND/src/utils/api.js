@@ -4,6 +4,10 @@ export const loginUserApi = (data) => {
   return axios.post("api/auth/login", data);
 };
 
+export const logoutUserApi = () => {
+  return axios.post("api/auth/logout");
+};
+
 export const createUserApi = (data) => {
   return axios.post("api/auth/register", data);
 };
@@ -224,22 +228,22 @@ export const getAdminQueueApi = () => {
   return axios.get("api/admin/queues");
 };
 
+export const createProductApi = (data) => {
+  return axios.post("api/products/upload", data);
+};
+
 export const getAllProductsApi = () => {
   return axios.get("api/products");
 };
 
 export const getProductByIdUser = (id) => {
   return axios.get(`api/products/users/${id}`);
-}
-
-export const deleteProductApi = (id) => {
-  return axios.delete(`api/products/${id}`);
-};
-
-export const createProductApi = (data) => {
-  return axios.post("api/products/upload", data);
 };
 
 export const updateProductApi = (id, data) => {
   return axios.put(`api/products/${id}`, data);
+};
+
+export const deleteProductApi = (id) => {
+  return axios.delete(`api/products/${id}`);
 };

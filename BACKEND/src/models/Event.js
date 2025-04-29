@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
       Event.belongsTo(models.User, {
-        as: "owner",
+        as: "creator",
         foreignKey: "creator_id",
         onDelete: "CASCADE",
       });

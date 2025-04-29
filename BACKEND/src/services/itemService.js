@@ -17,7 +17,7 @@ const createItem = async (itemData, user_id, images) => {
     }
 
     if (!user_id) {
-      throw new Error("Owner ID is required");
+      throw new Error("Creator ID is required");
     }
 
     if (itemData.purchase_limit_per_day < 1) {
@@ -71,6 +71,7 @@ const getAllItems = async () => {
       include: [
         {
           model: User,
+          as: "creator",
           attributes: ["id", "username"],
         },
       ],

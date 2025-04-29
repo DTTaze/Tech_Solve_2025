@@ -149,17 +149,35 @@ const loginUser = async (data) => {
       streak: user.streak,
       avatar_url: user.avatar_url,
     };
-    const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
+    const access_token = jwt.sign(payload, process.env.JWT_AT_SECRET, {
+      expiresIn: process.env.JWT_AT_EXPIRE,
     });
-
+    const refresh_token = jwt.sign(payload, process.env.JWT_RF_SECRET, {
+      expiresIn: process.env.JWT_RF_EXPIRE,
+    });
     return {
       access_token,
+      refresh_token,
       user: payload,
     };
   } catch (e) {
     throw e;
   }
+};
+
+const refreshAccessToken = (refreshToken) => {
+  if (!refreshToken) {
+    throw new Error("No refresh token provided");
+  }
+
+  const decoded = jwt.verify(refreshToken, process.env.JWT_RF_SECRET);
+  const newAccessToken = jwt.sign(
+    { id: decoded.id },
+    process.env.JWT_AT_SECRET,
+    { expiresIn: process.env.JWT_AT_EXPIRE }
+  );
+
+  return newAccessToken;
 };
 
 const getAllUsers = async () => {
@@ -487,4 +505,5 @@ module.exports = {
   getTaskCompleted,
   getAllTasksById,
   getItemByIdUser,
+  refreshAccessToken,
 };

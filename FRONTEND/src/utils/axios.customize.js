@@ -2,28 +2,71 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
+  withCredentials: true,
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
 instance.interceptors.request.use(
-  function (config) {
-    config.headers.Authorization = `Bearer ${localStorage.getItem(
-      "access_token"
-    )}`;
+  (config) => {
     return config;
   },
-  function (error) {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 instance.interceptors.response.use(
-  function (response) {
-    if (response && response.data) return response.data;
-    return response;
-  },
-  function (error) {
-    if (error?.response?.data) return error?.response?.data;
+  (response) => response.data,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => {
+            return instance(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/refresh_token`,
+          {},
+          { withCredentials: true }
+        );
+
+        processQueue(null);
+        return instance(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     return Promise.reject(error);
   }
 );
+
 export default instance;
