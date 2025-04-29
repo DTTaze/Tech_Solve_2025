@@ -13,6 +13,7 @@ const Rank = db.Rank;
 const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
+const rateLimitService = require("./rateLimitService");
 
 const createUser = async (data) => {
   try {
@@ -87,7 +88,6 @@ const createUser = async (data) => {
       full_name,
       phone_number,
       address,
-      last_logined: todayStr,
       coins_id: newCoin.id,
       rank_id: newRank.id,
     });
@@ -102,38 +102,22 @@ const createUser = async (data) => {
   }
 };
 
-const loginUser = async (data) => {
+const loginUser = async (user, email, password, clientIP, userAgent) => {
   try {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
 
-    let { username, email, password } = data;
-    if (!email && !username) {
-      throw new Error("Vui lòng cung cấp email hoặc username");
-    }
-    let condition = email ? { email } : { username };
-    const user = await User.findOne({
-      where: condition,
-      include: [
-        {
-          model: Role,
-          as: "roles",
-          attributes: ["id", "name"],
-        },
-      ],
-    });
-    if (!user) {
-      throw new Error("Invalid email or password");
-    }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new Error("Invalid email or password");
+      await rateLimitService.recordFailedLogin(
+        email,
+        clientIP,
+        userAgent
+      );
+      throw new Error("Invalid password");
     }
-    await user.update({
-      last_logined: todayStr,
-    });
+
 
     const payload = {
       id: user.id,
@@ -145,21 +129,47 @@ const loginUser = async (data) => {
       phone_number: user.phone_number,
       address: user.address,
       coins_id: user.coins_id,
-      last_logined: todayStr,
+      last_completed_task: user.last_completed_task,
       streak: user.streak,
       avatar_url: user.avatar_url,
     };
-    const access_token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
+
+    const access_token = jwt.sign(payload, process.env.JWT_AT_SECRET, {
+      expiresIn: process.env.JWT_AT_EXPIRE,
     });
+    const refresh_token = jwt.sign(payload, process.env.JWT_RF_SECRET, {
+      expiresIn: process.env.JWT_RF_EXPIRE,
+    });
+
+    await rateLimitService.resetLoginAttempts(
+      email,
+      clientIP,
+      userAgent
+    );
 
     return {
       access_token,
+      refresh_token,
       user: payload,
     };
   } catch (e) {
     throw e;
   }
+};
+
+const refreshAccessToken = (refreshToken) => {
+  if (!refreshToken) {
+    throw new Error("No refresh token provided");
+  }
+
+  const decoded = jwt.verify(refreshToken, process.env.JWT_RF_SECRET);
+  const newAccessToken = jwt.sign(
+    { id: decoded.id },
+    process.env.JWT_AT_SECRET,
+    { expiresIn: process.env.JWT_AT_EXPIRE }
+  );
+
+  return newAccessToken;
 };
 
 const getAllUsers = async () => {
@@ -381,7 +391,6 @@ const findOrCreateUser = async (profile) => {
       username: profile.displayName,
       full_name: profile.displayName,
       password: null,
-      last_logined: todayStr,
       coins_id: newCoin.id,
       rank_id: newRank.id,
     });
@@ -396,9 +405,8 @@ const findOrCreateUser = async (profile) => {
 
 const getTaskCompleted = async (id) => {
   try {
-    const user = await User.findOne({ where: { id: id } });
-    if (!user) {
-      throw new Error("User not found");
+    if (!id) {
+      throw new Error("id is required");
     }
 
     const TaskUsers = await TaskUser.findAll({
@@ -487,4 +495,5 @@ module.exports = {
   getTaskCompleted,
   getAllTasksById,
   getItemByIdUser,
+  refreshAccessToken,
 };

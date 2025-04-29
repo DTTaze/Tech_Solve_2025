@@ -60,7 +60,7 @@ export default function ItemsManagement() {
   const handleSubmitItem = async (data, mode) => {
     if (mode === "add") {
       try {
-        const result = await createItemApi(data.id, data);
+        const result = await createItemApi(data);
         if (result.success) {
           alert("Thêm vật phẩm thành công!");
         } else {

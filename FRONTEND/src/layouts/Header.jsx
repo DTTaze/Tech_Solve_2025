@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
-import { getUserApi, getUserAvatarByIdApi } from "../utils/api";
+import { getUserApi, getUserAvatarByIdApi, logoutUserApi } from "../utils/api";
 import { Coins } from "lucide-react";
 import { useNotification } from "../components/ui/NotificationProvider";
 
@@ -20,12 +20,18 @@ function UserHeader() {
   const fetchUser = async () => {
     try {
       const response = await getUserApi();
-      console.log(response);
-      if (auth.user && response.data.coins.amount !== auth.user.coins.amount) {
-        setAuth((prevAuth) => ({
-          ...prevAuth,
-          user: { ...prevAuth.user, coins: response.data.coins },
-        }));
+      if (response?.data) {
+        // Only update if we have new coins data and it's different from current
+        if (response.data.coins?.amount !== undefined && 
+            (!auth.user?.coins || response.data.coins.amount !== auth.user.coins.amount)) {
+          setAuth((prevAuth) => ({
+            ...prevAuth,
+            user: { 
+              ...prevAuth.user, 
+              coins: response.data.coins 
+            },
+          }));
+        }
       }
     } catch (error) {
       console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -85,11 +91,16 @@ function UserHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    setAuth({ isAuthenticated: false, user: null });
-    notify("success", "Đăng xuất thành công");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logoutUserApi();
+      setAuth({ isAuthenticated: false, user: null });
+      notify("success", "Đăng xuất thành công");
+      navigate("/");
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+      notify("error", "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");
+    }
   };
 
   const pages = [

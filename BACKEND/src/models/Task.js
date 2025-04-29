@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "task_id",
         onDelete: "CASCADE",
       });
+      Task.belongsTo(models.User, {
+        foreignKey: "creator_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -23,9 +27,13 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      owner_id: {
+      creator_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
+        },
       },
       title: {
         type: DataTypes.STRING,

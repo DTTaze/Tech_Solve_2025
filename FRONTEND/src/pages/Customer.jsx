@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import CustomerDashboard from "../components/customer/CustomerDashboard";
 import CustomerProfile from "../components/customer/CustomerProfile";
 import CustomerOrders from "../components/customer/CustomerOrders";
@@ -70,24 +70,10 @@ export default function Customer() {
           p: 3,
           width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
           ml: { sm: `${open ? drawerWidth : 0}px` },
-          mt: "64px", // Height of AppBar
+          mt: "64px",
         }}
       >
-        <Routes>
-          <Route path="/" element={<CustomerDashboard context={userInfo} />} />
-          <Route
-            path="/profile"
-            element={<CustomerProfile context={userInfo} />}
-          />
-          <Route
-            path="/orders"
-            element={<CustomerOrders context={userInfo} />}
-          />
-          <Route
-            path="/rewards"
-            element={<CustomerRewards context={userInfo} />}
-          />
-        </Routes>
+        <Outlet context={userInfo} />
       </Box>
     </Box>
   );

@@ -5,7 +5,8 @@ module.exports = (sequelize, DataTypes) => {
   class Item extends Model {
     static associate(models) {
       Item.belongsTo(models.User, {
-        foreignKey: "owner_id",
+        foreignKey: "creator_id",
+        as: "creator",
         onDelete: "CASCADE",
       });
 
@@ -28,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      owner_id: {
+      creator_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -59,9 +60,17 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       status: {
-        type: DataTypes.ENUM("available", "sold", "pending"),
+        type: DataTypes.ENUM("available", "sold_out", "pending"),
         allowNull: true,
-        defaultValue: "available",
+        defaultValue: "pending",
+      },
+      purchase_limit_per_day: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null,
+        validate: {
+          min: 1,
+        },
       },
     },
     {

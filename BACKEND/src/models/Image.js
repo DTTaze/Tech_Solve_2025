@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       reference_type: {
-        type: DataTypes.ENUM("avatar","taskSubmit","item"),
+        type: DataTypes.ENUM("avatar", "taskSubmit", "item", "product","event"),
         allowNull: false,
       },
     },

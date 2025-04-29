@@ -5,11 +5,27 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       User.hasMany(models.Item, {
-        foreignKey: "owner_id",
+        foreignKey: "creator_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.Task, {
+        foreignKey: "creator_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.Product, {
+        foreignKey: "seller_id",
         onDelete: "CASCADE",
       });
       User.hasMany(models.Transaction, {
         foreignKey: "buyer_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.EventUser, {
+        foreignKey: "creator_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.Inventory, {
+        foreignKey: "user_id",
         onDelete: "CASCADE",
       });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
@@ -88,9 +104,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
         validate: { min: 0 },
       },
-      last_logined: {
+      last_completed_task: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: null,
       },
     },
     {

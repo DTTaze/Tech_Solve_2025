@@ -24,6 +24,13 @@ import MissionsManagement from "./components/admin/MissionsManagement.jsx";
 import ItemsManagement from "./components/admin/ItemsManagement.jsx";
 import TransactionsManagement from "./components/admin/TransactionsManagement.jsx";
 import QRCodeDisplay from "./components/common/QRCodeDisplay.jsx";
+import CustomerDashboard from "./components/customer/CustomerDashboard.jsx";
+import CustomerProfile from "./components/customer/CustomerProfile.jsx";
+import CustomerOrders from "./components/customer/CustomerOrders.jsx";
+import CustomerRewards from "./components/customer/CustomerRewards.jsx";
+import AdminQueue from "./pages/AdminQueue.jsx";
+import ProductsManagement from "./components/admin/ProductsManagement.jsx";
+import SocketTest from "./components/SocketTest.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -32,6 +39,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Homepage />,
+      },
+      {
+        path: "socket",
+        element: <SocketTest />,
       },
       {
         path: "profile",
@@ -70,10 +81,15 @@ const router = createBrowserRouter([
             children: [
               { path: "missions", element: <MissionsManagement /> },
               { path: "items", element: <ItemsManagement /> },
+              { path: "products", element: <ProductsManagement /> },
             ],
           },
           { path: "rbac", element: <RolesPermissions /> },
           { path: "transactions", element: <TransactionsManagement /> },
+          {
+            path: "queues",
+            element: <AdminQueue />,
+          },
           // { path: "rewards", element: <RewardManagement /> },
         ],
       },
@@ -82,12 +98,21 @@ const router = createBrowserRouter([
         element: <AuthCallback />,
       },
       {
-        path: "customer/*",
-        element: <Customer />
+        path: "customer",
+        element: (
+          <ProtectedRoute requiredRole={["Customer", "Admin"]}>
+            <Customer />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <CustomerDashboard /> },
+          { path: "profile", element: <CustomerProfile /> },
+          { path: "orders", element: <CustomerOrders /> },
+          { path: "rewards", element: <CustomerRewards /> },
+        ],
       },
     ],
   },
-  
   {
     path: "register",
     element: <RegisterPage />,

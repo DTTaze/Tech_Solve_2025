@@ -10,8 +10,10 @@ import {
   IconButton,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import { useOutletContext } from "react-router-dom";
 
-export default function CustomerProfile({ context: userInfo }) {
+export default function CustomerProfile() {
+  const userInfo = useOutletContext();
   const [formData, setFormData] = useState({
     full_name: userInfo?.full_name || "",
     email: userInfo?.email || "",

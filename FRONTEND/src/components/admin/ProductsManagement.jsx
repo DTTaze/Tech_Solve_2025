@@ -1,0 +1,106 @@
+import React, { useState, useEffect } from "react";
+import DataTable from "./DataTable";
+import { productColumns } from "./HeaderColumn";
+import {
+  getAllProductsApi,
+  deleteItemApi,
+  createItemApi,
+  updateItemApi,
+} from "../../utils/api";
+import { Box } from "@mui/material";
+import ProductForm from "../ui/form/ProductForm";
+
+export default function ProductsManagement() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formMode, setFormMode] = useState("add");
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllProductsApi();
+
+        if (res.success) {
+          setProducts(res.data);
+        } else {
+          console.log(res.error);
+        }
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  const handleAddItem = () => {
+    setFormMode("add");
+    setEditData(null);
+    setFormOpen(true);
+  };
+
+  const handleEditItem = (item) => {
+    setFormMode("edit");
+    setEditData(item);
+    setFormOpen(true);
+  };
+
+  const handleDeleteItem = async (item) => {
+    const res = await deleteItemApi(item.id);
+    if (confirm("Bạn có chắc chắn muốn xóa không?")) {
+      if (res.success) {
+        alert("Xóa vật phẩm thành công!");
+        setUsers((prev) => prev.filter((u) => u.id !== item.id));
+      }
+    }
+  };
+  const handleSubmitItem = async (data, mode) => {
+    if (mode === "add") {
+      try {
+        const result = await createItemApi(data.id, data);
+        if (result.success) {
+          alert("Thêm vật phẩm thành công!");
+        } else {
+          alert("Thêm vật phẩm thất bại!");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    } else if (mode === "edit") {
+      try {
+        const result = await updateItemApi(data.id, data);
+        if (result.success) {
+          alert("Cập nhật vật phẩm thành công!");
+        } else {
+          alert("Cập nhật vật phẩm thất bại!");
+        }
+      } catch (e) {
+        alert(e);
+      }
+    }
+    setFormOpen(false);
+  };
+  return (
+    <Box>
+      <DataTable
+        title="Products"
+        columns={productColumns}
+        rows={products}
+        onAdd={handleAddItem}
+        onEdit={handleEditItem}
+        onDelete={handleDeleteItem}
+        loading={loading}
+      />
+      <ProductForm
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        handleSubmit={handleSubmitItem}
+        initialData={editData}
+        mode={formMode}
+      />
+    </Box>
+  );
+}

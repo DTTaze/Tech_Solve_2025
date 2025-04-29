@@ -2,6 +2,7 @@ import { useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
 import { getUserApi } from "../utils/api";
+import Loader from "../components/ui/Loader";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -10,10 +11,7 @@ const AuthCallback = () => {
 
   useEffect(() => {
     if (handled.current) return;
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    if (token) {
-      localStorage.setItem("access_token", token);
+    if (window.location.pathname === "/auth/success") {
       const fetchUser = async () => {
         try {
           const res = await getUserApi();
@@ -42,11 +40,21 @@ const AuthCallback = () => {
       alert("Login failed!");
       navigate("/login");
     }
-
     handled.current = true;
   }, [navigate, setAuth]);
 
-  return <div>Loading...</div>;
+  return (
+    <div style={styles.spinnerWrapper}>
+      <Loader />
+    </div>
+  );
 };
-
+const styles = {
+  spinnerWrapper: {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
 export default AuthCallback;

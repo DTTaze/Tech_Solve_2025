@@ -1,128 +1,207 @@
 import { useState } from "react";
 import {
-  Edit2,
-  Trash2,
-  User,
-  ExternalLink,
-  AlertTriangle,
-  Coins,
+  CheckCircle,
+  EyeOff,
+  Clock,
+  FileWarning,
+  ClipboardEdit,
+  Eye,
 } from "lucide-react";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { format } from "date-fns"; // Added import for format
+import DeleteConfirmModal from "../../common/DeleteConfirmModal";
+import PurchaseModal from "./PurchaseModal";
+import DetailsModal from "./DetailsModal";
 
-export default function MarketplaceItemCard({ item, onEdit, onDelete }) {
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+export const statusConfig = {
+  public: { name: "Đang hiển thị", color: "text-green-600", Icon: CheckCircle },
+  private: { name: "Đã ẩn", color: "text-gray-600", Icon: EyeOff },
+  pending: { name: "Chờ duyệt", color: "text-yellow-600", Icon: Clock },
+  rejected: { name: "Bị từ chối", color: "text-red-600", Icon: FileWarning },
+  draft: { name: "Tin nháp", color: "text-blue-600", Icon: ClipboardEdit },
+};
+
+export const getStatusClass = (status) => {
+  const statusClasses = {
+    public: "border-emerald-200 bg-emerald-50",
+    private: "border-gray-200 bg-gray-50",
+    pending: "border-amber-200 bg-amber-50",
+    rejected: "border-red-200 bg-red-50",
+    draft: "border-slate-200 bg-slate-50",
+  };
+  return statusClasses[status] || statusClasses.draft;
+};
+
+export const getCategoryDisplayName = (key) => {
+  const categories = {
+    handicraft: "Đồ thủ công",
+    recycled: "Đồ tái chế",
+    organic: "Sản phẩm hữu cơ",
+    plants: "Cây trồng",
+    other: "Khác",
+  };
+  return categories[key] || "Không xác định";
+};
+
+const MarketplaceItemCard = ({
+  item,
+  onEdit,
+  onDelete,
+  onPurchase,
+  viewMode = "all_items",
+  fetchItems,
+}) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const handleEditClick = () => {
     onEdit(item);
   };
 
   const handleDeleteClick = () => {
-    setShowConfirmDelete(true);
+    setShowDeleteModal(true);
   };
 
   const confirmDelete = () => {
     onDelete(item.id);
-    setShowConfirmDelete(false);
+    setShowDeleteModal(false);
   };
 
   const cancelDelete = () => {
-    setShowConfirmDelete(false);
+    setShowDeleteModal(false);
   };
 
+  const handlePurchaseClick = () => {
+    if (onPurchase) {
+      onPurchase(item);
+    } else {
+      setShowPurchaseModal(true);
+    }
+  };
+
+  const handleViewDetails = () => {
+    setShowDetailsModal(true);
+  };
+
+  const currentStatus = statusConfig[item.postStatus] || statusConfig.draft;
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all h-full flex flex-col">
-      {/* Image container */}
-      <div className="relative h-48 w-full overflow-hidden">
+    <div
+      className={`relative rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
+        item.postStatus
+      )} group`}
+    >
+      {/* Item Image */}
+      <div
+        className={`relative mb-3 h-48 w-full overflow-hidden rounded-md transition-all duration-200 ${
+          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
+        } ${showDetailsModal ? "blur-sm" : ""}`}
+      >
         <img
           src={item.image || "/placeholder.svg"}
           alt={item.name}
           className="h-full w-full object-cover"
         />
+      </div>
 
-        {/* Status tag */}
-        <div
-          className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium 
-          ${
-            item.status === "available"
-              ? "bg-emerald-100 text-emerald-600"
-              : item.status === "pending"
-              ? "bg-amber-100 text-amber-600"
-              : "bg-red-100 text-red-600"
-          }`}
-        >
-          {item.status === "available"
-            ? "Có sẵn"
-            : item.status === "pending"
-            ? "Đang giao dịch"
-            : "Đã bán"}
+      {/* Item Details */}
+      <div
+        className={`mb-4 transition-all duration-200 ${
+          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
+        } ${showDetailsModal ? "blur-sm" : ""}`}
+      >
+        <h3 className="text-lg font-semibold">{item.name}</h3>
+        <p className="text-sm text-gray-600">
+          {getCategoryDisplayName(item.category)}
+        </p>
+        <p className="mt-1 text-sm text-gray-700 line-clamp-2">
+          {item.description}
+        </p>
+        <div className="mt-2 flex items-center">
+          <span className="font-medium text-amber-600">{item.price}</span>
+          <img
+            src="/assets/icons/coin.png"
+            alt="coins"
+            className="ml-1 h-5 w-5"
+          />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 flex-grow">
-        <h3 className="text-lg font-medium text-gray-800">{item.name}</h3>
-        <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-          {item.description}
-        </p>
+      {/* View Details Button (Appears on Hover, only for all_items viewMode) */}
+      {viewMode === "all_items" && (
+        <button
+          onClick={handleViewDetails}
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center rounded-md gap-1 border border-gray-300 p-3 text-sm bg-white hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+        >
+          <Eye size={16} />
+          Xem chi tiết
+        </button>
+      )}
 
-        <div className="flex items-center mt-3">
-          <Coins className="h-4 w-4 text-emerald-600 mr-1" />
-          <span className="font-semibold text-emerald-600">{item.price}</span>
-          <span className="ml-1 text-gray-600 text-sm">coins</span>
+      <div
+        className={`mt-2 flex flex-wrap justify-between items-center transition-all duration-200 ${
+          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
+        } ${showDetailsModal ? "blur-sm" : ""}`}
+      >
+        <div className="flex items-center">
+          <span className="text-xs text-gray-500">
+            {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
+          </span>
         </div>
 
-        <div className="flex items-center text-xs text-gray-500 mt-3">
-          <User className="h-3 w-3 mr-1" />
-          <span>{item.viewCount || 0} lượt xem</span>
-          {item.status === "available" && (
-            <span className="ml-auto bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-xs font-medium">
-              Còn {item.stock} sản phẩm
-            </span>
+        <div className="flex gap-2 mt-2 sm:mt-0">
+          {viewMode === "my_items" && (
+            <>
+              <button
+                onClick={handleEditClick}
+                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+              >
+                <FiEdit />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm"
+              >
+                <FiTrash2 />
+              </button>
+            </>
           )}
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="p-3 border-t border-gray-100">
-        {!showConfirmDelete ? (
-          <div className="flex justify-between">
-            <button
-              onClick={handleEditClick}
-              className="flex items-center text-sm font-medium text-gray-600 hover:text-emerald-600 transition-colors"
-            >
-              <Edit2 className="h-4 w-4 mr-1" />
-              Chỉnh sửa
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="flex items-center text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Xóa
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col">
-            <div className="flex items-center text-red-600 mb-2">
-              <AlertTriangle className="h-4 w-4 mr-1" />
-              <span className="text-sm font-medium">Xác nhận xóa?</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={confirmDelete}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-1 rounded-md"
-              >
-                Xóa
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium py-1 rounded-md"
-              >
-                Hủy
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Xóa sản phẩm"
+          message="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
+        />
+      )}
+
+      {/* Purchase Modal */}
+      {showPurchaseModal && (
+        <PurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={() => setShowPurchaseModal(false)}
+          item={item}
+          onSuccess={() => {
+            if (fetchItems) fetchItems();
+          }}
+        />
+      )}
+
+      {/* Details Modal */}
+      <DetailsModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        item={item}
+        getCategoryDisplayName={getCategoryDisplayName}
+      />
     </div>
   );
-}
+};
+
+export default MarketplaceItemCard;

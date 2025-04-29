@@ -1,22 +1,66 @@
-import { useState, useEffect, useCallback } from "react";
-import CoinBalance from "./CoinBalance";
-import ItemCard from "./ItemCard";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { getUserApi, purchaseItemApi, createProductApi, updateProductApi, getProductByIdUser, getAllProductsApi, getAllItemsApi } from "../../../utils/api";
+import CatalogHeader from "./CatalogHeader";
+import TabsNavigation from "./TabsNavigation";
+import SearchFilterBar from "./SearchFilterBar";
+import RedeemTab from "./RedeemTab";
+import MarketViewNavigation from "./MarketViewNavigation";
+import CreateItemModal from "./CreateItemModal";
 import PurchaseModal from "./PurchaseModal";
-import CreateItemForm from "../../ui/form/CreateItemForm";
-import MarketplaceItemCard from "./MarketplaceItemCard";
-import { getUserApi, purchaseItemApi } from "../../../utils/api";
-import {
-  Leaf,
-  ShoppingBag,
-  Search,
-  ArrowDownWideNarrow,
-  Plus,
-  Filter,
-  Grid2X2,
-  LayoutList,
-} from "lucide-react";
+import MarketSearchBar from "./MarketSearchBar";
+import MarketFilterButtons from "./MarketFilterButtons";
+import MarketItemList from "./MarketItemList";
+import MarketEmptyState from "./MarketEmptyState";
+import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 
-export default function ItemCatalog({ items }) {
+const marketplaceCategories = [
+  { key: "all", name: "Tất cả" },
+  { key: "recycled", name: "Đồ tái chế" },
+  { key: "handicraft", name: "Đồ thủ công" },
+  { key: "organic", name: "Sản phẩm hữu cơ" },
+  { key: "plants", name: "Cây trồng" },
+  { key: "other", name: "Khác" },
+];
+
+const statusColors = {
+  displaying: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  rejected: "bg-red-100 text-red-700",
+  hidden: "bg-gray-100 text-gray-700",
+  draft: "bg-slate-100 text-slate-700",
+  all: "bg-blue-100 text-blue-700",
+  public: "bg-emerald-100 text-emerald-700",
+};
+
+const userItemStatuses = [
+  { key: "all", name: "Tất cả", icon: Filter },
+  { key: "public", name: "Đang hiển thị", icon: CheckCircle },
+  { key: "pending", name: "Chờ duyệt", icon: Clock },
+  { key: "rejected", name: "Bị từ chối", icon: FileWarning },
+  { key: "hidden", name: "Đã ẩn", icon: EyeOff },
+  { key: "draft", name: "Tin nháp", icon: ClipboardEdit },
+];
+
+const statusConfig = {
+  public: { name: "Đang hiển thị", color: "emerald" },
+  pending: { name: "Chờ duyệt", color: "amber" },
+  rejected: { name: "Bị từ chối", color: "red" },
+  hidden: { name: "Đã ẩn", color: "gray" },
+  draft: { name: "Tin nháp", color: "slate" },
+};
+
+const getCategoryDisplayName = (key) => {
+  const categories = {
+    handicraft: "Đồ thủ công",
+    recycled: "Đồ tái chế",
+    organic: "Sản phẩm hữu cơ",
+    plants: "Cây trồng",
+    other: "Khác",
+  };
+  return categories[key] || "Không xác định";
+};
+
+function ItemCatalog({ items: propItems }) {
   const [user, setUser] = useState(null);
   const [userCoins, setUserCoins] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -25,72 +69,126 @@ export default function ItemCatalog({ items }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
-  // Marketplace state
-  const [marketView, setMarketView] = useState("browse");
+  const [items, setItems] = useState(propItems || []);
+  const [allItems, setAllItems] = useState([]);
   const [myItems, setMyItems] = useState([]);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
+  const [marketView, setMarketView] = useState("my_items");
   const [marketListView, setMarketListView] = useState("grid");
   const [marketCategory, setMarketCategory] = useState("all");
+  const [marketStatusFilter, setMarketStatusFilter] = useState("all");
+  const [marketSearchText, setMarketSearchText] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await getUserApi();
-        if (response) {
-          setUser(response.data);
-          setUserCoins(response.data.coins?.amount || 0);
+        const userResponse = await getUserApi();
+        if (userResponse) {
+          setUser(userResponse.data);
+          setUserCoins(userResponse.data.coins?.amount || 0);
         }
       } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
+        console.error("Lỗi khi lấy dữ liệu người dùng:", error);
+        alert("Có lỗi xảy ra khi tải dữ liệu người dùng, vui lòng thử lại sau!");
       }
     };
 
     fetchUser();
-
-    // Mock data for marketplace items
-    const mockUserItems = [
-      {
-        id: "m1",
-        name: "Túi tái chế từ chai nhựa",
-        description:
-          "Túi đựng đồ được làm từ 100% chai nhựa tái chế, thân thiện với môi trường",
-        price: 50,
-        stock: 3,
-        image:
-          "https://images.unsplash.com/photo-1696492655666-703f94a2d944?w=600&auto=format&fit=crop",
-        userId: "user123",
-        status: "available",
-        category: "recycled",
-        condition: "new",
-        viewCount: 12,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: "m2",
-        name: "Chậu cây từ vỏ dừa",
-        description: "Chậu cây làm từ vỏ dừa, 100% tự nhiên và tự phân hủy",
-        price: 35,
-        stock: 5,
-        image:
-          "https://images.unsplash.com/photo-1696342940032-dbd0c599c97b?w=600&auto=format&fit=crop",
-        userId: "user123",
-        status: "available",
-        category: "handicraft",
-        condition: "new",
-        viewCount: 8,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-
-    setMyItems(mockUserItems);
   }, []);
 
   useEffect(() => {
-    if (user) {
-      setUserCoins(user.coins?.amount || 0);
-    }
+    const fetchRedeemItems = async () => {
+      if (activeTab === "redeem") {
+        try {
+          const itemsResponse = await getAllItemsApi();
+          console.log(itemsResponse);
+          if (itemsResponse && itemsResponse.data) {
+            const mappedItems = itemsResponse.data.map((item) => ({
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              price: item.price,
+              category: item.category,
+              postStatus: item.post_status,
+              condition: item.product_status,
+              createdAt: item.created_at,
+              image: item.images.length > 0 ? item.images[0] : null,
+              stock: item.stock || null,
+              canPurchase: item.post_status === "public",
+              seller: item.User?.username || "Không xác định",
+            }));
+            setItems(mappedItems);
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy sản phẩm cho tab đổi quà:", error);
+          alert("Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà, vui lòng thử lại sau!");
+        }
+      }
+    };
+
+    fetchRedeemItems();
+  }, [activeTab]);
+
+  useEffect(() => {
+    const fetchMarketItems = async () => {
+      if (activeTab === "market") {
+        try {
+          if (user && user.id && marketView === "my_items") {
+            const productResponse = await getProductByIdUser(user.id);
+            console.log(productResponse);
+            if (productResponse && productResponse.data) {
+              const mappedMyItems = productResponse.data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                category: item.category,
+                postStatus: item.post_status,
+                condition: item.product_status,
+                createdAt: item.created_at,
+                image: item.images.length > 0 ? item.images[0] : null,
+                stock: item.stock || null,
+                canPurchase: item.post_status === "public",
+                seller: item.seller_id || "Không xác định",
+              }));
+              setMyItems(mappedMyItems);
+            }
+          }
+
+          if (marketView !== "my_items") {
+            const allProductsResponse = await getAllProductsApi();
+            console.log(allProductsResponse);
+            if (allProductsResponse && allProductsResponse.data) {
+              const mappedAllItems = allProductsResponse.data.map((item) => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: item.price,
+                category: item.category,
+                postStatus: item.post_status,
+                condition: item.product_status,
+                createdAt: item.created_at,
+                image: item.images.length > 0 ? item.images[0] : null,
+                stock: item.stock || null,
+                canPurchase: item.post_status === "public",
+                seller: item.User?.username || "Không xác định",
+              }));
+              setAllItems(mappedAllItems);
+            }
+          }
+        } catch (error) {
+          console.error("Lỗi khi lấy dữ liệu sản phẩm cho chợ trao đổi:", error);
+          alert("Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi, vui lòng thử lại sau!");
+        }
+      }
+    };
+
+    fetchMarketItems();
+  }, [activeTab, marketView, user]);
+
+  useEffect(() => {
+    if (user) setUserCoins(user.coins?.amount || 0);
   }, [user]);
 
   const handlePurchase = useCallback(
@@ -99,12 +197,10 @@ export default function ItemCatalog({ items }) {
         alert("Mặt hàng này hiện đã hết!");
         return;
       }
-
       if (userCoins < item.price) {
         alert("Bạn không có đủ số coins để giao dịch!");
         return;
       }
-
       setSelectedItem(item);
       setIsModalOpen(true);
     },
@@ -114,19 +210,17 @@ export default function ItemCatalog({ items }) {
   const confirmPurchase = useCallback(
     async (quantity) => {
       if (!selectedItem || !user) return;
-
       const totalCost = selectedItem.price * quantity;
       if (userCoins < totalCost) {
         alert("Bạn không có đủ số coins để giao dịch!");
         return;
       }
-
       try {
+        console.log("Purchasing item:", selectedItem.id, user.id, quantity);
         const response = await purchaseItemApi(user.id, selectedItem.id, {
           name: selectedItem.name,
           quantity: quantity,
         });
-
         if (response.data) {
           const updatedCoins = userCoins - totalCost;
           setUser({ ...user, coins: { amount: updatedCoins } });
@@ -144,39 +238,42 @@ export default function ItemCatalog({ items }) {
     [selectedItem, user, userCoins]
   );
 
-  // Filter and sort items
-  const filteredItems = items.filter((item) => {
-    if (!searchQuery) return true;
-    return (
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  const filteredItems = useMemo(() => {
+    if (!items || items.length === 0) return [];
+    return items.filter((item) => {
+      if (!searchQuery) return true;
+      return (
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [items, searchQuery]);
 
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    switch (sortOption) {
-      case "price-asc":
-        return a.price - b.price;
-      case "price-desc":
-        return b.price - a.price;
-      case "name-asc":
-        return a.name.localeCompare(b.name);
-      case "name-desc":
-        return b.name.localeCompare(a.name);
-      default:
-        return 0;
-    }
-  });
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      switch (sortOption) {
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        default:
+          return 0;
+      }
+    });
+  }, [filteredItems, sortOption]);
 
-  // Marketplace functions
   const handleAddItem = () => {
     setItemToEdit(null);
-    setShowCreateForm(true);
+    setShowCreateModal(true);
   };
 
   const handleEditItem = (item) => {
     setItemToEdit(item);
-    setShowCreateForm(true);
+    setShowCreateModal(true);
   };
 
   const handleDeleteItem = (itemId) => {
@@ -184,383 +281,180 @@ export default function ItemCatalog({ items }) {
     alert("Sản phẩm đã được xóa thành công!");
   };
 
-  const handleSubmitItem = (formData, isEditing) => {
-    if (isEditing) {
-      // Update existing item
-      setMyItems((prev) =>
-        prev.map((item) =>
-          item.id === itemToEdit.id ? { ...item, ...formData } : item
-        )
-      );
-      alert("Cập nhật sản phẩm thành công!");
-    } else {
-      // Add new item
-      const newItem = {
-        ...formData,
-        id: `m${Date.now()}`,
-        userId: user?.id || "user123",
-        createdAt: new Date().toISOString(),
-        viewCount: 0,
-      };
-      setMyItems((prev) => [...prev, newItem]);
-      alert("Thêm sản phẩm mới thành công!");
+  const handleSubmitItem = async (formData, isEditing) => {
+    try {
+      const { images, ...productData } = formData;
+      if (
+        !productData.name ||
+        !productData.price ||
+        !productData.stock ||
+        !productData.category ||
+        !productData.product_status
+      ) {
+        alert("Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, số lượng, danh mục, tình trạng sản phẩm!");
+        return;
+      }
+
+      if (productData.price < 1) {
+        alert("Giá sản phẩm phải lớn hơn hoặc bằng 1!");
+        return;
+      }
+
+      if (productData.stock < 1) {
+        alert("Số lượng sản phẩm phải lớn hơn hoặc bằng 1!");
+        return;
+      }
+
+      if (isEditing) {
+        const response = await updateProductApi(itemToEdit.id, productData, images || []);
+        if (response) {
+          setMyItems((prev) =>
+            prev.map((item) =>
+              item.id === itemToEdit.id
+                ? {
+                    ...item,
+                    ...productData,
+                    postStatus: response.post_status || item.postStatus,
+                    image: response.images?.[0] || item.image,
+                    createdAt: response.created_at || item.createdAt,
+                    stock: response.stock || item.stock,
+                    canPurchase: response.post_status === "public",
+                  }
+                : item
+            )
+          );
+          alert("Cập nhật sản phẩm thành công!");
+        } else {
+          alert("Cập nhật sản phẩm thất bại, vui lòng thử lại!");
+        }
+      } else {
+        const response = await createProductApi(productData, user?.id, images || []);
+        if (response) {
+          const newItem = {
+            id: response.data.id,
+            ...productData,
+            postStatus: response.data.post_status || "draft",
+            image: response.data.images?.[0] || null,
+            createdAt: response.data.created_at || new Date().toISOString(),
+            stock: response.data.stock || null,
+            canPurchase: response.data.post_status === "public",
+            seller: user?.username || "Không xác định",
+          };
+          setMyItems((prev) => [...prev, newItem]);
+          alert("Thêm sản phẩm mới thành công!");
+        } else {
+          alert("Thêm sản phẩm thất bại, vui lòng thử lại!");
+        }
+      }
+      setShowCreateModal(false);
+      setItemToEdit(null);
+    } catch (error) {
+      console.error("Lỗi khi xử lý sản phẩm:", error);
+      alert(error.message || "Có lỗi xảy ra, vui lòng thử lại!");
     }
-    setShowCreateForm(false);
   };
 
   const handleCancelForm = () => {
-    setShowCreateForm(false);
+    setShowCreateModal(false);
     setItemToEdit(null);
   };
 
-  // Filter marketplace items by category
-  const filteredMarketItems = myItems.filter((item) => {
-    if (marketCategory === "all") return true;
-    return item.category === marketCategory;
-  });
+  const filteredMarketItems = useMemo(() => {
+    const sourceItems = marketView === "my_items" ? myItems || [] : allItems || [];
+    if (!sourceItems || sourceItems.length === 0) return [];
+    let filtered = [...sourceItems];
+    if (marketView === "my_items") {
+      if (marketStatusFilter !== "all") {
+        filtered = filtered.filter((item) => item.postStatus === marketStatusFilter);
+      }
+    } else {
+      filtered = filtered.filter((item) => item.postStatus === "public");
+      if (marketCategory !== "all") {
+        filtered = filtered.filter((item) => item.category === marketCategory);
+      }
+    }
+    if (marketSearchText) {
+      const searchLower = marketSearchText.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchLower) ||
+          item.description.toLowerCase().includes(searchLower)
+      );
+    }
+    return filtered;
+  }, [allItems, myItems, marketView, marketCategory, marketStatusFilter, marketSearchText]);
 
   return (
     <div className="flex flex-col">
-      {/* Balance and Hero Section */}
-      <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl p-6 mb-8 shadow-md">
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-3 flex items-center">
-          <Leaf className="h-6 w-6 mr-2" />
-          Trung tâm trao đổi xanh
-        </h1>
-        <p className="text-emerald-50 mb-6 max-w-2xl">
-          Chuyển đổi coins của bạn thành các vật phẩm bền vững và thân thiện với
-          môi trường. Mỗi trao đổi đều góp phần vào sứ mệnh bảo vệ môi trường
-          toàn cầu.
-        </p>
-        <CoinBalance coins={userCoins} />
-      </div>
-
-      {/* Tabs navigation */}
-      <div className="bg-white rounded-lg shadow-sm mb-6 border border-gray-200">
-        <div className="flex flex-wrap">
-          <button
-            className={`relative px-6 py-3 font-medium text-sm transition-colors
-              ${
-                activeTab === "redeem"
-                  ? "text-emerald-600 font-semibold border-b-2 border-emerald-600"
-                  : "text-gray-600 hover:text-emerald-600"
-              }`}
-            onClick={() => setActiveTab("redeem")}
-          >
-            <div className="flex items-center">
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              Đổi quà
-            </div>
-          </button>
-          <button
-            className={`relative px-6 py-3 font-medium text-sm transition-colors
-              ${
-                activeTab === "market"
-                  ? "text-emerald-600 font-semibold border-b-2 border-emerald-600"
-                  : "text-gray-600 hover:text-emerald-600"
-              }`}
-            onClick={() => setActiveTab("market")}
-          >
-            <div className="flex items-center">
-              <Leaf className="h-4 w-4 mr-2" />
-              Chợ trao đổi
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Search and Filter Bar - For Redeem tab */}
+      <CatalogHeader userCoins={userCoins} />
+      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       {activeTab === "redeem" && (
-        <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-grow">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Tìm kiếm vật phẩm..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 transition-colors"
-              />
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 font-medium flex items-center"
-              >
-                <ArrowDownWideNarrow className="h-4 w-4 mr-2" />
-                Sắp xếp
-              </button>
-
-              {isFilterOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1">
-                    <button
-                      className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
-                        sortOption === "default"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "text-gray-700"
-                      }`}
-                      onClick={() => {
-                        setSortOption("default");
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      Mặc định
-                    </button>
-                    <button
-                      className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
-                        sortOption === "price-asc"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "text-gray-700"
-                      }`}
-                      onClick={() => {
-                        setSortOption("price-asc");
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      Giá thấp đến cao
-                    </button>
-                    <button
-                      className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
-                        sortOption === "price-desc"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "text-gray-700"
-                      }`}
-                      onClick={() => {
-                        setSortOption("price-desc");
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      Giá cao đến thấp
-                    </button>
-                    <button
-                      className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
-                        sortOption === "name-asc"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "text-gray-700"
-                      }`}
-                      onClick={() => {
-                        setSortOption("name-asc");
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      Tên A-Z
-                    </button>
-                    <button
-                      className={`block px-4 py-2 text-sm w-full text-left hover:bg-gray-100 ${
-                        sortOption === "name-desc"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "text-gray-700"
-                      }`}
-                      onClick={() => {
-                        setSortOption("name-desc");
-                        setIsFilterOpen(false);
-                      }}
-                    >
-                      Tên Z-A
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <>
+          <SearchFilterBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            isFilterOpen={isFilterOpen}
+            setIsFilterOpen={setIsFilterOpen}
+          />
+          <RedeemTab sortedItems={sortedItems} handlePurchase={handlePurchase} />
+        </>
       )}
-
-      {/* Content Area - Redeem Tab */}
-      {activeTab === "redeem" && (
-        <div>
-          {sortedItems.length === 0 ? (
-            <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-              <img
-                src="/placeholder.svg"
-                alt="No items"
-                className="w-20 h-20 mx-auto mb-4 opacity-50"
-              />
-              <p className="text-gray-500">Không tìm thấy vật phẩm phù hợp</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {sortedItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onPurchase={handlePurchase}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Content Area - Market Tab */}
       {activeTab === "market" && (
         <div className="space-y-6">
-          {/* Market Navigation */}
-          <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row justify-between gap-4">
-            <div className="flex flex-wrap gap-2">
-              <button
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
-                  marketView === "browse"
-                    ? "bg-emerald-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => setMarketView("browse")}
-              >
-                Sản phẩm của tôi
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
-                  marketView === "all"
-                    ? "bg-emerald-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                onClick={() => setMarketView("all")}
-              >
-                Tất cả sản phẩm
-              </button>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium flex items-center"
-                onClick={handleAddItem}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Thêm sản phẩm
-              </button>
-            </div>
-          </div>
-
-          {/* Create/Edit form */}
-          {showCreateForm && (
-            <CreateItemForm
-              item={itemToEdit}
-              onSubmit={handleSubmitItem}
-              onCancel={handleCancelForm}
+          <MarketViewNavigation
+            marketView={marketView}
+            setMarketView={setMarketView}
+            showCreateForm={showCreateModal}
+            handleAddItem={handleAddItem}
+          />
+          <CreateItemModal
+            isOpen={showCreateModal}
+            item={itemToEdit}
+            onSubmit={handleSubmitItem}
+            onCancel={handleCancelForm}
+          />
+          <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+            <MarketSearchBar
+              marketSearchText={marketSearchText}
+              setMarketSearchText={setMarketSearchText}
+              marketListView={marketListView}
+              setMarketListView={setMarketListView}
             />
-          )}
-
-          {/* Marketplace content */}
-          {marketView === "browse" && !showCreateForm && (
-            <>
-              {/* Marketplace filters */}
-              <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`px-3 py-1.5 rounded-lg text-sm ${
-                      marketCategory === "all"
-                        ? "bg-emerald-100 text-emerald-700 font-medium"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setMarketCategory("all")}
-                  >
-                    Tất cả
-                  </button>
-                  <button
-                    className={`px-3 py-1.5 rounded-lg text-sm ${
-                      marketCategory === "recycled"
-                        ? "bg-emerald-100 text-emerald-700 font-medium"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setMarketCategory("recycled")}
-                  >
-                    Đồ tái chế
-                  </button>
-                  <button
-                    className={`px-3 py-1.5 rounded-lg text-sm ${
-                      marketCategory === "handicraft"
-                        ? "bg-emerald-100 text-emerald-700 font-medium"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setMarketCategory("handicraft")}
-                  >
-                    Đồ thủ công
-                  </button>
-                </div>
-
-                <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-                  <button
-                    className={`p-2 ${
-                      marketListView === "grid" ? "bg-gray-100" : "bg-white"
-                    }`}
-                    onClick={() => setMarketListView("grid")}
-                  >
-                    <Grid2X2 className="h-4 w-4 text-gray-600" />
-                  </button>
-                  <button
-                    className={`p-2 ${
-                      marketListView === "list" ? "bg-gray-100" : "bg-white"
-                    }`}
-                    onClick={() => setMarketListView("list")}
-                  >
-                    <LayoutList className="h-4 w-4 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Marketplace items */}
-              {filteredMarketItems.length === 0 ? (
-                <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-                  <Leaf className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">
-                    Chưa có sản phẩm nào
-                  </h3>
-                  <p className="text-gray-500 max-w-md mx-auto mb-6">
-                    Bạn chưa đăng sản phẩm nào để trao đổi. Hãy chia sẻ sản phẩm
-                    xanh của bạn với cộng đồng!
-                  </p>
-                  <button
-                    onClick={handleAddItem}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium"
-                  >
-                    <Plus className="h-4 w-4 inline mr-1" />
-                    Thêm sản phẩm đầu tiên
-                  </button>
-                </div>
-              ) : (
-                <div
-                  className={
-                    marketListView === "grid"
-                      ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-                      : "space-y-4"
-                  }
-                >
-                  {filteredMarketItems.map((item) => (
-                    <MarketplaceItemCard
-                      key={item.id}
-                      item={item}
-                      onEdit={handleEditItem}
-                      onDelete={handleDeleteItem}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {/* All products view - Coming soon */}
-          {marketView === "all" && !showCreateForm && (
-            <div className="bg-white p-8 rounded-lg border border-gray-200 text-center">
-              <Leaf className="h-12 w-12 mx-auto text-emerald-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                Tính năng đang phát triển
-              </h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                Chúng tôi đang hoàn thiện tính năng xem tất cả sản phẩm từ cộng
-                đồng. Bạn đã có thể tạo sản phẩm cho riêng mình trong tab "Sản
-                phẩm của tôi".
-              </p>
-            </div>
+            <MarketFilterButtons
+              marketView={marketView}
+              marketCategory={marketCategory}
+              setMarketCategory={setMarketCategory}
+              marketStatusFilter={marketStatusFilter}
+              setMarketStatusFilter={setMarketStatusFilter}
+              filteredMarketItems={filteredMarketItems}
+              marketplaceCategories={marketplaceCategories}
+              userItemStatuses={userItemStatuses}
+              statusColors={statusColors}
+            />
+          </div>
+          {filteredMarketItems.length === 0 ? (
+            <MarketEmptyState
+              marketView={marketView}
+              marketStatusFilter={marketStatusFilter}
+              handleAddItem={handleAddItem}
+            />
+          ) : (
+            <MarketItemList
+              marketListView={marketListView}
+              marketView={marketView}
+              filteredMarketItems={filteredMarketItems}
+              handleEditItem={handleEditItem}
+              handleDeleteItem={handleDeleteItem}
+              handlePurchase={handlePurchase}
+              getCategoryDisplayName={getCategoryDisplayName}
+              statusColors={statusColors}
+              statusConfig={statusConfig}
+            />
           )}
         </div>
       )}
-
-      {/* Modal */}
       {selectedItem && (
         <PurchaseModal
           isOpen={isModalOpen}
@@ -573,3 +467,5 @@ export default function ItemCatalog({ items }) {
     </div>
   );
 }
+
+export default ItemCatalog;

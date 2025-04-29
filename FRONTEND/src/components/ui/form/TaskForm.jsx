@@ -6,6 +6,10 @@ import {
   DialogActions,
   TextField,
   Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 
 export default function TaskForm({
@@ -90,15 +94,22 @@ export default function TaskForm({
             fullWidth
             required
           />
-          <TextField
-            margin="dense"
-            label="Độ khó"
-            name="difficulty"
-            value={formData.difficulty}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="difficulty-label">Độ khó</InputLabel>
+            <Select
+              labelId="difficulty-label"
+              name="difficulty"
+              value={formData.difficulty}
+              onChange={handleChange}
+              label="Trạng thái bài đăng"
+            >
+              <MenuItem value="easy">Dễ</MenuItem>
+              <MenuItem value="medium">Trung bình</MenuItem>
+              <MenuItem value="hard">Khó</MenuItem>
+              <MenuItem value="event">Sự kiện</MenuItem>
+            </Select>
+          </FormControl>
+          
           <TextField
             margin="dense"
             label="Tổng tiến trình"

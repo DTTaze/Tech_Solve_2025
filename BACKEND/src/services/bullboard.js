@@ -4,7 +4,7 @@ const { BullMQAdapter } = require("@bull-board/api/bullMQAdapter");
 const purchaseQueue = require("./queue");
 
 const serverAdapter = new ExpressAdapter();
-serverAdapter.setBasePath("/admin/queues");
+serverAdapter.setBasePath("/api/admin/queues");
 
 const { addQueue, removeQueue, setQueues } = createBullBoard({
   queues: [new BullMQAdapter(purchaseQueue)],

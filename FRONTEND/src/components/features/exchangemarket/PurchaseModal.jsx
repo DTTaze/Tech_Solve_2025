@@ -106,8 +106,9 @@ export default function PurchaseModal({
                   </h3>
                   <div className="flex items-center text-emerald-600 mt-1">
                     <Coins className="h-4 w-4 mr-1" />
-                    <span className="font-semibold">{item.price}</span> coins /
-                    đơn vị
+                    <span className="font-semibold">
+                      {item.price} xu / đơn vị
+                    </span>
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
                     Còn lại: {item.stock} sản phẩm
@@ -149,13 +150,13 @@ export default function PurchaseModal({
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Tổng giá:</span>
                   <span className="font-medium text-emerald-600">
-                    {totalCost} coins
+                    {totalCost} xu
                   </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Số dư hiện tại:</span>
                   <span className="font-medium text-emerald-600">
-                    {userCoins} coins
+                    {userCoins} xu
                   </span>
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
@@ -165,7 +166,7 @@ export default function PurchaseModal({
                       canPurchase ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
-                    {userCoins - totalCost} coins
+                    {userCoins - totalCost} xu
                   </span>
                 </div>
               </div>

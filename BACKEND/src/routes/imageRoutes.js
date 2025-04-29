@@ -1,6 +1,6 @@
 const express = require("express");
-const middlewareImage = require("../middlewares/middlewareImage");
-const imageController = require("../controllers/imageController");
+const middlewareImage = require("../middlewares/middlewareImage.js");
+const imageController = require("../controllers/imageController.js");
 
 const router = express.Router();
 

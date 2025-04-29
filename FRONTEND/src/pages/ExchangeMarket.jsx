@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
 import ItemCatalog from "../components/features/exchangemarket/ItemCatalog";
 import ItemCatalogSkeleton from "../components/features/exchangemarket/ItemCatalogSkeleton";
-import { getAllItemsApi } from "../utils/api";
+import { getUserApi } from "../utils/api";
 
 export default function ExchangeMarket() {
-  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchItems() {
+    async function initialize() {
       try {
-        const response = await getAllItemsApi();
-        if (response.success) {
-          setItems(response.data);
-        } else {
-          setError("Không thể tải danh sách vật phẩm");
+        const userResponse = await getUserApi();
+        if (!userResponse.success) {
+          throw new Error("Không thể tải dữ liệu người dùng");
         }
       } catch (err) {
         setError("Lỗi khi tải dữ liệu");
@@ -24,7 +21,7 @@ export default function ExchangeMarket() {
         setLoading(false);
       }
     }
-    fetchItems();
+    initialize();
   }, []);
 
   if (loading) {
@@ -56,7 +53,7 @@ export default function ExchangeMarket() {
 
   return (
     <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
-      <ItemCatalog items={items} />
+      <ItemCatalog />
     </main>
   );
 }

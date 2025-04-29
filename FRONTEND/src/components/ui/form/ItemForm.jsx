@@ -6,6 +6,10 @@ import {
   DialogActions,
   TextField,
   Button,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 
 export default function ItemForm({
@@ -22,18 +26,21 @@ export default function ItemForm({
     price: "",
     stock: "",
     status: "",
+    purchase_limit_per_day: "",
   });
 
   useEffect(() => {
     if (mode === "edit" && initialData) {
       setFormData({
         id: initialData?.id || null,
-        owner_id: initialData?.owner_id || "",
+        owner_id: initialData?.owner_id || null,
         name: initialData?.name || "",
         description: initialData?.description || "",
-        price: initialData?.price || "",
-        stock: initialData?.stock || "",
+        price: initialData?.price || null,
+        stock: initialData?.stock || null,
         status: initialData?.status || "",
+        purchase_limit_per_day:
+          initialData?.purchase_limit_per_day || "Không giới hạn",
       });
     } else {
       setFormData({
@@ -44,6 +51,7 @@ export default function ItemForm({
         price: "",
         stock: "",
         status: "",
+        purchase_limit_per_day: "",
       });
     }
   }, [initialData, mode]);
@@ -85,7 +93,7 @@ export default function ItemForm({
           />
           <TextField
             margin="dense"
-            label="Giá trị"
+            label="Giá trị (xu)"
             name="price"
             value={formData.price}
             onChange={handleChange}
@@ -94,22 +102,28 @@ export default function ItemForm({
           />
           <TextField
             margin="dense"
-            label="Hàng trong kho"
+            label="Tồn kho"
             name="stock"
             value={formData.stock}
             onChange={handleChange}
             fullWidth
             required
           />
-          <TextField
-            margin="dense"
-            label="Trạng thái"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="status-label">Trạng thái</InputLabel>
+            <Select
+              labelId="status-label"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              label="Trạng thái"
+            >
+              <MenuItem value="available">Sẵn hàng</MenuItem>
+              <MenuItem value="pending">Chờ duyệt</MenuItem>
+              <MenuItem value="sold_out">Hết hàng</MenuItem>
+            </Select>
+          </FormControl>
+
           <TextField
             margin="dense"
             label="Chủ sở hữu"
@@ -118,6 +132,15 @@ export default function ItemForm({
             onChange={handleChange}
             fullWidth
             required
+          />
+
+          <TextField
+            margin="dense"
+            label="Giới hạn lượt mua/ngày"
+            name="purchase_limit_per_day"
+            value={formData.purchase_limit_per_day}
+            onChange={handleChange}
+            fullWidth
           />
         </DialogContent>
         <DialogActions>

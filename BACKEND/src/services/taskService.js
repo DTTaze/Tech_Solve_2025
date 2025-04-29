@@ -42,7 +42,7 @@ const createTask = async (data, user_id) => {
       coins,
       difficulty,
       total,
-      owner_id: user_id,
+      creator_id: user_id,
     });
     return result;
   } catch (e) {
@@ -52,7 +52,14 @@ const createTask = async (data, user_id) => {
 
 const getAllTasks = async () => {
   try {
-    return await Task.findAll();
+    return await Task.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username"],
+        },
+      ],
+    });
   } catch (e) {
     throw e;
   }
@@ -145,8 +152,7 @@ const acceptTask = async (task_id, user_id) => {
   }
 };
 
-
-const submitTask = async (task_id,user_id, description, files) => {
+const submitTask = async (task_id, user_id, description, files) => {
   try {
     const taskId = Number(task_id);
     const userId = Number(user_id);
@@ -175,43 +181,43 @@ const submitTask = async (task_id,user_id, description, files) => {
   }
 };
 
-const completeTask = async (taskUser) => {
+const completeTask = async (taskUser, user) => {
   try {
     if (!taskUser || !taskUser.user_id) {
       throw new Error("TaskUser and User ID are required");
     }
+    //Sign the task as completed
     taskUser.status = "done";
     taskUser.completed_at = new Date();
     await taskUser.save();
 
-    const user = await User.findByPk(taskUser.user_id);
-    if (!user) throw new Error("User not found");
-
+    //Update streak
     let newStreak = user.streak || 0;
-    if (user.last_logined) {
-      let lastLogin = new Date(user.last_logined);
-      lastLogin.setHours(0, 0, 0, 0);
+
+    if (user.last_completed_task) {
+      let lastCompletedTaskDate = new Date(user.last_completed_task);
+      lastCompletedTaskDate.setHours(0, 0, 0, 0);
 
       let today = new Date();
       today.setHours(0, 0, 0, 0);
-      let yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate());
 
-      let todayStr = today.toISOString().split("T")[0];
-      let lastLoginStr = lastLogin.toISOString().split("T")[0];
-      let yesterdayStr = yesterday.toISOString().split("T")[0];
+      // Calculate the difference in days
+      let differenceInDays = (today - lastCompletedTaskDate) / (1000 * 60 * 60 * 24);
 
-      if (lastLoginStr === todayStr) {
-        return;
-      } else if (lastLoginStr === yesterdayStr) {
-        newStreak += 1;
-      } else {
-        newStreak = 1;
-      }
+      if (differenceInDays > 1) {
+        newStreak = 1; 
+      } else if (differenceInDays === 1) {
+        newStreak += 1; 
+      } 
+    }else {
+      newStreak = 1; 
     }
     await user.update({
       streak: newStreak,
+      last_completed_task: new Date(),
     });
+
+    return;
   } catch (e) {
     throw e;
   }
@@ -241,11 +247,10 @@ const increaseProgressCount = async (task_user_id) => {
     taskUser.progress_count = (taskUser.progress_count || 0) + 1;
 
     if (taskUser.progress_count === taskUser.tasks.total) {
-
-      await completeTask(taskUser);
-
       const user = await User.findByPk(taskUser.user_id);
       if (!user) throw new Error("User not found.");
+      await completeTask(taskUser,user);
+
       const user_coins_id = user.coins_id;
       const coins = taskUser.tasks.coins;
       await coinService.updateIncreaseCoin(user_coins_id, coins);
