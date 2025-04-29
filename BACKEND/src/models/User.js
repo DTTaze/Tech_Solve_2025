@@ -104,9 +104,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
         validate: { min: 0 },
       },
-      last_logined: {
+      last_completed_task: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: null,
       },
     },
     {

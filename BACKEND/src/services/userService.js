@@ -14,6 +14,7 @@ const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
 const rateLimitService = require("./rateLimitService");
+
 const createUser = async (data) => {
   try {
     let {
@@ -87,7 +88,6 @@ const createUser = async (data) => {
       full_name,
       phone_number,
       address,
-      last_logined: todayStr,
       coins_id: newCoin.id,
       rank_id: newRank.id,
     });
@@ -111,16 +111,13 @@ const loginUser = async (user, email, password, clientIP, userAgent) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       await rateLimitService.recordFailedLogin(
-        email, 
+        email,
         clientIP,
         userAgent
       );
       throw new Error("Invalid password");
     }
 
-    await user.update({
-      last_logined: todayStr,
-    });
 
     const payload = {
       id: user.id,
@@ -132,7 +129,7 @@ const loginUser = async (user, email, password, clientIP, userAgent) => {
       phone_number: user.phone_number,
       address: user.address,
       coins_id: user.coins_id,
-      last_logined: todayStr,
+      last_completed_task: user.last_completed_task,
       streak: user.streak,
       avatar_url: user.avatar_url,
     };
@@ -145,7 +142,7 @@ const loginUser = async (user, email, password, clientIP, userAgent) => {
     });
 
     await rateLimitService.resetLoginAttempts(
-      email, 
+      email,
       clientIP,
       userAgent
     );
@@ -394,7 +391,6 @@ const findOrCreateUser = async (profile) => {
       username: profile.displayName,
       full_name: profile.displayName,
       password: null,
-      last_logined: todayStr,
       coins_id: newCoin.id,
       rank_id: newRank.id,
     });
@@ -409,9 +405,8 @@ const findOrCreateUser = async (profile) => {
 
 const getTaskCompleted = async (id) => {
   try {
-    const user = await User.findOne({ where: { id: id } });
-    if (!user) {
-      throw new Error("User not found");
+    if (!id) {
+      throw new Error("id is required");
     }
 
     const TaskUsers = await TaskUser.findAll({

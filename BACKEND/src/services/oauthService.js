@@ -14,10 +14,6 @@ const googleAuthCallback = async (user) => {
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
 
-    await user.update({
-      last_logined: todayStr,
-    });
-
     const userWithRoles = await User.findOne({
       where: { id: user.id },
       include: [
@@ -39,8 +35,8 @@ const googleAuthCallback = async (user) => {
       phone_number: user.phone_number,
       address: user.address,
       coins_id: user.coins_id,
-      last_logined: todayStr,
       streak: user.streak,
+      last_completed_task: user.last_completed_task,
       avatar_url: user.avatar_url,
       google_id: user.google_id,
     };
