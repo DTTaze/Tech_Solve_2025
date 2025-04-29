@@ -14,7 +14,7 @@ const drawerWidth = 240;
 
 export default function Customer() {
   const [userInfo, setUserInfo] = useState(null);
-  const [open, setOpen] = useState(window.innerWidth >= 960);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     // Fetch user data from API
@@ -39,14 +39,6 @@ export default function Customer() {
     };
 
     fetchUserData();
-
-    // Add resize listener for responsive drawer
-    const handleResize = () => {
-      setOpen(window.innerWidth >= 960);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleDrawerToggle = () => {
@@ -77,10 +69,8 @@ export default function Customer() {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
-          ml: { sm: `${open ? drawerWidth : 0}px` },
+          width: "100%",
           mt: "64px",
-          transition: "margin-left 0.2s, width 0.2s",
           backgroundColor: "var(--background-light)",
         }}
       >

@@ -113,9 +113,7 @@ export default function CustomerDrawer({
                   selected={isActive}
                   onClick={() => {
                     navigate(item.path);
-                    if (window.innerWidth < 960) {
-                      handleDrawerToggle();
-                    }
+                    handleDrawerToggle();
                   }}
                   sx={{
                     minHeight: 48,
@@ -157,7 +155,7 @@ export default function CustomerDrawer({
 
   return (
     <Drawer
-      variant={window.innerWidth >= 960 ? "persistent" : "temporary"}
+      variant="temporary"
       anchor="left"
       open={open}
       onClose={handleDrawerToggle}
@@ -170,6 +168,9 @@ export default function CustomerDrawer({
           borderRight: "1px solid var(--light-green)",
           boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.05)",
         },
+      }}
+      ModalProps={{
+        keepMounted: true, // Better open performance on mobile
       }}
     >
       {drawerContent}

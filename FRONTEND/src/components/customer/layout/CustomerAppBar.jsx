@@ -72,9 +72,7 @@ export default function CustomerAppBar({
         backgroundColor: "white",
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
         borderBottom: "1px solid var(--light-green)",
-        width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
-        ml: { sm: `${open ? drawerWidth : 0}px` },
-        transition: "width 0.2s, margin-left 0.2s",
+        width: "100%",
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -93,13 +91,10 @@ export default function CustomerAppBar({
             <Breadcrumbs aria-label="breadcrumb">
               <Link
                 color="inherit"
-                href="/"
+                href="/customer"
                 sx={{
                   textDecoration: "none",
-                  color: "var(--text-light)",
-                  "&:hover": {
-                    color: "var(--primary-green)",
-                  },
+                  color: "var(--primary-green)",
                 }}
               >
                 Home
