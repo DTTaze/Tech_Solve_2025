@@ -102,36 +102,22 @@ const createUser = async (data) => {
   }
 };
 
-const loginUser = async (data) => {
+const loginUser = async (user, email, password, clientIP, userAgent) => {
   try {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     let todayStr = today.toISOString().split("T")[0];
 
-    let { username, email, password } = data;
-    if (!email && !username) {
-      throw new Error("Vui lòng cung cấp email hoặc username");
-    }
-    let condition = email ? { email } : { username };
-    const user = await User.findOne({
-      where: condition,
-      include: [
-        {
-          model: Role,
-          as: "roles",
-          attributes: ["id", "name"],
-        },
-      ],
-    });
-    if (!user) {
-      throw new Error("Invalid email or username");
-    }
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      await rateLimitService.recordFailedLogin(user.email);
+      await rateLimitService.recordFailedLogin(
+        email, 
+        clientIP,
+        userAgent
+      );
       throw new Error("Invalid password");
     }
+
     await user.update({
       last_logined: todayStr,
     });
@@ -150,13 +136,20 @@ const loginUser = async (data) => {
       streak: user.streak,
       avatar_url: user.avatar_url,
     };
+
     const access_token = jwt.sign(payload, process.env.JWT_AT_SECRET, {
       expiresIn: process.env.JWT_AT_EXPIRE,
     });
     const refresh_token = jwt.sign(payload, process.env.JWT_RF_SECRET, {
       expiresIn: process.env.JWT_RF_EXPIRE,
     });
-    await rateLimitService.resetLoginAttempts(user.email);
+
+    await rateLimitService.resetLoginAttempts(
+      email, 
+      clientIP,
+      userAgent
+    );
+
     return {
       access_token,
       refresh_token,

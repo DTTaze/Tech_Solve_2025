@@ -3,21 +3,38 @@ const redis = require('../config/configRedis');
 const redisClient = new Redis(redis);
 const WINDOW_SECONDS = 15 * 60; // 15 minutes
 
-async function recordFailedLogin(email) {
-    const redisKey = `login_attempts:${email}`;
 
+
+const recordFailedLogin = async (email, ip, userAgent) => {
+    const redisKeyByIP = `login_attempts_ip:${ip}`;
+    const redisKeyByIPAndEmail = `login_attempts_ip_email:${ip}:${email}`;
+    const redisKeyByIPAndUserAgent = `login_attempts_ip_ua:${ip}:${userAgent}`;
+    const redisKeyByIPAndUserAgentAndEmail = `login_attempts_ip_ua_email:${ip}:${userAgent}:${email}`;
     const tx = redisClient.multi();
-    tx.incr(redisKey);
-    tx.expire(redisKey, WINDOW_SECONDS); 
+    tx.incr(redisKeyByIP);
+    tx.incr(redisKeyByIPAndEmail);
+    tx.incr(redisKeyByIPAndUserAgent);
+    tx.incr(redisKeyByIPAndUserAgentAndEmail);
+
+    tx.expire(redisKeyByIP, WINDOW_SECONDS); 
+    tx.expire(redisKeyByIPAndEmail, WINDOW_SECONDS); 
+    tx.expire(redisKeyByIPAndUserAgent, WINDOW_SECONDS); 
+    tx.expire(redisKeyByIPAndUserAgentAndEmail, WINDOW_SECONDS); 
     await tx.exec();
 }
 
-async function resetLoginAttempts(email) {
-    const redisKey = `login_attempts:${email}`;
-    await redisClient.del(redisKey);
+const resetLoginAttempts = async (email, ip, userAgent) => {
+    const redisKeyByIP = `login_attempts_ip:${ip}`;
+    const redisKeyByIPAndEmail = `login_attempts_ip_email:${ip}:${email}`;
+    const redisKeyByIPAndUserAgent = `login_attempts_ip_ua:${ip}:${userAgent}`;
+    const redisKeyByIPAndUserAgentAndEmail = `login_attempts_ip_ua_email:${ip}:${userAgent}:${email}`;
+    await redisClient.del(redisKeyByIP);
+    await redisClient.del(redisKeyByIPAndEmail);
+    await redisClient.del(redisKeyByIPAndUserAgent);
+    await redisClient.del(redisKeyByIPAndUserAgentAndEmail);
 }
 
 module.exports = {
     recordFailedLogin,
-    resetLoginAttempts
+    resetLoginAttempts,
 };
