@@ -258,3 +258,7 @@ export const updateProductApi = (id, data) => {
 export const deleteProductApi = (id) => {
   return axios.delete(`api/products/${id}`);
 };
+
+export const getAllEventsApi = () => {
+  return axios.get("api/events/informations");
+}

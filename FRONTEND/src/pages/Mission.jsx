@@ -3,6 +3,7 @@ import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
 import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
 import QrTaskSubmissionModal from "../components/features/missions/QrTaskSubmissionModal.jsx";
+import EventBanner from "../components/features/missions/EventBanner.jsx";
 import {
   getAllTasksApi,
   receiveCoinApi,
@@ -34,6 +35,9 @@ function Mission() {
   const [dailyTasks, setDailyTasks] = useState([]);
   const [otherTasks, setOtherTasks] = useState([]);
   // const [isOpenDropdown, setIsOpenDropdown] = useState(false);
+  // Add new states for difficulty filters
+  const [dailyDifficultyFilter, setDailyDifficultyFilter] = useState("all");
+  const [otherDifficultyFilter, setOtherDifficultyFilter] = useState("all");
 
   // Fetch data from backend
   useEffect(() => {
@@ -43,7 +47,7 @@ function Mission() {
 
         console.log("Fetching data from APIs...");
 
-        const [taskResponse, userResponse] = await Promise.all([
+        const [taskResponse, userResponse, eventResponse] = await Promise.all([
           getAllTasksApi(),
           getUserApi(),
         ]);
@@ -491,6 +495,24 @@ function Mission() {
     [selectedTab === "daily" ? dailyTotalPages : otherTotalPages]
   );
 
+  // Add filter function
+  const filterTasksByDifficulty = (tasks, difficulty) => {
+    if (difficulty === "all") return tasks;
+    return tasks.filter((task) => task.difficulty === difficulty);
+  };
+
+  // Get filtered tasks based on current tab and filter
+  const getFilteredTasks = () => {
+    if (selectedTab === "daily") {
+      return filterTasksByDifficulty(dailyTasks, dailyDifficultyFilter);
+    } else if (selectedTab === "other") {
+      return filterTasksByDifficulty(otherTasks, otherDifficultyFilter);
+    } else if (selectedTab === "completed") {
+      return completedTasks;
+    }
+    return [];
+  };
+
   // Show loading skeleton while data is being fetched
   if (loading) {
     return (
@@ -615,6 +637,9 @@ function Mission() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <MissionHeader userInfo={userInfo} loading={loading} />
 
+        {/* Event Banner */}
+        <EventBanner />
+
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Tasks */}
@@ -624,6 +649,99 @@ function Mission() {
               selectedTab={selectedTab}
               setSelectedTab={setSelectedTab}
             />
+
+            {/* Difficulty Filter Buttons */}
+            <div className="bg-white border-x border-gray-200 p-4 shadow-sm">
+              <div className="flex space-x-2">
+                {selectedTab === "daily" ? (
+                  <>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("all")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "all"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("easy")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "easy"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Dễ
+                    </button>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("medium")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "medium"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Trung bình
+                    </button>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("hard")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "hard"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Khó
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("all")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "all"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("easy")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "easy"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Dễ
+                    </button>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("medium")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "medium"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Trung bình
+                    </button>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("hard")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "hard"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Khó
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
 
             {/* Task List */}
             <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
@@ -641,15 +759,7 @@ function Mission() {
                 </div>
               ) : (
                 <TasksList
-                  tasks={
-                    selectedTab === "daily"
-                      ? dailyTasks
-                      : selectedTab === "other"
-                      ? otherTasks
-                      : selectedTab === "completed"
-                      ? completedTasks
-                      : []
-                  }
+                  tasks={getFilteredTasks()}
                   loading={loading}
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}

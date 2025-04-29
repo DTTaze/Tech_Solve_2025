@@ -16,8 +16,6 @@ function Ranking() {
         setLoading(true);
         const response = await rearrangeRankApi();
 
-        console.log("Ranking response: ", response);
-
         if (response.data && response.success) {
           const ranks = response.data;
 
@@ -26,8 +24,6 @@ function Ranking() {
             ranks.map(async (rank) => {
               try {
                 const userResponse = await getUserByIdApi(rank.user_id);
-
-                console.log("User data in Ranking: ", userResponse);
 
                 if (userResponse.data && userResponse.success) {
                   return {
@@ -50,8 +46,6 @@ function Ranking() {
           const filteredRanks = ranksWithUserDetails.filter(
             (rank) => rank !== null && rank.user && rank.user.role_id === 2
           );
-
-          console.log("Filtered ranks with user details: ", filteredRanks);
 
           // Transform the data for the chart
           const transformedData = {
