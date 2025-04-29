@@ -56,6 +56,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         defaultValue: 1,
       },
+      status: {
+        type: DataTypes.ENUM("public", "private"),
+        allowNull: false,
+        defaultValue: "public",
+      },
     },
     {
       sequelize,

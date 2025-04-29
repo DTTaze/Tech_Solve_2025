@@ -177,6 +177,36 @@ const handleGetTaskSubmitByCustomerId = async (req,res) => {
     return res.error(500, "Failed to get task submit by customer id", error.message);
   }
 }
+
+const handleGetAllTasksStatusPublic = async (req, res) => {
+  try {
+    let result = await taskService.getAllTasksStatusPublic();
+    return res.success("Get all tasks status public success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get all tasks status public", error.message);
+  }
+}
+
+const handleGetAllTasksOfCustomer = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    let result = await taskService.getAllTasksOfCustomer(user_id);
+    return res.success("Get all tasks of customer success", result);
+  } catch (error) {
+    return res.error(500, "Failed to get all tasks of customer", error.message);
+  }
+}
+
+const handleChangeTaskStatus = async (req, res) => {
+  try {
+    const task_id = req.params.task_id;
+    const status = req.body.status;
+    let result = await taskService.changeTaskStatus(task_id, status);
+    return res.success("Change task status success", result);
+  } catch (error) {
+    return res.error(500, "Failed to change task status", error.message);
+  }
+}
 module.exports = {
   handleGetAllTasks,
   handleCreateTask,
@@ -194,4 +224,7 @@ module.exports = {
   handleDeleteTaskByPublicId,
   handleGetTaskSubmitByUserId,
   handleGetTaskSubmitByCustomerId,
+  handleGetAllTasksStatusPublic,
+  handleGetAllTasksOfCustomer,
+  handleChangeTaskStatus,
 };
