@@ -15,6 +15,7 @@ import {
   Tooltip,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
@@ -37,6 +38,7 @@ export default function CustomerAppBar({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notificationAnchor, setNotificationAnchor] = React.useState(null);
+  const [loggingOut, setLoggingOut] = React.useState(false);
   const { notify } = useNotification();
 
   const handleProfileClick = (event) => {
@@ -57,13 +59,23 @@ export default function CustomerAppBar({
 
   const handleLogout = async () => {
     try {
+      setLoggingOut(true);
+      // Clear user data from localStorage first to prevent fetch errors during navigation
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+
+      // Then call the logout API
       await logoutUserApi();
-      setAuth({ isAuthenticated: false, user: null });
+
+      // Notify success but don't wait for the animation
       notify("success", "Đăng xuất thành công");
-      navigate("/");
+
+      // Immediately navigate to home page
+      window.location.href = "/";
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
       notify("error", "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");
+      setLoggingOut(false);
     }
   };
 
@@ -88,6 +100,7 @@ export default function CustomerAppBar({
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
         borderBottom: "1px solid var(--light-green)",
         width: "100%",
+        zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -220,9 +233,14 @@ export default function CustomerAppBar({
                 handleLogout();
                 handleClose();
               }}
+              disabled={loggingOut}
             >
-              <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
-              Logout
+              {loggingOut ? (
+                <CircularProgress size={20} sx={{ mr: 1 }} color="success" />
+              ) : (
+                <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
+              )}
+              {loggingOut ? "Logging out..." : "Logout"}
             </MenuItem>
           </Menu>
         </Box>

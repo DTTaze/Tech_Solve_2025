@@ -215,9 +215,8 @@ export default function CustomerProfile() {
     try {
       const response = await logoutUserApi();
       if (response?.data?.success) {
-        notify("success", "Logged out successfully!");
-        // Redirect to login page after logout
-        window.location.href = "/login";
+        notify("success", "Đăng xuất thành công");
+        window.location.href = "/";
       }
     } catch (error) {
       console.error("Error logging out:", error);
