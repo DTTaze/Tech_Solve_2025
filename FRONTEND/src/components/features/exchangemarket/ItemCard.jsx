@@ -1,12 +1,37 @@
 import { Coins, Leaf } from "lucide-react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { socket } from "../../../config/socket";
 
 export default function ItemCard({ item, onPurchase }) {
+  const [currentStock, setCurrentStock] = useState(item.stock);
+  const [currentStatus, setCurrentStatus] = useState(item.status);
+
+  useEffect(() => {
+    // Join the item's room when component mounts
+    socket.emit('join-item-room', item.id);
+
+    // Listen for stock updates
+    socket.on('stock-update', (data) => {
+      if (data.itemId === item.id) {
+        console.log('Stock update received:', data);
+        setCurrentStock(data.stock);
+        setCurrentStatus(data.status);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.emit('leave-item-room', item.id);
+      socket.off('stock-update');
+    };
+  }, [item.id]);
+
   const handlePurchase = () => {
     onPurchase(item);
   };
 
-  const isOutOfStock = item.stock <= 0;
+  const isOutOfStock = currentStock <= 0;
 
   return (
     <motion.div
@@ -49,7 +74,7 @@ export default function ItemCard({ item, onPurchase }) {
           </div>
           {!isOutOfStock && (
             <div className="text-sm text-gray-500">
-              Còn {item.stock} sản phẩm
+              Còn {currentStock} sản phẩm
             </div>
           )}
         </div>

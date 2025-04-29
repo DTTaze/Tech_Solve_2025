@@ -4,6 +4,12 @@ import { AuthContext } from "./contexts/auth.context";
 import UserHeader from "./layouts/Header";
 import { getUserApi } from "./utils/api";
 import Loader from "./components/ui/Loader";
+import { io } from "socket.io-client";
+import { SocketProvider } from "./contexts/socket.context";
+
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  withCredentials: true,
+});
 
 function App() {
   const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
@@ -33,18 +39,20 @@ function App() {
   }, []);
 
   return (
-    <div>
-      {appLoading ? (
-        <div style={styles.spinnerWrapper}>
-          <Loader />
-        </div>
-      ) : (
-        <>
-          <UserHeader />
-          <Outlet />
-        </>
-      )}
-    </div>
+    <SocketProvider value={socket}>
+      <div>
+        {appLoading ? (
+          <div style={styles.spinnerWrapper}>
+            <Loader />
+          </div>
+        ) : (
+          <>
+            <UserHeader />
+            <Outlet />
+          </>
+        )}
+      </div>
+    </SocketProvider>
   );
 }
 

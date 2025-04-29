@@ -6,6 +6,9 @@ const User = db.User;
 const Transaction = db.Transaction;
 const Inventory = db.Inventory;
 const { generateCode } = require("../utils/generateCode");
+const { emitStockUpdate } = require("./socketService");
+const Redis = require("ioredis");
+const publisher = new Redis(process.env.URL_REDIS);
 const crypto = require("crypto");
 require("dotenv").config();
 
@@ -66,10 +69,20 @@ const worker = new Worker(
     }
 
     await user.update({ coins: user.coins - item.price * quantity });
+    const newStock = item.stock - quantity;
     await item.update({
-      stock: item.stock - quantity,
-      status: item.stock - quantity === 0 ? "sold_out" : "available",
+      stock: newStock,
+      status: newStock === 0 ? "sold_out" : "available",
     });
+
+    console.log("Publishing stock update event");
+    await publisher.publish("stock-update", JSON.stringify({
+      itemId: item_id,
+      newStock: newStock,
+      name: item.name,
+      price: item.price,
+      status: newStock === 0 ? "sold_out" : "available"
+    }));
 
     let uniqueCode, exists;
     do {
@@ -84,8 +97,9 @@ const worker = new Worker(
       item_id: item.id,
       quantity,
       total_price: item.price * quantity,
-      status: "pending",
+      status: "completed",
     });
+
 
     const encodeItem = await generateEncodeItem(item, user, quantity);
 

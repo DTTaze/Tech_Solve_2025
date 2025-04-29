@@ -10,10 +10,36 @@ require("dotenv").config();
 require("./config/passport");
 import cors from "cors";
 import { execSync } from "child_process";
+import http from "http";
+import { Server } from "socket.io";
+import { initSocketManager } from "./services/socketService";
+
 const cookieParser = require("cookie-parser");
+
 const app = express();
 const PORT = process.env.PORT || 4040;
 const HOST = process.env.HOST || "0.0.0.0";
+
+// Initialize HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: [
+      process.env.FRONTEND_URL,
+      process.env.URL_REDIS,
+      "https://greenflag.id.vn",
+    ],
+    methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["X-Requested-With", "Content-Type", "Authorization"],
+    credentials: true,
+  },
+});
+
+// Initialize socket manager
+initSocketManager(io);
+
 // Cấu hình CORS
 app.use(
   cors({
@@ -61,7 +87,7 @@ initWebRoutes(app);
 connection();
 
 // Khởi động server
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
   console.log(
     `Redis connecting to: ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
   );
