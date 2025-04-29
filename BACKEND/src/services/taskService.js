@@ -43,6 +43,7 @@ const createTask = async (data, user_id) => {
       difficulty,
       total,
       creator_id: user_id,
+      status: "public",
     });
     return result;
   } catch (e) {
@@ -82,29 +83,42 @@ const updateTask = async (id, data) => {
   try {
     if (!id) throw new Error("Task ID is required");
 
-    let { title, content, description, coins, difficulty, total } = data;
-    coins = Number(coins);
-    if (!title && !description && coins === undefined) {
-      throw new Error(
-        "At least one field (title, description, coins) must be provided"
-      );
+    let { title, content, description, coins, difficulty, total, status } = data;
+    let updateData = {};
+    
+    if (title) updateData.title = title;
+    if (content) updateData.content = content;
+    if (description) updateData.description = description;
+    if (coins) {
+      coins = Number(coins);
+      if (typeof coins !== "number" || coins < 0) {
+        throw new Error("Coins must be a positive number");
+      }
     }
-
-    if (coins !== undefined && (typeof coins !== "number" || coins < 0)) {
-      throw new Error("Coins must be a positive number");
+    if (difficulty) {
+      if (!["easy", "medium", "hard", "event"].includes(difficulty)) {
+        throw new Error("Difficulty must be easy/medium/hard");
+      }
+      updateData.difficulty = difficulty;
+    }
+    if (total) {
+      total = Number(total);
+      if (typeof total !== "number" || total < 0) {
+        throw new Error("Total must be a positive number");
+      }
+      updateData.total = total;
+    }
+    if (status) {
+      if (!["public", "private"].includes(status)) {
+        throw new Error("Status must be public/private");
+      } 
+      updateData.status = status;
     }
 
     const task = await Task.findByPk(id);
     if (!task) throw new Error("Task not found");
 
-    await task.update({
-      title,
-      content,
-      description,
-      coins,
-      difficulty,
-      total,
-    });
+    await task.update(updateData);
     return task;
   } catch (e) {
     throw e;
@@ -385,6 +399,63 @@ const deleteTaskByPublicId = async (public_id) => {
   }
 };
 
+const getAllTasksStatus = async (status) => {
+  if (!status) throw new Error("Status is required");
+  if (!["public", "private"].includes(status)){
+    throw new Error("Status must be public/private");
+  }  
+  try {
+    const tasks = await Task.findAll({
+      where: { status },
+    });
+    if (!tasks) throw new Error("Failed to get task by status");
+    return tasks;
+  } catch (e) {
+    throw e;
+  }
+}
+
+const getAllTasksStatusPublic = async () => {
+  return await getAllTasksStatus("public");
+};
+
+const getAllTasksStatusPrivate = async () => {
+  return await getAllTasksStatus("private");
+};
+
+const getAllTasksOfCustomer = async (customer_id) => {
+  try {
+    if (!customer_id) throw new Error("Customer ID is required");
+
+    const tasks = await Task.findAll({
+      where: { creator_id : customer_id },
+
+    });
+    if (!tasks) throw new Error("Failed to get tasks of customer");
+    return tasks;
+  } catch (e) {
+    throw e;
+  }
+}
+
+const changeTaskStatus = async (task_id, status) => {
+  try {
+    if (!task_id) throw new Error("Task ID is required");
+    if (!status) throw new Error("Status is required");
+    if (!["public", "private"].includes(status)) {
+      throw new Error("Status must be public/private");
+    }
+    const task = await Task.findByPk(task_id);
+    if (!task) throw new Error("Task not found");
+
+    task.status = status;
+    await task.save();
+    return task;
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createTask,
   getAllTasks,
@@ -401,4 +472,8 @@ module.exports = {
   getTaskByPublicId,
   updateTaskByPublicId,
   deleteTaskByPublicId,
+  getAllTasksStatusPublic,
+  getAllTasksStatusPrivate,
+  getAllTasksOfCustomer,
+  changeTaskStatus,
 };
