@@ -21,7 +21,12 @@ const handleCreateUser = async (req, res) => {
 
 const handleLoginUser = async (req, res) => {
   try {
-    let result = await userService.loginUser(req.body);
+    const user = req.user;
+    const email = req.body.email;
+    const password = req.body.password;
+    const clientIP = req.ip || req.connection.remoteAddress;
+    const userAgent = req.headers['user-agent'] || 'unknown'; 
+    let result = await userService.loginUser(user, email, password, clientIP, userAgent);
     res.cookie("access_token", result.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
