@@ -22,6 +22,8 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useLocation, useNavigate } from "react-router-dom";
+import { logoutUserApi } from "../../../utils/api";
+import { useNotification } from "../../ui/NotificationProvider";
 
 export default function CustomerAppBar({
   open,
@@ -35,6 +37,7 @@ export default function CustomerAppBar({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notificationAnchor, setNotificationAnchor] = React.useState(null);
+  const { notify } = useNotification();
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -50,6 +53,18 @@ export default function CustomerAppBar({
 
   const handleNotificationClose = () => {
     setNotificationAnchor(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUserApi();
+      setAuth({ isAuthenticated: false, user: null });
+      notify("success", "Đăng xuất thành công");
+      navigate("/");
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+      notify("error", "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");
+    }
   };
 
   const getPageTitle = () => {
@@ -200,7 +215,12 @@ export default function CustomerAppBar({
               <PersonIcon sx={{ mr: 1, fontSize: 20 }} />
               Profile
             </MenuItem>
-            <MenuItem onClick={handleClose}>
+            <MenuItem
+              onClick={() => {
+                handleLogout();
+                handleClose();
+              }}
+            >
               <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
               Logout
             </MenuItem>
