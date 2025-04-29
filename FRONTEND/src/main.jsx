@@ -31,6 +31,10 @@ import CustomerRewards from "./components/customer/CustomerRewards.jsx";
 import AdminQueue from "./pages/AdminQueue.jsx";
 import ProductsManagement from "./components/admin/ProductsManagement.jsx";
 import SocketTest from "./components/SocketTest.jsx";
+import CustomerQRScanner from "./components/customer/CustomerQRScanner.jsx";
+import CustomerUsers from "./components/customer/CustomerUsers.jsx";
+import CustomerItems from "./components/customer/CustomerItems.jsx";
+import CustomerEvents from "./components/customer/CustomerEvents.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -109,6 +113,10 @@ const router = createBrowserRouter([
           { path: "profile", element: <CustomerProfile /> },
           { path: "orders", element: <CustomerOrders /> },
           { path: "rewards", element: <CustomerRewards /> },
+          { path: "scanner", element: <CustomerQRScanner /> },
+          { path: "users", element: <CustomerUsers /> },
+          { path: "items", element: <CustomerItems /> },
+          { path: "events", element: <CustomerEvents /> },
         ],
       },
     ],

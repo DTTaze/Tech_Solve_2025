@@ -6,16 +6,51 @@ import {
   Typography,
   Breadcrumbs,
   Link,
+  Button,
+  Box,
+  Badge,
+  Avatar,
+  Menu,
+  MenuItem,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { useLocation } from "react-router-dom";
+import PersonIcon from "@mui/icons-material/Person";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function CustomerAppBar({
   open,
   drawerWidth,
   handleDrawerToggle,
+  userInfo,
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [notificationAnchor, setNotificationAnchor] = React.useState(null);
+
+  const handleProfileClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationsClick = (event) => {
+    setNotificationAnchor(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchor(null);
+  };
 
   const getPageTitle = () => {
     const path = location.pathname;
@@ -23,6 +58,10 @@ export default function CustomerAppBar({
     if (path === "/customer/profile") return "Profile";
     if (path === "/customer/orders") return "Orders";
     if (path === "/customer/rewards") return "Rewards";
+    if (path === "/customer/events") return "Event Management";
+    if (path === "/customer/items") return "Item Management";
+    if (path === "/customer/users") return "User Management";
+    if (path === "/customer/scanner") return "QR Scanner";
     return "Customer Portal";
   };
 
@@ -31,28 +70,147 @@ export default function CustomerAppBar({
       position="fixed"
       sx={{
         backgroundColor: "white",
-        boxShadow: "none",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
         borderBottom: "1px solid var(--light-green)",
         width: { sm: `calc(100% - ${open ? drawerWidth : 0}px)` },
         ml: { sm: `${open ? drawerWidth : 0}px` },
+        transition: "width 0.2s, margin-left 0.2s",
       }}
     >
-      <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
-          sx={{ mr: 2, color: "var(--text-dark)" }}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link color="inherit" href="/">
-            Home
-          </Link>
-          <Typography color="text.primary">{getPageTitle()}</Typography>
-        </Breadcrumbs>
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, color: "var(--primary-green)" }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          {!isMobile && (
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link
+                color="inherit"
+                href="/"
+                sx={{
+                  textDecoration: "none",
+                  color: "var(--text-light)",
+                  "&:hover": {
+                    color: "var(--primary-green)",
+                  },
+                }}
+              >
+                Home
+              </Link>
+              <Typography color="var(--primary-green)" fontWeight="600">
+                {getPageTitle()}
+              </Typography>
+            </Breadcrumbs>
+          )}
+
+          {isMobile && (
+            <Typography color="var(--primary-green)" fontWeight="600">
+              {getPageTitle()}
+            </Typography>
+          )}
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Tooltip title="Notifications">
+            <IconButton
+              color="inherit"
+              size="medium"
+              onClick={handleNotificationsClick}
+              sx={{ color: "var(--text-dark)" }}
+            >
+              <Badge badgeContent={3} color="success">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={notificationAnchor}
+            open={Boolean(notificationAnchor)}
+            onClose={handleNotificationClose}
+            PaperProps={{
+              sx: { width: 320, maxHeight: 400 },
+            }}
+          >
+            <MenuItem onClick={handleNotificationClose}>
+              <Box>
+                <Typography variant="subtitle2">New Event Created</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Tech Conference added to your events
+                </Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={handleNotificationClose}>
+              <Box>
+                <Typography variant="subtitle2">
+                  User Evaluation Pending
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  5 users need rating for Eco Clean-up event
+                </Typography>
+              </Box>
+            </MenuItem>
+            <MenuItem onClick={handleNotificationClose}>
+              <Box>
+                <Typography variant="subtitle2">Item Stock Alert</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Eco Tote Bags running low (5 remaining)
+                </Typography>
+              </Box>
+            </MenuItem>
+          </Menu>
+
+          <Tooltip title="Help">
+            <IconButton
+              color="inherit"
+              size="medium"
+              sx={{ color: "var(--text-dark)" }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Profile">
+            <IconButton onClick={handleProfileClick}>
+              <Avatar
+                src={userInfo?.avatar_url}
+                alt={userInfo?.full_name}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  border: "2px solid var(--light-green)",
+                }}
+              />
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem
+              onClick={() => {
+                navigate("/customer/profile");
+                handleClose();
+              }}
+            >
+              <PersonIcon sx={{ mr: 1, fontSize: 20 }} />
+              Profile
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+              <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
+              Logout
+            </MenuItem>
+          </Menu>
+        </Box>
       </Toolbar>
     </AppBar>
   );
