@@ -41,7 +41,7 @@ function PersonalInfoForm() {
         break;
       case "full_name":
         if (!value) error = "Họ và tên không được để trống";
-        else if (!/^[a-zA-Z\s]+$/.test(value))
+        else if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
           error = "Họ và tên không được chứa ký tự đặc biệt";
         break;
       case "address":
