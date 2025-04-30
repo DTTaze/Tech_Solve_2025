@@ -49,7 +49,7 @@ export const NotificationProvider = ({ children }) => {
   return (
     <NotificationContext.Provider value={{ notify }}>
       {children}
-      <div className="fixed top-4 right-4 space-y-2 z-50">
+      <div className="fixed top-15 right-4 space-y-2 z-50">
         <AnimatePresence>
           {notifications.map((n) => (
             <motion.div

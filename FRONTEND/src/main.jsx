@@ -10,7 +10,7 @@ import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
 import Admin from "./pages/Admin.jsx";
 import Customer from "./pages/Customer.jsx";
-import MissionVideo from "./pages/MissionVideo.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import App from "./App.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
@@ -40,10 +40,10 @@ const router = createBrowserRouter([
         index: true,
         element: <Homepage />,
       },
-      {
-        path: "socket",
-        element: <SocketTest />,
-      },
+      // {
+      //   path: "socket",
+      //   element: <SocketTest />,
+      // },
       {
         path: "profile",
         element: <UserProfilePage />,
@@ -57,12 +57,12 @@ const router = createBrowserRouter([
         element: <MarketPage />,
       },
       {
-        path: "qr",
-        element: <QRCodeDisplay />,
+        path: "forgot_password",
+        element: <ForgotPassword />,
       },
       // {
-      //   path: "mission-video",
-      //   element: <MissionVideo />,
+      //   path: "qr",
+      //   element: <QRCodeDisplay />,
       // },
       {
         path: "admin",
