@@ -32,6 +32,7 @@
     "@bull-board/express": "^6.9.1",
     "@bull-board/ui": "^6.9.1",
     "@casl/ability": "^6.7.3",
+    "@getbrevo/brevo": "^2.2.0",
     "axios": "^1.8.3",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",

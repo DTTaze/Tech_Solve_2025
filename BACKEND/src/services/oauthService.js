@@ -1,6 +1,5 @@
-const { Resend } = require("resend");
 require("dotenv").config;
-const resend = new Resend(process.env.GMAIL_API_KEY);
+const { sendEmail } = require('../config/sendEmail');
 const jwt = require("jsonwebtoken");
 const db = require("../models/index.js");
 const User = db.User;
@@ -63,21 +62,28 @@ const generateToken = (email) => {
 
 const sendResetEmail = async (Email) => {
   try {
+    const user = await User.findOne({ where: { email: Email } });
+    if (!user) {
+      throw new Error("Email not found");
+    }
     const token = generateToken(Email);
     const backendURL = process.env.BACKEND_URL;
     const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`;
     console.log("Sending email to:", Email); // Debug email đầu vào
-    const response = await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: Email,
-      subject: "Reset your email",
-      html: `<p>Click vào <a href="${resetLink}">đây</a> để đặt lại mật khẩu.</p>`,
-    });
-
-    console.log("Email sent successfully!", response);
+    
+    const sender = {email: 'bao0908235279@gmail.com', name: 'GreenFlag'};
+    const receiver = {email: Email, name: user.full_name};
+    const subject = "Reset Password";
+    const html = `
+      <h1>Reset Password</h1>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetLink}">Reset Password</a>
+    `;
+    const response = await sendEmail(sender, receiver, subject, html);
     return response;
   } catch (error) {
     console.error("Error sending email:", error);
+    throw error;
   }
 };
 
@@ -98,7 +104,7 @@ const resetPassword = async (token, newPassword) => {
     });
     return { email, newPassword };
   } catch (error) {
-    throw new Error("Invalid or expired token");
+    throw error;
   }
 };
 
