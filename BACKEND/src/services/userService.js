@@ -365,6 +365,10 @@ const updateUserByPublicID = async (public_id, data) => {
   }
 };
 
+const removeSpecialChars = (str) => {
+  return str.replace(/[^a-zA-Z0-9\u00C0-\u1EF9\s]/g, " ").trim().replace(/\s+/g, " ");
+};
+
 const findOrCreateUser = async (profile) => {
   try {
     const existingUser = await User.findOne({
@@ -381,15 +385,14 @@ const findOrCreateUser = async (profile) => {
     const newRank = await Rank.create({ order: 0 });
     let today = new Date();
     today.setHours(0, 0, 0, 0);
-    let todayStr = today.toISOString().split("T")[0];
-
+    const name = removeSpecialChars(profile.displayName);
     const newUser = await User.create({
       role_id: 2,
       public_id: nanoid(),
       google_id: profile.id,
       email: profile.emails[0].value,
-      username: profile.displayName,
-      full_name: profile.displayName,
+      username: name,
+      full_name: name,
       password: null,
       coins_id: newCoin.id,
       rank_id: newRank.id,
