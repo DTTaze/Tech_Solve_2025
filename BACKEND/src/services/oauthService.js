@@ -69,7 +69,7 @@ const sendResetEmail = async (Email) => {
     const token = generateToken(Email);
     const backendURL = process.env.BACKEND_URL;
     const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`;
-    console.log("Sending email to:", Email); // Debug email đầu vào
+    console.log("Sending email to:", Email); 
     
     const sender = {email: 'bao0908235279@gmail.com', name: 'GreenFlag'};
     const receiver = {email: Email, name: user.full_name};

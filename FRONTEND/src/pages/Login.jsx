@@ -17,10 +17,12 @@ const LoginPage = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [isLoginDisabled, setIsLoginDisabled] = useState(false); // Trạng thái khóa nút đăng nhập
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Kiểm tra lỗi input
     const newErrors = {};
     if (!identifier.trim())
       newErrors.identifier = "Vui lòng nhập email hoặc username.";
@@ -30,18 +32,16 @@ const LoginPage = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(
-        identifier
-      );
+      // Xác định người dùng nhập email hay username
+      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(identifier);
       const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
-      console.log(loginData);
+      
       const res = await loginUserApi(loginData);
-      console.log(res);
+      
       if (res && res.status === 200) {
         notify("success", "Đăng nhập thành công!");
-
         setAuth({
           isAuthenticated: true,
           user: {
@@ -54,8 +54,16 @@ const LoginPage = () => {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }
     } catch (error) {
-      if (error.status == 400) {
-        notify("error", "Vui lòng kiểm tra lại Email và Username hoặc Mật khẩu");
+      if (error.status === 401) {
+        notify("error", "Vui lòng kiểm tra lại Email/Username hoặc Mật khẩu");
+      } else if (error.status === 429) {
+        notify("error", "Quá nhiều yêu cầu, vui lòng thử lại sau 5 phút");
+        setIsLoginDisabled(true); // Khóa nút đăng nhập khi nhận status 429
+        // Tự động mở khóa sau 5 phút
+        setTimeout(() => {
+          setIsLoginDisabled(false);
+          notify("info", "Bạn có thể thử đăng nhập lại bây giờ");
+        }, 300000); // 300000ms = 5 phút
       } else {
         notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
       }
@@ -92,7 +100,11 @@ const LoginPage = () => {
           }
         />
 
-        <Button text="Đăng nhập" />
+        {/* Nút đăng nhập sẽ bị vô hiệu hóa khi isLoginDisabled = true */}
+        <Button 
+          text="Đăng nhập" 
+          disabled={isLoginDisabled}
+        />
         
         <div className="text-right">
           <Link to="/forgot_password" className="text-blue-600 hover:underline">
