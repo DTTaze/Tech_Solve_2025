@@ -36,7 +36,7 @@ const LoginPage = () => {
       const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
-
+      console.log(loginData);
       const res = await loginUserApi(loginData);
       console.log(res);
       if (res && res.status === 200) {
@@ -57,7 +57,7 @@ const LoginPage = () => {
       if (error.status == 400) {
         notify("error", "Vui lòng kiểm tra lại Email và Username hoặc Mật khẩu");
       } else {
-        notify("error", "error.message" || "Đã xảy ra lỗi, vui lòng thử lại.");
+        notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
       }
     }
   };
