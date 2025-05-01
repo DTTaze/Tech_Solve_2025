@@ -17,12 +17,11 @@ const LoginPage = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [isLoginDisabled, setIsLoginDisabled] = useState(false); // Trạng thái khóa nút đăng nhập
+  const [isLoginDisabled, setIsLoginDisabled] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Kiểm tra lỗi input
     const newErrors = {};
     if (!identifier.trim())
       newErrors.identifier = "Vui lòng nhập email hoặc username.";
@@ -32,7 +31,6 @@ const LoginPage = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      // Xác định người dùng nhập email hay username
       const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(identifier);
       const loginData = isEmail
         ? { email: identifier, password }
