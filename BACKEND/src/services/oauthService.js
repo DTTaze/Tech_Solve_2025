@@ -1,5 +1,5 @@
 require("dotenv").config;
-const { sendEmail } = require('../config/sendEmail');
+const { sendEmail } = require('../services/emailService');
 const jwt = require("jsonwebtoken");
 const db = require("../models/index.js");
 const User = db.User;
@@ -71,15 +71,15 @@ const sendResetEmail = async (Email) => {
     const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`;
     console.log("Sending email to:", Email); 
     
-    const sender = {email: 'bao0908235279@gmail.com', name: 'GreenFlag'};
-    const receiver = {email: Email, name: user.full_name};
-    const subject = "Reset Password";
-    const html = `
+    const htmlContent = `
       <h1>Reset Password</h1>
       <p>Click the link below to reset your password:</p>
       <a href="${resetLink}">Reset Password</a>
+      <p>If you did not request this, please ignore this email.</p>
+      <p>Thank you!</p>
     `;
-    const response = await sendEmail(sender, receiver, subject, html);
+    
+    const response = await sendEmail(Email,"Reset Password", htmlContent); 
     return response;
   } catch (error) {
     console.error("Error sending email:", error);
