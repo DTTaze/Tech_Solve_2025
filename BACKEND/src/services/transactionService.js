@@ -52,10 +52,17 @@ const createTransaction = async (transactionData) => {
   }
 };
 
-const getTransactionByUserId = async (buyerId) => {
+const getTransactionByUserId = async (buyer_id) => {
   try {
     const transaction = await Transaction.findAll({
-      where: { buyer_id: buyerId },
+      where: { buyer_id: buyer_id },
+      include: [
+        {
+          model: User,
+          as: "buyer",
+          attributes: ["id", "full_name", "username"],
+        },
+      ],
     });
     if (!transaction) {
       throw new Error("Transaction not found.");
@@ -74,11 +81,6 @@ const getAllTransactions = async () => {
           model: User,
           as: "buyer",
           attributes: ["id", "full_name", "username"],
-        },
-        {
-          model: Item,
-          as: "item",
-          attributes: ["id", "name"],
         },
       ],
     });

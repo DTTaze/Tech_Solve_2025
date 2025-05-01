@@ -26,9 +26,17 @@ const TransactionHistory = () => {
   }, []);
 
   const openModal = (tx) => {
+    const item =
+      typeof tx.item_snapshot === "string"
+        ? JSON.parse(tx.item_snapshot)
+        : tx.item_snapshot;
     setTransaction({
       "Mã giao dịch": tx.public_id,
-      "Tên sản phẩm": tx.name,
+      "Mã sản phẩm": item.public_id,
+      "Nhà cung cấp sản phẩm": item.creator.full_name,
+      "Tên sản phẩm": item.name,
+      "Mô tả sản phẩm": item.description,
+      "Giá tại thời điểm mua": item.price,
       "Số lượng": tx.quantity,
       "Tổng số xu": tx.total_price,
       "Trạng thái giao dịch": tx.status,

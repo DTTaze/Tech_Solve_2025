@@ -25,8 +25,14 @@ const handleLoginUser = async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     const clientIP = req.ip || req.connection.remoteAddress;
-    const userAgent = req.headers['user-agent'] || 'unknown'; 
-    let result = await userService.loginUser(user, email, password, clientIP, userAgent);
+    const userAgent = req.headers["user-agent"] || "unknown";
+    let result = await userService.loginUser(
+      user,
+      email,
+      password,
+      clientIP,
+      userAgent
+    );
     res.cookie("access_token", result.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -60,10 +66,11 @@ const handleRefreshAccessToken = async (req, res) => {
       maxAge: ms(process.env.JWT_AT_EXPIRE),
     });
 
-    res.json({ message: "Access token refreshed" });
+    return res.success("Access token refreshed", {
+      access_token: newAccessToken,
+    });
   } catch (error) {
-    console.error("Refresh token error:", error.message);
-    res.status(401).json({ message: "Invalid refresh token" });
+    return res.error(401, "Invalid refresh token", error.message);
   }
 };
 
