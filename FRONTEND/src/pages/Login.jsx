@@ -55,15 +55,14 @@ const LoginPage = () => {
       }
     } catch (error) {
       if (error.status === 401) {
-        notify("error", "Vui lòng kiểm tra lại Email/Username hoặc Mật khẩu");
+        notify("error", "Thông tin đăng nhập không đúng");
       } else if (error.status === 429) {
         notify("error", "Quá nhiều yêu cầu, vui lòng thử lại sau 5 phút");
-        setIsLoginDisabled(true); // Khóa nút đăng nhập khi nhận status 429
-        // Tự động mở khóa sau 5 phút
+        setIsLoginDisabled(true);
         setTimeout(() => {
           setIsLoginDisabled(false);
           notify("info", "Bạn có thể thử đăng nhập lại bây giờ");
-        }, 300000); // 300000ms = 5 phút
+        }, 300000); 
       } else {
         notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
       }
