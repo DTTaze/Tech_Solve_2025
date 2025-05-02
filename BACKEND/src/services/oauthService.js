@@ -67,8 +67,9 @@ const sendResetEmail = async (Email) => {
       throw new Error("Email not found");
     }
     const token = generateToken(Email);
-    const backendURL = process.env.BACKEND_URL;
-    const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`;
+    const frontedURL = process.env.FRONTEND_URL;
+    const resetLink = `${frontedURL}/forgot_password?token=${token}`;
+    console.log("Reset link: ",resetLink);
     console.log("Sending email to:", Email); 
     
     const htmlContent = `
