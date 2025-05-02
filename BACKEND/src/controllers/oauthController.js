@@ -57,11 +57,11 @@ const handleForgotPassword = async (req, res) => {
 
 const handleResetPassword = async (req, res) => {
   try {
-    const { token } = req.query;
-    const { newPassword } = req.body;
+    const { newPassword, token } = req.body;
     const email = await oauthService.resetPassword(token, newPassword);
     return res.success("Reset password successful", email);
   } catch (error) {
+    console.error("Reset Password Error:", error);
     return res.error(500, "Reset password failed", error.message);
   }
 };

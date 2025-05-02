@@ -92,18 +92,19 @@ const resetPassword = async (token, newPassword) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_AT_SECRET);
     const email = decoded.email;
+    console.log("Decoded email:", email);
     if (!email) throw Error("Missing email from decoded email token");
-    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+    const hashedPassword = await bcrypt.hashSync(newPassword, salt);
 
-    const user = await User.findOne({ where: email });
+    const user = await User.findOne({ where: {email} });
     if (!user) {
-      throw new Error("Invalid email or password");
+      throw new Error("Invalid email ");
     }
 
     await user.update({
       password: hashedPassword,
     });
-    return { email, newPassword };
+    return { email };
   } catch (error) {
     throw error;
   }
