@@ -59,7 +59,7 @@ const ForgotPassword = () => {
     console.log(token);
     try {
       const res = await resetPasswordApi(token, newPassword);
-      if (res && res.email) {
+      if (res && res.data.email) {
         notify("success", "Mật khẩu đã được thay đổi thành công!");
         navigate("/login");
       } else {
