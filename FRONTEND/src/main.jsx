@@ -74,7 +74,6 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboard /> },
           { path: "users", element: <UsersManagement /> },
-
           {
             path: "content",
             element: <ContentManagement />,
@@ -82,6 +81,7 @@ const router = createBrowserRouter([
               { path: "missions", element: <MissionsManagement /> },
               { path: "items", element: <ItemsManagement /> },
               { path: "products", element: <ProductsManagement /> },
+              { path: "events", element: <ProductsManagement /> },
             ],
           },
           { path: "rbac", element: <RolesPermissions /> },
