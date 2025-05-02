@@ -24,10 +24,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
-      User.hasMany(models.Inventory, {
-        foreignKey: "user_id",
-        onDelete: "CASCADE",
-      });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
       User.belongsTo(models.Coin, { foreignKey: "coins_id", as: "coins" });
       User.belongsTo(models.Rank, { foreignKey: "rank_id", as: "ranks" });

@@ -3,8 +3,8 @@ const redis = require("../config/configRedis");
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
+const Coin = db.Coin;
 const Transaction = db.Transaction;
-const Inventory = db.Inventory;
 const { generateCode } = require("../utils/generateCode");
 const { emitStockUpdate } = require("./socketService");
 const Redis = require("ioredis");
@@ -30,12 +30,23 @@ const worker = new Worker(
       throw new Error("Item not available or insufficient stock");
     }
 
-    const user = await User.findByPk(user_id);
-    if (!user || user.coins < item.price * quantity) {
+    const user = await User.findByPk(user_id, {
+      include: [
+        {
+          model: Coin,
+          as: "coins",
+          attributes: ["id", "amount"],
+        },
+      ],
+    });
+    if (!user || user.coins.amount < item.price * quantity) {
       throw new Error("User not found or insufficient balance");
     }
-
-    await user.update({ coins: user.coins - item.price * quantity });
+    console.log("check user from worker", user);
+    console.log("check user coins amount", user.coins.amount);
+    await user.coins.update({
+      amount: user.coins.amount - item.price * quantity,
+    });
     const newStock = item.stock - quantity;
     await item.update({
       stock: newStock,
