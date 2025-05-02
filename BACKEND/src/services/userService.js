@@ -624,6 +624,46 @@ const getTaskCompleted = async (user_id) => {
 
 const getItemByIdUser = async (user_id) => {
   try {
+    // Check if the list of transaction IDs is cached in Redis
+    const cachedTransactionIds = await redisClient.get("all:transaction:user:id" + user_id);
+    if (cachedTransactionIds) {
+      const transactionIds = JSON.parse(cachedTransactionIds);
+      const transactions = [];
+
+      // Fetch each transaction by its ID
+      for (const transactionId of transactionIds) {
+        let transaction = await redisClient.get("transaction:id:" + transactionId);
+        if (transaction) {
+          transactions.push(JSON.parse(transaction));
+        } else {
+          // If not in Redis, fetch from the database
+          transaction = await Transaction.findOne({
+            where: { id: transactionId },
+            attributes: ["id", "total_price", "quantity", "status"],
+            include: [
+              {
+                model: Item,
+                attributes: ["id", "name", "description", "price"],
+              },
+            ],
+          });
+
+          if (transaction) {
+            // Cache the transaction in Redis
+            await redisClient.set(
+              "transaction:id:" + transactionId,
+              JSON.stringify(transaction),
+              "EX",
+              60 * 60 * 24
+            );
+            transactions.push(transaction);
+          }
+        }
+      }
+      return transactions;
+    }
+
+    // Query the database if the list of transaction IDs is not in the cache
     const items = await Transaction.findAll({
       where: {
         buyer_id: user_id,
@@ -640,6 +680,25 @@ const getItemByIdUser = async (user_id) => {
 
     if (!items || items.length === 0) {
       throw new Error("User not found");
+    }
+
+    // Cache the list of transaction IDs in Redis
+    const transactionIds = items.map((item) => item.id);
+    await redisClient.set(
+      "all:transaction:user:id" + user_id,
+      JSON.stringify(transactionIds),
+      "EX",
+      60 * 60 * 24
+    );
+
+    // Cache each transaction in Redis
+    for (const item of items) {
+      await redisClient.set(
+        "transaction:id:" + item.id,
+        JSON.stringify(item),
+        "EX",
+        60 * 60 * 24
+      );
     }
 
     return items;
