@@ -1,8 +1,9 @@
 require("dotenv").config();
+const Redis = require("ioredis");
 
 const redis = {
   host: process.env.REDIS_HOST || "redis",
-  port: process.env.REDIS_PORT || 6379,
+  port: process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379,
   maxRetriesPerRequest: null,
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000);
@@ -10,4 +11,9 @@ const redis = {
   }
 };
 
-module.exports = redis;
+const redisClient = new Redis(redis);
+
+module.exports = {
+  redisClient,
+  redis,
+};

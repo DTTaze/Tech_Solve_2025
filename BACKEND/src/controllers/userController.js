@@ -105,9 +105,9 @@ const handleGetUser = async (req, res) => {
   }
 };
 
-const handleUpdateUser = async (req, res) => {
+const handleUpdateUserById = async (req, res) => {
   try {
-    let result = await userService.updateUser(req.params.id, req.body);
+    let result = await userService.updateUserById(req.params.id, req.body);
     return res.success("Update user success", result);
   } catch (error) {
     return res.error(500, "Failed to update user", error.message);
@@ -120,7 +120,7 @@ const handleGetProfile = async (req, res) => {
 
 const handleGetTaskCompleted = async (req, res) => {
   try {
-    let result = await userService.getTaskCompleted(req.params.id);
+    let result = await userService.getTaskCompleted(req.user.id);
     return res.success("Get task completed success", result);
   } catch (error) {
     return res.error(500, "Failed to get task completed", error.message);
@@ -129,7 +129,7 @@ const handleGetTaskCompleted = async (req, res) => {
 
 const handleGetAllTasksById = async (req, res) => {
   try {
-    let result = await userService.getAllTasksById(req.params.id);
+    let result = await userService.getAllTasksById(req.user.id);
     return res.success("Get all task by ID success", result);
   } catch (error) {
     return res.error(500, "Failed to get all task by ID", error.message);
@@ -181,7 +181,7 @@ module.exports = {
   handleLogoutUser,
   handleDeleteUser,
   handleGetUser,
-  handleUpdateUser,
+  handleUpdateUserById,
   handleLoginUser,
   handleGetProfile,
   handleGetTaskCompleted,
