@@ -36,6 +36,8 @@ function RegisterPage() {
         if (!/^[a-zA-Z0-9]+$/.test(value))
             return "Tên tài khoản chỉ được chứa chữ cái không dấu và số!";
         return "";
+      case "role_id":
+        return !value ? "Vui lòng chọn loại tài khoản!" : "";
       case "email":
         if (!value.trim()) return "Vui lòng nhập email!";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
@@ -43,8 +45,6 @@ function RegisterPage() {
         return "";
       case "password":
         return !value ? "Vui lòng nhập mật khẩu!" : "";
-      case "role_id":
-        return !value ? "Vui lòng chọn loại tài khoản!" : "";
       default:
         return "";
     }

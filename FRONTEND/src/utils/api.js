@@ -13,7 +13,7 @@ export const logoutUserApi = () => {
 };
 
 export const forgotPasswordApi = (email) => {
-  return axios.post("/api/auth/forgot_password", email);
+  return axios.post("/api/auth/forgot_password", { email }); 
 }
 
 export const resetPasswordApi = (token, newPassword) => {
