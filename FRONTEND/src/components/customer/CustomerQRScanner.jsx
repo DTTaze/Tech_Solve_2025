@@ -1,81 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
   Button,
   Paper,
   Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Alert,
   Snackbar,
-  Avatar,
-  Card,
-  CardContent,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  IconButton,
-  Chip,
-  CircularProgress,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
-import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import DoneIcon from "@mui/icons-material/Done";
-import EventIcon from "@mui/icons-material/Event";
-import DeleteIcon from "@mui/icons-material/Delete";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import { BrowserMultiFormatReader } from "@zxing/browser";
-
-// Sample events for dropdown selection
-const EVENTS = [
-  {
-    id: 1,
-    name: "Tree Planting Initiative",
-    date: "2023-06-15",
-    location: "City Park",
-  },
-  {
-    id: 2,
-    name: "Beach Clean-up Drive",
-    date: "2023-07-22",
-    location: "West Coast Beach",
-  },
-  {
-    id: 3,
-    name: "Tech Innovation Fair",
-    date: "2023-08-10",
-    location: "Convention Center",
-  },
-  {
-    id: 4,
-    name: "Renewable Energy Workshop",
-    date: "2023-09-05",
-    location: "Community Center",
-  },
-  {
-    id: 5,
-    name: "Wildlife Conservation Talk",
-    date: "2023-05-20",
-    location: "City Library",
-  },
-  {
-    id: 6,
-    name: "Sustainable Fashion Show",
-    date: "2023-04-12",
-    location: "Arts Center",
-  },
-];
+import { injectQRScannerStyles } from "./QRScannerStyles";
+import EventSelector from "./EventSelector";
+import QRScanner from "./QRScanner";
+import ScannedUsersList from "./ScannedUsersList";
+import HowItWorks from "./HowItWorks";
+import ManualAddDialog from "./ManualAddDialog";
 
 // Sample scanned users (would come from actual QR scans in a real app)
 const SAMPLE_SCANNED_USERS = [
@@ -112,102 +52,24 @@ export default function CustomerQRScanner() {
     name: "",
     email: "",
   });
-  const videoRef = useRef(null);
-  const codeReader = useRef(null);
+
+  useEffect(() => {
+    injectQRScannerStyles();
+  }, []);
 
   const handleEventChange = (event) => {
     setSelectedEvent(event.target.value);
   };
 
-  const handleStartScan = async () => {
-    setError("");
-    setResult("");
-    setScanning(true);
-    setLoading(true);
-    try {
-      const videoInputDevices =
-        await BrowserMultiFormatReader.listVideoInputDevices();
-      console.log("Video input devices:", videoInputDevices);
-
-      if (videoInputDevices.length === 0) {
-        setError("No camera found on this device.");
-        setLoading(false);
-        setScanning(false);
-        return;
-      }
-
-      setLoading(false);
-      if (videoRef.current) {
-        videoRef.current.style.display = "block";
-        videoRef.current.style.width = "100%";
-        videoRef.current.style.height = "100%";
-        videoRef.current.style.objectFit = "contain";
-      }
-
-      // Create a new code reader instance
-      const reader = new BrowserMultiFormatReader();
-      codeReader.current = reader;
-
-      // Get video stream
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-
-      // Decode from video device
-      await reader.decodeFromVideoDevice(
-        videoInputDevices[0].deviceId,
-        videoRef.current,
-        async (result, err) => {
-          if (result) {
-            setResult(result.getText());
-            setScanning(false);
-            stopVideoStream();
-          }
-          if (err && err.name !== "NotFoundException") {
-            setError("Error scanning QR code: " + err.message);
-            setScanning(false);
-            stopVideoStream();
-          }
-        }
-      );
-    } catch (e) {
-      setError("Could not access camera: " + e.message);
-      setLoading(false);
-      setScanning(false);
-      if (videoRef.current && videoRef.current.srcObject) {
-        stopVideoStream();
-      }
-    }
-  };
-
   const handleStopScan = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject;
-      const tracks = stream.getTracks();
-      tracks.forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-      videoRef.current.style.display = "none";
-    }
     setScanning(false);
     setLoading(false);
   };
 
-  const stopVideoStream = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject;
-      const tracks = stream.getTracks();
-      tracks.forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-    }
+  const handleScanResult = (result) => {
+    setResult(result);
+    setScanning(false);
+    // Handle the scanned result here
   };
 
   const handleManualInputChange = (event) => {
@@ -225,14 +87,13 @@ export default function CustomerQRScanner() {
       return;
     }
 
-    // In a real app, this would validate the user and add them to the event
     const newUser = {
-      id: Math.floor(Math.random() * 1000), // Just for demo
+      id: Math.floor(Math.random() * 1000),
       name: manualUser.name,
       email: manualUser.email,
       avatar: `https://mui.com/static/images/avatar/${
         Math.floor(Math.random() * 8) + 1
-      }.jpg`, // Random avatar for demo
+      }.jpg`,
       scannedAt: new Date().toISOString(),
       eventId: selectedEvent,
     };
@@ -247,19 +108,6 @@ export default function CustomerQRScanner() {
   const handleRemoveUser = (userId) => {
     setScannedUsers(scannedUsers.filter((user) => user.id !== userId));
   };
-
-  const getEventNameById = (eventId) => {
-    const event = EVENTS.find((e) => e.id === eventId);
-    return event ? event.name : "Unknown Event";
-  };
-
-  useEffect(() => {
-    return () => {
-      if (codeReader.current) {
-        codeReader.current.reset();
-      }
-    };
-  }, []);
 
   return (
     <Box className="customer-content-container">
@@ -287,142 +135,42 @@ export default function CustomerQRScanner() {
               <Typography variant="h6" gutterBottom>
                 1. Select an Event
               </Typography>
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel id="event-select-label">Event</InputLabel>
-                <Select
-                  labelId="event-select-label"
-                  id="event-select"
-                  value={selectedEvent}
-                  label="Event"
-                  onChange={handleEventChange}
-                >
-                  {EVENTS.map((event) => (
-                    <MenuItem key={event.id} value={event.id}>
-                      {event.name} - {new Date(event.date).toLocaleDateString()}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <EventSelector
+                selectedEvent={selectedEvent}
+                onEventChange={handleEventChange}
+              />
 
               <Typography variant="h6" gutterBottom>
                 2. Scan QR Code
               </Typography>
-              <Box className="customer-qr-scanner-container">
-                <Box
-                  className="customer-qr-preview"
-                  style={{ position: "relative" }}
+              <QRScanner
+                scanning={scanning}
+                loading={loading}
+                onStopScan={handleStopScan}
+                onScanResult={handleScanResult}
+              />
+
+              {!selectedEvent && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  Please select an event before scanning
+                </Alert>
+              )}
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 2,
+                  mt: 2,
+                }}
+              >
+                <Button
+                  className="customer-button-secondary"
+                  startIcon={<PersonAddIcon />}
+                  onClick={() => setManualAddOpen(true)}
                 >
-                  <video
-                    ref={videoRef}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      borderRadius: 8,
-                      background: "#000",
-                      display: scanning ? "block" : "none",
-                    }}
-                    autoPlay
-                    muted
-                    playsInline
-                  />
-                  {scanning && (
-                    <div
-                      className="qr-corner-overlay"
-                      style={{ pointerEvents: "none" }}
-                    >
-                      <div className="qr-corner qr-corner-tl" />
-                      <div className="qr-corner qr-corner-tr" />
-                      <div className="qr-corner qr-corner-bl" />
-                      <div className="qr-corner qr-corner-br" />
-                    </div>
-                  )}
-                  {!scanning && !loading && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexDirection: "column",
-                        bgcolor: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      <QrCodeScannerIcon
-                        sx={{
-                          fontSize: 60,
-                          mb: 1,
-                          color: "var(--primary-green)",
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        Click "Start Scanning" to open your camera
-                      </Typography>
-                    </Box>
-                  )}
-                  {loading && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      <CircularProgress color="success" />
-                    </Box>
-                  )}
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: 2,
-                    mt: 2,
-                  }}
-                >
-                  {!scanning ? (
-                    <Button
-                      className="customer-button"
-                      startIcon={<QrCodeScannerIcon />}
-                      onClick={handleStartScan}
-                      disabled={!selectedEvent}
-                    >
-                      Start Scanning
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleStopScan}
-                    >
-                      Stop Scanning
-                    </Button>
-                  )}
-
-                  <Button
-                    className="customer-button-secondary"
-                    startIcon={<PersonAddIcon />}
-                    onClick={() => setManualAddOpen(true)}
-                  >
-                    Add Manually
-                  </Button>
-                </Box>
-
-                {!selectedEvent && (
-                  <Alert severity="info" sx={{ mt: 2 }}>
-                    Please select an event before scanning
-                  </Alert>
-                )}
+                  Add Manually
+                </Button>
               </Box>
             </Paper>
           </Grid>
@@ -439,263 +187,26 @@ export default function CustomerQRScanner() {
                 flexDirection: "column",
               }}
             >
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <VerifiedUserIcon
-                  sx={{ mr: 1, color: "var(--primary-green)" }}
-                />
-                Recently Scanned Users
-              </Typography>
-
-              {scannedUsers.length > 0 ? (
-                <List
-                  sx={{
-                    bgcolor: "background.paper",
-                    overflow: "auto",
-                    flex: 1,
-                    maxHeight: 400,
-                  }}
-                >
-                  {scannedUsers.map((user) => (
-                    <ListItem
-                      key={user.id}
-                      secondaryAction={
-                        <IconButton
-                          edge="end"
-                          aria-label="delete"
-                          onClick={() => handleRemoveUser(user.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      }
-                      sx={{
-                        mb: 1,
-                        backgroundColor: "var(--grey-100)",
-                        borderRadius: 1,
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar src={user.avatar} alt={user.name} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={user.name}
-                        secondary={
-                          <React.Fragment>
-                            <Typography
-                              component="span"
-                              variant="body2"
-                              color="text.primary"
-                            >
-                              {user.email}
-                            </Typography>
-                            <Box
-                              sx={{
-                                mt: 0.5,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              <Chip
-                                size="small"
-                                icon={<EventIcon style={{ fontSize: 14 }} />}
-                                label={getEventNameById(user.eventId)}
-                                sx={{ height: 24, fontSize: "0.75rem" }}
-                              />
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                              >
-                                {new Date(user.scannedAt).toLocaleTimeString()}
-                              </Typography>
-                            </Box>
-                          </React.Fragment>
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    py: 5,
-                    flex: 1,
-                  }}
-                >
-                  <PersonAddIcon
-                    sx={{ fontSize: 40, color: "var(--text-light)", mb: 1 }}
-                  />
-                  <Typography variant="body1" color="text.secondary">
-                    No users scanned yet
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Start scanning or add users manually
-                  </Typography>
-                </Box>
-              )}
+              <ScannedUsersList
+                scannedUsers={scannedUsers}
+                onRemoveUser={handleRemoveUser}
+              />
             </Paper>
           </Grid>
         </Grid>
 
-        <Box mt={3}>
-          <Typography variant="h6" gutterBottom>
-            How It Works
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Card sx={{ height: "100%" }}>
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Box
-                      sx={{
-                        bgcolor: "var(--light-green)",
-                        color: "var(--primary-green)",
-                        width: 30,
-                        height: 30,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        mr: 1,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      1
-                    </Box>
-                    <Typography variant="h6">Select an Event</Typography>
-                  </Box>
-                  <Typography variant="body2">
-                    Choose the event that participants will be joining. This
-                    ensures users are added to the correct event.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Card sx={{ height: "100%" }}>
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Box
-                      sx={{
-                        bgcolor: "var(--light-green)",
-                        color: "var(--primary-green)",
-                        width: 30,
-                        height: 30,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        mr: 1,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      2
-                    </Box>
-                    <Typography variant="h6">Scan User QR Code</Typography>
-                  </Box>
-                  <Typography variant="body2">
-                    Ask participants to show their unique QR code from their
-                    user profile or event registration email.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Card sx={{ height: "100%" }}>
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                    <Box
-                      sx={{
-                        bgcolor: "var(--light-green)",
-                        color: "var(--primary-green)",
-                        width: 30,
-                        height: 30,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        mr: 1,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      3
-                    </Box>
-                    <Typography variant="h6">Confirm Attendance</Typography>
-                  </Box>
-                  <Typography variant="body2">
-                    The system automatically registers the user to the event.
-                    You can view and manage all participants in the User
-                    Management section.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
+        <HowItWorks />
       </Box>
 
-      {/* Manual Add Dialog */}
-      <Dialog
+      <ManualAddDialog
         open={manualAddOpen}
         onClose={() => setManualAddOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Add User Manually</DialogTitle>
-        <DialogContent dividers>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label="Full Name"
-                name="name"
-                value={manualUser.name}
-                onChange={handleManualInputChange}
-                fullWidth
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Email Address"
-                name="email"
-                type="email"
-                value={manualUser.email}
-                onChange={handleManualInputChange}
-                fullWidth
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Alert severity="info">
-                The user will be added to:{" "}
-                {selectedEvent
-                  ? getEventNameById(selectedEvent)
-                  : "No event selected"}
-              </Alert>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setManualAddOpen(false)}>Cancel</Button>
-          <Button
-            className="customer-button"
-            onClick={handleManualAdd}
-            disabled={!manualUser.name || !manualUser.email}
-            startIcon={<PersonAddIcon />}
-          >
-            Add to Event
-          </Button>
-        </DialogActions>
-      </Dialog>
+        manualUser={manualUser}
+        onManualInputChange={handleManualInputChange}
+        onManualAdd={handleManualAdd}
+        selectedEvent={selectedEvent}
+      />
 
-      {/* Success Snackbar */}
       <Snackbar
         open={showSuccess}
         autoHideDuration={6000}
@@ -711,70 +222,4 @@ export default function CustomerQRScanner() {
       </Snackbar>
     </Box>
   );
-}
-
-/* Overlay 4 góc vuông cho vùng scan QR */
-const qrOverlayStyle = `
-.qr-corner-overlay {
-  position: absolute;
-  inset: 20px;
-  z-index: 2;
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0.2);
-  border: 2px solid var(--primary-green);
-  border-radius: 8px;
-}
-.qr-corner {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  border: 6px solid var(--primary-green);
-  box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.5);
-}
-.qr-corner-tl {
-  top: -24px; left: -24px;
-  border-right: none;
-  border-bottom: none;
-  border-top-left-radius: 12px;
-}
-.qr-corner-tr {
-  top: -24px; right: -24px;
-  border-left: none;
-  border-bottom: none;
-  border-top-right-radius: 12px;
-}
-.qr-corner-bl {
-  bottom: -24px; left: -24px;
-  border-right: none;
-  border-top: none;
-  border-bottom-left-radius: 12px;
-}
-.qr-corner-br {
-  bottom: -24px; right: -24px;
-  border-left: none;
-  border-top: none;
-  border-bottom-right-radius: 12px;
-}
-.qr-overlay-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--primary-green);
-  font-size: 1.2rem;
-  font-weight: 500;
-  text-align: center;
-  pointer-events: none;
-}
-`;
-
-if (
-  typeof document !== "undefined" &&
-  !document.getElementById("qr-corner-style")
-) {
-  const style = document.createElement("style");
-  style.id = "qr-corner-style";
-  style.innerHTML = qrOverlayStyle;
-  document.head.appendChild(style);
 }
