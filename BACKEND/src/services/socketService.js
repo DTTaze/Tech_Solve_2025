@@ -1,6 +1,7 @@
-const Redis = require("ioredis");
+require("dotenv").config();
 let io;
-let subscriber;
+const Redis = require("ioredis");
+let subscriber = new Redis(process.env.URL_REDIS || "redis://redis:6379");
 
 const emitStockUpdate = (itemId, newStock, itemDetails) => {
   console.log("Emitting stock update event to item:", itemId);
@@ -15,9 +16,6 @@ const emitStockUpdate = (itemId, newStock, itemDetails) => {
 
 const initSocketManager = (socketIo) => {
   io = socketIo;
-  
-  // Initialize Redis subscriber
-  subscriber = new Redis(process.env.URL_REDIS);
   
   // Set up subscription
   subscriber.subscribe("stock-update", (err, count) => {

@@ -13,7 +13,7 @@ import { execSync } from "child_process";
 import http from "http";
 import { Server } from "socket.io";
 import { initSocketManager } from "./services/socketService";
-
+import { checkRedisConnection } from "./config/configRedis";
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -39,6 +39,7 @@ const io = new Server(server, {
 
 // Initialize socket manager
 initSocketManager(io);
+
 
 // Cấu hình CORS
 app.use(
@@ -85,6 +86,7 @@ app.use((req, res, next) => {
 // Khởi tạo route
 initWebRoutes(app);
 connection();
+checkRedisConnection();
 
 // Khởi động server
 server.listen(PORT, HOST, () => {

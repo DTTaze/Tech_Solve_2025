@@ -10,11 +10,11 @@ router.get(
   // checkPermission("get", "user_id"),
   userController.handleGetUser
 );
-router.get("/task/completed/:id", userController.handleGetTaskCompleted);
+router.get("/task/completed", userController.handleGetTaskCompleted);
 router.put(
   "/:id",
   // checkPermission("put", "user_id"),
-  userController.handleUpdateUser
+  userController.handleUpdateUserById
 );
 router.delete(
   "/:id",
