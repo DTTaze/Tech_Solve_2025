@@ -18,11 +18,11 @@ const {redisClient} = require('../config/configRedis.js');
 const { get } = require("../routes/authRoutes.js");
 
 const setUserCache = async (user) => {
-  await redisClient.set("user:id:" + user.id, JSON.stringify(user), "EX", 60 * 60 * 24);
-  await redisClient.set("user:public_id:" + user.public_id, String(user.id), "EX", 60 * 60 * 24);
-  await redisClient.set("role:id:" + user.role_id, JSON.stringify(user.roles), "EX", 60 * 60 * 24);
-  await redisClient.set("coin:id:" + user.coins_id, JSON.stringify(user.coins), "EX", 60 * 60 * 24);
-  await redisClient.set("rank:id:" + user.rank_id, JSON.stringify(user.ranks), "EX", 60 * 60 * 24);
+  await redisClient.set("user:id:" + user.id, JSON.stringify(user), "EX", 60 * 60);
+  await redisClient.set("user:public_id:" + user.public_id, String(user.id), "EX", 60 * 60);
+  await redisClient.set("role:id:" + user.role_id, JSON.stringify(user.roles), "EX", 60 * 60);
+  await redisClient.set("coin:id:" + user.coins_id, JSON.stringify(user.coins), "EX", 60 * 60);
+  await redisClient.set("rank:id:" + user.rank_id, JSON.stringify(user.ranks), "EX", 60 * 60);
 };
 
 const createUser = async (data) => {
@@ -50,7 +50,7 @@ const createUser = async (data) => {
         if (!roledata) {
           throw new Error("Role does not exist");
         }
-        await redisClient.set("role:id:" + role_id, JSON.stringify(roledata), "EX", 60 * 60 * 24); 
+        await redisClient.set("role:id:" + role_id, JSON.stringify(roledata), "EX", 60 * 60); 
       }
       console.log(roledata);
 
@@ -114,11 +114,11 @@ const createUser = async (data) => {
     await newRank.update({ user_id: newUser.id });
 
     // Cache the new user, rank, and coin in Redis
-    await redisClient.set('user:id:' + newUser.id, JSON.stringify(newUser), 'EX', 60 * 60 * 24);
-    await redisClient.set('user:public_id:' + newUser.public_id, String(newUser.id) , 'EX', 60 * 60 * 24);
+    await redisClient.set('user:id:' + newUser.id, JSON.stringify(newUser), 'EX', 60 * 60);
+    await redisClient.set('user:public_id:' + newUser.public_id, String(newUser.id) , 'EX', 60 * 60);
 
-    await redisClient.set('rank:id' + newRank.id, JSON.stringify(newRank), 'EX', 60 * 60 * 24);
-    await redisClient.set('coin:id' + newCoin.id, JSON.stringify(newCoin), 'EX', 60 * 60 * 24);
+    await redisClient.set('rank:id' + newRank.id, JSON.stringify(newRank), 'EX', 60 * 60);
+    await redisClient.set('coin:id' + newCoin.id, JSON.stringify(newCoin), 'EX', 60 * 60);
 
     return newUser;
   } catch (error) {
@@ -294,7 +294,7 @@ const getUserBycacheId = async (id) => {
         attributes: ["id", "name"],
       });
       if (dataRole) {
-        await redisClient.set("role:id:" + data_user.role_id, JSON.stringify(dataRole), "EX", 60 * 60 * 24);
+        await redisClient.set("role:id:" + data_user.role_id, JSON.stringify(dataRole), "EX", 60 * 60);
       }
     }
 
@@ -305,7 +305,7 @@ const getUserBycacheId = async (id) => {
         attributes: ["id", "amount"],
       });
       if (dataCoin) {
-        await redisClient.set("coin:id:" + data_user.coins_id, JSON.stringify(dataCoin), "EX", 60 * 60 * 24);
+        await redisClient.set("coin:id:" + data_user.coins_id, JSON.stringify(dataCoin), "EX", 60 * 60);
       }
     }
 
@@ -316,7 +316,7 @@ const getUserBycacheId = async (id) => {
         attributes: ["id", "amount", "order"],
       });
       if (dataRank) {
-        await redisClient.set("rank:id:" + data_user.rank_id, JSON.stringify(dataRank), "EX", 60 * 60 * 24);
+        await redisClient.set("rank:id:" + data_user.rank_id, JSON.stringify(dataRank), "EX", 60 * 60);
       }
     }
 
@@ -448,7 +448,7 @@ const updateUser = async (user, data) => {
       }
       coin.amount = parsedCoins;
       await coin.save();
-      await redisClient.set("coin:id:" + user.coins_id, JSON.stringify(coin), "EX", 60 * 60 * 24);
+      await redisClient.set("coin:id:" + user.coins_id, JSON.stringify(coin), "EX", 60 * 60);
     }
 
     if (streak !== undefined) {
@@ -483,10 +483,10 @@ const updateUser = async (user, data) => {
     }
 
     // Cache the updated user and related data in Redis
-    await redisClient.set("user:id:" + user.id, JSON.stringify(user), "EX", 60 * 60 * 24);
-    await redisClient.set("user:public_id:" + user.public_id, String(user.id), "EX", 60 * 60 * 24);
-    await redisClient.set("role:id:" + user.role_id, JSON.stringify(roledata), "EX", 60 * 60 * 24);
-    await redisClient.set("rank:id:" + user.rank_id, JSON.stringify(rankdata), "EX", 60 * 60 * 24);
+    await redisClient.set("user:id:" + user.id, JSON.stringify(user), "EX", 60 * 60);
+    await redisClient.set("user:public_id:" + user.public_id, String(user.id), "EX", 60 * 60);
+    await redisClient.set("role:id:" + user.role_id, JSON.stringify(roledata), "EX", 60 * 60);
+    await redisClient.set("rank:id:" + user.rank_id, JSON.stringify(rankdata), "EX", 60 * 60);
 
     return user;
   } catch (e) {
@@ -586,7 +586,7 @@ const getAllTasksById = async (id) => {
             ],
           });
           if (taskUserData) {
-            await redisClient.set("taskUser:id:" + UserTaskId, JSON.stringify(taskUserData), "EX", 60 * 60 * 24);
+            await redisClient.set("taskUser:id:" + UserTaskId, JSON.stringify(taskUserData), "EX", 60 * 60);
             result.push(taskUserData);
           }
           else {
@@ -614,7 +614,7 @@ const getAllTasksById = async (id) => {
       litsOfUserTaskId.push(taskUser.id);
     }
 
-    await redisClient.set("all:User:taskId:" + id, JSON.stringify(litsOfUserTaskId), "EX", 60 * 60 * 24);
+    await redisClient.set("all:User:taskId:" + id, JSON.stringify(litsOfUserTaskId), "EX", 60 * 60);
 
     return TaskUsers;
   } catch (e) {
@@ -637,7 +637,7 @@ const getTaskCompleted = async (user_id) => {
           where: { id: taskUser.task_id },
         });
         if (task) {
-          await redisClient.set("task:id:" + taskUser.task_id, JSON.stringify(task), "EX", 60 * 60 * 24);
+          await redisClient.set("task:id:" + taskUser.task_id, JSON.stringify(task), "EX", 60 * 60);
         }else {
           throw new Error("Task not found");
         }
@@ -686,7 +686,7 @@ const getItemByIdUser = async (user_id) => {
               "transaction:id:" + transactionId,
               JSON.stringify(transaction),
               "EX",
-              60 * 60 * 24
+              60 * 60
             );
             transactions.push(transaction);
           }
@@ -721,7 +721,7 @@ const getItemByIdUser = async (user_id) => {
       "all:transaction:user:id" + user_id,
       JSON.stringify(transactionIds),
       "EX",
-      60 * 60 * 24
+      60 * 60
     );
 
     // Cache each transaction in Redis
@@ -730,7 +730,7 @@ const getItemByIdUser = async (user_id) => {
         "transaction:id:" + item.id,
         JSON.stringify(item),
         "EX",
-        60 * 60 * 24
+        60 * 60
       );
     }
 
