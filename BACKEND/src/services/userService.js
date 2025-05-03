@@ -219,14 +219,21 @@ const getAllUsers = async () => {
 
 const deleteUser = async (id) => {
   try {
+    const user = await User.findOne({ where: { id } });
+    if (!user) {
+      throw new Error("User not found");
+    }
     await redisClient.del("user:id:" + id);
+    await redisClient.del("user:public_id:" + user.public_id);
 
-    const result = await User.destroy({
-      where: { id: id },
+    const rankUser = await Rank.destroy({
+      where: { id: user.rank_id },
     });
 
-    if (result === 0) {
-      throw new Error("User not found");
+    console.log("rankUser:", rankUser);
+
+    if (rankUser === 0) {
+      throw new Error("Rank not found");
     }
 
     return { message: "User deleted successfully" };
@@ -242,10 +249,26 @@ const deleteUserByPublicID = async (public_id) => {
       await redisClient.del("user:id:" + Number(user_id));
     }
     await redisClient.del("user:public_id:" + public_id);
+    
+    const user = await User.findOne({ where: { public_id } });
+
+    const rankUser = await Rank.destroy({
+      where: { id : user.rank_id },
+    });
+
+    const coinUser = await Coin.destroy({
+      where: { id: user.coins_id },
+    });
 
     const result = await User.destroy({
-      where: { public_id: public_id },
+      where: { id : user.id },
     });
+    if (coinUser === 0) {
+      throw new Error("Coin not found");
+    }
+    if (rankUser === 0) {
+      throw new Error("Rank not found");
+    }
 
     if (result === 0) {
       throw new Error("User not found");

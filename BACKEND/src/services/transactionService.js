@@ -1,5 +1,5 @@
 const db = require("../models/index.js");
-const { redisClient } = require("../config/redis.js");
+const { redisClient } = require("../config/configRedis.js");
 
 const Transaction = db.Transaction;
 const Item = db.Item;
