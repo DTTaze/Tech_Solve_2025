@@ -37,7 +37,6 @@ const LoginPage = () => {
         : { username: identifier, password };
       
       const res = await loginUserApi(loginData);
-      
       if (res && res.status === 200) {
         notify("success", "Đăng nhập thành công!");
         setAuth({
@@ -45,9 +44,16 @@ const LoginPage = () => {
           user: {
             email: res.data.user?.email ?? "",
             username: res.data.user?.username ?? "",
+            role_id: res.data.user?.role_id,
           },
         });
-        navigate("/");
+        if (res.data.user.role_id === 1) {
+          navigate("/admin");
+        } else if (res.data.user.role_id === 3) {
+          navigate("/customer");
+        } else {
+          navigate("/");
+        }
       } else {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }

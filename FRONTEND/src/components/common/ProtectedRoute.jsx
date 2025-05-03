@@ -13,18 +13,15 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Handle role checking
-  const userRoles = Array.isArray(auth.user?.roles)
-    ? auth.user.roles.map((r) => r.name) // array of role names
-    : [auth.user?.roles?.name]; // single role object fallback
+  // Ánh xạ role_id sang tên vai trò
+  const roleMap = {
+    1: "Admin",
+    3: "Customer",
+  };
+  const userRole = roleMap[auth.user?.role_id] || "Unknown";
 
-  const requiredRoles = Array.isArray(requiredRole)
-    ? requiredRole
-    : [requiredRole];
-
-  const hasAccess = requiredRole
-    ? requiredRoles.some((role) => userRoles.includes(role))
-    : true;
+  const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  const hasAccess = requiredRoles.some((role) => role === userRole);
 
   if (!hasAccess) {
     return <Navigate to="/" replace />;

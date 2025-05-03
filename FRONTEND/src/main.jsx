@@ -40,10 +40,6 @@ const router = createBrowserRouter([
         index: true,
         element: <Homepage />,
       },
-      // {
-      //   path: "socket",
-      //   element: <SocketTest />,
-      // },
       {
         path: "profile",
         element: <UserProfilePage />,
@@ -60,10 +56,6 @@ const router = createBrowserRouter([
         path: "forgot_password",
         element: <ForgotPassword />,
       },
-      // {
-      //   path: "qr",
-      //   element: <QRCodeDisplay />,
-      // },
       {
         path: "admin",
         element: (
@@ -100,7 +92,7 @@ const router = createBrowserRouter([
       {
         path: "customer",
         element: (
-          <ProtectedRoute requiredRole={["Customer", "Admin"]}>
+          <ProtectedRoute requiredRole={["Customer"]}>
             <Customer />
           </ProtectedRoute>
         ),
