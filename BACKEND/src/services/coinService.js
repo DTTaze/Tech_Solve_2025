@@ -1,11 +1,12 @@
 const db = require("../models/index");
 const Coin = db.Coin;
-const { redisClient } = require("../config/redis");
+const { redisClient } = require("../config/configRedis");
 
 const getCoin = async (id) => {
   try {
     const cacheCoin = await redisClient.get(`coin:id:${id}`);
     if (cacheCoin) {
+      console.log("cacheCoin", cacheCoin);
       return JSON.parse(cacheCoin);
     }
     const coin = await Coin.findByPk(id);
@@ -25,8 +26,7 @@ const updateCoin = async (id, coins) => {
     if (!coin) {
       throw new Error("Coin not found");
     }
-    coin.coins = coins;
-    await coin.save();
+    await coin.update({ amount: coins });
     await redisClient.set(`coin:id:${id}`, JSON.stringify(coin), 'EX', 60 * 60 );
     return coin;
   } catch (error) {
