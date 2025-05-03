@@ -1,5 +1,4 @@
 const { Worker } = require("bullmq");
-const redis = require("../config/configRedis");
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
@@ -7,11 +6,12 @@ const Transaction = db.Transaction;
 const Inventory = db.Inventory;
 const { generateCode } = require("../utils/generateCode");
 const { emitStockUpdate } = require("./socketService");
+const {redis} = require("../config/configRedis");
 const Redis = require("ioredis");
-const publisher = new Redis(process.env.URL_REDIS);
 const crypto = require("crypto");
 require("dotenv").config();
 
+const publisher = new Redis(redis);
 const generateEncodeItem = async (item_info, user_info, quantity) => {
   const timestamp = Date.now();
 

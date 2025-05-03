@@ -2,7 +2,6 @@ const Redis = require('ioredis');
 const { redisClient } = require('../config/configRedis');
 const db = require('../models/index.js');
 const User = db.User;
-const {redisClient} = require('../config/configRedis.js');
 
 // Rate limiting constants
 const MAX_EMAIL_ATTEMPTS = 5;        // Per email address
@@ -37,7 +36,7 @@ const loginLimiterByEmail = async (req, res, next) => {
         await redisClient.set(`coin:${user.coins_id}`, JSON.stringify(user.coins_id), 'EX',  60 * 60 * 24);
     
     } catch (error) {
-        return res.error(500, 'Error looking up user', 'SERVER_ERROR');
+        return res.error(500, 'Error looking up user', error.message);
     }
 
     // Create unique identifiers for rate limiting

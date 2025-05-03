@@ -14,7 +14,7 @@ const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
 const rateLimitService = require("./rateLimitService");
-const {redisClient, redis} = require('../config/configRedis.js');
+const {redisClient} = require('../config/configRedis.js');
 const { get } = require("../routes/authRoutes.js");
 
 const setUserCache = async (user) => {
@@ -52,6 +52,7 @@ const createUser = async (data) => {
         }
         await redisClient.set("role:id:" + role_id, JSON.stringify(roledata), "EX", 60 * 60 * 24); 
       }
+      console.log(roledata);
 
       if (
         roledata.name.toLowerCase() !== "user" &&
@@ -259,6 +260,7 @@ const deleteUserByPublicID = async (public_id) => {
 const getUserBycacheId = async (id) => {
   try {  
     const cacheUser = await redisClient.get("user:id:" + id);
+    console.log("cacheUser", cacheUser);
     if (!cacheUser) return null;
     const data_user = JSON.parse(cacheUser);
 
@@ -299,15 +301,21 @@ const getUserBycacheId = async (id) => {
     const user = {
       id: data_user.id,
       public_id: data_user.public_id,
-      username: data_user.username,
+      avatar_url: data_user.avatar_url,
+      google_id: data_user.google_id,
       email: data_user.email,
+      password: data_user.password,
+      username: data_user.username,
       full_name: data_user.full_name,
       phone_number: data_user.phone_number,
       address: data_user.address,
+      streak: data_user.streak,
+      last_completed_task: data_user.last_completed_task,
       roles: dataRole,
       coins: dataCoin,
       ranks: dataRank,
     };
+    console.log("user", user);
     return user;
   } catch (e) {
     console.error("Error in getUserBycacheId:", e);
@@ -627,6 +635,7 @@ const getItemByIdUser = async (user_id) => {
     // Check if the list of transaction IDs is cached in Redis
     const cachedTransactionIds = await redisClient.get("all:transaction:user:id" + user_id);
     if (cachedTransactionIds) {
+      console.log("cachedTransactionIds", cachedTransactionIds);
       const transactionIds = JSON.parse(cachedTransactionIds);
       const transactions = [];
 
@@ -635,7 +644,7 @@ const getItemByIdUser = async (user_id) => {
         let transaction = await redisClient.get("transaction:id:" + transactionId);
         if (transaction) {
           transactions.push(JSON.parse(transaction));
-        } else {
+        } else {  
           // If not in Redis, fetch from the database
           transaction = await Transaction.findOne({
             where: { id: transactionId },
@@ -673,6 +682,7 @@ const getItemByIdUser = async (user_id) => {
       include: [
         {
           model: Item,
+          as: "item",
           attributes: ["id", "name", "description", "price"],
         },
       ],
