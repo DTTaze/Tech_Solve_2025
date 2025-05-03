@@ -13,7 +13,6 @@ function Admin() {
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
-    // Fetch user data from API
     const fetchUserData = async () => {
       try {
         const userResponse = await getUserApi();

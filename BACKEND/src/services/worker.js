@@ -2,8 +2,8 @@ const { Worker } = require("bullmq");
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
+const Coin = db.Coin;
 const Transaction = db.Transaction;
-const Inventory = db.Inventory;
 const { generateCode } = require("../utils/generateCode");
 const { emitStockUpdate } = require("./socketService");
 const {redis} = require("../config/configRedis");
@@ -58,17 +58,37 @@ const worker = new Worker(
   async (job) => {
     const { user_id, item_id, quantity, name } = job.data;
 
-    const item = await Item.findByPk(item_id);
+    const item = await Item.findByPk(item_id, {
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["id", "full_name", "username"],
+        },
+      ],
+    });
+    console.log("check item", item);
     if (!item || item.status !== "available" || item.stock < quantity) {
       throw new Error("Item not available or insufficient stock");
     }
 
-    const user = await User.findByPk(user_id);
-    if (!user || user.coins < item.price * quantity) {
+    const user = await User.findByPk(user_id, {
+      include: [
+        {
+          model: Coin,
+          as: "coins",
+          attributes: ["id", "amount"],
+        },
+      ],
+    });
+    if (!user || user.coins.amount < item.price * quantity) {
       throw new Error("User not found or insufficient balance");
     }
-
-    await user.update({ coins: user.coins - item.price * quantity });
+    console.log("check user from worker", user);
+    console.log("check user coins amount", user.coins.amount);
+    await user.coins.update({
+      amount: user.coins.amount - item.price * quantity,
+    });
     const newStock = item.stock - quantity;
     await item.update({
       stock: newStock,
@@ -76,38 +96,41 @@ const worker = new Worker(
     });
 
     console.log("Publishing stock update event");
-    await publisher.publish("stock-update", JSON.stringify({
-      itemId: item_id,
-      newStock: newStock,
-      name: item.name,
-      price: item.price,
-      status: newStock === 0 ? "sold_out" : "available"
-    }));
+    await publisher.publish(
+      "stock-update",
+      JSON.stringify({
+        itemId: item_id,
+        newStock: newStock,
+        name: item.name,
+        price: item.price,
+        status: newStock === 0 ? "sold_out" : "available",
+      })
+    );
 
     let uniqueCode, exists;
     do {
       uniqueCode = generateCode();
-      exists = await Transaction.findByPk(uniqueCode);
+      exists = await Transaction.findOne({ where: { public_id: uniqueCode } });
     } while (exists !== null);
+
+    const itemSnapshot = {
+      public_id: item.public_id,
+      creator: item.creator.dataValues,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+    };
 
     const transaction = await Transaction.create({
       public_id: uniqueCode,
       name,
       buyer_id: user.id,
       item_id: item.id,
+      item_snapshot: itemSnapshot,
       quantity,
       total_price: item.price * quantity,
       status: "completed",
     });
-
-
-    const encodeItem = await generateEncodeItem(item, user, quantity);
-
-    Inventory.create({
-      user_id: user.id,
-      item_encode: encodeItem,
-    });
-
     return transaction;
   },
   { connection: redis }

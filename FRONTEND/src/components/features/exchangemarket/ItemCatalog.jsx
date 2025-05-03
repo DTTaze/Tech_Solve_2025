@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { getUserApi, purchaseItemApi, createProductApi, updateProductApi, getProductByIdUser, getAllProductsApi, getAllItemsApi } from "../../../utils/api";
+import {
+  getUserApi,
+  purchaseItemApi,
+  createProductApi,
+  updateProductApi,
+  getProductByIdUser,
+  getAllProductsApi,
+  getAllItemsApi,
+} from "../../../utils/api";
 import CatalogHeader from "./CatalogHeader";
 import TabsNavigation from "./TabsNavigation";
 import SearchFilterBar from "./SearchFilterBar";
@@ -79,6 +87,30 @@ function ItemCatalog({ items: propItems }) {
   const [marketCategory, setMarketCategory] = useState("all");
   const [marketStatusFilter, setMarketStatusFilter] = useState("all");
   const [marketSearchText, setMarketSearchText] = useState("");
+  const [dailyPurchases, setDailyPurchases] = useState({}); // Track daily purchases
+
+  // Reset daily purchases at midnight
+  useEffect(() => {
+    const resetDailyPurchases = () => {
+      const now = new Date();
+      const nextMidnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1
+      );
+      const timeToMidnight = nextMidnight - now;
+
+      const timeout = setTimeout(() => {
+        setDailyPurchases({});
+        // Schedule the next reset
+        setInterval(() => setDailyPurchases({}), 24 * 60 * 60 * 1000);
+      }, timeToMidnight);
+
+      return () => clearTimeout(timeout);
+    };
+
+    resetDailyPurchases();
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -102,7 +134,6 @@ function ItemCatalog({ items: propItems }) {
       if (activeTab === "redeem") {
         try {
           const itemsResponse = await getAllItemsApi();
-          console.log(itemsResponse);
           if (itemsResponse && itemsResponse.data) {
             const mappedItems = itemsResponse.data.map((item) => ({
               id: item.id,
@@ -110,13 +141,14 @@ function ItemCatalog({ items: propItems }) {
               description: item.description,
               price: item.price,
               category: item.category,
-              postStatus: item.post_status,
-              condition: item.product_status,
+              postStatus: item.status === "available" ? "public" : item.status, // Map API status
+              condition: item.product_status || "new",
               createdAt: item.created_at,
               image: item.images.length > 0 ? item.images[0] : null,
-              stock: item.stock || null,
-              canPurchase: item.post_status === "public",
-              seller: item.User?.username || "Không xác định",
+              stock: item.stock || 0,
+              canPurchase: item.status === "available",
+              seller: item.creator?.username || "Không xác định",
+              purchaseLimitPerDay: item.purchase_limit_per_day, // Add purchase limit
             }));
             setItems(mappedItems);
           }
@@ -136,7 +168,6 @@ function ItemCatalog({ items: propItems }) {
         try {
           if (user && user.id && marketView === "my_items") {
             const productResponse = await getProductByIdUser(user.id);
-            console.log(productResponse);
             if (productResponse && productResponse.data) {
               const mappedMyItems = productResponse.data.map((item) => ({
                 id: item.id,
@@ -148,9 +179,10 @@ function ItemCatalog({ items: propItems }) {
                 condition: item.product_status,
                 createdAt: item.created_at,
                 image: item.images.length > 0 ? item.images[0] : null,
-                stock: item.stock || null,
+                stock: item.stock || 0,
                 canPurchase: item.post_status === "public",
                 seller: item.seller_id || "Không xác định",
+                purchaseLimitPerDay: item.purchase_limit_per_day, // Add purchase limit
               }));
               setMyItems(mappedMyItems);
             }
@@ -158,7 +190,6 @@ function ItemCatalog({ items: propItems }) {
 
           if (marketView !== "my_items") {
             const allProductsResponse = await getAllProductsApi();
-            console.log(allProductsResponse);
             if (allProductsResponse && allProductsResponse.data) {
               const mappedAllItems = allProductsResponse.data.map((item) => ({
                 id: item.id,
@@ -166,13 +197,14 @@ function ItemCatalog({ items: propItems }) {
                 description: item.description,
                 price: item.price,
                 category: item.category,
-                postStatus: item.post_status,
-                condition: item.product_status,
+                postStatus: item.status === "available" ? "public" : item.status, // Map API status
+                condition: item.product_status || "new",
                 createdAt: item.created_at,
                 image: item.images.length > 0 ? item.images[0] : null,
-                stock: item.stock || null,
-                canPurchase: item.post_status === "public",
-                seller: item.User?.username || "Không xác định",
+                stock: item.stock || 0,
+                canPurchase: item.status === "available",
+                seller: item.creator?.username || "Không xác định",
+                purchaseLimitPerDay: item.purchase_limit_per_day, // Add purchase limit
               }));
               setAllItems(mappedAllItems);
             }
@@ -201,10 +233,23 @@ function ItemCatalog({ items: propItems }) {
         alert("Bạn không có đủ số coins để giao dịch!");
         return;
       }
+      // Check purchase limit
+      const today = new Date().toISOString().split("T")[0];
+      const itemPurchases = dailyPurchases[item.id] || {};
+      const purchasedToday = itemPurchases[today] || 0;
+      if (
+        item.purchaseLimitPerDay !== null &&
+        purchasedToday >= item.purchaseLimitPerDay
+      ) {
+        alert(
+          `Bạn đã đạt giới hạn giao dịch ${item.purchaseLimitPerDay} sản phẩm này trong hôm nay!`
+        );
+        return;
+      }
       setSelectedItem(item);
       setIsModalOpen(true);
     },
-    [userCoins]
+    [userCoins, dailyPurchases]
   );
 
   const confirmPurchase = useCallback(
@@ -215,8 +260,22 @@ function ItemCatalog({ items: propItems }) {
         alert("Bạn không có đủ số coins để giao dịch!");
         return;
       }
+      // Check purchase limit
+      const today = new Date().toISOString().split("T")[0];
+      const itemPurchases = dailyPurchases[selectedItem.id] || {};
+      const purchasedToday = itemPurchases[today] || 0;
+      if (
+        selectedItem.purchaseLimitPerDay !== null &&
+        purchasedToday + quantity > selectedItem.purchaseLimitPerDay
+      ) {
+        alert(
+          `Bạn chỉ có thể mua thêm ${
+            selectedItem.purchaseLimitPerDay - purchasedToday
+          } sản phẩm này trong hôm nay!`
+        );
+        return;
+      }
       try {
-        console.log("Purchasing item:", selectedItem.id, user.id, quantity);
         const response = await purchaseItemApi(user.id, selectedItem.id, {
           name: selectedItem.name,
           quantity: quantity,
@@ -225,6 +284,14 @@ function ItemCatalog({ items: propItems }) {
           const updatedCoins = userCoins - totalCost;
           setUser({ ...user, coins: { amount: updatedCoins } });
           setUserCoins(updatedCoins);
+          // Update daily purchases
+          setDailyPurchases((prev) => ({
+            ...prev,
+            [selectedItem.id]: {
+              ...prev[selectedItem.id],
+              [today]: purchasedToday + quantity,
+            },
+          }));
           setIsModalOpen(false);
           alert(`Trao đổi thành công ${quantity} ${selectedItem.name}!`);
         } else {
@@ -235,7 +302,7 @@ function ItemCatalog({ items: propItems }) {
         alert("Có lỗi xảy ra, vui lòng thử lại!");
       }
     },
-    [selectedItem, user, userCoins]
+    [selectedItem, user, userCoins, dailyPurchases]
   );
 
   const filteredItems = useMemo(() => {
@@ -291,7 +358,9 @@ function ItemCatalog({ items: propItems }) {
         !productData.category ||
         !productData.product_status
       ) {
-        alert("Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, số lượng, danh mục, tình trạng sản phẩm!");
+        alert(
+          "Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, số lượng, danh mục, tình trạng sản phẩm!"
+        );
         return;
       }
 
@@ -319,6 +388,7 @@ function ItemCatalog({ items: propItems }) {
                     createdAt: response.created_at || item.createdAt,
                     stock: response.stock || item.stock,
                     canPurchase: response.post_status === "public",
+                    purchaseLimitPerDay: response.purchase_limit_per_day, // Update limit
                   }
                 : item
             )
@@ -339,6 +409,7 @@ function ItemCatalog({ items: propItems }) {
             stock: response.data.stock || null,
             canPurchase: response.data.post_status === "public",
             seller: user?.username || "Không xác định",
+            purchaseLimitPerDay: response.data.purchase_limit_per_day, // Add limit
           };
           setMyItems((prev) => [...prev, newItem]);
           alert("Thêm sản phẩm mới thành công!");

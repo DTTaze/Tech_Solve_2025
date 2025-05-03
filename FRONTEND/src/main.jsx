@@ -40,10 +40,6 @@ const router = createBrowserRouter([
         index: true,
         element: <Homepage />,
       },
-      // {
-      //   path: "socket",
-      //   element: <SocketTest />,
-      // },
       {
         path: "profile",
         element: <UserProfilePage />,
@@ -60,10 +56,6 @@ const router = createBrowserRouter([
         path: "forgot_password",
         element: <ForgotPassword />,
       },
-      // {
-      //   path: "qr",
-      //   element: <QRCodeDisplay />,
-      // },
       {
         path: "admin",
         element: (
@@ -74,7 +66,6 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboard /> },
           { path: "users", element: <UsersManagement /> },
-
           {
             path: "content",
             element: <ContentManagement />,
@@ -82,6 +73,7 @@ const router = createBrowserRouter([
               { path: "missions", element: <MissionsManagement /> },
               { path: "items", element: <ItemsManagement /> },
               { path: "products", element: <ProductsManagement /> },
+              { path: "events", element: <ProductsManagement /> },
             ],
           },
           { path: "rbac", element: <RolesPermissions /> },
@@ -100,7 +92,7 @@ const router = createBrowserRouter([
       {
         path: "customer",
         element: (
-          <ProtectedRoute requiredRole={["Customer", "Admin"]}>
+          <ProtectedRoute requiredRole={["Customer"]}>
             <Customer />
           </ProtectedRoute>
         ),

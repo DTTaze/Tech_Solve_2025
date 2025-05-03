@@ -11,7 +11,7 @@ const ForgotPassword = () => {
   const { notify } = useNotification();
 
   const token = searchParams.get("token"); 
-  const [mail, setEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
@@ -29,14 +29,13 @@ const ForgotPassword = () => {
   const handleRequestReset = async (e) => {
     e.preventDefault();
     const newErrors = {};
-    if (!mail.trim()) newErrors.mail = "Vui lòng nhập mail.";
-    else if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(mail))
-      newErrors.mail = "Email không hợp lệ.";
+    if (!email.trim()) newErrors.email = "Vui lòng nhập email.";
+    else if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(email))
+      newErrors.email = "Email không hợp lệ.";
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     try {
-      const response = await forgotPasswordApi(mail);
-      console.log(response);
+      const response = await forgotPasswordApi(email);
       if (response) {
         notify("success", "Link đặt lại mật khẩu đã được gửi đến email của bạn!");
         setEmailSent(true);
@@ -57,10 +56,10 @@ const ForgotPassword = () => {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-
+    console.log(token);
     try {
       const res = await resetPasswordApi(token, newPassword);
-      if (res && res.mail) {
+      if (res && res.data.email) {
         notify("success", "Mật khẩu đã được thay đổi thành công!");
         navigate("/login");
       } else {
@@ -82,18 +81,18 @@ const ForgotPassword = () => {
           {!emailSent ? (
             <form onSubmit={handleRequestReset} className="space-y-4">
               <InputField
-                id="mail"
+                id="email"
                 label="Email"
-                value={mail}
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                error={errors.mail}
+                error={errors.email}
               />
               <Button text="Gửi link đặt lại" />
             </form>
           ) : (
             <div className="text-center">
               <p className="text-green-600">
-                Link đặt lại mật khẩu đã được gửi đến {mail}. Vui lòng kiểm tra email của bạn!
+                Link đặt lại mật khẩu đã được gửi đến {email}. Vui lòng kiểm tra email của bạn!
               </p>
             </div>
           )}

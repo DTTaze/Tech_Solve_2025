@@ -67,8 +67,9 @@ const sendResetEmail = async (Email) => {
       throw new Error("Email not found");
     }
     const token = generateToken(Email);
-    const backendURL = process.env.BACKEND_URL;
-    const resetLink = `${backendURL}/api/auth/reset_password?token=${token}`;
+    const frontedURL = process.env.FRONTEND_URL;
+    const resetLink = `${frontedURL}/forgot_password?token=${token}`;
+    console.log("Reset link: ",resetLink);
     console.log("Sending email to:", Email); 
     
     const htmlContent = `
@@ -91,18 +92,19 @@ const resetPassword = async (token, newPassword) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_AT_SECRET);
     const email = decoded.email;
+    console.log("Decoded email:", email);
     if (!email) throw Error("Missing email from decoded email token");
-    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+    const hashedPassword = await bcrypt.hashSync(newPassword, salt);
 
-    const user = await User.findOne({ where: email });
+    const user = await User.findOne({ where: {email} });
     if (!user) {
-      throw new Error("Invalid email or password");
+      throw new Error("Invalid email ");
     }
 
     await user.update({
       password: hashedPassword,
     });
-    return { email, newPassword };
+    return { email };
   } catch (error) {
     throw error;
   }
