@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Product.belongsTo(models.User, {
         foreignKey: "seller_id",
+        as: "seller",
         onDelete: "CASCADE",
       });
     }

@@ -46,13 +46,13 @@ const handleGetProductByIdUser = async (req, res) => {
   }
 };
 
-const handleUpdateProduct = async (req, res) => {
+const handleUpdateProductById = async (req, res) => {
   try {
     const product_id = Number(req.params.id);
     const productData = req.body;
     const images = req.files;
 
-    const updatedProduct = await productService.updateProduct(
+    const updatedProduct = await productService.updateProductById(
       product_id,
       productData,
       images
@@ -97,7 +97,7 @@ module.exports = {
   handleGetAllProducts,
   handleGetProductByIdUser,
   handleGetAllAvailableProducts,
-  handleUpdateProduct,
+  handleUpdateProductById,
   handleUpdateProductByPublicId,
   handleDeleteProduct,
 };

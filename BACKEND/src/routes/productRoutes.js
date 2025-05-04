@@ -17,7 +17,7 @@ router.put(
   "/:id",
   // checkPermission("put", "item_id"),
   middlewareImage.array("images", 5),
-  productController.handleUpdateProduct
+  productController.handleUpdateProductById
 );
 router.delete(
   "/:id",
