@@ -42,6 +42,9 @@ router.put('/update/:event_id',
     eventController.handleUpdateEvent
 );
 
+router.put('/check_in', 
+    eventController.handleCheckInUserByUserId)
+
 router.delete('/delete/:event_id',
     // checkPermission('delete', 'event'),
     eventController.handleDeleteEvent
