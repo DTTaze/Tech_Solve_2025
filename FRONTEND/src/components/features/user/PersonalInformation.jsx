@@ -6,7 +6,6 @@ import Loader from "../../ui/Loader.jsx";
 
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const fetchUser = useCallback(async () => {

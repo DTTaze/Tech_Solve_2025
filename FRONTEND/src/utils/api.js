@@ -111,7 +111,7 @@ export const getAllTasksApi = () => {
 };
 
 export const getAllTaskCompletedById = (id) => {
-  return axios.get(`api/users/task/completed/${id}`);
+  return axios.get(`api/users/task/completed`);
 };
 
 export const acceptTaskApi = (task_id, user_id) => {
@@ -146,8 +146,8 @@ export const submitTaskApi = (task_user_id, data) => {
   });
 };
 
-export const getUserTransactionHistory = (user_id) => {
-  return axios.get(`api/transactions/${user_id}`);
+export const getUserTransactionHistory = (buyer_id) => {
+  return axios.get(`api/transactions/${buyer_id}`);
 };
 
 export const increaseProgressCountApi = (task_user_id) => {

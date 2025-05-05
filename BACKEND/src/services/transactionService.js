@@ -65,7 +65,7 @@ const createTransaction = async (transactionData) => {
 
 const getTransactionByUserId = async (buyer_id) => {
   try {
-    const listBuyerTransactioncacheId = await redisClient.get(`buyer:transaction:id:${buyerId}`);
+    const listBuyerTransactioncacheId = await redisClient.get(`buyer:transaction:id:${buyer_id}`);
     if (listBuyerTransactioncacheId) {
       console.log("listBuyerTransactioncacheId", listBuyerTransactioncacheId);
       const listTransactionId = JSON.parse(listBuyerTransactioncacheId);

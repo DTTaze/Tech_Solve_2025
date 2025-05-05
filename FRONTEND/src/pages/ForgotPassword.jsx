@@ -9,7 +9,6 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { notify } = useNotification();
-
   const token = searchParams.get("token"); 
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -56,7 +55,6 @@ const ForgotPassword = () => {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-    console.log(token);
     try {
       const res = await resetPasswordApi(token, newPassword);
       if (res && res.data.email) {
