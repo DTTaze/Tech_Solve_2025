@@ -6,9 +6,47 @@ const Image = db.Image;
 const { nanoid } = require("nanoid");
 const { uploadImages, deleteImages } = require("./imageService");
 const cloudinary = require("../config/cloudinary");
+const { getCache, setCache, deleteCache } = require("../utils/cache");
+const {getImageById} = require("./imageService");
+const { getUserByID } = require("./userService");
 
 const getEventById = async (eventId) => {
   try {
+    const cachedEvent = await getCache(`event:${eventId}`);
+    if (cachedEvent) {
+      console.log("cachedEvent", cachedEvent);
+      const event = (cachedEvent);
+      let uploadedImages = [];
+      for (const imageId of event.imagesId) {
+        if (!imageId) {
+          continue;
+        }
+        // Check if imageId is valid
+        const image = await getImageById(imageId);
+        if (image) {
+          uploadedImages.push(image);
+        }
+      };
+      const creator = await getUserByID(event.creator_id);
+
+      const imagesFormat = uploadedImages.reduce((acc, image) => {
+        if (!acc[image.reference_id]) {
+          acc[image.reference_id] = [];
+        }
+        acc[image.reference_id].push(image.url);
+        return acc;
+      },{});
+
+      const eventFormat = {
+        ...event,
+        images: imagesFormat,
+        creator: {
+          username : creator.username},
+      };
+      delete eventFormat.imagesId;
+      return eventFormat;
+    }
+
     const event = await Event.findOne({
       where: { id: eventId },
       include: [
@@ -20,7 +58,7 @@ const getEventById = async (eventId) => {
       ],
     });
 
-    const uploadedImages = await db.Image.findAll({
+    const uploadedImages = await Image.findAll({
       where: {
         reference_id: eventId,
         reference_type: "event",
@@ -31,6 +69,14 @@ const getEventById = async (eventId) => {
     if (!event) {
       throw new Error("Event not found");
     }
+
+    const cachedEventFormat = {
+      ...event.toJSON(),
+      imagesId: uploadedImages.map((image) => image.id),
+    }
+    delete cachedEventFormat.images;
+    delete cachedEventFormat.creator;
+    await setCache(`event:${eventId}`, cachedEventFormat);
 
     return {
       ...event.toJSON(),
