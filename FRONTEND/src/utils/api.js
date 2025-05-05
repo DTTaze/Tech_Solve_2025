@@ -270,3 +270,15 @@ export const deleteProductApi = (id) => {
 export const getAllEventsApi = () => {
   return axios.get("api/events/informations");
 };
+
+export const getOwnerEventApi = () => {
+  return axios.get("api/events/creator");
+}
+
+export const getEventUserByEventIdApi = (event_id) => {
+  return axios.get(`api/events/user/${event_id}`);
+}
+
+export const CheckInUserByUserIdApi = (event_id) => {
+  return axios.post(`api/events/check_in`, { event_id });
+}

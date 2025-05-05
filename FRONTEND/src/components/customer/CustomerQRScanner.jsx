@@ -11,31 +11,16 @@ import {
 import { useOutletContext } from "react-router-dom";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { injectQRScannerStyles } from "./QRScannerStyles";
-import EventSelector from "./EventSelector";
+import EventSelector, { getEventNameById } from "./EventSelector";
 import QRScanner from "./QRScanner";
 import ScannedUsersList from "./ScannedUsersList";
 import HowItWorks from "./HowItWorks";
 import ManualAddDialog from "./ManualAddDialog";
-
-// Sample scanned users (would come from actual QR scans in a real app)
-const SAMPLE_SCANNED_USERS = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatar: "https://mui.com/static/images/avatar/1.jpg",
-    scannedAt: "2023-08-10T14:32:15",
-    eventId: 3,
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    avatar: "https://mui.com/static/images/avatar/2.jpg",
-    scannedAt: "2023-08-10T14:35:22",
-    eventId: 3,
-  },
-];
+import {
+  getUserByIDPublicApi,
+  getEventUserByEventIdApi,
+  CheckInUserByUserIdApi,
+} from "../../utils/api";
 
 export default function CustomerQRScanner() {
   const userInfo = useOutletContext();
@@ -44,7 +29,7 @@ export default function CustomerQRScanner() {
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [scannedUsers, setScannedUsers] = useState(SAMPLE_SCANNED_USERS);
+  const [scannedUsers, setScannedUsers] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [manualAddOpen, setManualAddOpen] = useState(false);
@@ -52,10 +37,43 @@ export default function CustomerQRScanner() {
     name: "",
     email: "",
   });
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     injectQRScannerStyles();
   }, []);
+
+  // Fetch scanned users when event changes
+  useEffect(() => {
+    const fetchScannedUsers = async () => {
+      if (selectedEvent) {
+        try {
+          const response = await getEventUserByEventIdApi(selectedEvent);
+          console.log("Fetched scanned users: ", response);
+          const users = response.data.map((user) => ({
+            id: user.id,
+            name: user.full_name,
+            email: user.email,
+            avatar:
+              user.avatar_url ||
+              `https://mui.com/static/images/avatar/${
+                Math.floor(Math.random() * 8) + 1
+              }.jpg`,
+            scannedAt: user.check_in_time || new Date().toISOString(),
+            eventId: selectedEvent,
+          }));
+          setScannedUsers(users);
+        } catch (error) {
+          console.error("Error fetching scanned users:", error);
+          setError("Failed to fetch scanned users");
+        }
+      } else {
+        setScannedUsers([]);
+      }
+    };
+
+    fetchScannedUsers();
+  }, [selectedEvent]);
 
   const handleEventChange = (event) => {
     setSelectedEvent(event.target.value);
@@ -66,10 +84,51 @@ export default function CustomerQRScanner() {
     setLoading(false);
   };
 
-  const handleScanResult = (result) => {
-    setResult(result);
-    setScanning(false);
-    // Handle the scanned result here
+  const handleScanResult = async (public_id) => {
+    try {
+      setLoading(true);
+      console.log("Scanned QR code result: ", public_id);
+
+      // Get user data
+      const userResponse = await getUserByIDPublicApi(public_id);
+      const userData = userResponse.data;
+
+      // Check in user
+      await CheckInUserByUserIdApi(userData.id, selectedEvent);
+
+      setResult(userData.full_name);
+      setScanning(false);
+      setLoading(false);
+
+      // Refresh scanned users list
+      const updatedResponse = await getEventUserByEventIdApi(selectedEvent);
+      const updatedUsers = updatedResponse.data.map((user) => ({
+        id: user.id,
+        name: user.full_name,
+        email: user.email,
+        avatar:
+          user.avatar_url ||
+          `https://mui.com/static/images/avatar/${
+            Math.floor(Math.random() * 8) + 1
+          }.jpg`,
+        scannedAt: user.check_in_time || new Date().toISOString(),
+        eventId: selectedEvent,
+      }));
+      setScannedUsers(updatedUsers);
+
+      setSuccessMessage(
+        `Đã thêm ${userData.full_name} vào sự kiện: ${getEventNameById(
+          selectedEvent,
+          events
+        )}`
+      );
+      setShowSuccess(true);
+    } catch (error) {
+      console.error("Error during scan process:", error);
+      setError("Failed to process scan");
+      setLoading(false);
+      setScanning(false);
+    }
   };
 
   const handleManualInputChange = (event) => {
@@ -79,7 +138,7 @@ export default function CustomerQRScanner() {
     });
   };
 
-  const handleManualAdd = () => {
+  const handleManualAdd = async () => {
     if (!selectedEvent) {
       setSuccessMessage("Please select an event first");
       setShowSuccess(true);
@@ -87,26 +146,33 @@ export default function CustomerQRScanner() {
       return;
     }
 
-    const newUser = {
-      id: Math.floor(Math.random() * 1000),
-      name: manualUser.name,
-      email: manualUser.email,
-      avatar: `https://mui.com/static/images/avatar/${
-        Math.floor(Math.random() * 8) + 1
-      }.jpg`,
-      scannedAt: new Date().toISOString(),
-      eventId: selectedEvent,
-    };
-
-    setScannedUsers([newUser, ...scannedUsers]);
-    setManualAddOpen(false);
-    setManualUser({ name: "", email: "" });
-    setSuccessMessage(`${manualUser.name} has been added to the event`);
-    setShowSuccess(true);
+    try {
+      // Here you would need to implement the manual add API call
+      // For now, we'll just show a message
+      setManualAddOpen(false);
+      setManualUser({ name: "", email: "" });
+      setSuccessMessage(
+        `${manualUser.name} đã được thêm vào sự kiện: ${getEventNameById(
+          selectedEvent,
+          events
+        )}`
+      );
+      setShowSuccess(true);
+    } catch (error) {
+      console.error("Error adding user manually:", error);
+      setError("Failed to add user manually");
+    }
   };
 
-  const handleRemoveUser = (userId) => {
-    setScannedUsers(scannedUsers.filter((user) => user.id !== userId));
+  const handleRemoveUser = async (userId) => {
+    try {
+      // Here you would need to implement the remove user API call
+      // For now, we'll just update the local state
+      setScannedUsers(scannedUsers.filter((user) => user.id !== userId));
+    } catch (error) {
+      console.error("Error removing user:", error);
+      setError("Failed to remove user");
+    }
   };
 
   return (
@@ -138,6 +204,7 @@ export default function CustomerQRScanner() {
               <EventSelector
                 selectedEvent={selectedEvent}
                 onEventChange={handleEventChange}
+                onEventsLoaded={setEvents}
               />
 
               <Typography variant="h6" gutterBottom>
@@ -153,6 +220,12 @@ export default function CustomerQRScanner() {
               {!selectedEvent && (
                 <Alert severity="info" sx={{ mt: 2 }}>
                   Please select an event before scanning
+                </Alert>
+              )}
+
+              {error && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {error}
                 </Alert>
               )}
 

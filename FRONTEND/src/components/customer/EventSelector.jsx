@@ -1,51 +1,34 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { getOwnerEventApi } from "../../utils/api";
+import dayjs from 'dayjs';
 
-const EVENTS = [
-  {
-    id: 1,
-    name: "Tree Planting Initiative",
-    date: "2023-06-15",
-    location: "City Park",
-  },
-  {
-    id: 2,
-    name: "Beach Clean-up Drive",
-    date: "2023-07-22",
-    location: "West Coast Beach",
-  },
-  {
-    id: 3,
-    name: "Tech Innovation Fair",
-    date: "2023-08-10",
-    location: "Convention Center",
-  },
-  {
-    id: 4,
-    name: "Renewable Energy Workshop",
-    date: "2023-09-05",
-    location: "Community Center",
-  },
-  {
-    id: 5,
-    name: "Wildlife Conservation Talk",
-    date: "2023-05-20",
-    location: "City Library",
-  },
-  {
-    id: 6,
-    name: "Sustainable Fashion Show",
-    date: "2023-04-12",
-    location: "Arts Center",
-  },
-];
-
-export const getEventNameById = (eventId) => {
-  const event = EVENTS.find((e) => e.id === eventId);
-  return event ? event.name : "Unknown Event";
+export const getEventNameById = (eventId, events = []) => {
+  const event = events.find((e) => String(e.id) === String(eventId));
+  return event ? event.title : "Unknown Event";
 };
 
 export default function EventSelector({ selectedEvent, onEventChange }) {
+  const [events, setEvents] = useState([]);
+  console.log("selected event: ", selectedEvent)
+  console.log("on event change: ", onEventChange)
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await getOwnerEventApi();
+        console.log("Fetched events:", response.data); // Debugging line
+        console.log("Start time:", dayjs(response.data[0].start_time).format("HH:mm DD/MM/YYYY")); // Debugging line
+
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents(); 
+  }, []);
+
   return (
     <FormControl fullWidth sx={{ mb: 3 }}>
       <InputLabel id="event-select-label">Event</InputLabel>
@@ -56,9 +39,10 @@ export default function EventSelector({ selectedEvent, onEventChange }) {
         label="Event"
         onChange={onEventChange}
       >
-        {EVENTS.map((event) => (
+        {events.map((event) => (
           <MenuItem key={event.id} value={event.id}>
-            {event.name} - {new Date(event.date).toLocaleDateString()}
+            {event.title} -{" "}
+            {dayjs(event.start_time).format("HH:mm DD/MM/YYYY")} to {dayjs(event.end_time).format("HH:mm DD/MM/YYYY")}
           </MenuItem>
         ))}
       </Select>
