@@ -477,19 +477,50 @@ const getAllTasksById = async (id) => {
 const getTaskCompleted = async (user_id) => {
   try {
     const allTasksUser = await getAllTasksById(user_id);
+    console.log(
+      `check all tasks user: ${JSON.stringify(allTasksUser, null, 2)}`
+    );
+
+    if (!Array.isArray(allTasksUser) || allTasksUser.length === 0) {
+      console.log(`No tasks found for user_id: ${user_id}`);
+      return [];
+    }
+
     let completedTasks = [];
+
     for (const taskUser of allTasksUser) {
       let task = await getCache(`task:id:${taskUser.task_id}`);
+
       if (!task) {
+        // Nếu không có trong cache thì lấy từ DB và cache lại
         task = await Task.findOne({ where: { id: taskUser.task_id } });
-        if (task) await setCache(`task:id:${taskUser.task_id}`, task);
-        else throw new Error("Task not found");
+
+        if (task) {
+          task = task.toJSON(); // Sequelize instance => plain object
+          await setCache(`task:id:${taskUser.task_id}`, task); // Đã stringify trong setCache
+        } else {
+          console.log(`Task not found for task_id: ${taskUser.task_id}`);
+          continue;
+        }
       }
-      if (taskUser.progress_count >= task.total_count)
+
+      // task đã được parse sẵn từ getCache nên không cần JSON.parse
+      console.log(`Task details: ${JSON.stringify(task, null, 2)}`);
+
+      const progress = Number(taskUser.progress_count) || 0;
+      const total = Number(task.total) || 0; // Đảm bảo field đúng
+
+      console.log(`Progress: ${progress}, Total: ${total}`);
+
+      if (progress >= total && total > 0) {
         completedTasks.push(task);
+      }
     }
+
+    console.log(`Completed tasks: ${JSON.stringify(completedTasks, null, 2)}`);
     return completedTasks;
   } catch (e) {
+    console.error(`Error in getTaskCompleted: ${e.message}`);
     throw e;
   }
 };

@@ -286,7 +286,7 @@ function Mission() {
         // Get detailed task information for each task ID
         const dailyTasksData = await Promise.all(
           TasksByTypeName.data.map(async (task) => {
-            const taskData = await getTaskByIdApi(task.task_id);
+            const taskData = await getTaskByIdApi(task.id);
             return taskData.data;
           })
         );
@@ -302,7 +302,7 @@ function Mission() {
                 )
             )
             .map(async (userTask) => {
-              const taskData = await getTaskByIdApi(userTask.task_id);
+              const taskData = await getTaskByIdApi(userTask.id);
               const task = taskData.data;
               return task
                 ? {
@@ -365,7 +365,7 @@ function Mission() {
         // Get detailed task information for each task ID
         const otherTasksData = await Promise.all(
           TasksByTypeName.data.map(async (task) => {
-            const taskData = await getTaskByIdApi(task.task_id);
+            const taskData = await getTaskByIdApi(task.id);
             return taskData.data;
           })
         );
@@ -381,7 +381,7 @@ function Mission() {
                 )
             )
             .map(async (userTask) => {
-              const taskData = await getTaskByIdApi(userTask.task_id);
+              const taskData = await getTaskByIdApi(userTask.id);
               const task = taskData.data;
               return task
                 ? {

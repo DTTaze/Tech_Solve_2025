@@ -13,12 +13,12 @@ export const logoutUserApi = () => {
 };
 
 export const forgotPasswordApi = (email) => {
-  return axios.post("/api/auth/forgot_password", { email }); 
-}
+  return axios.post("/api/auth/forgot_password", { email });
+};
 
 export const resetPasswordApi = (token, newPassword) => {
-  return axios.post("/api/auth/reset_password", {token, newPassword})
-}
+  return axios.post("/api/auth/reset_password", { token, newPassword });
+};
 
 export const getUserApi = () => {
   return axios.get("api/users/me");
@@ -110,7 +110,7 @@ export const getAllTasksApi = () => {
   return axios.get("api/tasks");
 };
 
-export const getAllTaskCompletedById = (id) => {
+export const getAllTaskCompletedById = () => {
   return axios.get(`api/users/task/completed`);
 };
 
@@ -234,15 +234,15 @@ export const getQRApi = (text) => {
 
 export const getAllTasksByTypeNameApi = (type_name) => {
   return axios.get(`api/tasks/type/${type_name}`);
-}
+};
 
 export const rearrangeRankApi = () => {
   return axios.post("api/ranks/rearrange");
-}
+};
 
 export const getUserByIdApi = (id) => {
   return axios.get(`api/users/${id}`);
-}
+};
 export const getAdminQueueApi = () => {
   return axios.get("api/admin/queues");
 };
@@ -269,4 +269,4 @@ export const deleteProductApi = (id) => {
 
 export const getAllEventsApi = () => {
   return axios.get("api/events/informations");
-}
+};
