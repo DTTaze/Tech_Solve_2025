@@ -162,16 +162,15 @@ const acceptTask = async (task_id, user_id) => {
     const user = await User.findByPk(user_id);
     if (!user) throw new Error("User not found");
     const result = await TaskUser.create({ user_id, task_id });
-    const taskUserData = result.toJSON();
     //Cache usertask
-    await setCache(`taskuser:id:${taskUserData.id}`, taskUserData);
+    await setCache(`taskuser:id:${result.id}`, result);
     let all_user_task_ids = await getCache(`all:User:taskId:${user_id}`);
     if (all_user_task_ids){ 
       all_user_task_ids.push(Number(user_id));
       await setCache(`all:User:taskId:${user_id}`);
     };
 
-    return taskUserData;
+    return result;
   } catch (e) {
     throw e;
   }
