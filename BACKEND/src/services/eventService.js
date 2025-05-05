@@ -9,10 +9,11 @@ const cloudinary = require("../config/cloudinary");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 const {getImageById} = require("./imageService");
 const { getUserByID } = require("./userService");
+const { get } = require("../routes/eventRoutes");
 
 const getEventById = async (eventId) => {
   try {
-    const cachedEvent = await getCache(`event:${eventId}`);
+    const cachedEvent = await getCache(`event:id:${eventId}`);
     if (cachedEvent) {
       console.log("cachedEvent", cachedEvent);
       const event = (cachedEvent);
@@ -51,7 +52,7 @@ const getEventById = async (eventId) => {
       where: { id: eventId },
       include: [
         {
-          model: db.User,
+          model: User,
           as: "creator",
           attributes: ["username"],
         },
@@ -76,7 +77,7 @@ const getEventById = async (eventId) => {
     }
     delete cachedEventFormat.images;
     delete cachedEventFormat.creator;
-    await setCache(`event:${eventId}`, cachedEventFormat);
+    await setCache(`event:id:${eventId}`, cachedEventFormat);
 
     return {
       ...event.toJSON(),
@@ -90,6 +91,19 @@ const getEventById = async (eventId) => {
 
 const getAllEvents = async () => {
   try {
+    const cachedEventIds = await getCache(`event:all`);
+    if (cachedEventIds) {
+      console.log("cachedEventIds", cachedEventIds);
+      const events = [];
+      for (const eventId of cachedEventIds) {
+        const event = await getEventById(eventId);
+        if (event) {
+          events.push(event);
+        }
+      }
+      return events;
+    }
+
     const events = await Event.findAll({
       include: [
         {
@@ -99,23 +113,34 @@ const getAllEvents = async () => {
         },
       ],
     });
+    const eventsWithImages = [];
+    const eventIds = [];
+    for (const event of events) {
+      const uploadedImages = await Image.findAll({
+        where: {
+          reference_id: event.id,
+          reference_type: "event",
+        },
+        attributes: ["url"],
+      });
+      const imagesFormat = uploadedImages.reduce((acc, image) => {
+        if (!acc[image.reference_id]) {
+          acc[image.reference_id] = [];
+        }
+        acc[image.reference_id].push(image.url);
+        return acc;
+      },{});
+      const eventFormat = {
+        ...event.toJSON(),
+        images: imagesFormat,
+      };
+      eventsWithImages.push(eventFormat);
 
-    const eventsWithImages = await Promise.all(
-      events.map(async (event) => {
-        const uploadedImages = await db.Image.findAll({
-          where: {
-            reference_id: event.id,
-            reference_type: "event",
-          },
-          attributes: ["url"],
-        });
+      eventIds.push(event.id);
+    }
 
-        return {
-          ...event.toJSON(),
-          images: uploadedImages.map((image) => image.url),
-        };
-      })
-    );
+    // Cache all events
+    await setCache(`event:all`, eventIds);
 
     return eventsWithImages;
   } catch (error) {
@@ -124,13 +149,13 @@ const getAllEvents = async () => {
   }
 };
 
-const getEventSigned = async (userId) => {
+const getEventSigned = async (user_id) => {
   try {
     const allEvents = await EventUser.findAll({
-      where: { user_id: userId },
+      where: { user_id },
       include: [
         {
-          model: db.Event,
+          model: Event,
           attributes: [
             "title",
             "description",
@@ -153,6 +178,18 @@ const getEventSigned = async (userId) => {
 
 const getEventsOfCreator = async (creator_id) => {
   try {
+    const cachedEventIds = await getCache(`event:all`);
+    if (cachedEventIds) {
+      console.log("cachedEventIds", cachedEventIds);
+      const events = [];
+      for (const eventId of cachedEventIds) {
+        const event = await getEventById(eventId);
+        if (event && event.creator_id === creator_id) {
+          events.push(event);
+        }
+      }
+      return events;
+    }
     const events = await Event.findAll({
       where: { creator_id },
     });
@@ -181,6 +218,9 @@ const createEvent = async (Data, user_id, images) => {
       throw new Error("All fields are required");
     }
 
+    // Check creator_id
+    const creator = await getUserByID(user_id);
+
     // Validate datetime format
     const isValidDate = (date) => !isNaN(Date.parse(date));
     if (!isValidDate(start_time) || !isValidDate(end_time)) {
@@ -204,11 +244,32 @@ const createEvent = async (Data, user_id, images) => {
     if (images && images.length > 0) {
       uploadedImages = await uploadImages(images, event.id, "event");
     }
+    
+    const imagesFormat = uploadedImages.reduce((acc, image) => {
+      if (!acc[image.reference_id]) {
+        acc[image.reference_id] = [];
+      }
+      acc[image.reference_id].push(image.url);
+      return acc;
+    }
+    ,{});
+
+    // Cache the event
+    const eventCacheFormat = {
+      ...event.toJSON(),
+      imagesId: uploadedImages.map((image) => image.id),
+    };
+    await setCache(`event:id:${event.id}`, eventCacheFormat);
 
     return {
       ...event.toJSON(),
-      images: uploadedImages.map((image) => image.url),
+      creator: {
+        id: creator.id,
+        username: creator.username,
+      },
+      images: imagesFormat,
     };
+
   } catch (error) {
     console.error("Error creating event:", error);
     throw error;
@@ -306,19 +367,22 @@ const updateEvent = async (event_id, Data, images) => {
     }
 
     await event.update(updateFields);
+    //delete cache
+    await deleteCache(`event:id:${event_id}`);
 
     let uploadedImages = [];
 
     if (images && images.length > 0) {
+      // Delete old images and cache
       await deleteImages(event.id, "event");
-
+      // Upload new images and cache
       uploadedImages = await uploadImages(images, event.id, "event");
 
       if (!uploadedImages || uploadedImages.length === 0) {
         throw new Error("Failed to upload images");
       }
     } else {
-      uploadedImages = await db.Image.findAll({
+      uploadedImages = await Image.findAll({
         where: {
           reference_id: event.id,
           reference_type: "event",
@@ -346,7 +410,23 @@ const deleteEvent = async (event_id) => {
 
     const listImagesBeforeDelete = await deleteImages(event_id, "event");
 
+    listImagesBeforeDelete = listImagesBeforeDelete.reduce((acc, image) => {
+      if (!acc[image.reference_id]) {
+        acc[image.reference_id] = [];
+      }
+      acc[image.reference_id].push(image.url);
+      return acc;
+    }
+    ,{});
+
+    //delete cache
+    await deleteCache(`event:id:${event_id}`);
+    let eventIds = await getCache('event:all');
+    eventIds = eventIds.filter((id) => Number(id) != event_id)
+    await setCache('event:all', eventIds)
+
     await event.destroy();
+
     return {
       ...event.toJSON(),
       images: listImagesBeforeDelete,
