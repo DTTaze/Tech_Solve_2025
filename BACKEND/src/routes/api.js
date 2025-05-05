@@ -17,6 +17,7 @@ const rankRoutes = require("./rankRoutes.js");
 const qrRoutes = require("./qrRoutes.js");
 const eventRoutes = require("./eventRoutes.js");
 const productRoutes = require("./productRoutes.js");
+const deliveryRoutes = require("./deliveryRoutes.js");
 
 const router = express.Router();
 const serverAdapter = require("../services/bullboard.js");
@@ -41,8 +42,9 @@ const initWebRoutes = (app) => {
   app.use("/api/transactions", transactionRoutes);
   app.use("/api/coins", coinRoutes);
   app.use("/api/ranks", rankRoutes);
-  app.use("/api", qrRoutes);
+  app.use("/api/qr", qrRoutes);
   app.use("/api/events", eventRoutes);
+  app.use("/api/delivery", deliveryRoutes);
 
   return app.use("/api", router);
 };

@@ -27,6 +27,7 @@ import CustomerDashboard from "./components/customer/CustomerDashboard.jsx";
 import CustomerProfile from "./components/customer/CustomerProfile.jsx";
 import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
+import QRCodeDisplay from "./components/common/QRCodeDisplay.jsx";
 import App from "./App.jsx";
 import "./index.css";
 
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
           { path: "orders", element: <CustomerOrders /> },
           { path: "rewards", element: <CustomerRewards /> },
         ],
+      },
+      {
+        path: "qr",
+        element: <QRCodeDisplay />,
       },
     ],
   },

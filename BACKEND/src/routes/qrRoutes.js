@@ -3,6 +3,6 @@ const qrController = require("../controllers/qrController");
 
 const router = express.Router();
 
-router.get("/qr", qrController.handleCreateQR);
+router.get("/", qrController.handleCreateQR);
 
 module.exports = router;
