@@ -1,20 +1,19 @@
 import { useContext, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { loginUserApi } from "../utils/api";
-import { AuthContext } from "../contexts/auth.context";
 import { useNotification } from "../components/ui/NotificationProvider";
+import { AuthContext } from "../contexts/auth.context";
+import { loginUserApi } from "../utils/api";
 import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { setAuth } = useContext(AuthContext);
+  const { auth,setAuth } = useContext(AuthContext);
   const { notify } = useNotification();
-
-  const [showPassword, setShowPassword] = useState(false);
   const [identifier, setIdentifier] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [isLoginDisabled, setIsLoginDisabled] = useState(false);
@@ -41,18 +40,16 @@ const LoginPage = () => {
         notify("success", "Đăng nhập thành công!");
         setAuth({
           isAuthenticated: true,
-          user: {
-            email: res.data.user?.email ?? "",
-            username: res.data.user?.username ?? "",
-            role_id: res.data.user?.role_id,
-          },
+          user: res.data.user 
         });
         if (res.data.user.role_id === 1) {
           navigate("/admin");
+        } else if(res.data.user.role_id === 2) {
+          navigate("/");
         } else if (res.data.user.role_id === 3) {
           navigate("/customer");
         } else {
-          navigate("/");
+          notify("error", "Đã xảy ra lỗi, vui lòng thử lại sau");
         }
       } else {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");

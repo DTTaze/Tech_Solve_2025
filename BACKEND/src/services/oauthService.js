@@ -6,6 +6,7 @@ const User = db.User;
 const Role = db.Role;
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
+const { redisClient } = require("../config/configRedis");
 
 const googleAuthCallback = async (user) => {
   try {
@@ -92,6 +93,12 @@ const resetPassword = async (token, newPassword) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_AT_SECRET);
     const email = decoded.email;
+    const emailcache = await redisClient.get(`reset:email:${email}`,'EX', 60 * 60);
+    const time_to_live = await redisClient.ttl(`reset:email:${email}`);
+    if (emailcache) {
+      console.log(`Email can be reseted only after ${time_to_live}`);
+      throw new Error(`Email can be reseted only after ${time_to_live}`);
+    }
     console.log("Decoded email:", email);
     if (!email) throw Error("Missing email from decoded email token");
     const hashedPassword = await bcrypt.hashSync(newPassword, salt);
@@ -104,6 +111,8 @@ const resetPassword = async (token, newPassword) => {
     await user.update({
       password: hashedPassword,
     });
+
+    await redisClient.set(`reset:email:${email}`, email, 'EX', 60 * 60);
     return { email };
   } catch (error) {
     throw error;

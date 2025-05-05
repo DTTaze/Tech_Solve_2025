@@ -1,21 +1,19 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AuthWrapper } from "./contexts/auth.context.jsx";
+import { StrictMode } from "react";
+import { AuthProvider } from "./contexts/auth.context.jsx";
+import { NotificationProvider } from "./components/ui/NotificationProvider";
+import LoginPage from "./pages/Login.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx";
+import RegisterPage from "./pages/Register.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import MissionPage from "./pages/Mission.jsx";
-import UserProfilePage from "./pages/User.jsx";
-import LoginPage from "./pages/Login.jsx";
-import RegisterPage from "./pages/Register.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
-import Admin from "./pages/Admin.jsx";
-import Customer from "./pages/Customer.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
+import UserProfilePage from "./pages/User.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
-import App from "./App.jsx";
-import AuthCallback from "./pages/AuthCallback.jsx";
-import "./index.css";
-import { NotificationProvider } from "./components/ui/NotificationProvider";
+import Admin from "./pages/Admin.jsx";
+import AdminQueue from "./pages/AdminQueue.jsx";
 import AdminDashboard from "./components/admin/AdminDashboard.jsx";
 import UsersManagement from "./components/admin/UsersManagement.jsx";
 import ContentManagement from "./components/admin/ContentManagement.jsx";
@@ -23,14 +21,15 @@ import RolesPermissions from "./components/admin/RolesPermissions.jsx";
 import MissionsManagement from "./components/admin/MissionsManagement.jsx";
 import ItemsManagement from "./components/admin/ItemsManagement.jsx";
 import TransactionsManagement from "./components/admin/TransactionsManagement.jsx";
-import QRCodeDisplay from "./components/common/QRCodeDisplay.jsx";
+import ProductsManagement from "./components/admin/ProductsManagement.jsx";
+import Customer from "./pages/Customer.jsx";
 import CustomerDashboard from "./components/customer/CustomerDashboard.jsx";
 import CustomerProfile from "./components/customer/CustomerProfile.jsx";
 import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
-import AdminQueue from "./pages/AdminQueue.jsx";
-import ProductsManagement from "./components/admin/ProductsManagement.jsx";
-import SocketTest from "./components/SocketTest.jsx";
+import App from "./App.jsx";
+import "./index.css";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -82,7 +81,6 @@ const router = createBrowserRouter([
             path: "queues",
             element: <AdminQueue />,
           },
-          // { path: "rewards", element: <RewardManagement /> },
         ],
       },
       {
@@ -117,10 +115,10 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthWrapper>
+    <AuthProvider>
       <NotificationProvider>
         <RouterProvider router={router} />
       </NotificationProvider>
-    </AuthWrapper>
+    </AuthProvider>
   </StrictMode>
 );

@@ -65,7 +65,7 @@ const createTransaction = async (transactionData) => {
 
 const getTransactionByUserId = async (buyer_id) => {
   try {
-    const listBuyerTransactioncacheId = await redisClient.get(`buyer:transaction:id:${buyerId}`);
+    const listBuyerTransactioncacheId = await redisClient.get(`buyer:transaction:id:${buyer_id}`);
     if (listBuyerTransactioncacheId) {
       console.log("listBuyerTransactioncacheId", listBuyerTransactioncacheId);
       const listTransactionId = JSON.parse(listBuyerTransactioncacheId);
@@ -105,7 +105,7 @@ const getTransactionByUserId = async (buyer_id) => {
     // Add transaction to Redis
     const transactionIds = transaction.map((item) => item.id);
     await redisClient.set(
-      `buyer:transaction:id:${buyerId}`,
+      `buyer:transaction:id:${buyer_id}`,
       JSON.stringify(transactionIds),
       "EX",
       3600 // Set expiration time to 1 hour

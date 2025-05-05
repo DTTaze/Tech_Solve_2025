@@ -85,7 +85,6 @@ const getEventSigned = async (userId) => {
       include: [
         {
           model: db.Event,
-          as: "event",
           attributes: [
             "title",
             "description",
@@ -312,6 +311,33 @@ const deleteEvent = async (event_id) => {
   }
 };
 
+const checkInUserByUserId = async (event_id, user_id) => {
+  try {
+    if (!event_id || !user_id) {
+      throw new Error("Event ID and User ID are required");
+    }
+    const event = await Event.findByPk(event_id);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    const eventUser = await EventUser.findOne({
+      where: { event_id, user_id },
+    });
+
+    if (!eventUser) {
+      throw new Error("User not found in this event");
+    }
+
+    await eventUser.update({ joined_at: new Date() });
+
+    return eventUser;
+  } catch (error) {
+    console.error("Error checking in user:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   getEventById,
   getAllEvents,
@@ -321,4 +347,5 @@ module.exports = {
   acceptEvent,
   updateEvent,
   deleteEvent,
+  checkInUserByUserId,
 };
