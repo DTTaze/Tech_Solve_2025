@@ -25,6 +25,11 @@ router.get('/creator',
     eventController.handGetEventsOfCreator
 );
 
+router.get('/user/:event_id',
+    // checkPermission('read', 'event'),
+    eventController.handlegetEventUserByEventId
+);
+
 router.post('/create',
 //   checkPermission('create', 'event'),
     middlewareImage.array('images',5),
@@ -41,6 +46,9 @@ router.put('/update/:event_id',
     middlewareImage.array('images',5),
     eventController.handleUpdateEvent
 );
+
+router.put('/check_in', 
+    eventController.handleCheckInUserByUserId)
 
 router.delete('/delete/:event_id',
     // checkPermission('delete', 'event'),

@@ -10,13 +10,13 @@ function CompletedTasksList() {
   const fetchUserCompletedTasks = useCallback(async () => {
     try {
       const { data: user } = await getUserApi();
-      const { data: tasks } = await getAllTaskCompletedById(user.id);
+      const { data: tasks } = await getAllTaskCompletedById();
       setUserCompletedTasks(
-        tasks.map(({ id, tasks, coins_per_user, completed_at }) => ({
+        tasks.map(({ id, title, coins, created_at }) => ({
           id,
-          name: tasks.title,
-          points: coins_per_user,
-          completedAt: completed_at,
+          name: title,
+          points: coins,
+          completedAt: created_at,
         }))
       );
     } catch (error) {
@@ -31,7 +31,9 @@ function CompletedTasksList() {
   }, [fetchUserCompletedTasks]);
 
   const requestSort = (key) => {
-    setSortOrder((prevOrder) => (sortKey === key && prevOrder === "asc" ? "desc" : "asc"));
+    setSortOrder((prevOrder) =>
+      sortKey === key && prevOrder === "asc" ? "desc" : "asc"
+    );
     setSortKey(key);
   };
 
@@ -67,7 +69,11 @@ function CompletedTasksList() {
             <thead>
               <tr className="bg-gray-100">
                 {columns.map(({ key, label }) => (
-                  <th key={key} className="border p-2 cursor-pointer" onClick={() => requestSort(key)}>
+                  <th
+                    key={key}
+                    className="border p-2 cursor-pointer"
+                    onClick={() => requestSort(key)}
+                  >
                     {label}
                   </th>
                 ))}
@@ -78,15 +84,21 @@ function CompletedTasksList() {
                 <tr key={task.id} className="border">
                   <td className="border p-2 text-xs font-mono">{task.id}</td>
                   <td className="border p-2">{task.name}</td>
-                  <td className="border p-2 font-medium text-center">+{task.points}</td>
-                  <td className="border p-2 text-right">{formatDate(task.completedAt)}</td>
+                  <td className="border p-2 font-medium text-center">
+                    +{task.points}
+                  </td>
+                  <td className="border p-2 text-right">
+                    {formatDate(task.completedAt)}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       ) : (
-        <div className="text-center p-4 text-gray-500">Không có nhiệm vụ nào</div>
+        <div className="text-center p-4 text-gray-500">
+          Không có nhiệm vụ nào
+        </div>
       )}
     </div>
   );

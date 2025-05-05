@@ -4,27 +4,22 @@ import { AuthContext } from "../../contexts/auth.context";
 import Loader from "../ui/Loader";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { auth, appLoading } = useContext(AuthContext);
+  const { auth } = useContext(AuthContext);
   const location = useLocation();
-
-  if (appLoading) return <Loader />;
 
   if (!auth.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Handle role checking
-  const userRoles = Array.isArray(auth.user?.roles)
-    ? auth.user.roles.map((r) => r.name) // array of role names
-    : [auth.user?.roles?.name]; // single role object fallback
-
-  const requiredRoles = Array.isArray(requiredRole)
-    ? requiredRole
-    : [requiredRole];
-
-  const hasAccess = requiredRole
-    ? requiredRoles.some((role) => userRoles.includes(role))
-    : true;
+  const roleMap = {
+    1: "Admin",
+    2: "User",
+    3: "Customer",
+  };
+  
+  const userRole = roleMap[auth.user?.roles.id] || "Unknown";
+  const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  const hasAccess = requiredRoles.some((role) => role === userRole);
 
   if (!hasAccess) {
     return <Navigate to="/" replace />;

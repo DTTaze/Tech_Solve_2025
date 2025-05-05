@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { createUserApi } from "../utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import { useNotification } from "../components/ui/NotificationProvider";
+import { createUserApi } from "../utils/api";
+import { Eye, EyeOff } from "lucide-react";
 import InputField from "../components/ui/InputField";
-import SubmitButton from "../components/ui/Button";
-import SocialLoginIcons from "../components/ui/SocialLoginIcons";
 import SelectField from "../components/ui/SelectField";
+import SocialLoginIcons from "../components/ui/SocialLoginIcons";
+import SubmitButton from "../components/ui/Button";
 
 const initialFormData = {
   full_name: "",
@@ -18,10 +18,10 @@ const initialFormData = {
 
 function RegisterPage() {
   const [formData, setFormData] = useState(initialFormData);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { notify } = useNotification();
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const validateField = (name, value) => {
@@ -36,6 +36,8 @@ function RegisterPage() {
         if (!/^[a-zA-Z0-9]+$/.test(value))
             return "Tên tài khoản chỉ được chứa chữ cái không dấu và số!";
         return "";
+      case "role_id":
+        return !value ? "Vui lòng chọn loại tài khoản!" : "";
       case "email":
         if (!value.trim()) return "Vui lòng nhập email!";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
@@ -43,8 +45,6 @@ function RegisterPage() {
         return "";
       case "password":
         return !value ? "Vui lòng nhập mật khẩu!" : "";
-      case "role_id":
-        return !value ? "Vui lòng chọn loại tài khoản!" : "";
       default:
         return "";
     }
@@ -79,7 +79,6 @@ function RegisterPage() {
     }
 
     setLoading(true);
-    console.log(formData);
     try {
       const res = await createUserApi(formData);
       if (res?.status === 200) {

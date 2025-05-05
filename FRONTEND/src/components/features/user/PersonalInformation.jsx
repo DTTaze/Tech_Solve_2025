@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { getUserApi, updateUserPublicApi } from "../../../utils/api.js";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
-import Loader from "../../ui/Loader.jsx";
+import PersonalInfomationSkeleton from "./PersonalnfomationSkeleton.jsx";
 
 function PersonalInfoForm() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const fetchUser = useCallback(async () => {
@@ -41,7 +40,7 @@ function PersonalInfoForm() {
         break;
       case "full_name":
         if (!value) error = "Họ và tên không được để trống";
-        else if (!/^[a-zA-Z\s]+$/.test(value))
+        else if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
           error = "Họ và tên không được chứa ký tự đặc biệt";
         break;
       case "address":
@@ -97,7 +96,7 @@ function PersonalInfoForm() {
     }
   };
 
-  if (!user) return <Loader></Loader>;
+  if (!user) return <PersonalInfomationSkeleton />;
 
   const inputFields = [
     { id: "username", label: "Tên người dùng" },

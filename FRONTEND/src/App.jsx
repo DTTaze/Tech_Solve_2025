@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { AuthContext } from "./contexts/auth.context";
 import UserHeader from "./layouts/Header";
@@ -8,35 +8,34 @@ import { io } from "socket.io-client";
 import { SocketProvider } from "./contexts/socket.context";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
-  withCredentials: true,
+  withCredentials: true, 
 });
 
 function App() {
-  const { setAuth, appLoading, setAppLoading } = useContext(AuthContext);
-  useEffect(() => {
-    const fetchAccount = async () => {
-      setAppLoading(true);
-      try {
-        const res = await getUserApi();
+  const { setAuth } = useContext(AuthContext);
+  const [appLoading, setAppLoading] = useState(true);
 
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const res = await getUserApi(); 
         if (res && res.status === 200) {
           setAuth({
             isAuthenticated: true,
             user: res.data,
           });
-          if (res.data.avatar_url) {
-            localStorage.setItem("user_avatar_url", res.data.avatar_url);
-          }
+        } else {
+          setAuth({ isAuthenticated: false, user: null });
         }
       } catch (err) {
-        console.log(err);
+        setAuth({ isAuthenticated: false, user: null });
       } finally {
         setAppLoading(false);
       }
     };
 
-    fetchAccount();
-  }, []);
+    initializeAuth();
+  }, [setAuth]);
 
   return (
     <SocketProvider value={socket}>

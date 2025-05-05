@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const {getUserByID} = require("../services/userService");
 const db = require("../models/index.js");
 const User = db.User;
 const Role = db.Role;
@@ -36,16 +37,25 @@ const jwtAuth = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_AT_SECRET);
-    const user = await User.findByPk(decoded.id, {
-      attributes: { exclude: ["password"] },
-      include: [
-        { model: Role, as: "roles", attributes: ["id", "name"] },
-        { model: Coin, as: "coins", attributes: ["id", "amount"] },
-        { model: Rank, as: "ranks", attributes: ["id", "order"] },
-      ],
-    });
+    const userId = decoded.id;
+    const user = await getUserByID(userId);
     if (!user) return res.error(401, "User not found");
-
+    const userFormat = {
+      id: user.id,
+      public_id: user.public_id,
+      avatar_url: user.avatar_url,
+      google_id: user.google_id,
+      email: user.email,
+      username: user.username,
+      full_name: user.full_name,
+      phone_number: user.phone_number,
+      address: user.address,
+      streak: user.streak,
+      last_completed_task: user.last_completed_task,
+      roles: user.roles,
+      coins: user.coins,
+      ranks: user.ranks,
+    };
     req.user = user;
     next();
   } catch (e) {

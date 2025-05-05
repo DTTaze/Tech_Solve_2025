@@ -47,22 +47,22 @@ const handleGoogleAuthCallback = async (req, res, next) => {
 
 const handleForgotPassword = async (req, res) => {
   try {
-    const { mail } = req.body;
-    const sendResetEmail = await oauthService.sendResetEmail(mail);
-    res.success("Send successful from Controller", sendResetEmail);
+    const { email } = req.body;
+    const sendResetEmail = await oauthService.sendResetEmail(email);
+    return res.success("Send successful ", sendResetEmail);
   } catch (error) {
-    return res.error(500, "Failed to upload item", error.message);
+    return res.error(500, "Send failed ", error.message);
   }
 };
 
 const handleResetPassword = async (req, res) => {
   try {
-    const { token } = req.query;
-    const { newPassword } = req.body;
+    const { newPassword, token } = req.body;
     const email = await oauthService.resetPassword(token, newPassword);
-    res.success("Reset password successful", email);
+    return res.success("Reset password successful", email);
   } catch (error) {
-    res.status(400).json({ error: "Invalid or expired token" });
+    console.error("Reset Password Error:", error);
+    return res.error(500, "Reset password failed", error.message);
   }
 };
 

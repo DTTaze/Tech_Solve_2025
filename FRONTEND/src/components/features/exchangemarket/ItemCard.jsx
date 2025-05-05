@@ -9,12 +9,12 @@ export default function ItemCard({ item, onPurchase }) {
 
   useEffect(() => {
     // Join the item's room when component mounts
-    socket.emit('join-item-room', item.id);
+    socket.emit("join-item-room", item.id);
 
     // Listen for stock updates
-    socket.on('stock-update', (data) => {
+    socket.on("stock-update", (data) => {
       if (data.itemId === item.id) {
-        console.log('Stock update received:', data);
+        console.log("Stock update received:", data);
         setCurrentStock(data.stock);
         setCurrentStatus(data.status);
       }
@@ -22,8 +22,8 @@ export default function ItemCard({ item, onPurchase }) {
 
     // Cleanup on unmount
     return () => {
-      socket.emit('leave-item-room', item.id);
-      socket.off('stock-update');
+      socket.emit("leave-item-room", item.id);
+      socket.off("stock-update");
     };
   }, [item.id]);
 
@@ -60,14 +60,10 @@ export default function ItemCard({ item, onPurchase }) {
       </div>
 
       <div className="p-4 flex-grow">
-        <h2 className="text-xl font-semibold mb-2 text-gray-800">
-          {item.name}
-        </h2>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-          {item.description}
-        </p>
+        <h2 className="text-xl font-semibold mb-2 text-gray-800">{item.name}</h2>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
 
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-2">
           <div className="flex items-center text-emerald-600 font-bold">
             <Coins className="h-4 w-4 mr-1" />
             {item.price} xu
@@ -78,6 +74,12 @@ export default function ItemCard({ item, onPurchase }) {
             </div>
           )}
         </div>
+
+        {item.purchaseLimitPerDay !== null && (
+          <div className="text-sm text-gray-500">
+            Giới hạn: {item.purchaseLimitPerDay} sản phẩm/ngày
+          </div>
+        )}
       </div>
 
       <div className="p-4 pt-2">

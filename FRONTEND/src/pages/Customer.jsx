@@ -17,7 +17,6 @@ export default function Customer() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Fetch user data from API
     const fetchUserData = async () => {
       try {
         const userResponse = await getUserApi();

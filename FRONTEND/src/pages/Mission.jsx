@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Calendar from "../components/features/missions/Calendar.jsx";
 import Ranking from "../components/features/missions/ChartRank.jsx";
 import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
+import QrTaskSubmissionModal from "../components/features/missions/QrTaskSubmissionModal.jsx";
+import EventBanner from "../components/features/missions/EventBanner.jsx";
 import {
   getAllTasksApi,
   receiveCoinApi,
@@ -9,6 +11,7 @@ import {
   getTaskByIdApi,
   increaseProgressCountApi,
   AllTaskByIdApi,
+  getAllTasksByTypeNameApi,
 } from "../utils/api.js";
 import { toast } from "react-toastify";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
@@ -32,6 +35,9 @@ function Mission() {
   const [dailyTasks, setDailyTasks] = useState([]);
   const [otherTasks, setOtherTasks] = useState([]);
   // const [isOpenDropdown, setIsOpenDropdown] = useState(false);
+  // Add new states for difficulty filters
+  const [dailyDifficultyFilter, setDailyDifficultyFilter] = useState("all");
+  const [otherDifficultyFilter, setOtherDifficultyFilter] = useState("all");
 
   // Fetch data from backend
   useEffect(() => {
@@ -41,7 +47,7 @@ function Mission() {
 
         console.log("Fetching data from APIs...");
 
-        const [taskResponse, userResponse] = await Promise.all([
+        const [taskResponse, userResponse, eventResponse] = await Promise.all([
           getAllTasksApi(),
           getUserApi(),
         ]);
@@ -193,7 +199,6 @@ function Mission() {
         // Nếu task nhiệm vụ đã hoàn thành
         if (updatedTaskUser.data.completed_at) {
           try {
-
             const coinsResponse = await receiveCoinApi(task.coins);
             console.log("Receive coins response:", coinsResponse);
 
@@ -238,50 +243,111 @@ function Mission() {
     setSelectedTask(null);
   }, []);
 
+  // Determine which modal to show based on task difficulty
+  const renderTaskModal = () => {
+    if (!selectedTask) return null;
+
+    const isQrTask =
+      selectedTask.difficulty === "medium" ||
+      selectedTask.difficulty === "hard";
+
+    if (isQrTask) {
+      return (
+        <QrTaskSubmissionModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          task={selectedTask}
+          handleTaskCompletion={handleTaskCompletion}
+          userID={userInfo?.id}
+        />
+      );
+    } else {
+      return (
+        <TaskSubmissionModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          task={selectedTask}
+          handleTaskCompletion={handleTaskCompletion}
+          userID={userInfo?.id}
+        />
+      );
+    }
+  };
+
   // Memoize filtered and sorted task lists to prevent recalculations on every render
 
   useEffect(() => {
     const fetchDailyTasks = async () => {
-      console.log("UserTask: ", userTasks);
-      const DailyTasks = await Promise.all(
-        userTasks.map(async (userTask) => {
-          const taskData = await getTaskByIdApi(userTask.task_id);
-          const task = taskData.data;
+      try {
+        // Get tasks by type name
+        const TasksByTypeName = await getAllTasksByTypeNameApi("daily");
+        console.log("Tasks by type name:", TasksByTypeName);
 
-          return task
-            ? {
-                ...task,
-                completed_at: userTask.completed_at,
-                progress_count: userTask.progress_count,
-                isUserTask: true,
-              }
-            : null;
-        })
-      );
+        // Get detailed task information for each task ID
+        const dailyTasksData = await Promise.all(
+          TasksByTypeName.data.map(async (task) => {
+            const taskData = await getTaskByIdApi(task.id);
+            return taskData.data;
+          })
+        );
 
-      const filteredTasks = DailyTasks.filter(
-        (task) =>
-          task &&
-          task.completed_at === null && 
-          (task.difficulty === "medium" || task.difficulty === "hard")
-      );
+        // Process user tasks that are in daily tasks and not completed
+        const userDailyTasks = await Promise.all(
+          userTasks
+            .filter(
+              (userTask) =>
+                userTask.completed_at === null && // Only get uncompleted tasks
+                TasksByTypeName.data.some(
+                  (task) => task.task_id === userTask.task_id
+                )
+            )
+            .map(async (userTask) => {
+              const taskData = await getTaskByIdApi(userTask.id);
+              const task = taskData.data;
+              return task
+                ? {
+                    ...task,
+                    completed_at: userTask.completed_at,
+                    progress_count: userTask.progress_count,
+                    isUserTask: true,
+                  }
+                : null;
+            })
+        );
 
-      // Get all tasks and add them to the list
+        // Filter out null values
+        const validUserDailyTasks = userDailyTasks.filter(
+          (task) => task !== null
+        );
 
-      const additionalTasks = tasks
-      .filter(
-        (task) =>
-          !userTasks.some((userTask) => userTask.task_id === task.id) &&
-          (task.difficulty === "medium" || task.difficulty === "hard")
-      )
-      .map((task) => ({
-        ...task,
-        isUserTask: false,
-        progress_count: 0,
-        completed_at: null,
-      }));
+        // Combine tasks that user is doing with tasks they haven't started
+        const allDailyTasks = [
+          ...validUserDailyTasks,
+          ...dailyTasksData
+            .filter(
+              (task) =>
+                !validUserDailyTasks.some(
+                  (userTask) => userTask.id === task.id
+                ) &&
+                !userTasks.some(
+                  (userTask) =>
+                    userTask.task_id === task.id &&
+                    userTask.completed_at !== null
+                ) // Exclude completed tasks
+            )
+            .map((task) => ({
+              ...task,
+              isUserTask: false,
+              progress_count: 0,
+              completed_at: null,
+            })),
+        ];
 
-      setDailyTasks([...filteredTasks, ...additionalTasks]);
+        setDailyTasks(allDailyTasks);
+      } catch (error) {
+        console.error("Error fetching daily tasks:", error);
+        toast.error("Không thể tải nhiệm vụ hàng ngày");
+      }
     };
 
     fetchDailyTasks();
@@ -291,42 +357,76 @@ function Mission() {
 
   useEffect(() => {
     const fetchOtherTasks = async () => {
-      const OtherTasks = await Promise.all(
-        userTasks.map(async (userTask) => {
-          const taskData = await getTaskByIdApi(userTask.task_id);
-          const task = taskData.data;
-          return task
-            ? {
-                ...task,
-                completed_at: userTask.completed_at,
-                progress_count: userTask.progress_count,
-                isUserTask: true,
-              }
-            : null;
-        })
-      );
+      try {
+        // Get tasks by type name
+        const TasksByTypeName = await getAllTasksByTypeNameApi("others");
+        console.log("Tasks by type name:", TasksByTypeName);
 
-      const filteredTasks = OtherTasks.filter(
-        (task) =>
-          task && task.completed_at === null && task.difficulty === "easy"
-      );
+        // Get detailed task information for each task ID
+        const otherTasksData = await Promise.all(
+          TasksByTypeName.data.map(async (task) => {
+            const taskData = await getTaskByIdApi(task.id);
+            return taskData.data;
+          })
+        );
 
-      // Get all tasks and add them to the list
+        // Process user tasks that are in other tasks and not completed
+        const userOtherTasks = await Promise.all(
+          userTasks
+            .filter(
+              (userTask) =>
+                userTask.completed_at === null && // Only get uncompleted tasks
+                TasksByTypeName.data.some(
+                  (task) => task.task_id === userTask.task_id
+                )
+            )
+            .map(async (userTask) => {
+              const taskData = await getTaskByIdApi(userTask.id);
+              const task = taskData.data;
+              return task
+                ? {
+                    ...task,
+                    completed_at: userTask.completed_at,
+                    progress_count: userTask.progress_count,
+                    isUserTask: true,
+                  }
+                : null;
+            })
+        );
 
-      const additionalTasks = tasks
-        .filter(
-          (task) =>
-            !userTasks.some((userTask) => userTask.task_id === task.id) &&
-            task.difficulty === "easy"
-        )
-        .map((task) => ({
-          ...task,
-          isUserTask: false,
-          progress_count: 0,
-          completed_at: null,
-        }));
+        // Filter out null values
+        const validUserOtherTasks = userOtherTasks.filter(
+          (task) => task !== null
+        );
 
-      setOtherTasks([...filteredTasks, ...additionalTasks]);
+        // Combine tasks that user is doing with tasks they haven't started
+        const allOtherTasks = [
+          ...validUserOtherTasks,
+          ...otherTasksData
+            .filter(
+              (task) =>
+                !validUserOtherTasks.some(
+                  (userTask) => userTask.id === task.id
+                ) &&
+                !userTasks.some(
+                  (userTask) =>
+                    userTask.task_id === task.id &&
+                    userTask.completed_at !== null
+                ) // Exclude completed tasks
+            )
+            .map((task) => ({
+              ...task,
+              isUserTask: false,
+              progress_count: 0,
+              completed_at: null,
+            })),
+        ];
+
+        setOtherTasks(allOtherTasks);
+      } catch (error) {
+        console.error("Error fetching other tasks:", error);
+        toast.error("Không thể tải nhiệm vụ phụ");
+      }
     };
 
     fetchOtherTasks();
@@ -394,6 +494,24 @@ function Mission() {
     },
     [selectedTab === "daily" ? dailyTotalPages : otherTotalPages]
   );
+
+  // Add filter function
+  const filterTasksByDifficulty = (tasks, difficulty) => {
+    if (difficulty === "all") return tasks;
+    return tasks.filter((task) => task.difficulty === difficulty);
+  };
+
+  // Get filtered tasks based on current tab and filter
+  const getFilteredTasks = () => {
+    if (selectedTab === "daily") {
+      return filterTasksByDifficulty(dailyTasks, dailyDifficultyFilter);
+    } else if (selectedTab === "other") {
+      return filterTasksByDifficulty(otherTasks, otherDifficultyFilter);
+    } else if (selectedTab === "completed") {
+      return completedTasks;
+    }
+    return [];
+  };
 
   // Show loading skeleton while data is being fetched
   if (loading) {
@@ -519,6 +637,9 @@ function Mission() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <MissionHeader userInfo={userInfo} loading={loading} />
 
+        {/* Event Banner */}
+        <EventBanner />
+
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Tasks */}
@@ -528,6 +649,99 @@ function Mission() {
               selectedTab={selectedTab}
               setSelectedTab={setSelectedTab}
             />
+
+            {/* Difficulty Filter Buttons */}
+            <div className="bg-white border-x border-gray-200 p-4 shadow-sm">
+              <div className="flex space-x-2">
+                {selectedTab === "daily" ? (
+                  <>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("all")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "all"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("easy")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "easy"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Dễ
+                    </button>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("medium")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "medium"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Trung bình
+                    </button>
+                    <button
+                      onClick={() => setDailyDifficultyFilter("hard")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        dailyDifficultyFilter === "hard"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Khó
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("all")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "all"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Tất cả
+                    </button>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("easy")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "easy"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Dễ
+                    </button>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("medium")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "medium"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Trung bình
+                    </button>
+                    <button
+                      onClick={() => setOtherDifficultyFilter("hard")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                        otherDifficultyFilter === "hard"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      Khó
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
 
             {/* Task List */}
             <div className="bg-white rounded-b-xl border-x border-b border-gray-200 p-6 shadow-sm">
@@ -545,15 +759,7 @@ function Mission() {
                 </div>
               ) : (
                 <TasksList
-                  tasks={
-                    selectedTab === "daily"
-                      ? dailyTasks
-                      : selectedTab === "other"
-                      ? otherTasks
-                      : selectedTab === "completed"
-                      ? completedTasks
-                      : []
-                  }
+                  tasks={getFilteredTasks()}
                   loading={loading}
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}
@@ -634,15 +840,7 @@ function Mission() {
       </div>
 
       {/* Task Submission Modal */}
-      {selectedTask && (
-        <TaskSubmissionModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          task={selectedTask}
-          handleTaskCompletion={handleTaskCompletion}
-          userID={userInfo?.id}
-        />
-      )}
+      {selectedTask && renderTaskModal()}
     </div>
   );
 }

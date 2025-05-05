@@ -42,7 +42,7 @@ CREATE TABLE `event_users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `event_id` int NOT NULL,
-  `joined_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `joined_at` datetime DEFAULT NULL,
   `completed_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE `events` (
   UNIQUE KEY `public_id_2` (`public_id`),
   KEY `creator_id` (`creator_id`),
   CONSTRAINT `events_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -93,12 +93,11 @@ CREATE TABLE `images` (
   `id` int NOT NULL AUTO_INCREMENT,
   `url` varchar(255) NOT NULL,
   `reference_id` int NOT NULL,
-  `reference_type` enum('avatar','taskSubmit','item','event') NOT NULL,
-
+  `reference_type` enum('avatar','taskSubmit','item','product','event') NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,8 +115,8 @@ CREATE TABLE `items` (
   `description` text,
   `price` int NOT NULL,
   `stock` int NOT NULL,
-  `status` enum('available','sold','pending') DEFAULT 'available',
-
+  `status` enum('available','sold_out','pending') DEFAULT 'pending',
+  `purchase_limit_per_day` int DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -167,7 +166,6 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `public_id` (`public_id`),
   UNIQUE KEY `public_id_2` (`public_id`),
-  UNIQUE KEY `public_id_3` (`public_id`),
   KEY `seller_id` (`seller_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -272,7 +270,7 @@ CREATE TABLE `task_types` (
   KEY `type_id` (`type_id`),
   CONSTRAINT `task_types_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `task_types_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -315,12 +313,14 @@ CREATE TABLE `tasks` (
   `coins` int NOT NULL,
   `difficulty` enum('easy','medium','hard','event') NOT NULL,
   `total` int DEFAULT '1',
+  `status` enum('public','private') NOT NULL DEFAULT 'public',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `public_id` (`public_id`),
-  UNIQUE KEY `public_id_2` (`public_id`)
-
+  UNIQUE KEY `public_id_2` (`public_id`),
+  KEY `creator_id` (`creator_id`),
+  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -336,7 +336,7 @@ CREATE TABLE `transactions` (
   `public_id` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `buyer_id` int NOT NULL,
-  `item_id` int NOT NULL,
+  `item_snapshot` json NOT NULL,
   `total_price` int NOT NULL,
   `quantity` int NOT NULL DEFAULT '1',
   `status` enum('completed','failed','pending') NOT NULL DEFAULT 'pending',
@@ -346,9 +346,7 @@ CREATE TABLE `transactions` (
   UNIQUE KEY `public_id` (`public_id`),
   UNIQUE KEY `public_id_2` (`public_id`),
   KEY `buyer_id` (`buyer_id`),
-  KEY `item_id` (`item_id`),
-  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`buyer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`buyer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -392,7 +390,7 @@ CREATE TABLE `users` (
   `coins_id` int NOT NULL DEFAULT '0',
   `rank_id` int NOT NULL DEFAULT '0',
   `streak` int NOT NULL DEFAULT '0',
-  `last_logined` date NOT NULL,
+  `last_completed_task` date DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -445,5 +443,4 @@ CREATE TABLE `videos` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-24 18:06:05
-
+-- Dump completed on 2025-05-04 13:31:33

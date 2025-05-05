@@ -74,11 +74,11 @@ export default function TemporaryDrawer({ userInfo }) {
           icon: <ShoppingCartIcon />,
           path: "/admin/content/products",
         },
-        {
-          text: "Bài đăng",
-          icon: <VideoLibraryIcon />,
-          path: "/admin/content/posts",
-        },
+        // {
+        //   text: "Bài đăng",
+        //   icon: <VideoLibraryIcon />,
+        //   path: "/admin/content/posts",
+        // },
         {
           text: "Sự kiện",
           icon: <EventIcon />,
@@ -89,6 +89,11 @@ export default function TemporaryDrawer({ userInfo }) {
     {
       label: "Quản lý giao dịch và xu thưởng",
       items: [
+        {
+          text: "Giao dịch",
+          icon: <CurrencyExchangeIcon />,
+          path: "/admin/transactions",
+        },
         {
           text: "Giao dịch",
           icon: <CurrencyExchangeIcon />,

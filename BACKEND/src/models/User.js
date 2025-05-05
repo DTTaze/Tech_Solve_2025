@@ -20,16 +20,16 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "buyer_id",
         onDelete: "CASCADE",
       });
-      User.hasMany(models.EventUser, {
+      User.hasMany(models.Event, {
         foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
-      User.hasMany(models.Inventory, {
+      User.hasOne(models.Coin, {
         foreignKey: "user_id",
         onDelete: "CASCADE",
+        as: "coins",
       });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
-      User.belongsTo(models.Coin, { foreignKey: "coins_id", as: "coins" });
       User.belongsTo(models.Rank, { foreignKey: "rank_id", as: "ranks" });
     }
   }
@@ -88,11 +88,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      coins_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-      },
       rank_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -104,9 +99,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
         validate: { min: 0 },
       },
-      last_logined: {
+      last_completed_task: {
         type: DataTypes.DATEONLY,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: null,
       },
     },
     {

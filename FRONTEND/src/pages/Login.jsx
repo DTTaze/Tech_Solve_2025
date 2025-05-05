@@ -1,22 +1,22 @@
-import React, { useContext, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { loginUserApi } from "../utils/api";
+import { useNotification } from "../components/ui/NotificationProvider";
 import { AuthContext } from "../contexts/auth.context";
+import { loginUserApi } from "../utils/api";
 import InputField from "../components/ui/InputField";
 import Button from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
-import { useNotification } from "../components/ui/NotificationProvider";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { setAuth } = useContext(AuthContext);
+  const { auth,setAuth } = useContext(AuthContext);
   const { notify } = useNotification();
-  const [showPassword, setShowPassword] = useState(false);
-
   const [identifier, setIdentifier] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [isLoginDisabled, setIsLoginDisabled] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,31 +30,43 @@ const LoginPage = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(
-        identifier
-      );
+      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(identifier);
       const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
-
+      
       const res = await loginUserApi(loginData);
-
       if (res && res.status === 200) {
         notify("success", "Đăng nhập thành công!");
-
         setAuth({
           isAuthenticated: true,
-          user: {
-            email: res.data.user?.email ?? "",
-            username: res.data.user?.username ?? "",
-          },
+          user: res.data.user 
         });
-        navigate("/");
+        if (res.data.user.role_id === 1) {
+          navigate("/admin");
+        } else if(res.data.user.role_id === 2) {
+          navigate("/");
+        } else if (res.data.user.role_id === 3) {
+          navigate("/customer");
+        } else {
+          notify("error", "Đã xảy ra lỗi, vui lòng thử lại sau");
+        }
       } else {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }
     } catch (error) {
-      notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+      if (error.status === 401) {
+        notify("error", "Thông tin đăng nhập không đúng");
+      } else if (error.status === 429) {
+        notify("error", "Quá nhiều yêu cầu, vui lòng thử lại sau 5 phút");
+        setIsLoginDisabled(true);
+        setTimeout(() => {
+          setIsLoginDisabled(false);
+          notify("info", "Bạn có thể thử đăng nhập lại bây giờ");
+        }, 300000); 
+      } else {
+        notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
+      }
     }
   };
 
@@ -88,11 +100,21 @@ const LoginPage = () => {
           }
         />
 
-        <Button text="Đăng nhập" />
+        {/* Nút đăng nhập sẽ bị vô hiệu hóa khi isLoginDisabled = true */}
+        <Button 
+          text="Đăng nhập" 
+          disabled={isLoginDisabled}
+        />
+        
+        <div className="text-right">
+          <Link to="/forgot_password" className="text-blue-600 hover:underline">
+            Quên mật khẩu?
+          </Link>
+        </div>
       </form>
 
       <hr className="my-6 border-gray-300" />
-      <SocialLoginIcons></SocialLoginIcons>
+      <SocialLoginIcons />
       <div className="text-center">
         Chưa có tài khoản?{" "}
         <Link to="/register" className="text-blue-600 hover:underline">

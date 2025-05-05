@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/components/HomepageSection.css";
 import { AuthContext } from "../contexts/auth.context";
-import Loader from "../components/ui/Loader";
+import "../styles/components/HomepageSection.css";
 
 function SectionHero() {
     const [index, setIndex] = useState(0);

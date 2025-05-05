@@ -25,8 +25,14 @@ const handleLoginUser = async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     const clientIP = req.ip || req.connection.remoteAddress;
-    const userAgent = req.headers['user-agent'] || 'unknown'; 
-    let result = await userService.loginUser(user, email, password, clientIP, userAgent);
+    const userAgent = req.headers["user-agent"] || "unknown";
+    let result = await userService.loginUser(
+      user,
+      email,
+      password,
+      clientIP,
+      userAgent
+    );
     res.cookie("access_token", result.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -60,10 +66,11 @@ const handleRefreshAccessToken = async (req, res) => {
       maxAge: ms(process.env.JWT_AT_EXPIRE),
     });
 
-    res.json({ message: "Access token refreshed" });
+    return res.success("Access token refreshed", {
+      access_token: newAccessToken,
+    });
   } catch (error) {
-    console.error("Refresh token error:", error.message);
-    res.status(401).json({ message: "Invalid refresh token" });
+    return res.error(401, "Invalid refresh token", error.message);
   }
 };
 
@@ -105,9 +112,9 @@ const handleGetUser = async (req, res) => {
   }
 };
 
-const handleUpdateUser = async (req, res) => {
+const handleUpdateUserById = async (req, res) => {
   try {
-    let result = await userService.updateUser(req.params.id, req.body);
+    let result = await userService.updateUserById(req.params.id, req.body);
     return res.success("Update user success", result);
   } catch (error) {
     return res.error(500, "Failed to update user", error.message);
@@ -120,7 +127,7 @@ const handleGetProfile = async (req, res) => {
 
 const handleGetTaskCompleted = async (req, res) => {
   try {
-    let result = await userService.getTaskCompleted(req.params.id);
+    let result = await userService.getTaskCompleted(req.user.id);
     return res.success("Get task completed success", result);
   } catch (error) {
     return res.error(500, "Failed to get task completed", error.message);
@@ -129,7 +136,7 @@ const handleGetTaskCompleted = async (req, res) => {
 
 const handleGetAllTasksById = async (req, res) => {
   try {
-    let result = await userService.getAllTasksById(req.params.id);
+    let result = await userService.getAllTasksById(req.user.id);
     return res.success("Get all task by ID success", result);
   } catch (error) {
     return res.error(500, "Failed to get all task by ID", error.message);
@@ -181,7 +188,7 @@ module.exports = {
   handleLogoutUser,
   handleDeleteUser,
   handleGetUser,
-  handleUpdateUser,
+  handleUpdateUserById,
   handleLoginUser,
   handleGetProfile,
   handleGetTaskCompleted,

@@ -1,46 +1,39 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/auth.context";
+import { useNotification } from "../components/ui/NotificationProvider";
 import { getUserApi, getUserAvatarByIdApi, logoutUserApi } from "../utils/api";
 import { Coins } from "lucide-react";
-import { useNotification } from "../components/ui/NotificationProvider";
 
 function UserHeader() {
+  const navigate = useNavigate();
+  const { notify } = useNotification();
   const { auth, setAuth } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-
   const menuRef = useRef(null);
   const profileMenuRef = useRef(null);
   const menuButtonRef = useRef(null);
-  const navigate = useNavigate();
-
-  const { notify } = useNotification();
 
   const fetchUser = async () => {
-    try {
-      const response = await getUserApi();
-      if (response?.data) {
-        // Only update if we have new coins data and it's different from current
-        if (response.data.coins?.amount !== undefined && 
-            (!auth.user?.coins || response.data.coins.amount !== auth.user.coins.amount)) {
+    if (!auth.user?.username || !auth.user?.email) {
+      try {
+        const response = await getUserApi();
+        if (response?.data) {
           setAuth((prevAuth) => ({
             ...prevAuth,
-            user: { 
-              ...prevAuth.user, 
-              coins: response.data.coins 
-            },
+            user: { ...prevAuth.user, ...response.data },
           }));
         }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
       }
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error);
     }
   };
 
   const fetchAvatar = async () => {
-    try {
-      if (auth?.user?.id && !auth?.user?.avatar_url) {
+    if (auth?.user?.id && !auth?.user?.avatar_url) {
+      try {
         const response = await getUserAvatarByIdApi(auth.user.id);
         if (response?.avatar_url) {
           setAuth((prev) => ({
@@ -48,31 +41,25 @@ function UserHeader() {
             user: { ...prev.user, avatar_url: response.avatar_url },
           }));
         }
+      } catch (error) {
+        console.error("Lỗi khi lấy avatar:", error);
       }
-    } catch (error) {
-      console.error("Lỗi khi lấy avatar:", error);
     }
   };
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-      fetchUser();
-      fetchAvatar();
+      fetchUser(); 
+      fetchAvatar(); 
 
       const handleFocus = () => {
-        fetchUser();
+        fetchUser(); 
       };
 
       window.addEventListener("focus", handleFocus);
       return () => window.removeEventListener("focus", handleFocus);
     }
-  }, [auth.isAuthenticated, auth.user]);
-
-  useEffect(() => {
-    if (profileMenuOpen && auth.isAuthenticated) {
-      fetchUser();
-    }
-  }, [profileMenuOpen]);
+  }, [auth.isAuthenticated]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -161,9 +148,9 @@ function UserHeader() {
           </div>
           {profileMenuOpen && (
             <div className="absolute right-0 bg-white rounded-lg shadow-lg w-48 px-2 py-2">
-              <p className="p-2 font-bold">{auth.user.username}</p>
+              <p className="p-2 font-bold">{auth.user?.username || "User"}</p>
               <p className="px-2 py-1 text-xs text-gray-600">
-                {auth.user.email}
+                {auth.user?.email || ""}
               </p>
               <hr className="border border-gray-300 mb-2" />
               <div className="flex items-center ml-2 py-2">

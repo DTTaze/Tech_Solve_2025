@@ -18,7 +18,7 @@ const handleUploadAvatar = async (req, res) => {
 
 const handleGetAllAvatars = async (req, res) => {
   try {
-    const result = await avatarService.getAllAvatar();
+    const result = await avatarService.getAllAvatars();
     return res.success("Fetched all avatars successfully", result);
   } catch (error) {
     return res.error(500, "Failed to fetch avatars", error.message);

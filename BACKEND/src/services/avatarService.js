@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const db = require("../models/index.js");
 const User = db.User;
 const cloudinary = require("../config/cloudinary.js");
+const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const uploadAvatar = async (file, user_id) => {
   try {
@@ -19,18 +20,30 @@ const uploadAvatar = async (file, user_id) => {
 
     await user.update({ avatar_url: result.secure_url });
 
+    await deleteCache(`user:${user.id}:avatar`);
+    await deleteCache("avatars");
+
     return user;
   } catch (e) {
     throw e;
   }
 };
 
-const getAllAvatar = async () => {
+const getAllAvatars = async () => {
   try {
-    return await User.findAll({
+    const cachedAvatars = await getCache("avatars");
+    if (cachedAvatars) {
+      return cachedAvatars;
+    }
+
+    const avatars = await User.findAll({
       attributes: ["id", "username", "avatar_url"],
       where: { avatar_url: { [Op.ne]: null } },
     });
+
+    await setCache("avatars", avatars);
+
+    return avatars;
   } catch (e) {
     throw e;
   }
@@ -38,11 +51,19 @@ const getAllAvatar = async () => {
 
 const getAvatarById = async (id) => {
   try {
+    const cacheKey = `user:${id}:avatar`;
+    const cachedAvatar = await getCache(cacheKey);
+    if (cachedAvatar) {
+      return cachedAvatar;
+    }
+
     const user = await User.findByPk(id, {
       attributes: ["id", "username", "avatar_url"],
     });
 
     if (!user) throw new Error("User not found");
+
+    await setCache(cacheKey, user);
 
     return user;
   } catch (e) {
@@ -52,9 +73,10 @@ const getAvatarById = async (id) => {
 
 const updateAvatar = async (id, file) => {
   try {
+    if (!file) throw new Error("No file provided");
+
     const user = await User.findByPk(id);
     if (!user) throw new Error("User not found");
-    if (!file) throw new Error("No file provided");
 
     let publicId = null;
     if (user.avatar_url) {
@@ -68,6 +90,9 @@ const updateAvatar = async (id, file) => {
     });
 
     await user.update({ avatar_url: result.secure_url });
+
+    await deleteCache(`user:${id}:avatar`);
+    await deleteCache("avatars");
 
     return user;
   } catch (e) {
@@ -87,6 +112,9 @@ const deleteAvatar = async (id) => {
 
     await user.update({ avatar_url: null });
 
+    await deleteCache(`user:${id}:avatar`);
+    await deleteCache("avatars");
+
     return { message: "Avatar deleted successfully" };
   } catch (e) {
     throw e;
@@ -95,7 +123,7 @@ const deleteAvatar = async (id) => {
 
 module.exports = {
   uploadAvatar,
-  getAllAvatar,
+  getAllAvatars,
   getAvatarById,
   updateAvatar,
   deleteAvatar,
