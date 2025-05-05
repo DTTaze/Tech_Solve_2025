@@ -46,6 +46,21 @@ const handGetEventsOfCreator = async (req, res) => {
   }
 };
 
+const handlegetEventUserByEventId = async (req, res) => {
+  try {
+    const eventId = Number(req.params.event_id);
+    const event = await eventService.getEventUserByEventId(eventId);
+    if (!event) {
+      return res.error(404, "Event not found");
+    }
+    return res.success("Event users retrieved successfully", event);
+  }
+  catch (error) {
+    console.error("Error retrieving event users:", error);
+    return res.error(500, "Error retrieving event users", error);
+  }
+}
+
 const handleCreateEvent = async (req, res) => {
   try {
     const images = req.files;
@@ -63,8 +78,8 @@ const handleCreateEvent = async (req, res) => {
 
 const handleAcceptEvent = async (req, res) => {
   try {
-    const eventId = req.params.event_id;
-    const userId = req.user.id;
+    const eventId = Number(req.params.event_id);
+    const userId = Number(req.user.id);
     const event = await eventService.acceptEvent(eventId, userId);
     if (!event) {
       return res.error(404, "Event not found");
@@ -120,11 +135,14 @@ const handleCheckInUserByUserId = async (req,res) => {
   }
 }
 
+
+
 module.exports = {
   handleGetEventbyId,
   handleGetAllEvents,
   handleGetEventSigned,
   handGetEventsOfCreator,
+  handlegetEventUserByEventId,
   handleCreateEvent,
   handleAcceptEvent,
   handleUpdateEvent,

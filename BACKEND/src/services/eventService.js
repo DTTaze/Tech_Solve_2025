@@ -6,6 +6,7 @@ const Image = db.Image;
 const { nanoid } = require("nanoid");
 const { uploadImages, deleteImages } = require("./imageService");
 const cloudinary = require("../config/cloudinary");
+const {getUserByID} = require("./userService");
 
 const getEventById = async (eventId) => {
   try {
@@ -118,6 +119,32 @@ const getEventsOfCreator = async (creator_id) => {
   }
 };
 
+const getEventUserByEventId = async (event_id) => {
+  try {
+    const EventUsers = await EventUser.findAll({
+      where: { event_id },
+      attributes: ["user_id"],
+    });
+
+    const userIds = EventUsers.map((eventUser) => eventUser.user_id);
+
+    let users = [];
+    for (const userId of userIds) {
+      const user = await getUserByID(Number(userId));
+      if (user) {
+        users.push(user);
+      }
+    }
+
+    return users;
+
+  }catch (error) {
+    console.error("Error retrieving event users:", error);
+    throw error;
+  }
+
+}
+
 const createEvent = async (Data, user_id, images) => {
   try {
     const { title, description, location, capacity, start_time, end_time } =
@@ -143,7 +170,7 @@ const createEvent = async (Data, user_id, images) => {
       throw new Error("Invalid date format for start_time or end_time");
     }
 
-    const event = await db.Event.create({
+    const event = await Event.create({
       public_id: nanoid(),
       creator_id: user_id,
       title,
@@ -343,6 +370,7 @@ module.exports = {
   getAllEvents,
   getEventSigned,
   getEventsOfCreator,
+  getEventUserByEventId,
   createEvent,
   acceptEvent,
   updateEvent,
