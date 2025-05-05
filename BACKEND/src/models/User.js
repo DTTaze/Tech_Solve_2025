@@ -24,8 +24,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "creator_id",
         onDelete: "CASCADE",
       });
+      User.hasOne(models.Coin, {
+        foreignKey: "user_id",
+        onDelete: "CASCADE",
+        as: "coins",
+      });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
-      User.belongsTo(models.Coin, { foreignKey: "coins_id", as: "coins" });
       User.belongsTo(models.Rank, { foreignKey: "rank_id", as: "ranks" });
     }
   }
@@ -83,11 +87,6 @@ module.exports = (sequelize, DataTypes) => {
       address: {
         type: DataTypes.STRING,
         allowNull: true,
-      },
-      coins_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
       },
       rank_id: {
         type: DataTypes.INTEGER,

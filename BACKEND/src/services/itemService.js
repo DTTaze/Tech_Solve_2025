@@ -9,6 +9,7 @@ const { where } = require("sequelize");
 const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 const { emitStockUpdate } = require("./socketService");
+const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const createItem = async (itemData, user_id, images) => {
   try {
@@ -54,10 +55,10 @@ const createItem = async (itemData, user_id, images) => {
           throw new Error("Failed to upload images");
         }
       }
-
       return newItem;
     });
-
+    await deleteCache("items:all");
+    await deleteCache(`items:user:${user_id}`);
     return result;
   } catch (error) {
     console.error("Error creating item:", error);
@@ -66,8 +67,11 @@ const createItem = async (itemData, user_id, images) => {
 };
 
 const getAllItems = async () => {
-  try {
-    const items = await Item.findAll({
+  const cacheKey = "items:all";
+  let items = await getCache(cacheKey);
+
+  if (!items) {
+    const dbItems = await Item.findAll({
       include: [
         {
           model: User,
@@ -76,7 +80,7 @@ const getAllItems = async () => {
         },
       ],
     });
-    const itemIds = items.map((item) => item.id);
+    const itemIds = dbItems.map((item) => item.id);
     const images = await Image.findAll({
       where: {
         reference_id: itemIds,
@@ -85,73 +89,64 @@ const getAllItems = async () => {
     });
 
     const imagesByItemId = images.reduce((acc, image) => {
-      if (!acc[image.reference_id]) {
-        acc[image.reference_id] = [];
-      }
+      if (!acc[image.reference_id]) acc[image.reference_id] = [];
       acc[image.reference_id].push(image.url);
       return acc;
     }, {});
 
-    return items.map((item) => ({
+    items = dbItems.map((item) => ({
       ...item.toJSON(),
       images: imagesByItemId[item.id] || [],
     }));
-  } catch (e) {
-    throw e;
+
+    await setCache(cacheKey, items);
   }
+  return items;
 };
 
 const getItemByIdItem = async (item_id) => {
-  try {
-    if (!item_id) {
-      throw new Error("Item ID is required");
-    }
+  const cacheKey = `item:${item_id}`;
+  let item = await getCache(cacheKey);
 
-    const item = await Item.findByPk(item_id);
-    if (!item) {
-      throw new Error("Item not found");
-    }
+  if (!item) {
+    const dbItem = await Item.findByPk(item_id);
+    if (!dbItem) throw new Error("Item not found");
 
     const images = await Image.findAll({
-      where: {
-        reference_id: item_id,
-        reference_type: "item",
-      },
+      where: { reference_id: item_id, reference_type: "item" },
     });
 
-    return {
-      ...item.toJSON(),
-      images: images.map((image) => image.url),
+    item = {
+      ...dbItem.toJSON(),
+      images: images.map((img) => img.url),
     };
-  } catch (e) {
-    throw e;
+    await setCache(cacheKey, item);
   }
+
+  return item;
 };
 
 const getItemByIdUser = async (user_id) => {
-  try {
-    if (!user_id) {
-      throw new Error("User ID is required");
-    }
+  const cacheKey = `items:user:${user_id}`;
+  let items = await getCache(cacheKey);
 
-    const items = await Item.findAll({ where: { creator_id: user_id } });
-    const itemIds = items.map((item) => item.id);
+  if (!items) {
+    const dbItems = await Item.findAll({ where: { creator_id: user_id } });
+    const itemIds = dbItems.map((item) => item.id);
     const images = await Image.findAll({
-      where: {
-        reference_id: itemIds,
-        reference_type: "item",
-      },
+      where: { reference_id: itemIds, reference_type: "item" },
     });
 
-    return items.map((item) => ({
+    items = dbItems.map((item) => ({
       ...item.toJSON(),
       images: images
-        .filter((image) => image.reference_id === item.id)
-        .map((image) => image.url),
+        .filter((img) => img.reference_id === item.id)
+        .map((img) => img.url),
     }));
-  } catch (e) {
-    throw e;
+    await setCache(cacheKey, items);
   }
+
+  return items;
 };
 
 const updateItem = async (id, data, images) => {
@@ -217,6 +212,10 @@ const updateItem = async (id, data, images) => {
     }
 
     await item.save();
+    await deleteCache(`item:${id}`);
+    await deleteCache("items:all");
+    await deleteCache(`items:user:${item.creator_id}`);
+    await deleteCache(`item:public_id:${item.public_id}`);
     return {
       ...item.toJSON(),
       images: uploadedImages.map((image) => image.url),
@@ -253,6 +252,10 @@ const deleteItem = async (item_id) => {
     }
 
     await item.destroy();
+    await deleteCache(`item:${item_id}`);
+    await deleteCache("items:all");
+    await deleteCache(`items:user:${item.creator_id}`);
+    await deleteCache(`item:public_id:${item.public_id}`);
     return { message: "Item and associated images deleted successfully" };
   } catch (e) {
     throw e;
@@ -272,7 +275,7 @@ const purchaseItem = async (user_id, item_id, data) => {
       name,
       quantity,
     });
-    
+
     return { message: "Purchase request is in queue", job_id: result.id };
   } catch (error) {
     throw error;
@@ -280,30 +283,25 @@ const purchaseItem = async (user_id, item_id, data) => {
 };
 
 const getItemByPublicId = async (public_id) => {
-  try {
-    if (!public_id) {
-      throw new Error("Public ID is required");
-    }
+  const cacheKey = `item:public_id:${public_id}`;
+  let item = await getCache(cacheKey);
 
-    const item = await Item.findOne({ where: { public_id } });
-    if (!item) {
-      throw new Error("Item not found");
-    }
+  if (!item) {
+    const dbItem = await Item.findOne({ where: { public_id } });
+    if (!dbItem) throw new Error("Item not found");
 
     const images = await Image.findAll({
-      where: {
-        reference_id: item.id,
-        reference_type: "item",
-      },
+      where: { reference_id: dbItem.id, reference_type: "item" },
     });
 
-    return {
-      ...item.toJSON(),
-      images: images.map((image) => image.url),
+    item = {
+      ...dbItem.toJSON(),
+      images: images.map((img) => img.url),
     };
-  } catch (e) {
-    throw e;
+    await setCache(cacheKey, item);
   }
+
+  return item;
 };
 
 const updateItemByPublicId = async (public_id, data, images) => {
@@ -351,6 +349,10 @@ const updateItemByPublicId = async (public_id, data, images) => {
     }
 
     await item.save();
+    await deleteCache(`item:${id}`);
+    await deleteCache("items:all");
+    await deleteCache(`items:user:${item.creator_id}`);
+    await deleteCache(`item:public_id:${item.public_id}`);
     return {
       ...item.toJSON(),
       images: uploadedImages.map((image) => image.url),

@@ -14,15 +14,23 @@ const salt = bcrypt.genSaltSync(10);
 const jwt = require("jsonwebtoken");
 const { nanoid } = require("nanoid");
 const rateLimitService = require("./rateLimitService");
-const {redisClient} = require('../config/configRedis.js');
-const { get } = require("../routes/authRoutes.js");
+const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const setUserCache = async (user) => {
-  await redisClient.set("user:id:" + user.id, JSON.stringify(user), "EX", 60 * 60);
-  await redisClient.set("user:public_id:" + user.public_id, String(user.id), "EX", 60 * 60);
-  await redisClient.set("role:id:" + user.role_id, JSON.stringify(user.roles), "EX", 60 * 60);
-  await redisClient.set("coin:id:" + user.coins_id, JSON.stringify(user.coins), "EX", 60 * 60);
-  await redisClient.set("rank:id:" + user.rank_id, JSON.stringify(user.ranks), "EX", 60 * 60);
+  const userData =
+    typeof user.toJSON === "function" ? user.toJSON() : { ...user };
+  delete userData.password;
+  await setCache(`user:id:${userData.id}`, userData);
+  await setCache(`user:public_id:${userData.public_id}`, String(userData.id));
+  if (userData.roles) {
+    await setCache(`role:id:${userData.role_id}`, userData.roles);
+  }
+  if (userData.coins) {
+    await setCache(`coin:id:${userData.coins_id}`, userData.coins);
+  }
+  if (userData.ranks) {
+    await setCache(`rank:id:${userData.rank_id}`, userData.ranks);
+  }
 };
 
 const createUser = async (data) => {
@@ -37,69 +45,40 @@ const createUser = async (data) => {
       address,
     } = data;
     role_id = Number(role_id);
-    if (isNaN(role_id)) {
-      throw new Error("Invalid Role ID");
-    } else {
+    if (isNaN(role_id)) throw new Error("Invalid Role ID");
 
-      let roledata = {};
-      const cacheRole = await redisClient.get("role:id:" + role_id);
-      if (cacheRole) {
-        roledata = JSON.parse(cacheRole);
-      } else {
-        roledata = await Role.findByPk(role_id);
-        if (!roledata) {
-          throw new Error("Role does not exist");
-        }
-        await redisClient.set("role:id:" + role_id, JSON.stringify(roledata), "EX", 60 * 60); 
-      }
-      console.log(roledata);
-
-      if (
-        roledata.name.toLowerCase() !== "user" &&
-        roledata.name.toLowerCase() !== "customer"
-      ) {
-        throw new Error("Cannot assign this role");
-      }
-    
+    let roledata = await getCache(`role:id:${role_id}`);
+    if (!roledata) {
+      roledata = await Role.findByPk(role_id);
+      if (!roledata) throw new Error("Role does not exist");
+      await setCache(`role:id:${role_id}`, roledata);
+    }
+    if (!["user", "customer"].includes(roledata.name.toLowerCase())) {
+      throw new Error("Cannot assign this role");
     }
 
     const existingUser = await User.findOne({
-      where: {
-        [Op.or]: [{ email }, { username }],
-      },
+      where: { [Op.or]: [{ email }, { username }] },
     });
-
     if (existingUser) {
-      if (existingUser.email === email) {
-        throw new Error("Email already exists");
-      }
-      if (existingUser.username === username) {
+      if (existingUser.email === email) throw new Error("Email already exists");
+      if (existingUser.username === username)
         throw new Error("Username already exists");
-      }
     }
 
-    // Create coin first
     const newCoin = await Coin.create({ amount: 0 });
-
-    // Get the maximum order from existing ranks
-    const maxOrderRank = await Rank.findOne({
-      order: [["order", "DESC"]],
-    });
+    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
     const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
-
-    // Create rank with null user_id first
     const newRank = await Rank.create({
       amount: 0,
       order: newOrder,
       user_id: null,
     });
-
     const hashPassword = bcrypt.hashSync(password, salt);
 
-    // Create user with the new coin and rank IDs
     const newUser = await User.create({
       public_id: nanoid(),
-      role_id: role_id,
+      role_id,
       email,
       password: hashPassword,
       username,
@@ -110,15 +89,15 @@ const createUser = async (data) => {
       rank_id: newRank.id,
     });
 
-    // Update rank with user_id after user is created
     await newRank.update({ user_id: newUser.id });
 
-    // Cache the new user, rank, and coin in Redis
-    await redisClient.set('user:id:' + newUser.id, JSON.stringify(newUser), 'EX', 60 * 60);
-    await redisClient.set('user:public_id:' + newUser.public_id, String(newUser.id) , 'EX', 60 * 60);
-
-    await redisClient.set('rank:id' + newRank.id, JSON.stringify(newRank), 'EX', 60 * 60);
-    await redisClient.set('coin:id' + newCoin.id, JSON.stringify(newCoin), 'EX', 60 * 60);
+    const userWithIncludes = {
+      ...newUser.toJSON(),
+      roles: roledata,
+      coins: newCoin,
+      ranks: newRank,
+    };
+    await setUserCache(userWithIncludes);
 
     return newUser;
   } catch (error) {
@@ -131,11 +110,7 @@ const loginUser = async (user, email, password, clientIP, userAgent) => {
   try {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      await rateLimitService.recordFailedLogin(
-        email,
-        clientIP,
-        userAgent
-      );
+      await rateLimitService.recordFailedLogin(email, clientIP, userAgent);
       throw new Error("Invalid password");
     }
 
@@ -161,54 +136,29 @@ const loginUser = async (user, email, password, clientIP, userAgent) => {
       expiresIn: process.env.JWT_RF_EXPIRE,
     });
 
-    await rateLimitService.resetLoginAttempts(
-      email,
-      clientIP,
-      userAgent
-    );
+    await rateLimitService.resetLoginAttempts(email, clientIP, userAgent);
 
-    return {
-      access_token,
-      refresh_token,
-      user: payload,
-    };
+    return { access_token, refresh_token, user: payload };
   } catch (e) {
     throw e;
   }
 };
 
 const refreshAccessToken = (refreshToken) => {
-  if (!refreshToken) {
-    throw new Error("No refresh token provided");
-  }
-
+  if (!refreshToken) throw new Error("No refresh token provided");
   const decoded = jwt.verify(refreshToken, process.env.JWT_RF_SECRET);
-  const newAccessToken = jwt.sign(
-    { id: decoded.id },
-    process.env.JWT_AT_SECRET,
-    { expiresIn: process.env.JWT_AT_EXPIRE }
-  );
-
-  return newAccessToken;
+  return jwt.sign({ id: decoded.id }, process.env.JWT_AT_SECRET, {
+    expiresIn: process.env.JWT_AT_EXPIRE,
+  });
 };
 
 const getAllUsers = async () => {
   try {
     const users = await User.findAll({
-      attributes: {
-        exclude: ["password"],
-      },
+      attributes: { exclude: ["password"] },
       include: [
-        {
-          model: Role,
-          as: "roles",
-          attributes: ["id", "name"],
-        },
-        {
-          model: Coin,
-          as: "coins",
-          attributes: ["id", "amount"],
-        },
+        { model: Role, as: "roles", attributes: ["id", "name"] },
+        { model: Coin, as: "coins", attributes: ["id", "amount"] },
       ],
     });
     return users;
@@ -220,21 +170,19 @@ const getAllUsers = async () => {
 const deleteUser = async (id) => {
   try {
     const user = await User.findOne({ where: { id } });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    await redisClient.del("user:id:" + id);
-    await redisClient.del("user:public_id:" + user.public_id);
+    if (!user) throw new Error("User not found");
 
-    const rankUser = await Rank.destroy({
-      where: { id: user.rank_id },
-    });
+    await deleteCache(`user:id:${id}`);
+    await deleteCache(`user:public_id:${user.public_id}`);
 
-    console.log("rankUser:", rankUser);
+    const rankDestroyed = await Rank.destroy({ where: { id: user.rank_id } });
+    if (rankDestroyed === 0) throw new Error("Rank not found");
 
-    if (rankUser === 0) {
-      throw new Error("Rank not found");
-    }
+    const coinDestroyed = await Coin.destroy({ where: { id: user.coins_id } });
+    if (coinDestroyed === 0) throw new Error("Coin not found");
+
+    const userDestroyed = await User.destroy({ where: { id: user.id } });
+    if (userDestroyed === 0) throw new Error("User not found");
 
     return { message: "User deleted successfully" };
   } catch (e) {
@@ -244,35 +192,21 @@ const deleteUser = async (id) => {
 
 const deleteUserByPublicID = async (public_id) => {
   try {
-    const user_id = await redisClient.get("user:public_id:" + public_id);
-    if (user_id) {
-      await redisClient.del("user:id:" + Number(user_id));
-    }
-    await redisClient.del("user:public_id:" + public_id);
-    
+    const user_id = await getCache(`user:public_id:${public_id}`);
+    if (user_id) await deleteCache(`user:id:${Number(user_id)}`);
+    await deleteCache(`user:public_id:${public_id}`);
+
     const user = await User.findOne({ where: { public_id } });
+    if (!user) throw new Error("User not found");
 
-    const rankUser = await Rank.destroy({
-      where: { id : user.rank_id },
-    });
+    const rankDestroyed = await Rank.destroy({ where: { id: user.rank_id } });
+    if (rankDestroyed === 0) throw new Error("Rank not found");
 
-    const coinUser = await Coin.destroy({
-      where: { id: user.coins_id },
-    });
+    const coinDestroyed = await Coin.destroy({ where: { id: user.coins_id } });
+    if (coinDestroyed === 0) throw new Error("Coin not found");
 
-    const result = await User.destroy({
-      where: { id : user.id },
-    });
-    if (coinUser === 0) {
-      throw new Error("Coin not found");
-    }
-    if (rankUser === 0) {
-      throw new Error("Rank not found");
-    }
-
-    if (result === 0) {
-      throw new Error("User not found");
-    }
+    const result = await User.destroy({ where: { id: user.id } });
+    if (result === 0) throw new Error("User not found");
 
     return { message: "User deleted successfully" };
   } catch (e) {
@@ -281,53 +215,41 @@ const deleteUserByPublicID = async (public_id) => {
 };
 
 const getUserBycacheId = async (id) => {
-  try {  
-    const cacheUser = await redisClient.get("user:id:" + id);
-    console.log("cacheUser", cacheUser);
+  try {
+    const cacheUser = await getCache(`user:id:${id}`);
     if (!cacheUser) return null;
-    const data_user = JSON.parse(cacheUser);
+    const data_user = cacheUser;
 
-    // Retrieve role data from Redis or fallback to database
-    let dataRole = JSON.parse(await redisClient.get("role:id:" + data_user.role_id));
+    let dataRole = await getCache(`role:id:${data_user.role_id}`);
     if (!dataRole) {
       dataRole = await Role.findByPk(data_user.role_id, {
         attributes: ["id", "name"],
       });
-      if (dataRole) {
-        await redisClient.set("role:id:" + data_user.role_id, JSON.stringify(dataRole), "EX", 60 * 60);
-      }
+      if (dataRole) await setCache(`role:id:${data_user.role_id}`, dataRole);
     }
 
-    // Retrieve coin data from Redis or fallback to database
-    let dataCoin = JSON.parse(await redisClient.get("coin:id:" + data_user.coins_id));
+    let dataCoin = await getCache(`coin:id:${data_user.coins_id}`);
     if (!dataCoin) {
       dataCoin = await Coin.findByPk(data_user.coins_id, {
         attributes: ["id", "amount"],
       });
-      if (dataCoin) {
-        await redisClient.set("coin:id:" + data_user.coins_id, JSON.stringify(dataCoin), "EX", 60 * 60);
-      }
+      if (dataCoin) await setCache(`coin:id:${data_user.coins_id}`, dataCoin);
     }
 
-    // Retrieve rank data from Redis or fallback to database
-    let dataRank = JSON.parse(await redisClient.get("rank:id:" + data_user.rank_id));
+    let dataRank = await getCache(`rank:id:${data_user.rank_id}`);
     if (!dataRank) {
       dataRank = await Rank.findByPk(data_user.rank_id, {
         attributes: ["id", "amount", "order"],
       });
-      if (dataRank) {
-        await redisClient.set("rank:id:" + data_user.rank_id, JSON.stringify(dataRank), "EX", 60 * 60);
-      }
+      if (dataRank) await setCache(`rank:id:${data_user.rank_id}`, dataRank);
     }
 
-    // Construct the user object
     const user = {
       id: data_user.id,
       public_id: data_user.public_id,
       avatar_url: data_user.avatar_url,
       google_id: data_user.google_id,
       email: data_user.email,
-      password: data_user.password,
       username: data_user.username,
       full_name: data_user.full_name,
       phone_number: data_user.phone_number,
@@ -338,7 +260,6 @@ const getUserBycacheId = async (id) => {
       coins: dataCoin,
       ranks: dataRank,
     };
-    console.log("user", user);
     return user;
   } catch (e) {
     console.error("Error in getUserBycacheId:", e);
@@ -350,36 +271,19 @@ const getUserByID = async (id) => {
   try {
     const cacheUser = await getUserBycacheId(id);
     if (cacheUser) return cacheUser;
-      
-    // Fallback to database query if user data is not in Redis
+
     const user = await User.findOne({
-      where: { id: id },
+      where: { id },
+      attributes: { exclude: ["password"] },
       include: [
-        {
-          model: Role,
-          as: "roles",
-          attributes: ["id", "name"],
-        },
-        {
-          model: Coin,
-          as: "coins",
-          attributes: ["id", "amount"],
-        },
-        {
-          model: Rank,
-          as: "ranks",
-          attributes: ["id", "amount", "order"],
-        },
+        { model: Role, as: "roles", attributes: ["id", "name"] },
+        { model: Coin, as: "coins", attributes: ["id", "amount"] },
+        { model: Rank, as: "ranks", attributes: ["id", "amount", "order"] },
       ],
     });
+    if (!user) throw new Error("User not found");
 
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Cache the user and related data in Redis
     await setUserCache(user);
-  
     return user;
   } catch (e) {
     console.error("Error in getUserByID:", e);
@@ -389,40 +293,24 @@ const getUserByID = async (id) => {
 
 const getUserByPublicID = async (public_id) => {
   try {
-    const cacheUserPublic = await redisClient.get("user:public_id:" + public_id);
-
+    const cacheUserPublic = await getCache(`user:public_id:${public_id}`);
     if (cacheUserPublic) {
       const cacheUser = await getUserBycacheId(Number(cacheUserPublic));
       if (cacheUser) return cacheUser;
     }
-    
+
     const user = await User.findOne({
-      where: { public_id: public_id },
+      where: { public_id },
+      attributes: { exclude: ["password"] },
       include: [
-        {
-          model: Role,
-          as: "roles",
-          attributes: ["id", "name"],
-        },
-        {
-          model: Coin,
-          as: "coins",
-          attributes: ["id", "amount"],
-        },
-        {
-          model: Rank,
-          as: "ranks",
-          attributes: ["id", "amount", "order"],
-        },
+        { model: Role, as: "roles", attributes: ["id", "name"] },
+        { model: Coin, as: "coins", attributes: ["id", "amount"] },
+        { model: Rank, as: "ranks", attributes: ["id", "amount", "order"] },
       ],
     });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    
-    // Cache the user and related data in Redis
-    await setUserCache(user);
+    if (!user) throw new Error("User not found");
 
+    await setUserCache(user);
     return user;
   } catch (e) {
     throw e;
@@ -439,23 +327,19 @@ const updateUser = async (user, data) => {
 
     if (coins !== undefined) {
       let coin = await Coin.findOne({ where: { id: user.coins_id } });
-      if (!coin) {
-        throw new Error("Coin not found");
-      }
+      if (!coin) throw new Error("Coin not found");
       const parsedCoins = Number(coins);
-      if (isNaN(parsedCoins) || parsedCoins < 0) {
+      if (isNaN(parsedCoins) || parsedCoins < 0)
         throw new Error("Coins must be a non-negative number");
-      }
       coin.amount = parsedCoins;
       await coin.save();
-      await redisClient.set("coin:id:" + user.coins_id, JSON.stringify(coin), "EX", 60 * 60);
+      await setCache(`coin:id:${user.coins_id}`, coin);
     }
 
     if (streak !== undefined) {
       const parsedStreak = Number(streak);
-      if (isNaN(parsedStreak) || parsedStreak < 0) {
+      if (isNaN(parsedStreak) || parsedStreak < 0)
         throw new Error("Streak must be a non-negative number");
-      }
       user.streak = parsedStreak;
     }
 
@@ -466,27 +350,20 @@ const updateUser = async (user, data) => {
     phone_number
       ? (user.phone_number = phone_number)
       : (user.phone_number = user.phone_number);
-    user.username == ""
-      ? (user.username = username)
-      : (user.username = user.username);
-    user.email == "" ? (user.email = email) : (user.email = user.email);
     await user.save();
 
     const roledata = await Role.findByPk(user.role_id);
-    if (!roledata) {
-      throw new Error("Role does not exist");
-    }
-
+    if (!roledata) throw new Error("Role does not exist");
     const rankdata = await Rank.findByPk(user.rank_id);
-    if (!rankdata) {
-      throw new Error("Rank does not exist");
-    }
+    if (!rankdata) throw new Error("Rank does not exist");
 
-    // Cache the updated user and related data in Redis
-    await redisClient.set("user:id:" + user.id, JSON.stringify(user), "EX", 60 * 60);
-    await redisClient.set("user:public_id:" + user.public_id, String(user.id), "EX", 60 * 60);
-    await redisClient.set("role:id:" + user.role_id, JSON.stringify(roledata), "EX", 60 * 60);
-    await redisClient.set("rank:id:" + user.rank_id, JSON.stringify(rankdata), "EX", 60 * 60);
+    const updatedUser = {
+      ...user.toJSON(),
+      roles: roledata,
+      coins: await Coin.findByPk(user.coins_id),
+      ranks: rankdata,
+    };
+    await setUserCache(updatedUser);
 
     return user;
   } catch (e) {
@@ -496,13 +373,9 @@ const updateUser = async (user, data) => {
 
 const updateUserById = async (id, data) => {
   try {
-    let user = await User.findOne({ where: { id: id } });
-    if (!user) {
-      throw new Error("User not found");
-    }
-    const updatedUser = await updateUser(user, data);
-    return updatedUser;
-    
+    let user = await User.findOne({ where: { id } });
+    if (!user) throw new Error("User not found");
+    return await updateUser(user, data);
   } catch (e) {
     throw e;
   }
@@ -510,29 +383,27 @@ const updateUserById = async (id, data) => {
 
 const updateUserByPublicID = async (public_id, data) => {
   try {
-    let user = await User.findOne({ where: { public_id: public_id } });
-    const updatedUser = await updateUser(user, data);
-    return updatedUser;
+    let user = await User.findOne({ where: { public_id } });
+    if (!user) throw new Error("User not found");
+    return await updateUser(user, data);
   } catch (e) {
     throw e;
   }
 };
 
 const removeSpecialChars = (str) => {
-  return str.replace(/[^a-zA-Z0-9\u00C0-\u1EF9\s]/g, " ").trim().replace(/\s+/g, " ");
+  return str
+    .replace(/[^a-zA-Z0-9\u00C0-\u1EF9\s]/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 };
 
 const findOrCreateUser = async (profile) => {
   try {
-
     const existingUser = await User.findOne({
-      where: {
-        email: profile.emails[0].value,
-      },
+      where: { email: profile.emails[0].value },
     });
-
     if (existingUser) {
-      // Cache the existing user and related data in Redis
       await setUserCache(existingUser);
       return existingUser;
     }
@@ -553,9 +424,12 @@ const findOrCreateUser = async (profile) => {
     });
 
     await newRank.update({ user_id: newUser.id });
-
-    // Cache the new user and related data in Redis
-    await setUserCache(newUser);
+    await setUserCache({
+      ...newUser.toJSON(),
+      roles: await Role.findByPk(2),
+      coins: newCoin,
+      ranks: newRank,
+    });
     return newUser;
   } catch (e) {
     throw e;
@@ -564,57 +438,35 @@ const findOrCreateUser = async (profile) => {
 
 const getAllTasksById = async (id) => {
   try {
-    if (!id) {
-      throw new Error("User's id cannot be null");
-    }
-    const cacheAllUserTaskId = await redisClient.get("all:User:taskId:" + id);
+    if (!id) throw new Error("User's id cannot be null");
+    const cacheAllUserTaskId = await getCache(`all:User:taskId:${id}`);
     if (cacheAllUserTaskId) {
       let result = [];
-      for (const UserTaskId of JSON.parse(cacheAllUserTaskId)) {
-        const taskUser = await redisClient.get("taskUser:id:" + UserTaskId);
-        if (taskUser) {
-          result.push(JSON.parse(taskUser));
-        } else {
-          const taskUserData = await TaskUser.findOne({
+      for (const UserTaskId of cacheAllUserTaskId) {
+        let taskUser = await getCache(`taskUser:id:${UserTaskId}`);
+        if (!taskUser) {
+          taskUser = await TaskUser.findOne({
             where: { id: UserTaskId },
-            include: [
-              {
-                model: Task,
-                as: "tasks",
-                required: true,
-              },
-            ],
+            include: [{ model: Task, as: "tasks", required: true }],
           });
-          if (taskUserData) {
-            await redisClient.set("taskUser:id:" + UserTaskId, JSON.stringify(taskUserData), "EX", 60 * 60);
-            result.push(taskUserData);
-          }
-          else {
-            throw new Error("TaskUser not found");
-          }
+          if (taskUser) await setCache(`taskUser:id:${UserTaskId}`, taskUser);
+          else throw new Error("TaskUser not found");
         }
+        result.push(taskUser);
       }
       return result;
-    };
-
+    }
 
     const TaskUsers = await TaskUser.findAll({
       where: { user_id: id },
-      include: [
-        {
-          model: Task,
-          as: "tasks",
-          required: true,
-        },
-      ],
+      include: [{ model: Task, as: "tasks", required: true }],
     });
 
-    let litsOfUserTaskId = [];
+    const listOfUserTaskId = TaskUsers.map((taskUser) => taskUser.id);
+    await setCache(`all:User:taskId:${id}`, listOfUserTaskId);
     for (const taskUser of TaskUsers) {
-      litsOfUserTaskId.push(taskUser.id);
+      await setCache(`taskUser:id:${taskUser.id}`, taskUser);
     }
-
-    await redisClient.set("all:User:taskId:" + id, JSON.stringify(litsOfUserTaskId), "EX", 60 * 60);
 
     return TaskUsers;
   } catch (e) {
@@ -622,29 +474,19 @@ const getAllTasksById = async (id) => {
   }
 };
 
-
 const getTaskCompleted = async (user_id) => {
   try {
     const allTasksUser = await getAllTasksById(user_id);
     let completedTasks = [];
     for (const taskUser of allTasksUser) {
-      let task = await redisClient.get("task:id:" + taskUser.task_id);
-      if (task) {
-        task = JSON.parse(task);
+      let task = await getCache(`task:id:${taskUser.task_id}`);
+      if (!task) {
+        task = await Task.findOne({ where: { id: taskUser.task_id } });
+        if (task) await setCache(`task:id:${taskUser.task_id}`, task);
+        else throw new Error("Task not found");
       }
-      else {
-        task = await Task.findOne({
-          where: { id: taskUser.task_id },
-        });
-        if (task) {
-          await redisClient.set("task:id:" + taskUser.task_id, JSON.stringify(task), "EX", 60 * 60);
-        }else {
-          throw new Error("Task not found");
-        }
-      }
-      if (taskUser.progress_count >= task.total_count) {
+      if (taskUser.progress_count >= task.total_count)
         completedTasks.push(task);
-      }
     }
     return completedTasks;
   } catch (e) {
@@ -652,23 +494,16 @@ const getTaskCompleted = async (user_id) => {
   }
 };
 
-
 const getItemByIdUser = async (user_id) => {
   try {
-    // Check if the list of transaction IDs is cached in Redis
-    const cachedTransactionIds = await redisClient.get("all:transaction:user:id" + user_id);
+    const cachedTransactionIds = await getCache(
+      `all:transaction:user:id${user_id}`
+    );
     if (cachedTransactionIds) {
-      console.log("cachedTransactionIds", cachedTransactionIds);
-      const transactionIds = JSON.parse(cachedTransactionIds);
       const transactions = [];
-
-      // Fetch each transaction by its ID
-      for (const transactionId of transactionIds) {
-        let transaction = await redisClient.get("transaction:id:" + transactionId);
-        if (transaction) {
-          transactions.push(JSON.parse(transaction));
-        } else {  
-          // If not in Redis, fetch from the database
+      for (const transactionId of cachedTransactionIds) {
+        let transaction = await getCache(`transaction:id:${transactionId}`);
+        if (!transaction) {
           transaction = await Transaction.findOne({
             where: { id: transactionId },
             attributes: ["id", "total_price", "quantity", "status"],
@@ -679,28 +514,16 @@ const getItemByIdUser = async (user_id) => {
               },
             ],
           });
-
-          if (transaction) {
-            // Cache the transaction in Redis
-            await redisClient.set(
-              "transaction:id:" + transactionId,
-              JSON.stringify(transaction),
-              "EX",
-              60 * 60
-            );
-            transactions.push(transaction);
-          }
+          if (transaction)
+            await setCache(`transaction:id:${transactionId}`, transaction);
         }
+        if (transaction) transactions.push(transaction);
       }
       return transactions;
     }
 
-    // Query the database if the list of transaction IDs is not in the cache
     const items = await Transaction.findAll({
-      where: {
-        buyer_id: user_id,
-        status: ["pending", "completed"],
-      },
+      where: { buyer_id: user_id, status: ["pending", "completed"] },
       attributes: ["id", "total_price", "quantity", "status"],
       include: [
         {
@@ -710,28 +533,12 @@ const getItemByIdUser = async (user_id) => {
         },
       ],
     });
+    if (!items || items.length === 0) throw new Error("User not found");
 
-    if (!items || items.length === 0) {
-      throw new Error("User not found");
-    }
-
-    // Cache the list of transaction IDs in Redis
     const transactionIds = items.map((item) => item.id);
-    await redisClient.set(
-      "all:transaction:user:id" + user_id,
-      JSON.stringify(transactionIds),
-      "EX",
-      60 * 60
-    );
-
-    // Cache each transaction in Redis
+    await setCache(`all:transaction:user:id${user_id}`, transactionIds);
     for (const item of items) {
-      await redisClient.set(
-        "transaction:id:" + item.id,
-        JSON.stringify(item),
-        "EX",
-        60 * 60
-      );
+      await setCache(`transaction:id:${item.id}`, item);
     }
 
     return items;
