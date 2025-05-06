@@ -24,7 +24,6 @@ export default function TaskDetailModal({
         onTaskAccepted(task);
         onClose();
         // Reload the page after successful task acceptance
-        window.location.reload();
       } else {
         throw new Error("Không thể tham gia nhiệm vụ");
       }

@@ -106,7 +106,7 @@ function ProfileCard({ setSelectedTab }) {
       </div>
       <div className="my-4 h-px w-full border-b"></div>
       <div className="space-y-2">
-        {["Thông tin cá nhân", "Nhiệm vụ", "Lịch sử giao dịch"].map(tab => (
+        {["Thông tin cá nhân", "Nhiệm vụ hoàn thành", "Đơn mua"].map(tab => (
           <MenuItem key={tab} text={tab} onClick={() => setSelectedTab(tab)} />
         ))}
       </div>

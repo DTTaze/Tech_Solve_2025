@@ -8,7 +8,7 @@ import {
   createTaskApi,
 } from "../../utils/api";
 import { Box } from "@mui/material";
-import TaskForm from "../ui/form/TaskForm";
+import TaskForm from "./form/TaskForm";
 
 export default function TasksManagement() {
   const [tasks, setTasks] = useState([]);

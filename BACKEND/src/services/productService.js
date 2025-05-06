@@ -6,9 +6,7 @@ const Image = db.Image;
 const { uploadImages } = require("../services/imageService");
 const { sequelize } = require("../models");
 const cloudinary = require("cloudinary").v2;
-const { redisClient } = require("../config/configRedis");
-const { image } = require("../config/cloudinary");
-const { get } = require("../routes/authRoutes");
+const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const createProduct = async (productData, user_id, images) => {
   try {
@@ -33,7 +31,7 @@ const createProduct = async (productData, user_id, images) => {
     }
 
     const result = await sequelize.transaction(async (t) => {
-      let productFormat ;
+      let productFormat;
       const newProduct = await Product.create(
         {
           public_id: nanoid(),
@@ -59,28 +57,31 @@ const createProduct = async (productData, user_id, images) => {
         }
         productFormat = {
           ...newProduct.toJSON(),
-          imagesId : uploadedImages.map((img) => img.id),
-        }
-      }else {
+          imagesId: uploadedImages.map((img) => img.id),
+        };
+      } else {
         productFormat = {
           ...newProduct.toJSON(),
-          imagesId : [],
-        }
+          imagesId: [],
+        };
       }
-      
-      // Cache the product for future use
-      await redisClient.set(`product:id:${newProduct.id}`, JSON.stringify(productFormat), 'EX', 60 * 60 );
-      await redisClient.set(`product:public_id:${newProduct.public_id}`, newProduct.id, 'EX', 60 * 60 );
-      // Cache the product ID in a list
-      const cachedProductIds = await redisClient.get("products:all");
+
+      await setCache(`product:id:${newProduct.id}`, productFormat, 60 * 60);
+      await setCache(
+        `product:public_id:${newProduct.public_id}`,
+        newProduct.id,
+        60 * 60
+      );
+      const cachedProductIds = await getCache("products:all");
       if (cachedProductIds) {
-        const productIds = JSON.parse(cachedProductIds);
+        const productIds = cachedProductIds || [];
         productIds.push(newProduct.id);
-        await redisClient.set("products:all", JSON.stringify(productIds), "EX", 60 * 60);
+        await setCache("products:all", productIds, 60 * 60);
       }
+
       return newProduct;
     });
-    
+
     return result;
   } catch (error) {
     console.error("Error creating product:", error);
@@ -92,20 +93,17 @@ const getImagesFromListOfIds = async (imagesId) => {
   try {
     let images = [];
     for (const imageId of imagesId) {
-      const cacheImage = await redisClient.get(`image:id:${imageId}`);
+      const cacheImage = await getCache(`image:id:${imageId}`);
       if (cacheImage) {
-        images.push(JSON.parse(cacheImage));
+        images.push(cacheImage);
         continue;
       }
       const image = await Image.findByPk(imageId);
       if (image) {
         images.push(image);
-        // Cache the image for future use
-        await redisClient.set(`image:id:${imageId}`, JSON.stringify(image), "EX", 60 * 60);
+        await setCache(`image:id:${imageId}`, image, 60 * 60);
       }
     }
-
-    // Group images by reference_id
     const imagesByProductId = images.reduce((acc, image) => {
       if (!acc[image.reference_id]) acc[image.reference_id] = [];
       acc[image.reference_id].push(image.url);
@@ -121,16 +119,19 @@ const getImagesFromListOfIds = async (imagesId) => {
 
 const getSellerFromProduct = async (seller_id) => {
   try {
-    const cacheUser = await redisClient.get(`user:id:${seller_id}`);
+    const cacheUser = await getCache(`user:id:${seller_id}`);
     if (cacheUser) {
-      const user = JSON.parse(cacheUser); // Parse the cached JSON string
+      const user = cacheUser;
       const userFormat = {
         id: seller_id,
         username: user.username,
       };
-      return userFormat; // Return the formatted user object
+      return userFormat;
     }
-    const user = await User.findByPk(seller_id, { attributes: ["id", "username"] });
+
+    const user = await User.findByPk(seller_id, {
+      attributes: ["id", "username"],
+    });
     return user;
   } catch (error) {
     console.error("Error getting seller from product:", error);
@@ -142,18 +143,16 @@ const getProductFromListOfIds = async (productIds) => {
   try {
     let products = [];
     for (const productId of productIds) {
-      const cacheProduct = await redisClient.get(`product:id:${productId}`);
+      const cacheProduct = await getCache(`product:id:${productId}`);
       if (cacheProduct) {
-        const product = JSON.parse(cacheProduct);
-        console.log("product", product);
-
+        const product = cacheProduct;
         let imagesOfProduct;
         if (product.imagesId && product.imagesId.length > 0) {
           imagesOfProduct = await getImagesFromListOfIds(product.imagesId);
         }
-        
+
         const user = await getSellerFromProduct(product.seller_id);
-        let productFormat = { 
+        let productFormat = {
           ...product,
           seller: user,
           images: (imagesOfProduct && imagesOfProduct[productId]) || [],
@@ -181,8 +180,7 @@ const getProductFromListOfIds = async (productIds) => {
         if (!acc[image.reference_id]) acc[image.reference_id] = [];
         acc[image.reference_id].push(image.url);
         return acc;
-      }
-      , {});
+      }, {});
 
       let productFormat = {
         ...product.toJSON(),
@@ -196,39 +194,31 @@ const getProductFromListOfIds = async (productIds) => {
         ...product.toJSON(),
         imagesId: imagesOfProduct.map((img) => img.id),
       };
-      await redisClient.set(`product:id:${productId}`, JSON.stringify(productFormatCache), 'EX', 60 * 60 );
+      await setCache(`product:id:${productId}`, productFormatCache, 60 * 60);
     }
 
-    
     return products.filter((product) => product !== null);
-
   } catch (error) {
     console.error("Error getting products from list of IDs:", error);
     throw error;
   }
-}
+};
 
 const getAllProducts = async () => {
   try {
-    // Check if product IDs are cached in Redis
-    const cachedProductIds = await redisClient.get("products:all");
+    const cachedProductIds = await getCache("products:all");
     if (cachedProductIds) {
-      console.log("cachedProductIds", cachedProductIds);
-      const productIds = JSON.parse(cachedProductIds);
+      const productIds = cachedProductIds;
 
-      // Compare the length of cached IDs with the total products in the database
       const totalProductsCount = await Product.count();
       if (productIds.length === totalProductsCount) {
         const products = await getProductFromListOfIds(productIds);
         return products.filter((product) => product !== null);
-      }else {
-        console.log("cache products length", productIds.length);
-        console.log("db products length", totalProductsCount);
+      } else {
         throw new Error("Product IDs in cache do not match database count");
       }
     }
 
-    // Fetch products from the database
     const products = await Product.findAll({
       include: [
         {
@@ -263,13 +253,10 @@ const getAllProducts = async () => {
       imagesId: images.map((img) => img.id),
     }));
 
-    // Cache the list of product IDs
-    await redisClient.set("products:all", JSON.stringify(productIds), "EX", 60 * 60);
-
-    // Cache each product's details separately
+    await setCache("products:all", productIds, 60 * 60);
     await Promise.all(
       productFormat.map((product) =>
-        redisClient.set(`product:id:${product.id}`, JSON.stringify(product), "EX", 60 * 60)
+        setCache(`product:id:${product.id}`, product, 60 * 60)
       )
     );
 
@@ -308,9 +295,11 @@ const getProductByIdUser = async (user_id) => {
   }
 };
 
-const updateProduct = async (product,data,images) => {
+const updateProduct = async (product, data, images) => {
   try {
-    let { name, price, description, post_status, category, product_status } = data;
+    let { name, price, description, post_status, category, product_status } =
+      data;
+
     if (!product) throw new Error("Product not found");
 
     if (name) product.name = name;
@@ -338,15 +327,10 @@ const updateProduct = async (product,data,images) => {
         await image.destroy();
       }
 
-      // Delete images from cache
-      const cacheProduct = JSON.parse(await redisClient.get(`product:id:${id}`));
-
+      const cacheProduct = await getCache(`product:id:${id}`);
       if (cacheProduct && cacheProduct.imagesId) {
         for (const imageId of cacheProduct.imagesId) {
-          const cacheImage = await redisClient.get(`image:id:${imageId}`);
-          if (cacheImage) {
-            await redisClient.del(`image:id:${imageId}`);
-          }
+          await deleteCache(`image:id:${imageId}`);
         }
       }
 
@@ -358,24 +342,23 @@ const updateProduct = async (product,data,images) => {
 
     await product.save();
 
-    // Set the updated product in cache
     const productFormat = {
       ...product.toJSON(),
       imagesId: uploadedImages.map((img) => img.id),
     };
-    await redisClient.set(`product:id:${id}`, JSON.stringify(productFormat), 'EX', 60 * 60 );
-    await redisClient.set(`product:public_id:${product.public_id}`, id, 'EX', 60 * 60 );
-    
-    // Cache the product ID in a list
-    const cachedProductIds = await redisClient.get("products:all");
+    await setCache(`product:id:${id}`, productFormat, 60 * 60);
+    await setCache(`product:public_id:${product.public_id}`, id, 60 * 60);
+
+    const cachedProductIds = await getCache("products:all");
     if (cachedProductIds) {
-      const productIds = JSON.parse(cachedProductIds);
+      const productIds = cachedProductIds;
       const index = productIds.indexOf(id);
       if (index !== -1) {
         productIds[index] = id;
-        await redisClient.set("products:all", JSON.stringify(productIds), "EX", 60 * 60);
+        await setCache("products:all", productIds, 60 * 60);
       }
     }
+
     return {
       ...product.toJSON(),
       images: uploadedImages.map((img) => img.url),
@@ -383,7 +366,7 @@ const updateProduct = async (product,data,images) => {
   } catch (e) {
     throw e;
   }
-}
+};
 
 const updateProductById = async (id, data, images) => {
   try {
@@ -417,15 +400,24 @@ const deleteProduct = async (product_id) => {
       await image.destroy();
     }
 
-    // Delete product from cache
-    await redisClient.del(`product:id:${product_id}`);
-    await redisClient.del(`product:public_id:${product.public_id}`);
-    // Delete images from cache
+    await deleteCache(`product:id:${product_id}`);
+    await deleteCache(`product:public_id:${product.public_id}`);
     for (const image of images) {
-      await redisClient.del(`image:id:${image.id}`);
+      await deleteCache(`image:id:${image.id}`);
     }
 
     await product.destroy();
+
+    const cachedProductIds = await getCache("products:all");
+    if (cachedProductIds) {
+      const productIds = cachedProductIds;
+      const index = productIds.indexOf(product_id);
+      if (index !== -1) {
+        productIds.splice(index, 1);
+        await setCache("products:all", productIds, 60 * 60);
+      }
+    }
+
     return { message: "Product and associated images deleted successfully" };
   } catch (e) {
     throw e;

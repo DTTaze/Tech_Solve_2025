@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -11,33 +11,69 @@ import {
   TableRow,
   Chip,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+  Stepper,
+  Step,
+  StepLabel,
+  IconButton,
+  Divider,
+  Card,
+  CardContent,
+  useMediaQuery,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
+import AddIcon from "@mui/icons-material/Add";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import TimelineIcon from "@mui/icons-material/Timeline";
+import EditIcon from "@mui/icons-material/Edit";
 
-// Mock data for orders
-const mockOrders = [
-  {
-    id: 1,
-    date: "2024-04-20",
-    items: "5 kg Plastic, 2 kg Paper",
-    status: "Completed",
-    points: 150,
-  },
-  {
-    id: 2,
-    date: "2024-04-18",
-    items: "3 kg Glass, 1 kg Metal",
-    status: "In Progress",
-    points: 80,
-  },
-  {
-    id: 3,
-    date: "2024-04-15",
-    items: "10 kg Organic Waste",
-    status: "Completed",
-    points: 200,
-  },
-];
+// Import extracted components
+import OrdersList from "./orders/OrdersList";
+import EmptyOrderState from "./orders/EmptyOrderState";
+import CreateOrderForm from "./orders/forms/CreateOrderForm";
+import AddShippingAccountForm from "./orders/forms/AddShippingAccountForm";
+import ShippingAccountsList from "./orders/ShippingAccountsList";
+import OrderDetailsDialog from "./orders/dialogs/OrderDetailsDialog";
+import OrderTrackingDialog from "./orders/dialogs/OrderTrackingDialog";
+
+// Import mock data and utilities
+import {
+  mockOrders,
+  wasteCategories,
+  wasteTypesMap,
+} from "../../data/ordersMockData";
+
+// Import API functions
+import {
+  createShippingOrderApi,
+  getShippingOrderDetailApi,
+  updateShippingOrderApi,
+  cancelShippingOrderApi,
+  getShippingAccountsApi,
+  createShippingAccountApi,
+  updateShippingAccountApi,
+  deleteShippingAccountApi,
+  setDefaultShippingAccountApi,
+} from "../../utils/api";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -45,6 +81,8 @@ const getStatusColor = (status) => {
       return "success";
     case "In Progress":
       return "warning";
+    case "Pending Confirmation":
+      return "info";
     case "Cancelled":
       return "error";
     default:
@@ -52,63 +90,809 @@ const getStatusColor = (status) => {
   }
 };
 
+const emptyShippingAccountForm = {
+  name: "",
+  shop_id: "",
+  token: "",
+  carrier: "",
+};
+
 export default function CustomerOrders() {
   const userInfo = useOutletContext();
+  const [orders, setOrders] = useState(mockOrders);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  const [shippingAccountsDialogOpen, setShippingAccountsDialogOpen] =
+    useState(false);
+  const [addShippingAccountDialogOpen, setAddShippingAccountDialogOpen] =
+    useState(false);
+  const [buyerInfoDialogOpen, setBuyerInfoDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedShippingAccount, setSelectedShippingAccount] = useState(null);
+  const [isEditingShippingAccount, setIsEditingShippingAccount] =
+    useState(false);
+  const [newOrder, setNewOrder] = useState({
+    token: "",
+    items: [{ type: "", quantity: 1, unit: "kg" }],
+    shippingAccountId: "",
+  });
+  const [confirmAlertOpen, setConfirmAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [newShippingAccount, setNewShippingAccount] = useState(
+    emptyShippingAccountForm
+  );
+  const [buyerInfo, setBuyerInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    notes: "",
+  });
+  const [shippingAccounts, setShippingAccounts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const isMobile = useMediaQuery("(max-width:600px)");
+
+  // Fetch shipping accounts on component mount
+  useEffect(() => {
+    fetchShippingAccounts();
+  }, []);
+
+  const fetchShippingAccounts = async () => {
+    try {
+      setIsLoadingAccounts(true);
+      setErrorMessage("");
+
+      // In a real app, you would fetch from API
+      // const response = await getShippingAccountsApi();
+      // if (response && response.data) {
+      //   setShippingAccounts(response.data);
+      // }
+
+      // Using mock data for now
+      setTimeout(() => {
+        setShippingAccounts([
+          {
+            id: "1",
+            name: "SP xanh ghn",
+            shop_id: "196506",
+            token: "c3f24415-29b9-11f0-9b81-222185cb68c8",
+            carrier: "ghn",
+            isDefault: true,
+          },
+          {
+            id: "2",
+            name: "SP xanh ghtk (incomming)",
+            shop_id: "123456",
+            token: "fake_token",
+            carrier: "ghtk",
+            isDefault: false,
+          },
+          {
+            id: "3",
+            name: "SP xanh grab (incomming)",
+            shop_id: "123456",
+            token: "fake_token",
+            carrier: "grab",
+            isDefault: false,
+          },
+        ]);
+        setIsLoadingAccounts(false);
+      }, 800);
+    } catch (error) {
+      console.error("Error fetching shipping accounts:", error);
+      setErrorMessage("Failed to load shipping accounts. Please try again.");
+      setIsLoadingAccounts(false);
+    }
+  };
+
+  // Fetch orders on component mount
+  const fetchOrders = async () => {
+    try {
+      setIsLoadingOrders(true);
+      setErrorMessage("");
+
+      // In a real app, you would fetch from API
+      // For now, we're using mock data with a timeout to simulate loading
+      setTimeout(() => {
+        setOrders(mockOrders);
+        setIsLoadingOrders(false);
+      }, 800);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setErrorMessage("Failed to load orders. Please try again.");
+      setIsLoadingOrders(false);
+    }
+  };
+
+  // Function to validate if user has linked shipping accounts
+  const hasLinkedShippingAccounts = () => {
+    return shippingAccounts.length > 0;
+  };
+
+  // Function to show alert
+  const showAlert = (message, severity = "success") => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setConfirmAlertOpen(true);
+    setTimeout(() => setConfirmAlertOpen(false), 3000);
+  };
+
+  const resetShippingAccountForm = () => {
+    setNewShippingAccount(emptyShippingAccountForm);
+  };
+
+  const handleCreateOrder = async () => {
+    if (!hasLinkedShippingAccounts()) {
+      showAlert(
+        "Please link at least one shipping account before creating orders.",
+        "error"
+      );
+      setCreateDialogOpen(false);
+      setShippingAccountsDialogOpen(true);
+      return;
+    }
+
+    try {
+      // In a real application, this would send the order to an API
+      // const response = await createShippingOrderApi({
+      //   items: newOrder.items,
+      //   token: newOrder.token,
+      //   shippingAccountId: newOrder.shippingAccountId,
+      // });
+
+      // Simulate API call
+      const order = {
+        id: orders.length + 1,
+        date: new Date().toISOString().split("T")[0],
+        items: [...newOrder.items],
+        status: "Pending Confirmation",
+        points: calculatePoints(newOrder.items),
+        token: newOrder.token,
+        shippingAccountId: newOrder.shippingAccountId,
+        shippingAccount: shippingAccounts.find(
+          (acc) => acc.id === newOrder.shippingAccountId
+        ),
+        timeline: [
+          {
+            time: new Date().toLocaleString(),
+            status: "Order Created",
+          },
+          {
+            time: new Date().toLocaleString(),
+            status: "Waiting for Confirmation",
+          },
+        ],
+        locationHistory: [
+          {
+            time: new Date().toLocaleString(),
+            location: newOrder.token,
+            status: "Order Created",
+          },
+        ],
+        collectorName: "John Recycler",
+        collectorContact: "555-0123",
+        buyerName: "",
+        buyerPhone: "",
+        buyerEmail: "",
+        notes: "",
+      };
+
+      setOrders([order, ...orders]);
+      setCreateDialogOpen(false);
+      showAlert("Order created successfully!");
+      setNewOrder({
+        address: "",
+        items: [{ type: "", quantity: 1, unit: "kg" }],
+        shippingAccountId: "",
+      });
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showAlert("Failed to create order. Please try again.", "error");
+    }
+  };
+
+  const handleAddShippingAccount = async () => {
+    try {
+      // In a real application, this would send the data to an API
+      // const response = await createShippingAccountApi(newShippingAccount);
+      // const addedAccount = response.data;
+
+      // Simulate API call
+      const newAccount = {
+        id: `sa-${Math.floor(Math.random() * 1000)
+          .toString()
+          .padStart(3, "0")}`,
+        ...newShippingAccount,
+        isDefault: shippingAccounts.length === 0,
+      };
+
+      setShippingAccounts([...shippingAccounts, newAccount]);
+      setAddShippingAccountDialogOpen(false);
+      showAlert("Shipping account added successfully!");
+    } catch (error) {
+      console.error("Error adding shipping account:", error);
+      showAlert("Failed to add shipping account. Please try again.", "error");
+    }
+  };
+
+  const handleEditShippingAccount = (account) => {
+    setSelectedShippingAccount(account);
+    setNewShippingAccount({
+      name: account.name,
+      shop_id: account.shop_id,
+      token: account.token,
+      carrier: account.carrier,
+    });
+    setIsEditingShippingAccount(true);
+    setShippingAccountsDialogOpen(false);
+    setAddShippingAccountDialogOpen(true);
+  };
+
+  const handleUpdateShippingAccount = async () => {
+    try {
+      // In a real application, this would send the data to an API
+      // const response = await updateShippingAccountApi(
+      //   selectedShippingAccount.id,
+      //   newShippingAccount
+      // );
+
+      // Simulate API call
+      const updatedAccounts = shippingAccounts.map((account) =>
+        account.id === selectedShippingAccount.id
+          ? {
+              ...account,
+              name: newShippingAccount.name,
+              shop_id: newShippingAccount.shop_id,
+              token: newShippingAccount.token,
+              carrier: newShippingAccount.carrier,
+            }
+          : account
+      );
+
+      setShippingAccounts(updatedAccounts);
+      setAddShippingAccountDialogOpen(false);
+      setIsEditingShippingAccount(false);
+      showAlert("Shipping account updated successfully!");
+      resetShippingAccountForm();
+    } catch (error) {
+      console.error("Error updating shipping account:", error);
+      showAlert(
+        "Failed to update shipping account. Please try again.",
+        "error"
+      );
+    }
+  };
+
+  const handleDeleteShippingAccount = async (accountId) => {
+    try {
+      // In a real application, this would send the request to an API
+      // await deleteShippingAccountApi(accountId);
+
+      // Simulate API call
+      const updatedAccounts = shippingAccounts.filter(
+        (account) => account.id !== accountId
+      );
+
+      // If we're deleting the default account and there are other accounts,
+      // set the first remaining one as default
+      if (
+        shippingAccounts.find((acc) => acc.id === accountId)?.isDefault &&
+        updatedAccounts.length > 0
+      ) {
+        updatedAccounts[0].isDefault = true;
+      }
+
+      setShippingAccounts(updatedAccounts);
+      showAlert("Shipping account removed successfully!");
+    } catch (error) {
+      console.error("Error deleting shipping account:", error);
+      showAlert(
+        "Failed to delete shipping account. Please try again.",
+        "error"
+      );
+    }
+  };
+
+  const handleSetDefaultShippingAccount = async (accountId) => {
+    try {
+      // In a real application, this would send the request to an API
+      // await setDefaultShippingAccountApi(accountId);
+
+      // Simulate API call
+      const updatedAccounts = shippingAccounts.map((account) => ({
+        ...account,
+        isDefault: account.id === accountId,
+      }));
+      setShippingAccounts(updatedAccounts);
+      showAlert("Default shipping account updated!");
+    } catch (error) {
+      console.error("Error setting default shipping account:", error);
+      showAlert(
+        "Failed to update default shipping account. Please try again.",
+        "error"
+      );
+    }
+  };
+
+  const calculatePoints = (items) => {
+    // Calculate based on the new type IDs
+    let total = 0;
+    items.forEach((item) => {
+      total += (wasteTypesMap[item.type] || 5) * item.quantity;
+    });
+    return total;
+  };
+
+  const handleAddItem = () => {
+    setNewOrder({
+      ...newOrder,
+      items: [...newOrder.items, { type: "", quantity: 1, unit: "kg" }],
+    });
+  };
+
+  const handleRemoveItem = (index) => {
+    const items = [...newOrder.items];
+    items.splice(index, 1);
+    setNewOrder({ ...newOrder, items });
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const items = [...newOrder.items];
+    items[index][field] = value;
+    setNewOrder({ ...newOrder, items });
+  };
+
+  const handleOpenEditBuyerInfo = (order) => {
+    setSelectedOrder(order);
+    setBuyerInfo({
+      name: order.buyerName || "",
+      phone: order.buyerPhone || "",
+      email: order.buyerEmail || "",
+      notes: order.notes || "",
+    });
+    setBuyerInfoDialogOpen(true);
+  };
+
+  const handleUpdateBuyerInfo = async () => {
+    try {
+      // In a real application, this would send the data to an API
+      // const response = await updateShippingOrderApi({
+      //   orderId: selectedOrder.id,
+      //   buyerInfo: buyerInfo
+      // });
+
+      // Simulate API call
+      const updatedOrders = orders.map((order) => {
+        if (order.id === selectedOrder.id) {
+          return {
+            ...order,
+            buyerName: buyerInfo.name,
+            buyerPhone: buyerInfo.phone,
+            buyerEmail: buyerInfo.email,
+            notes: buyerInfo.notes,
+          };
+        }
+        return order;
+      });
+
+      setOrders(updatedOrders);
+      setBuyerInfoDialogOpen(false);
+      showAlert("Buyer information updated successfully!");
+    } catch (error) {
+      console.error("Error updating buyer information:", error);
+      showAlert(
+        "Failed to update buyer information. Please try again.",
+        "error"
+      );
+    }
+  };
+
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
+    // Set a small timeout to resolve the aria-hidden focus issue
+    setTimeout(() => {
+      setDetailsDialogOpen(true);
+    }, 10);
+  };
+
+  const handleTrackOrder = async (order) => {
+    try {
+      // In a real app, you might want to refresh the order details from the server
+      // const response = await getShippingOrderDetailApi(order.id);
+      // const updatedOrder = response.data;
+      // setSelectedOrder(updatedOrder);
+
+      setSelectedOrder(order);
+      // Set a small timeout to resolve the aria-hidden focus issue
+      setTimeout(() => {
+        setTrackingDialogOpen(true);
+      }, 10);
+    } catch (error) {
+      console.error("Error fetching order tracking details:", error);
+      showAlert(
+        "Failed to load tracking information. Please try again.",
+        "error"
+      );
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      // In a real application, this would send the request to an API
+      // await cancelShippingOrderApi(orderId);
+
+      // Simulate API call
+      const updatedOrders = orders.map((order) => {
+        if (order.id === orderId) {
+          const newTimeline = [
+            ...order.timeline,
+            {
+              time: new Date().toLocaleString(),
+              status: "Cancelled by User",
+            },
+          ];
+
+          const newLocationHistory = [
+            ...(order.locationHistory || []),
+            {
+              time: new Date().toLocaleString(),
+              location: order.location,
+              status: "Order Cancelled",
+            },
+          ];
+
+          return {
+            ...order,
+            status: "Cancelled",
+            timeline: newTimeline,
+            locationHistory: newLocationHistory,
+            points: 0,
+          };
+        }
+        return order;
+      });
+      setOrders(updatedOrders);
+      showAlert("Order has been cancelled.");
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      showAlert("Failed to cancel order. Please try again.", "error");
+    }
+  };
+
+  const handleConfirmOrder = async (orderId) => {
+    try {
+      // In a real application, this would send the request to an API
+      // await updateShippingOrderApi({
+      //   orderId: orderId,
+      //   status: "In Progress"
+      // });
+
+      // Simulate API call
+      const updatedOrders = orders.map((order) => {
+        if (order.id === orderId) {
+          const timestamp = new Date().toLocaleString();
+          const newTimeline = [
+            ...order.timeline,
+            {
+              time: timestamp,
+              status: "Confirmed by User",
+            },
+          ];
+
+          const newLocationHistory = [
+            ...(order.locationHistory || []),
+            {
+              time: timestamp,
+              location: order.location,
+              status: "Order Confirmed",
+            },
+          ];
+
+          return {
+            ...order,
+            status: "In Progress",
+            timeline: newTimeline,
+            locationHistory: newLocationHistory,
+          };
+        }
+        return order;
+      });
+      setOrders(updatedOrders);
+      showAlert(
+        "Order confirmed successfully. A collector will be assigned soon."
+      );
+    } catch (error) {
+      console.error("Error confirming order:", error);
+      showAlert("Failed to confirm order. Please try again.", "error");
+    }
+  };
+
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5" component="h1">
+      {confirmAlertOpen && (
+        <Alert
+          severity={alertSeverity}
+          sx={{
+            position: "fixed",
+            top: "80px",
+            right: "20px",
+            zIndex: 9999,
+            backgroundColor:
+              alertSeverity === "success" ? "var(--light-green)" : "#FFF3E0",
+            color:
+              alertSeverity === "success" ? "var(--primary-green)" : "#E65100",
+            border: `1px solid ${
+              alertSeverity === "success" ? "var(--primary-green)" : "#FB8C00"
+            }`,
+          }}
+          onClose={() => setConfirmAlertOpen(false)}
+        >
+          {alertMessage}
+        </Alert>
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          mb: 3,
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        <Typography
+          variant="h5"
+          component="h1"
+          sx={{ color: "var(--primary-green)" }}
+        >
           Your Orders
         </Typography>
-        <Button
-          variant="contained"
-          className="customer-button"
-          onClick={() => console.log("Create new order")}
-        >
-          New Order
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            className="customer-button-secondary"
+            onClick={() => setShippingAccountsDialogOpen(true)}
+            sx={{
+              borderColor: "var(--primary-green)",
+              color: "var(--primary-green)",
+            }}
+          >
+            Shipping Accounts
+          </Button>
+          <Button
+            variant="contained"
+            className="customer-button"
+            onClick={() => {
+              if (!hasLinkedShippingAccounts()) {
+                showAlert(
+                  "Please link at least one shipping account before creating orders.",
+                  "error"
+                );
+                setShippingAccountsDialogOpen(true);
+              } else {
+                setCreateDialogOpen(true);
+              }
+            }}
+            startIcon={<AddIcon />}
+            sx={{ mb: { xs: 2, sm: 0 } }}
+          >
+            New Order
+          </Button>
+        </Box>
       </Box>
 
-      <Paper className="customer-card">
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell>Items</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Coins Earned</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {mockOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>{order.date}</TableCell>
-                  <TableCell>{order.items}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={order.status}
-                      color={getStatusColor(order.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>{order.points}</TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => console.log("View order", order.id)}
-                    >
-                      View Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
+      {isLoadingOrders ? (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "200px",
+          }}
+        >
+          <CircularProgress color="success" />
+        </Box>
+      ) : orders.length === 0 ? (
+        <EmptyOrderState
+          hasLinkedShippingAccounts={hasLinkedShippingAccounts()}
+          handleOpenCreateDialog={() => setCreateDialogOpen(true)}
+          handleOpenShippingAccountsDialog={() =>
+            setShippingAccountsDialogOpen(true)
+          }
+        />
+      ) : (
+        <OrdersList
+          orders={orders}
+          handleViewDetails={handleViewDetails}
+          handleTrackOrder={handleTrackOrder}
+          handleConfirmOrder={handleConfirmOrder}
+          handleCancelOrder={handleCancelOrder}
+          handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
+        />
+      )}
+
+      {/* Shipping Accounts Dialog */}
+      <Dialog
+        open={shippingAccountsDialogOpen}
+        onClose={() => setShippingAccountsDialogOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        {isLoadingAccounts ? (
+          <Box sx={{ p: 4, textAlign: "center" }}>
+            <CircularProgress color="success" />
+            <Typography sx={{ mt: 2 }}>Loading shipping accounts...</Typography>
+          </Box>
+        ) : (
+          <ShippingAccountsList
+            shippingAccounts={shippingAccounts}
+            handleSetDefaultShippingAccount={handleSetDefaultShippingAccount}
+            handleEditShippingAccount={handleEditShippingAccount}
+            handleDeleteShippingAccount={handleDeleteShippingAccount}
+            handleOpenAddDialog={() => {
+              setShippingAccountsDialogOpen(false);
+              setIsEditingShippingAccount(false);
+              resetShippingAccountForm();
+              setAddShippingAccountDialogOpen(true);
+            }}
+            handleCloseDialog={() => setShippingAccountsDialogOpen(false)}
+          />
+        )}
+      </Dialog>
+
+      {/* Add/Edit Shipping Account Dialog */}
+      <Dialog
+        open={addShippingAccountDialogOpen}
+        onClose={() => {
+          setAddShippingAccountDialogOpen(false);
+          if (isEditingShippingAccount) {
+            setShippingAccountsDialogOpen(true);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <AddShippingAccountForm
+          newShippingAccount={newShippingAccount}
+          setNewShippingAccount={setNewShippingAccount}
+          handleAddShippingAccount={handleAddShippingAccount}
+          handleUpdateShippingAccount={handleUpdateShippingAccount}
+          handleCloseDialog={() => setAddShippingAccountDialogOpen(false)}
+          handleOpenManageDialog={() => setShippingAccountsDialogOpen(true)}
+          isEditing={isEditingShippingAccount}
+          resetForm={resetShippingAccountForm}
+        />
+      </Dialog>
+
+      {/* Create Order Dialog */}
+      <Dialog
+        open={createDialogOpen}
+        onClose={() => setCreateDialogOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <CreateOrderForm
+          newOrder={newOrder}
+          setNewOrder={setNewOrder}
+          handleCreateOrder={handleCreateOrder}
+          handleCloseDialog={() => setCreateDialogOpen(false)}
+          calculatePoints={calculatePoints}
+          shippingAccounts={shippingAccounts}
+          wasteCategories={wasteCategories}
+          handleAddItem={handleAddItem}
+          handleRemoveItem={handleRemoveItem}
+          handleItemChange={handleItemChange}
+        />
+      </Dialog>
+
+      {/* Order Details Dialog */}
+      {selectedOrder && (
+        <OrderDetailsDialog
+          open={detailsDialogOpen}
+          onClose={() => setDetailsDialogOpen(false)}
+          order={selectedOrder}
+          handleConfirmOrder={handleConfirmOrder}
+          handleCancelOrder={handleCancelOrder}
+          handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
+        />
+      )}
+
+      {/* Order Tracking Dialog */}
+      {selectedOrder && (
+        <OrderTrackingDialog
+          open={trackingDialogOpen}
+          onClose={() => setTrackingDialogOpen(false)}
+          order={selectedOrder}
+          handleViewDetails={handleViewDetails}
+        />
+      )}
+
+      {/* Edit Buyer Information Dialog */}
+      <Dialog
+        open={buyerInfoDialogOpen}
+        onClose={() => setBuyerInfoDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
+        >
+          Update Buyer Information
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Buyer Name"
+                fullWidth
+                value={buyerInfo.name}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, name: e.target.value })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone Number"
+                fullWidth
+                value={buyerInfo.phone}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, phone: e.target.value })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email"
+                fullWidth
+                type="email"
+                value={buyerInfo.email}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, email: e.target.value })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Additional Notes"
+                fullWidth
+                multiline
+                rows={3}
+                value={buyerInfo.notes}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, notes: e.target.value })
+                }
+                margin="normal"
+                placeholder="Special instructions or requests"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setBuyerInfoDialogOpen(false)}
+            className="customer-button-secondary"
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleUpdateBuyerInfo} className="customer-button">
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

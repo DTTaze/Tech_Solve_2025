@@ -5,6 +5,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ForestIcon from "@mui/icons-material/Forest";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import TimelineIcon from "@mui/icons-material/Timeline";
+import getAmount from "../../utils/getAmount";
 
 export default function CustomerDashboard() {
   const userInfo = useOutletContext();
@@ -69,7 +70,7 @@ export default function CustomerDashboard() {
             <Typography variant="h6">Eco Coins</Typography>
           </Box>
           <Typography variant="h4" sx={{ mb: 1 }}>
-            {userInfo?.coins || 0}
+            {getAmount(userInfo?.coins)}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Available Coins

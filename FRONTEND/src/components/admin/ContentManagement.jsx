@@ -18,8 +18,8 @@ import {
 } from "../../utils/api";
 import { Box, Typography } from "@mui/material";
 import AdminTabs from "./AdminTabs";
-import TaskForm from "../ui/form/TaskForm";
-import ItemForm from "../ui/form/ItemForm";
+import TaskForm from "./form/TaskForm";
+import ItemForm from "./form/ItemForm";
 import { Outlet } from "react-router-dom";
 // Tasks Management Component
 function TasksManagement() {

@@ -20,6 +20,8 @@ const Calendar = ({ streak = 0, lastLogin = null }) => {
     
     // Last login date from user data
     const lastLoginDate = lastLogin ? dayjs(lastLogin) : null;
+
+    console.log("Login date: ", lastLogin);  
     
     // Generate streak days (past days from today going back by streak count)
     const streakDays = [];

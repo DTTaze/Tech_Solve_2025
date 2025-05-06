@@ -19,6 +19,15 @@
   --text-light: #666;
   --background-light: #f8f9fa;
   --white: #ffffff;
+  --error: #d32f2f;
+  --warning: #ed6c02;
+  --info: #0288d1;
+  --success: #2e7d32;
+  --grey-100: #f5f5f5;
+  --grey-200: #eeeeee;
+  --grey-300: #e0e0e0;
+  --card-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  --hover-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Content area */
@@ -33,10 +42,16 @@
 .customer-card {
   background: var(--white);
   border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--card-shadow);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   border: 1px solid var(--light-green);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.customer-card:hover {
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
 }
 
 /* Section styles */
@@ -45,8 +60,13 @@
   background: var(--white);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--card-shadow);
   border: 1px solid var(--light-green);
+  transition: box-shadow 0.3s ease;
+}
+
+.customer-section:hover {
+  box-shadow: var(--hover-shadow);
 }
 
 .customer-section-title {
@@ -57,6 +77,18 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  position: relative;
+}
+
+.customer-section-title::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background-color: var(--primary-green);
+  border-radius: 3px;
 }
 
 /* Grid layout */
@@ -76,10 +108,26 @@
   font-weight: 500 !important;
   padding: 8px 16px !important;
   box-shadow: none !important;
+  transition: background-color 0.2s ease, transform 0.1s ease !important;
 }
 
 .customer-button:hover {
   background-color: var(--dark-green) !important;
+  transform: translateY(-1px);
+}
+
+.customer-button-secondary {
+  background-color: transparent !important;
+  color: var(--primary-green) !important;
+  border: 1px solid var(--primary-green) !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 7px 15px !important;
+}
+
+.customer-button-secondary:hover {
+  background-color: rgba(46, 125, 50, 0.08) !important;
 }
 
 /* Chart styles */
@@ -89,22 +137,208 @@
   padding: 1.5rem;
   margin: 0 0 1.5rem 0;
   background-color: var(--white);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--card-shadow);
   border-radius: 8px;
   border: 1px solid var(--light-green);
 }
 
+/* QR Scanner styles */
+.customer-qr-scanner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background-color: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 2rem;
+}
+
+.customer-qr-preview {
+  width: 100%;
+  max-width: 500px;
+  min-height: 300px;
+  border: 2px solid var(--light-green);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Table styles */
+.customer-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.customer-table th {
+  background-color: var(--light-green);
+  color: var(--primary-green);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+}
+
+.customer-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--grey-200);
+}
+
+.customer-table tr:last-child td {
+  border-bottom: none;
+}
+
+.customer-table tr:hover td {
+  background-color: rgba(46, 125, 50, 0.04);
+}
+
+/* Event card styles */
+.event-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--hover-shadow);
+}
+
+.event-card-image {
+  height: 180px;
+  overflow: hidden;
+  position: relative;
+}
+
+.event-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.event-card:hover .event-card-image img {
+  transform: scale(1.05);
+}
+
+.event-card-date {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--primary-green);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.event-card-content {
+  padding: 16px;
+}
+
+.event-card-title {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--grey-200);
+}
+
+/* User evaluation styles */
+.user-evaluation-form {
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  margin-top: 20px;
+}
+
+.evaluation-slider {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.evaluation-slider .MuiSlider-markLabel {
+  color: var(--text-light);
+}
+
+.evaluation-slider .MuiSlider-track {
+  background-color: var(--primary-green);
+}
+
+.evaluation-slider .MuiSlider-thumb {
+  background-color: var(--primary-green);
+}
+
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .customer-grid-container {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .customer-section {
+    padding: 1.5rem;
+  }
+
+  .customer-section-title {
+    font-size: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .customer-content-container {
     padding: 1rem;
   }
 
   .customer-section-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .customer-grid-container {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .customer-section {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .customer-card {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-section {
+    padding: 1rem;
+  }
+
+  .customer-chart-container {
+    padding: 1rem;
+  }
+
+  .customer-table th,
+  .customer-table td {
+    padding: 8px 12px;
+    font-size: 0.875rem;
   }
 }

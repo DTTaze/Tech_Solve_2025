@@ -7,9 +7,9 @@ import {
 } from "./HeaderColumn";
 import { Box, Typography } from "@mui/material";
 import AdminTabs from "./AdminTabs";
-import RoleForm from "../ui/form/RoleForm";
-import PermissionForm from "../ui/form/PermissionForm";
-import RolePermissionForm from "../ui/form/RolePermissionForm";
+import RoleForm from "./form/RoleForm";
+import PermissionForm from "./form/PermissionForm";
+import RolePermissionForm from "./form/RolePermissionForm";
 import {
   getAllRolesApi,
   getAllPermissionsApi,

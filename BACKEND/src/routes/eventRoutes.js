@@ -25,6 +25,11 @@ router.get('/creator',
     eventController.handGetEventsOfCreator
 );
 
+router.get('/user/:event_id',
+    // checkPermission('read', 'event'),
+    eventController.handlegetEventUserByEventId
+);
+
 router.post('/create',
 //   checkPermission('create', 'event'),
     middlewareImage.array('images',5),

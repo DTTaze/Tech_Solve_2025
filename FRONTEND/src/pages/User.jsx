@@ -2,8 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../contexts/auth.context";
 import ProfileCard from "../components/features/user/ProfileCard.jsx";
 import PersonalInfoForm from "../components/features/user/PersonalInformation.jsx";
-import CompletedTaskList from "../components/features/user/CompletedTasksList.jsx";
-import TransactionHistory from "../components/features/user/TransactionHistory.jsx";
+import MissionCompleted from "../components/features/user/MissionCompleted.jsx";
+import PurchaseOrder from "../components/features/user/PurchaseOrder.jsx";
 import ProfileCardSkeleton from "../components/features/user/ProfileCardSkeleton.jsx";
 import PersonalInfoFormSkeleton from "../components/features/user/PersonalnfomationSkeleton.jsx";
 
@@ -25,9 +25,9 @@ function UserProfile() {
       case "Thông tin cá nhân":
         return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
       case "Nhiệm vụ":
-        return <CompletedTaskList />;
+        return <MissionCompleted />;
       case "Lịch sử giao dịch":
-        return <TransactionHistory />; 
+        return <PurchaseOrder />; 
       default:
         return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
     }

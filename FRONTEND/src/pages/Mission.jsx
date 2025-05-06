@@ -47,7 +47,7 @@ function Mission() {
 
         console.log("Fetching data from APIs...");
 
-        const [taskResponse, userResponse, eventResponse] = await Promise.all([
+        const [taskResponse, userResponse] = await Promise.all([
           getAllTasksApi(),
           getUserApi(),
         ]);
@@ -87,7 +87,7 @@ function Mission() {
             email: userResponse.data.email,
             coins: userResponse.data.coins.amount || 0,
             streak: userResponse.data.streak || 0,
-            last_logined: userResponse.data.last_logined,
+            last_completed_task: userResponse.data.last_completed_task,
           };
           setUserInfo(dataOfUser);
         } else {
@@ -121,10 +121,6 @@ function Mission() {
           console.log("User tasks data from API:", userTasksData);
 
           const processedUserTasksData = userTasksData.data.map((task) => {
-            const taskOfUser = processedTasks.find(
-              (t) => t.id === task.task_id
-            );
-
             return {
               id: task.id,
               task_id: task.task_id,
@@ -286,20 +282,16 @@ function Mission() {
         // Get detailed task information for each task ID
         const dailyTasksData = await Promise.all(
           TasksByTypeName.data.map(async (task) => {
-            const taskData = await getTaskByIdApi(task.task_id);
+            const taskData = await getTaskByIdApi(task.id);
             return taskData.data;
           })
         );
 
-        // Process user tasks that are in daily tasks and not completed
+        // Process user tasks that are in daily tasks
         const userDailyTasks = await Promise.all(
           userTasks
-            .filter(
-              (userTask) =>
-                userTask.completed_at === null && // Only get uncompleted tasks
-                TasksByTypeName.data.some(
-                  (task) => task.task_id === userTask.task_id
-                )
+            .filter((userTask) =>
+              TasksByTypeName.data.some((task) => task.id === userTask.task_id)
             )
             .map(async (userTask) => {
               const taskData = await getTaskByIdApi(userTask.task_id);
@@ -319,6 +311,7 @@ function Mission() {
         const validUserDailyTasks = userDailyTasks.filter(
           (task) => task !== null
         );
+        console.log("user daily task: ", validUserDailyTasks);
 
         // Combine tasks that user is doing with tasks they haven't started
         const allDailyTasks = [
@@ -326,14 +319,7 @@ function Mission() {
           ...dailyTasksData
             .filter(
               (task) =>
-                !validUserDailyTasks.some(
-                  (userTask) => userTask.id === task.id
-                ) &&
-                !userTasks.some(
-                  (userTask) =>
-                    userTask.task_id === task.id &&
-                    userTask.completed_at !== null
-                ) // Exclude completed tasks
+                !userTasks.some((userTask) => userTask.task_id === task.id)
             )
             .map((task) => ({
               ...task,
@@ -342,6 +328,8 @@ function Mission() {
               completed_at: null,
             })),
         ];
+
+        console.log("All daily tasks:", allDailyTasks);
 
         setDailyTasks(allDailyTasks);
       } catch (error) {
@@ -365,7 +353,7 @@ function Mission() {
         // Get detailed task information for each task ID
         const otherTasksData = await Promise.all(
           TasksByTypeName.data.map(async (task) => {
-            const taskData = await getTaskByIdApi(task.task_id);
+            const taskData = await getTaskByIdApi(task.id);
             return taskData.data;
           })
         );
@@ -381,7 +369,7 @@ function Mission() {
                 )
             )
             .map(async (userTask) => {
-              const taskData = await getTaskByIdApi(userTask.task_id);
+              const taskData = await getTaskByIdApi(userTask.id);
               const task = taskData.data;
               return task
                 ? {
@@ -656,7 +644,10 @@ function Mission() {
                 {selectedTab === "daily" ? (
                   <>
                     <button
-                      onClick={() => setDailyDifficultyFilter("all")}
+                      onClick={() => {
+                        setDailyDifficultyFilter("all");
+                        setDailyCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         dailyDifficultyFilter === "all"
                           ? "bg-green-100 text-green-800"
@@ -666,7 +657,10 @@ function Mission() {
                       Tất cả
                     </button>
                     <button
-                      onClick={() => setDailyDifficultyFilter("easy")}
+                      onClick={() => {
+                        setDailyDifficultyFilter("easy");
+                        setDailyCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         dailyDifficultyFilter === "easy"
                           ? "bg-green-100 text-green-800"
@@ -676,7 +670,10 @@ function Mission() {
                       Dễ
                     </button>
                     <button
-                      onClick={() => setDailyDifficultyFilter("medium")}
+                      onClick={() => {
+                        setDailyDifficultyFilter("medium");
+                        setDailyCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         dailyDifficultyFilter === "medium"
                           ? "bg-green-100 text-green-800"
@@ -686,7 +683,10 @@ function Mission() {
                       Trung bình
                     </button>
                     <button
-                      onClick={() => setDailyDifficultyFilter("hard")}
+                      onClick={() => {
+                        setDailyDifficultyFilter("hard");
+                        setDailyCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         dailyDifficultyFilter === "hard"
                           ? "bg-green-100 text-green-800"
@@ -699,7 +699,10 @@ function Mission() {
                 ) : (
                   <>
                     <button
-                      onClick={() => setOtherDifficultyFilter("all")}
+                      onClick={() => {
+                        setOtherDifficultyFilter("all");
+                        setOtherCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         otherDifficultyFilter === "all"
                           ? "bg-green-100 text-green-800"
@@ -709,7 +712,10 @@ function Mission() {
                       Tất cả
                     </button>
                     <button
-                      onClick={() => setOtherDifficultyFilter("easy")}
+                      onClick={() => {
+                        setOtherDifficultyFilter("easy");
+                        setOtherCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         otherDifficultyFilter === "easy"
                           ? "bg-green-100 text-green-800"
@@ -719,7 +725,10 @@ function Mission() {
                       Dễ
                     </button>
                     <button
-                      onClick={() => setOtherDifficultyFilter("medium")}
+                      onClick={() => {
+                        setOtherDifficultyFilter("medium");
+                        setOtherCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         otherDifficultyFilter === "medium"
                           ? "bg-green-100 text-green-800"
@@ -729,7 +738,10 @@ function Mission() {
                       Trung bình
                     </button>
                     <button
-                      onClick={() => setOtherDifficultyFilter("hard")}
+                      onClick={() => {
+                        setOtherDifficultyFilter("hard");
+                        setOtherCurrentPage(1);
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium ${
                         otherDifficultyFilter === "hard"
                           ? "bg-green-100 text-green-800"
@@ -759,7 +771,13 @@ function Mission() {
                 </div>
               ) : (
                 <TasksList
-                  tasks={getFilteredTasks()}
+                  tasks={
+                    selectedTab === "daily"
+                      ? dailyTasks
+                      : selectedTab === "other"
+                      ? otherTasks
+                      : completedTasks
+                  }
                   loading={loading}
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}
@@ -767,7 +785,9 @@ function Mission() {
                   currentPage={
                     selectedTab === "daily"
                       ? dailyCurrentPage
-                      : otherCurrentPage
+                      : selectedTab === "other"
+                      ? otherCurrentPage
+                      : completedPages
                   }
                   totalPages={
                     selectedTab === "daily"
@@ -795,7 +815,7 @@ function Mission() {
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <Calendar
                 streak={userInfo?.streak || 0}
-                lastLogin={userInfo?.last_logined || null}
+                lastLogin={userInfo?.last_completed_task || null}
               />
             </div>
 

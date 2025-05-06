@@ -13,12 +13,12 @@ export const logoutUserApi = () => {
 };
 
 export const forgotPasswordApi = (email) => {
-  return axios.post("/api/auth/forgot_password", { email }); 
-}
+  return axios.post("/api/auth/forgot_password", { email });
+};
 
 export const resetPasswordApi = (token, newPassword) => {
-  return axios.post("/api/auth/reset_password", {token, newPassword})
-}
+  return axios.post("/api/auth/reset_password", { token, newPassword });
+};
 
 export const getUserApi = () => {
   return axios.get("api/users/me");
@@ -110,7 +110,7 @@ export const getAllTasksApi = () => {
   return axios.get("api/tasks");
 };
 
-export const getAllTaskCompletedById = (id) => {
+export const getAllTaskCompletedById = () => {
   return axios.get(`api/users/task/completed`);
 };
 
@@ -234,15 +234,15 @@ export const getQRApi = (text) => {
 
 export const getAllTasksByTypeNameApi = (type_name) => {
   return axios.get(`api/tasks/type/${type_name}`);
-}
+};
 
 export const rearrangeRankApi = () => {
   return axios.post("api/ranks/rearrange");
-}
+};
 
 export const getUserByIdApi = (id) => {
   return axios.get(`api/users/${id}`);
-}
+};
 export const getAdminQueueApi = () => {
   return axios.get("api/admin/queues");
 };
@@ -269,4 +269,57 @@ export const deleteProductApi = (id) => {
 
 export const getAllEventsApi = () => {
   return axios.get("api/events/informations");
-}
+};
+
+export const getOwnerEventApi = () => {
+  return axios.get("api/events/creator");
+};
+
+export const getEventUserByEventIdApi = (event_id) => {
+  return axios.get(`api/events/user/${event_id}`);
+};
+
+export const CheckInUserByUserIdApi = (event_id) => {
+  return axios.post(`api/events/check_in`, { event_id });
+};
+
+export const createShippingOrderApi = (data, token, shop_id) => {
+  return axios.post("api/delivery/ghn/create-order", data, {
+    headers: {
+      token: token,
+      shop_id: shop_id,
+    },
+  });
+};
+
+export const getShippingOrderDetailApi = (orderCode) => {
+  return axios.get(`api/delivery/ghn/detail/${orderCode}`);
+};
+
+export const updateShippingOrderApi = (data) => {
+  return axios.post("api/delivery/ghn/update", data);
+};
+
+export const cancelShippingOrderApi = (orderCode) => {
+  return axios.post(`api/delivery/ghn/cancel/${orderCode}`);
+};
+
+export const getShippingAccountsApi = () => {
+  return axios.get("api/users/shipping-accounts");
+};
+
+export const createShippingAccountApi = (data) => {
+  return axios.post("api/users/shipping-accounts", data);
+};
+
+export const updateShippingAccountApi = (accountId, data) => {
+  return axios.put(`api/users/shipping-accounts/${accountId}`, data);
+};
+
+export const deleteShippingAccountApi = (accountId) => {
+  return axios.delete(`api/users/shipping-accounts/${accountId}`);
+};
+
+export const setDefaultShippingAccountApi = (accountId) => {
+  return axios.post(`api/users/shipping-accounts/${accountId}/default`);
+};
