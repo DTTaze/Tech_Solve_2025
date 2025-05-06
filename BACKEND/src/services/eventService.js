@@ -149,27 +149,106 @@ const getAllEvents = async () => {
   }
 };
 
-const getEventSigned = async (user_id) => {
+const getEventUserById = async (id) => {
+  try{
+    if (!id) throw new error (`eventuser id is required`);
+    const eventuserCache = await getCache(`eventuser:id:${id}`);
+    if (eventuserCache) {
+      console.log("eventuserCache",eventuserCache)
+      const users = await getUserByID(eventuserCache.user_id);
+      const events = await getEventById(eventuserCache.event_id);
+      const eventuserformat = {
+        ...eventuserCache.toJSON(),
+        users,
+        events
+      };
+      return eventuserformat;
+    }
+
+    const eventuser = await EventUser.findByPk(
+      id,
+      {
+        include: [
+          {
+            model: User,
+          },
+          {
+            model: Event,
+          }
+        ]
+      }
+    )
+
+    if (!eventuser){
+      throw new error (`eventuser id ${id} doesn't exit`);
+    }
+
+    //Cache eventuser
+    const eventuserFormat = {
+      ...eventuser.toJSON()
+    }
+    delete eventuserFormat.events;
+    delete eventuserFormat.users;
+    await setCache(`eventuser:id:${id}`,eventuserFormat);
+
+    return eventuser;
+  } catch (error){
+    console.log(`error get event user id ${id} :`,error);
+    throw error
+  }
+}
+
+const getAllEventUser = async () => {
   try {
-    const allEvents = await EventUser.findAll({
-      where: { user_id },
-      include: [
+    const allEventUserIds = await getCache('eventuser:all');
+    if (allEventUserIds){
+      console.log("allEventUserIds",allEventUserIds);
+      let result = [];
+      for (const eventUserid of allEventUserIds){
+        const eventuser = await getEventUserById(Number(eventUserid));
+        result.push(eventuser);
+      }
+      return result;
+    }
+
+    const allEventUsers = await EventUser.findAll({
+      include:[
+        {
+          model: User,
+        },
         {
           model: Event,
-          attributes: [
-            "title",
-            "description",
-            "location",
-            "capacity",
-            "status",
-            "start_time",
-            "end_time",
-          ],
-        },
-      ],
+        }
+      ]
     });
 
-    return allEvents;
+    //Cache eventuser
+    let eventUserIds = allEventUsers.filter((eventUser) => eventUser.id );
+    await setCache("eventuser:all",eventUserIds);
+
+    return allEventUsers;
+  } catch (error){
+    console.log("error get all event user : ",error);
+    throw error
+  }
+}
+
+const getEventSigned = async (user_id) => {
+  try {
+    const allEventUsers = await getAllEventUser();
+    let result = [];
+
+    for ( const eventuser of allEventUsers){
+      if (Number(eventuser.user_id) === Number(user_id)){
+        const eventuserFormat = {
+          ...eventuser.toJSON(),
+        }
+        delete eventuserFormat.users
+        result.push(eventuserFormat);
+      }
+    }
+
+    return result;
   } catch (error) {
     console.error("Error retrieving signed events:", error);
     throw error;
@@ -178,23 +257,13 @@ const getEventSigned = async (user_id) => {
 
 const getEventsOfCreator = async (creator_id) => {
   try {
-    const cachedEventIds = await getCache(`event:all`);
-    if (cachedEventIds) {
-      console.log("cachedEventIds", cachedEventIds);
-      const events = [];
-      for (const eventId of cachedEventIds) {
-        const event = await getEventById(eventId);
-        if (event && event.creator_id === creator_id) {
-          events.push(event);
-        }
-      }
-      return events;
+    const allevents = await getAllEvents();
+    const result = [];
+    for (const event of allevents){
+      if (Number(event.creator_id) === Number(creator_id)) result.push(event);
     }
-    const events = await Event.findAll({
-      where: { creator_id },
-    });
-
-    return events;
+    
+    return result;
   } catch (error) {
     console.error("Error get events of creator:", error);
     throw error;
@@ -260,7 +329,7 @@ const createEvent = async (Data, user_id, images) => {
       imagesId: uploadedImages.map((image) => image.id),
     };
     await setCache(`event:id:${event.id}`, eventCacheFormat);
-
+    await deleteCache('event:all')
     return {
       ...event.toJSON(),
       creator: {
@@ -276,6 +345,24 @@ const createEvent = async (Data, user_id, images) => {
   }
 };
 
+const createEventUser = async (eventId, userId) => {
+  try{
+    const eventUser = await EventUser.create({
+      event_id: eventId,
+      user_id: userId,
+    });
+
+    //Cache eventuser
+    await setCache(`eventuser:id:${eventUser.id}`);
+    await deleteCache("eventuser:all");
+
+    return eventUser;
+  }catch (error) {
+    console.error("Error create eventuser:", error);
+    throw error;
+  }
+}
+
 const acceptEvent = async (eventId, userId) => {
   try {
     const event = await Event.findByPk(eventId);
@@ -290,10 +377,7 @@ const acceptEvent = async (eventId, userId) => {
       throw new Error("User not found");
     }
 
-    const eventUser = await EventUser.create({
-      event_id: eventId,
-      user_id: userId,
-    });
+    const eventUser = await createEventUser(eventId, userId);
 
     return eventUser;
   } catch (error) {
@@ -369,6 +453,7 @@ const updateEvent = async (event_id, Data, images) => {
     await event.update(updateFields);
     //delete cache
     await deleteCache(`event:id:${event_id}`);
+    await deleteCache('event:all')
 
     let uploadedImages = [];
 
@@ -408,7 +493,7 @@ const deleteEvent = async (event_id) => {
       throw new Error("Event not found");
     }
 
-    const listImagesBeforeDelete = await deleteImages(event_id, "event");
+    let listImagesBeforeDelete = await deleteImages(event_id, "event");
 
     listImagesBeforeDelete = listImagesBeforeDelete.reduce((acc, image) => {
       if (!acc[image.reference_id]) {
@@ -421,9 +506,7 @@ const deleteEvent = async (event_id) => {
 
     //delete cache
     await deleteCache(`event:id:${event_id}`);
-    let eventIds = await getCache('event:all');
-    eventIds = eventIds.filter((id) => Number(id) != event_id)
-    await setCache('event:all', eventIds)
+    await deleteCache(`event:all`);
 
     await event.destroy();
 
@@ -456,6 +539,9 @@ const checkInUserByUserId = async (event_id, user_id) => {
     }
 
     await eventUser.update({ joined_at: new Date() });
+
+    //del cache eventuser id
+    await deleteCache('eventuser:all')
 
     return eventUser;
   } catch (error) {
