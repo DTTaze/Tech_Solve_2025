@@ -108,7 +108,7 @@ const handleUpdateEvent = async (req, res) => {
 
 const handleDeleteEvent = async (req, res) => {
   try {
-    const eventId = req.params.event_id;
+    const eventId = Number(req.params.event_id);
     const event = await eventService.deleteEvent(eventId);
     if (!event) {
       return res.error(404, "Event not found");
