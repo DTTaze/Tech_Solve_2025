@@ -8,7 +8,7 @@ import {
   createUserApi,
   updateUserApi,
 } from "../../utils/api";
-import UserForm from "../ui/form/UserForm";
+import UserForm from "./form/UserForm";
 
 export default function UsersManagement() {
   const [users, setUsers] = useState([]);

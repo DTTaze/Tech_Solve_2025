@@ -11,6 +11,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
+import getAmount from '../../utils/getAmount';
 
 // Mock data for rewards
 const mockRewards = [
@@ -44,7 +45,7 @@ export default function CustomerRewards() {
         </Typography>
         <Paper className="customer-card" sx={{ p: 3 }}>
           <Typography variant="h3" gutterBottom>
-            {userInfo.coins}
+            {getAmount(userInfo.coins)}
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
             Available Eco Coins
@@ -55,7 +56,7 @@ export default function CustomerRewards() {
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={(userInfo.coins % 1000) / 10}
+              value={(getAmount(userInfo.coins) % 1000) / 10}
               sx={{ height: 10, borderRadius: 5 }}
             />
           </Box>
@@ -84,7 +85,7 @@ export default function CustomerRewards() {
                 <Button
                   size="small"
                   variant="contained"
-                  disabled={userInfo.coins < reward.coinsRequired}
+                  disabled={getAmount(userInfo.coins) < reward.coinsRequired}
                   onClick={() => console.log("Redeem reward", reward.id)}
                 >
                   Redeem

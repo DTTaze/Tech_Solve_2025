@@ -13,7 +13,6 @@ import MarketPage from "./pages/ExchangeMarket.jsx";
 import UserProfilePage from "./pages/User.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import Admin from "./pages/Admin.jsx";
-import AdminQueue from "./pages/AdminQueue.jsx";
 import AdminDashboard from "./components/admin/AdminDashboard.jsx";
 import UsersManagement from "./components/admin/UsersManagement.jsx";
 import ContentManagement from "./components/admin/ContentManagement.jsx";
@@ -21,12 +20,18 @@ import RolesPermissions from "./components/admin/RolesPermissions.jsx";
 import MissionsManagement from "./components/admin/MissionsManagement.jsx";
 import ItemsManagement from "./components/admin/ItemsManagement.jsx";
 import TransactionsManagement from "./components/admin/TransactionsManagement.jsx";
-import ProductsManagement from "./components/admin/ProductsManagement.jsx";
 import Customer from "./pages/Customer.jsx";
 import CustomerDashboard from "./components/customer/CustomerDashboard.jsx";
 import CustomerProfile from "./components/customer/CustomerProfile.jsx";
 import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
+import AdminQueue from "./pages/AdminQueue.jsx";
+import ProductsManagement from "./components/admin/ProductsManagement.jsx";
+import SocketTest from "./components/SocketTest.jsx";
+import CustomerQRScanner from "./components/customer/CustomerQRScanner.jsx";
+import CustomerUsers from "./components/customer/CustomerUsers.jsx";
+import CustomerItems from "./components/customer/CustomerItems.jsx";
+import CustomerEvents from "./components/customer/CustomerEvents.jsx";
 import QRCodeDisplay from "./components/common/QRCodeDisplay.jsx";
 import App from "./App.jsx";
 import "./index.css";
@@ -91,7 +96,7 @@ const router = createBrowserRouter([
       {
         path: "customer",
         element: (
-          <ProtectedRoute requiredRole={["Customer"]}>
+          <ProtectedRoute requiredRole={["Customer", "Admin"]}>
             <Customer />
           </ProtectedRoute>
         ),
@@ -100,6 +105,10 @@ const router = createBrowserRouter([
           { path: "profile", element: <CustomerProfile /> },
           { path: "orders", element: <CustomerOrders /> },
           { path: "rewards", element: <CustomerRewards /> },
+          { path: "scanner", element: <CustomerQRScanner /> },
+          { path: "users", element: <CustomerUsers /> },
+          { path: "items", element: <CustomerItems /> },
+          { path: "events", element: <CustomerEvents /> },
         ],
       },
       {

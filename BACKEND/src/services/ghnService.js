@@ -1,72 +1,83 @@
 const axios = require("axios");
-const apiKey = process.env.GHN_TOKEN_DEVELOPMENT;
 const ghnBaseUrl = process.env.GHN_URL_DEVELOPMENT;
-const headers = {
-  "Content-Type": "application/json",
-  Token: apiKey,
-};
 
-const createOrder = async (shipmentData) => {
+const buildHeaders = (token, shop_id) => ({
+  "Content-Type": "application/json",
+  Token: token,
+  ShopId: shop_id,
+});
+
+const createOrder = async (shipmentData, token, shop_id) => {
   try {
     const url = `${ghnBaseUrl}/v2/shipping-order/create`;
-    const response = await axios.post(url, shipmentData, { headers });
+    const response = await axios.post(url, shipmentData, {
+      headers: buildHeaders(token, shop_id),
+    });
     return response.data;
   } catch (error) {
     const errData = error.response?.data?.code_message_value || {
       message: error.message,
     };
-    console.error("GHN API Error:", errData);
+    console.error("GHN API Error (createOrder):", errData);
     throw new Error(errData);
   }
 };
 
-const getOrderInfo = async (order_code) => {
-  const url = `${ghnBaseUrl}/v2/shipping-order/detail`;
+const getOrderInfo = async (order_code, token, shop_id) => {
   try {
+    const url = `${ghnBaseUrl}/v2/shipping-order/detail`;
     const response = await axios.post(
       url,
-      { order_code: order_code },
-      { headers }
+      { order_code },
+      { headers: buildHeaders(token, shop_id) }
     );
     return response.data;
   } catch (error) {
     const errData = error.response?.data?.code_message_value || {
       message: error.message,
     };
-    console.error("GHN API Error:", errData);
+    console.error("GHN API Error (getOrderInfo):", errData);
     throw new Error(errData);
   }
 };
 
-const updateOrder = async (updateData) => {
-  const url = `${ghnBaseUrl}/v2/shipping-order/update`;
+const updateOrder = async (updateData, token, shop_id) => {
   try {
-    const response = await axios.post(url, updateData, { headers });
+    const url = `${ghnBaseUrl}/v2/shipping-order/update`;
+    const response = await axios.post(url, updateData, {
+      headers: buildHeaders(token, shop_id),
+    });
     return response.data;
   } catch (error) {
     const errData = error.response?.data?.code_message_value || {
       message: error.message,
     };
-    console.error("GHN API Error:", errData);
+    console.error("GHN API Error (updateOrder):", errData);
     throw new Error(errData);
   }
 };
 
-const cancelOrder = async (order_code) => {
-  const url = `${ghnBaseUrl}/v2/switch-status/cancel`;
+const cancelOrder = async (order_code, token, shop_id) => {
   try {
+    const url = `${ghnBaseUrl}/v2/switch-status/cancel`;
     const response = await axios.post(
       url,
       { order_codes: [order_code] },
-      { headers }
+      { headers: buildHeaders(token, shop_id) }
     );
     return response.data;
   } catch (error) {
     const errData = error.response?.data?.code_message_value || {
       message: error.message,
     };
-    console.error("GHN API Error:", errData);
+    console.error("GHN API Error (cancelOrder):", errData);
     throw new Error(errData);
   }
 };
-module.exports = { createOrder, getOrderInfo, updateOrder, cancelOrder };
+
+module.exports = {
+  createOrder,
+  getOrderInfo,
+  updateOrder,
+  cancelOrder,
+};
