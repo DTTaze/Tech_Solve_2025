@@ -18,6 +18,8 @@ const qrRoutes = require("./qrRoutes.js");
 const eventRoutes = require("./eventRoutes.js");
 const productRoutes = require("./productRoutes.js");
 const deliveryRoutes = require("./deliveryRoutes.js");
+const identifyRoutes = require("./identifyRoutes.js");
+
 
 const router = express.Router();
 const serverAdapter = require("../services/bullboard.js");
@@ -45,6 +47,8 @@ const initWebRoutes = (app) => {
   app.use("/api/qr", qrRoutes);
   app.use("/api/events", eventRoutes);
   app.use("/api/delivery", deliveryRoutes);
+  app.use("/api/identify", identifyRoutes);
+
 
   return app.use("/api", router);
 };

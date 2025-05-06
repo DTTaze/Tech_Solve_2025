@@ -49,6 +49,29 @@ services:
       timeout: 5s
       retries: 5
 
+  python:
+    build: 
+      context: ./PYTHON
+      dockerfile: dockerfile
+    container_name: python_container
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./PYTHON:/app
+    working_dir: /app
+    command: ["python3", "app.py"]
+    depends_on:
+      - redis
+      - mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - greenflag_network
+
   backend:
     build:
       context: ./BACKEND
