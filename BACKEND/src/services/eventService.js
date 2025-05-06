@@ -6,22 +6,61 @@ const Image = db.Image;
 const { nanoid } = require("nanoid");
 const { uploadImages, deleteImages } = require("./imageService");
 const cloudinary = require("../config/cloudinary");
-const {getUserByID} = require("./userService");
+const { getCache, setCache, deleteCache } = require("../utils/cache");
+const {getImageById} = require("./imageService");
+const { getUserByID } = require("./userService");
+const { get } = require("../routes/eventRoutes");
+
 
 const getEventById = async (eventId) => {
   try {
+    const cachedEvent = await getCache(`event:id:${eventId}`);
+    if (cachedEvent) {
+      console.log("cachedEvent", cachedEvent);
+      const event = (cachedEvent);
+      let uploadedImages = [];
+      for (const imageId of event.imagesId) {
+        if (!imageId) {
+          continue;
+        }
+        // Check if imageId is valid
+        const image = await getImageById(imageId);
+        if (image) {
+          uploadedImages.push(image);
+        }
+      };
+      const creator = await getUserByID(event.creator_id);
+
+      const imagesFormat = uploadedImages.reduce((acc, image) => {
+        if (!acc[image.reference_id]) {
+          acc[image.reference_id] = [];
+        }
+        acc[image.reference_id].push(image.url);
+        return acc;
+      },{});
+
+      const eventFormat = {
+        ...event,
+        images: imagesFormat,
+        creator: {
+          username : creator.username},
+      };
+      delete eventFormat.imagesId;
+      return eventFormat;
+    }
+
     const event = await Event.findOne({
       where: { id: eventId },
       include: [
         {
-          model: db.User,
+          model: User,
           as: "creator",
           attributes: ["username"],
         },
       ],
     });
 
-    const uploadedImages = await db.Image.findAll({
+    const uploadedImages = await Image.findAll({
       where: {
         reference_id: eventId,
         reference_type: "event",
@@ -32,6 +71,14 @@ const getEventById = async (eventId) => {
     if (!event) {
       throw new Error("Event not found");
     }
+
+    const cachedEventFormat = {
+      ...event.toJSON(),
+      imagesId: uploadedImages.map((image) => image.id),
+    }
+    delete cachedEventFormat.images;
+    delete cachedEventFormat.creator;
+    await setCache(`event:id:${eventId}`, cachedEventFormat);
 
     return {
       ...event.toJSON(),
@@ -45,6 +92,19 @@ const getEventById = async (eventId) => {
 
 const getAllEvents = async () => {
   try {
+    const cachedEventIds = await getCache(`event:all`);
+    if (cachedEventIds) {
+      console.log("cachedEventIds", cachedEventIds);
+      const events = [];
+      for (const eventId of cachedEventIds) {
+        const event = await getEventById(eventId);
+        if (event) {
+          events.push(event);
+        }
+      }
+      return events;
+    }
+
     const events = await Event.findAll({
       include: [
         {
@@ -54,23 +114,34 @@ const getAllEvents = async () => {
         },
       ],
     });
+    const eventsWithImages = [];
+    const eventIds = [];
+    for (const event of events) {
+      const uploadedImages = await Image.findAll({
+        where: {
+          reference_id: event.id,
+          reference_type: "event",
+        },
+        attributes: ["url"],
+      });
+      const imagesFormat = uploadedImages.reduce((acc, image) => {
+        if (!acc[image.reference_id]) {
+          acc[image.reference_id] = [];
+        }
+        acc[image.reference_id].push(image.url);
+        return acc;
+      },{});
+      const eventFormat = {
+        ...event.toJSON(),
+        images: imagesFormat,
+      };
+      eventsWithImages.push(eventFormat);
 
-    const eventsWithImages = await Promise.all(
-      events.map(async (event) => {
-        const uploadedImages = await db.Image.findAll({
-          where: {
-            reference_id: event.id,
-            reference_type: "event",
-          },
-          attributes: ["url"],
-        });
+      eventIds.push(event.id);
+    }
 
-        return {
-          ...event.toJSON(),
-          images: uploadedImages.map((image) => image.url),
-        };
-      })
-    );
+    // Cache all events
+    await setCache(`event:all`, eventIds);
 
     return eventsWithImages;
   } catch (error) {
@@ -79,27 +150,106 @@ const getAllEvents = async () => {
   }
 };
 
-const getEventSigned = async (userId) => {
+const getEventUserById = async (id) => {
+  try{
+    if (!id) throw new error (`eventuser id is required`);
+    const eventuserCache = await getCache(`eventuser:id:${id}`);
+    if (eventuserCache) {
+      console.log("eventuserCache",eventuserCache)
+      const users = await getUserByID(eventuserCache.user_id);
+      const events = await getEventById(eventuserCache.event_id);
+      const eventuserformat = {
+        ...eventuserCache,
+        users,
+        events
+      };
+      return eventuserformat;
+    }
+
+    const eventuser = await EventUser.findByPk(
+      id,
+      {
+        include: [
+          {
+            model: User,
+          },
+          {
+            model: Event,
+          }
+        ]
+      }
+    )
+
+    if (!eventuser){
+      throw new error (`eventuser id ${id} doesn't exit`);
+    }
+
+    //Cache eventuser
+    const eventuserFormat = {
+      ...eventuser.toJSON()
+    }
+    delete eventuserFormat.events;
+    delete eventuserFormat.users;
+    await setCache(`eventuser:id:${id}`,eventuserFormat);
+
+    return eventuser;
+  } catch (error){
+    console.log(`error get event user id ${id} :`,error);
+    throw error
+  }
+}
+
+const getAllEventUser = async () => {
   try {
-    const allEvents = await EventUser.findAll({
-      where: { user_id: userId },
-      include: [
+    const allEventUserIds = await getCache('eventuser:all');
+    if (allEventUserIds){
+      console.log("allEventUserIds",allEventUserIds);
+      let result = [];
+      for (const eventUserid of allEventUserIds){
+        const eventuser = await getEventUserById(Number(eventUserid));
+        result.push(eventuser);
+      }
+      return result;
+    }
+
+    const allEventUsers = await EventUser.findAll({
+      include:[
         {
-          model: db.Event,
-          attributes: [
-            "title",
-            "description",
-            "location",
-            "capacity",
-            "status",
-            "start_time",
-            "end_time",
-          ],
+          model: User,
         },
-      ],
+        {
+          model: Event,
+        }
+      ]
     });
 
-    return allEvents;
+    //Cache eventuser
+    let eventUserIds = allEventUsers.map((eventUser) => eventUser.id );
+    await setCache("eventuser:all",eventUserIds);
+
+    return allEventUsers;
+  } catch (error){
+    console.log("error get all event user : ",error);
+    throw error
+  }
+}
+
+const getEventSigned = async (user_id) => {
+  try {
+    const allEventUsers = await getAllEventUser();
+    let result = [];
+
+    for ( const eventuser of allEventUsers){
+      if (Number(eventuser.user_id) === Number(user_id)){
+        const eventuserFormat = {
+          ...eventuser.toJSON(),
+        }
+        delete eventuserFormat.users
+        result.push(eventuserFormat);
+      }
+    }
+
+    return result;
   } catch (error) {
     console.error("Error retrieving signed events:", error);
     throw error;
@@ -108,11 +258,13 @@ const getEventSigned = async (userId) => {
 
 const getEventsOfCreator = async (creator_id) => {
   try {
-    const events = await Event.findAll({
-      where: { creator_id },
-    });
-
-    return events;
+    const allevents = await getAllEvents();
+    const result = [];
+    for (const event of allevents){
+      if (Number(event.creator_id) === Number(creator_id)) result.push(event);
+    }
+    
+    return result;
   } catch (error) {
     console.error("Error get events of creator:", error);
     throw error;
@@ -121,20 +273,12 @@ const getEventsOfCreator = async (creator_id) => {
 
 const getEventUserByEventId = async (event_id) => {
   try {
-    const EventUsers = await EventUser.findAll({
-      where: { event_id },
-      attributes: ["user_id"],
-    });
-
-    const userIds = EventUsers.map((eventUser) => eventUser.user_id);
-
-    let users = [];
-    for (const userId of userIds) {
-      const user = await getUserByID(Number(userId));
-      if (user) {
-        users.push(user);
+    const allEventUser = await getAllEventUser();
+    const users = allEventUser.map((eventUser) => {
+      if (Number(eventUser.event_id) === Number(event_id) ){
+        return eventUser.users;
       }
-    }
+    });
 
     return users;
 
@@ -162,6 +306,9 @@ const createEvent = async (Data, user_id, images) => {
       throw new Error("All fields are required");
     }
 
+    // Check creator_id
+    const creator = await getUserByID(user_id);
+
     // Validate datetime format
     const isValidDate = (date) => !isNaN(Date.parse(date));
     if (!isValidDate(start_time) || !isValidDate(end_time)) {
@@ -185,16 +332,55 @@ const createEvent = async (Data, user_id, images) => {
     if (images && images.length > 0) {
       uploadedImages = await uploadImages(images, event.id, "event");
     }
+    
+    const imagesFormat = uploadedImages.reduce((acc, image) => {
+      if (!acc[image.reference_id]) {
+        acc[image.reference_id] = [];
+      }
+      acc[image.reference_id].push(image.url);
+      return acc;
+    }
+    ,{});
 
+    // Cache the event
+    const eventCacheFormat = {
+      ...event.toJSON(),
+      imagesId: uploadedImages.map((image) => image.id),
+    };
+    await setCache(`event:id:${event.id}`, eventCacheFormat);
+    await deleteCache('event:all')
     return {
       ...event.toJSON(),
-      images: uploadedImages.map((image) => image.url),
+      creator: {
+        id: creator.id,
+        username: creator.username,
+      },
+      images: imagesFormat,
     };
+
   } catch (error) {
     console.error("Error creating event:", error);
     throw error;
   }
 };
+
+const createEventUser = async (eventId, userId) => {
+  try{
+    const eventUser = await EventUser.create({
+      event_id: eventId,
+      user_id: userId,
+    });
+
+    //Cache eventuser
+    await setCache(`eventuser:id:${eventUser.id}`);
+    await deleteCache("eventuser:all");
+
+    return eventUser;
+  }catch (error) {
+    console.error("Error create eventuser:", error);
+    throw error;
+  }
+}
 
 const acceptEvent = async (eventId, userId) => {
   try {
@@ -210,10 +396,7 @@ const acceptEvent = async (eventId, userId) => {
       throw new Error("User not found");
     }
 
-    const eventUser = await EventUser.create({
-      event_id: eventId,
-      user_id: userId,
-    });
+    const eventUser = await createEventUser(eventId, userId);
 
     return eventUser;
   } catch (error) {
@@ -287,19 +470,23 @@ const updateEvent = async (event_id, Data, images) => {
     }
 
     await event.update(updateFields);
+    //delete cache
+    await deleteCache(`event:id:${event_id}`);
+    await deleteCache('event:all')
 
     let uploadedImages = [];
 
     if (images && images.length > 0) {
+      // Delete old images and cache
       await deleteImages(event.id, "event");
-
+      // Upload new images and cache
       uploadedImages = await uploadImages(images, event.id, "event");
 
       if (!uploadedImages || uploadedImages.length === 0) {
         throw new Error("Failed to upload images");
       }
     } else {
-      uploadedImages = await db.Image.findAll({
+      uploadedImages = await Image.findAll({
         where: {
           reference_id: event.id,
           reference_type: "event",
@@ -325,9 +512,23 @@ const deleteEvent = async (event_id) => {
       throw new Error("Event not found");
     }
 
-    const listImagesBeforeDelete = await deleteImages(event_id, "event");
+    let listImagesBeforeDelete = await deleteImages(event_id, "event");
+
+    listImagesBeforeDelete = listImagesBeforeDelete.reduce((acc, image) => {
+      if (!acc[image.reference_id]) {
+        acc[image.reference_id] = [];
+      }
+      acc[image.reference_id].push(image.url);
+      return acc;
+    }
+    ,{});
+
+    //delete cache
+    await deleteCache(`event:id:${event_id}`);
+    await deleteCache(`event:all`);
 
     await event.destroy();
+
     return {
       ...event.toJSON(),
       images: listImagesBeforeDelete,
@@ -343,7 +544,13 @@ const checkInUserByUserId = async (event_id, user_id) => {
     if (!event_id || !user_id) {
       throw new Error("Event ID and User ID are required");
     }
-    const event = await Event.findByPk(event_id);
+
+    const user = await getUserByID(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const event = await getEventById(event_id)
     if (!event) {
       throw new Error("Event not found");
     }
@@ -357,6 +564,49 @@ const checkInUserByUserId = async (event_id, user_id) => {
     }
 
     await eventUser.update({ joined_at: new Date() });
+
+    //del cache eventuser id
+    await deleteCache(`event:id:${event_id}`)
+    await deleteCache('eventuser:all')
+
+    return eventUser;
+  } catch (error) {
+    console.error("Error checking in user:", error);
+    throw error;
+  }
+};
+
+const checkOutUserByUserId = async (event_id, user_id) => {
+  try {
+    if (!event_id || !user_id) {
+      throw new Error("Event ID and User ID are required");
+    }
+    user_id = Number(user_id);
+    event_id = Number(event_id);
+
+    const user = await getUserByID(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const event = await getEventById(event_id)
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    const eventUser = await EventUser.findOne({
+      where: { event_id, user_id },
+    });
+
+    if (!eventUser) {
+      throw new Error("User not found in this event");
+    }
+
+    await eventUser.update({ completed_at: new Date() });
+
+    //del cache eventuser id
+    await deleteCache(`event:id:${event_id}`)
+    await deleteCache('eventuser:all')
 
     return eventUser;
   } catch (error) {
@@ -376,4 +626,5 @@ module.exports = {
   updateEvent,
   deleteEvent,
   checkInUserByUserId,
+  checkOutUserByUserId
 };
