@@ -106,17 +106,19 @@ const ShippingAccountsList = ({
                         color="text.secondary"
                         gutterBottom
                       >
-                        Provider: {account.provider}
+                        Đơn vị vận chuyển:{" "}
+                        {account.carrier == "ghn"
+                          ? "Giao Hàng Nhanh"
+                          : account.carrier == "grab"
+                          ? "Grab Hỏa Tốc"
+                          : "Giao Hàng Tiết Kiệm"}
                       </Typography>
                       <Divider sx={{ my: 1 }} />
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
-                        Contact: {account.phone}
+                        Token API: {account.token}
                       </Typography>
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
-                        Email: {account.email}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mb: 0.5 }}>
-                        Address: {account.address}
+                        Shop ID: {account.shop_id}
                       </Typography>
                       <Box
                         sx={{

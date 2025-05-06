@@ -7,6 +7,10 @@ import {
   DialogContent,
   DialogActions,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 
 const AddShippingAccountForm = ({
@@ -17,7 +21,26 @@ const AddShippingAccountForm = ({
   handleCloseDialog,
   handleOpenManageDialog,
   isEditing = false,
+  resetForm,
 }) => {
+  const handleSubmit = () => {
+    if (isEditing) {
+      handleUpdateShippingAccount();
+    } else {
+      handleAddShippingAccount();
+      resetForm(); // Reset form after add
+    }
+    handleOpenManageDialog();
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewShippingAccount((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <>
       <DialogTitle
@@ -29,77 +52,53 @@ const AddShippingAccountForm = ({
         <Grid container spacing={2} sx={{ mt: 0.5 }}>
           <Grid item xs={12}>
             <TextField
-              label="Account Name"
+              label="Tên tài khoản"
+              name="name"
               fullWidth
               value={newShippingAccount.name}
-              onChange={(e) =>
-                setNewShippingAccount({
-                  ...newShippingAccount,
-                  name: e.target.value,
-                })
-              }
+              onChange={handleChange}
               required
               margin="normal"
             />
           </Grid>
+
+          <Grid item xs={12}>
+            <FormControl fullWidth required>
+              <InputLabel id="carrier-label">Đơn vị vận chuyển</InputLabel>
+              <Select
+                labelId="carrier-label"
+                name="carrier"
+                value={newShippingAccount.carrier}
+                onChange={handleChange}
+                label="Đơn vị vận chuyển"
+              >
+                <MenuItem value="ghn">Giao Hàng Nhanh</MenuItem>
+                <MenuItem value="ghtk">Giao Hàng Tiết Kiệm</MenuItem>
+                <MenuItem value="grab">Grab Hỏa Tốc</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12}>
             <TextField
-              label="Provider/Company"
+              label="Shop ID"
+              name="shop_id"
               fullWidth
-              value={newShippingAccount.provider}
-              onChange={(e) =>
-                setNewShippingAccount({
-                  ...newShippingAccount,
-                  provider: e.target.value,
-                })
-              }
+              value={newShippingAccount.shop_id}
+              onChange={handleChange}
               required
               margin="normal"
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Phone Number"
-              fullWidth
-              value={newShippingAccount.phone}
-              onChange={(e) =>
-                setNewShippingAccount({
-                  ...newShippingAccount,
-                  phone: e.target.value,
-                })
-              }
-              required
-              margin="normal"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Email"
-              fullWidth
-              type="email"
-              value={newShippingAccount.email}
-              onChange={(e) =>
-                setNewShippingAccount({
-                  ...newShippingAccount,
-                  email: e.target.value,
-                })
-              }
-              margin="normal"
-            />
-          </Grid>
+
           <Grid item xs={12}>
             <TextField
-              label="Address"
+              label="Token API"
+              name="token"
               fullWidth
-              multiline
-              rows={2}
-              value={newShippingAccount.address}
-              onChange={(e) =>
-                setNewShippingAccount({
-                  ...newShippingAccount,
-                  address: e.target.value,
-                })
-              }
+              value={newShippingAccount.token}
+              onChange={handleChange}
+              required
               margin="normal"
             />
           </Grid>
@@ -116,19 +115,12 @@ const AddShippingAccountForm = ({
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            if (isEditing) {
-              handleUpdateShippingAccount();
-            } else {
-              handleAddShippingAccount();
-            }
-            handleOpenManageDialog();
-          }}
+          onClick={handleSubmit}
           className="customer-button"
           disabled={
             !newShippingAccount.name ||
-            !newShippingAccount.phone ||
-            !newShippingAccount.provider
+            !newShippingAccount.shop_id ||
+            !newShippingAccount.carrier
           }
         >
           {isEditing ? "Save Changes" : "Add Account"}
