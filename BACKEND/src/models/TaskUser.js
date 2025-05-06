@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       assigned_at: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW, // Automatically sets the current timestamp
+        defaultValue: DataTypes.NOW,
       },
       completed_at: {
         type: DataTypes.DATE,
