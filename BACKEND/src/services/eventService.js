@@ -159,7 +159,7 @@ const getEventUserById = async (id) => {
       const users = await getUserByID(eventuserCache.user_id);
       const events = await getEventById(eventuserCache.event_id);
       const eventuserformat = {
-        ...eventuserCache.toJSON(),
+        ...eventuserCache,
         users,
         events
       };
@@ -224,7 +224,7 @@ const getAllEventUser = async () => {
     });
 
     //Cache eventuser
-    let eventUserIds = allEventUsers.filter((eventUser) => eventUser.id );
+    let eventUserIds = allEventUsers.map((eventUser) => eventUser.id );
     await setCache("eventuser:all",eventUserIds);
 
     return allEventUsers;
@@ -273,20 +273,12 @@ const getEventsOfCreator = async (creator_id) => {
 
 const getEventUserByEventId = async (event_id) => {
   try {
-    const EventUsers = await EventUser.findAll({
-      where: { event_id },
-      attributes: ["user_id"],
-    });
-
-    const userIds = EventUsers.map((eventUser) => eventUser.user_id);
-
-    let users = [];
-    for (const userId of userIds) {
-      const user = await getUserByID(Number(userId));
-      if (user) {
-        users.push(user);
+    const allEventUser = await getAllEventUser();
+    const users = allEventUser.map((eventUser) => {
+      if (Number(eventUser.event_id) === Number(event_id) ){
+        return eventUser.users;
       }
-    }
+    });
 
     return users;
 
