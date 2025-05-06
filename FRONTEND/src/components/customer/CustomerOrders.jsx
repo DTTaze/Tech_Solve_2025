@@ -62,6 +62,33 @@ const mockOrders = [
       { time: "2024-04-20 13:45", status: "Recycling In Progress" },
       { time: "2024-04-20 16:20", status: "Completed" },
     ],
+    locationHistory: [
+      {
+        time: "2024-04-20 08:30",
+        location: "123 Green St, Eco City",
+        status: "Order Created",
+      },
+      {
+        time: "2024-04-20 09:15",
+        location: "123 Green St, Eco City",
+        status: "Collector Dispatched",
+      },
+      {
+        time: "2024-04-20 10:30",
+        location: "Main Recycling Facility, Quận 7",
+        status: "En Route to Facility",
+      },
+      {
+        time: "2024-04-20 13:45",
+        location: "Main Recycling Facility, Quận 7",
+        status: "Processing",
+      },
+      {
+        time: "2024-04-20 16:20",
+        location: "Main Recycling Facility, Quận 7",
+        status: "Completed",
+      },
+    ],
     collectorName: "John Recycler",
     collectorContact: "555-0123",
   },
@@ -80,9 +107,26 @@ const mockOrders = [
       { time: "2024-04-18 12:30", status: "Collection Scheduled" },
       { time: "2024-04-19 09:00", status: "Collector En Route" },
     ],
+    locationHistory: [
+      {
+        time: "2024-04-18 10:45",
+        location: "456 Eco Lane, Green Town",
+        status: "Order Created",
+      },
+      {
+        time: "2024-04-18 12:30",
+        location: "456 Eco Lane, Green Town",
+        status: "Collector Assigned",
+      },
+      {
+        time: "2024-04-19 09:00",
+        location: "Quận 1, Hồ Chí Minh City",
+        status: "Collector En Route",
+      },
+    ],
     collectorName: "Sarah Green",
     collectorContact: "555-0456",
-    location: { lat: 10.762622, lng: 106.660172 }, // Sample location
+    currentLocation: "Quận 1, Hồ Chí Minh City - Pickup zone",
   },
   {
     id: 3,
@@ -114,17 +158,61 @@ const mockOrders = [
   },
 ];
 
-// Available waste types for order creation
-const wasteTypes = [
-  "Plastic",
-  "Paper",
-  "Glass",
-  "Metal",
-  "Organic Waste",
-  "Electronic Waste",
-  "Batteries",
-  "Clothing/Textiles",
+// Available waste types for order creation with categories
+const wasteCategories = [
+  {
+    name: "Recyclable Materials",
+    types: [
+      { id: "plastic", label: "Plastic", points: 10 },
+      { id: "paper", label: "Paper", points: 5 },
+      { id: "glass", label: "Glass", points: 15 },
+      { id: "metal", label: "Metal", points: 20 },
+      { id: "cardboard", label: "Cardboard", points: 8 },
+      { id: "aluminum", label: "Aluminum", points: 25 },
+    ],
+  },
+  {
+    name: "Organic Waste",
+    types: [
+      { id: "food_waste", label: "Food Waste", points: 5 },
+      { id: "garden_waste", label: "Garden Waste", points: 7 },
+      { id: "compostable", label: "Compostable Materials", points: 6 },
+    ],
+  },
+  {
+    name: "Electronic Waste",
+    types: [
+      { id: "small_electronics", label: "Small Electronics", points: 25 },
+      { id: "batteries", label: "Batteries", points: 10 },
+      { id: "cables", label: "Cables & Wires", points: 15 },
+      { id: "computer_parts", label: "Computer Parts", points: 30 },
+    ],
+  },
+  {
+    name: "Textiles",
+    types: [
+      { id: "clothing", label: "Clothing", points: 10 },
+      { id: "fabrics", label: "Fabrics", points: 8 },
+      { id: "shoes", label: "Shoes", points: 12 },
+    ],
+  },
+  {
+    name: "Hazardous Waste",
+    types: [
+      { id: "paint", label: "Paint", points: 15 },
+      { id: "chemicals", label: "Chemicals", points: 20 },
+      { id: "medical_waste", label: "Medical Waste", points: 25 },
+    ],
+  },
 ];
+
+// Flatten waste types for calculating points
+const wasteTypesMap = wasteCategories.reduce((acc, category) => {
+  category.types.forEach((type) => {
+    acc[type.id] = type.points;
+  });
+  return acc;
+}, {});
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -147,15 +235,74 @@ export default function CustomerOrders() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [trackingDialogOpen, setTrackingDialogOpen] = useState(false);
+  const [shippingAccountsDialogOpen, setShippingAccountsDialogOpen] =
+    useState(false);
+  const [addShippingAccountDialogOpen, setAddShippingAccountDialogOpen] =
+    useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newOrder, setNewOrder] = useState({
     address: "",
     items: [{ type: "", quantity: 1, unit: "kg" }],
+    shippingAccountId: "",
   });
   const [confirmAlertOpen, setConfirmAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [newShippingAccount, setNewShippingAccount] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    provider: "",
+  });
+  const [shippingAccounts, setShippingAccounts] = useState([
+    {
+      id: "sa-001",
+      name: "Green Transport Co.",
+      phone: "555-0100",
+      email: "contact@greentransport.com",
+      address: "123 Transport St, Green City",
+      provider: "Green Logistics",
+      isDefault: true,
+    },
+    {
+      id: "sa-002",
+      name: "Eco Delivery Services",
+      phone: "555-0200",
+      email: "support@ecodelivery.com",
+      address: "456 Eco Lane, Green Town",
+      provider: "Eco Express",
+      isDefault: false,
+    },
+  ]);
+
   const isMobile = useMediaQuery("(max-width:600px)");
 
+  // Function to validate if user has linked shipping accounts
+  const hasLinkedShippingAccounts = () => {
+    return shippingAccounts.length > 0;
+  };
+
+  // Function to show alert
+  const showAlert = (message, severity = "success") => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setConfirmAlertOpen(true);
+    setTimeout(() => setConfirmAlertOpen(false), 3000);
+  };
+
   const handleCreateOrder = () => {
+    // Check if user has linked shipping accounts
+    if (!hasLinkedShippingAccounts()) {
+      showAlert(
+        "Please link at least one shipping account before creating orders.",
+        "error"
+      );
+      setCreateDialogOpen(false);
+      setShippingAccountsDialogOpen(true);
+      return;
+    }
+
     // In a real application, this would send the order to an API
     const order = {
       id: orders.length + 1,
@@ -164,6 +311,10 @@ export default function CustomerOrders() {
       status: "Pending Confirmation",
       points: calculatePoints(newOrder.items),
       address: newOrder.address,
+      shippingAccountId: newOrder.shippingAccountId,
+      shippingAccount: shippingAccounts.find(
+        (acc) => acc.id === newOrder.shippingAccountId
+      ),
       timeline: [
         {
           time: new Date().toLocaleString(),
@@ -178,27 +329,75 @@ export default function CustomerOrders() {
 
     setOrders([order, ...orders]);
     setCreateDialogOpen(false);
+    showAlert("Order created successfully!");
     setNewOrder({
       address: "",
       items: [{ type: "", quantity: 1, unit: "kg" }],
+      shippingAccountId: "",
     });
   };
 
+  const handleAddShippingAccount = () => {
+    const newAccount = {
+      id: `sa-${Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0")}`,
+      ...newShippingAccount,
+      isDefault: shippingAccounts.length === 0,
+    };
+
+    setShippingAccounts([...shippingAccounts, newAccount]);
+    setAddShippingAccountDialogOpen(false);
+    showAlert("Shipping account added successfully!");
+    setNewShippingAccount({
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+      provider: "",
+    });
+  };
+
+  const handleEditShippingAccount = (accountId, updatedData) => {
+    const updatedAccounts = shippingAccounts.map((account) =>
+      account.id === accountId ? { ...account, ...updatedData } : account
+    );
+    setShippingAccounts(updatedAccounts);
+    showAlert("Shipping account updated successfully!");
+  };
+
+  const handleDeleteShippingAccount = (accountId) => {
+    const updatedAccounts = shippingAccounts.filter(
+      (account) => account.id !== accountId
+    );
+
+    // If we're deleting the default account and there are other accounts,
+    // set the first remaining one as default
+    if (
+      shippingAccounts.find((acc) => acc.id === accountId)?.isDefault &&
+      updatedAccounts.length > 0
+    ) {
+      updatedAccounts[0].isDefault = true;
+    }
+
+    setShippingAccounts(updatedAccounts);
+    showAlert("Shipping account removed successfully!");
+  };
+
+  const handleSetDefaultShippingAccount = (accountId) => {
+    const updatedAccounts = shippingAccounts.map((account) => ({
+      ...account,
+      isDefault: account.id === accountId,
+    }));
+    setShippingAccounts(updatedAccounts);
+    showAlert("Default shipping account updated!");
+  };
+
   const calculatePoints = (items) => {
-    // Sample calculation - in a real app this would follow business rules
+    // Calculate based on the new type IDs
     let total = 0;
     items.forEach((item) => {
-      const basePoints = {
-        Plastic: 10,
-        Paper: 5,
-        Glass: 15,
-        Metal: 20,
-        "Organic Waste": 5,
-        "Electronic Waste": 25,
-        Batteries: 10,
-        "Clothing/Textiles": 10,
-      };
-      total += (basePoints[item.type] || 5) * item.quantity;
+      total += (wasteTypesMap[item.type] || 5) * item.quantity;
     });
     return total;
   };
@@ -224,12 +423,18 @@ export default function CustomerOrders() {
 
   const handleViewDetails = (order) => {
     setSelectedOrder(order);
-    setDetailsDialogOpen(true);
+    // Set a small timeout to resolve the aria-hidden focus issue
+    setTimeout(() => {
+      setDetailsDialogOpen(true);
+    }, 10);
   };
 
   const handleTrackOrder = (order) => {
     setSelectedOrder(order);
-    setTrackingDialogOpen(true);
+    // Set a small timeout to resolve the aria-hidden focus issue
+    setTimeout(() => {
+      setTrackingDialogOpen(true);
+    }, 10);
   };
 
   const handleCancelOrder = (orderId) => {
@@ -281,19 +486,23 @@ export default function CustomerOrders() {
     <Box>
       {confirmAlertOpen && (
         <Alert
-          severity="success"
+          severity={alertSeverity}
           sx={{
             position: "fixed",
             top: "80px",
             right: "20px",
             zIndex: 9999,
-            backgroundColor: "var(--light-green)",
-            color: "var(--primary-green)",
-            border: "1px solid var(--primary-green)",
+            backgroundColor:
+              alertSeverity === "success" ? "var(--light-green)" : "#FFF3E0",
+            color:
+              alertSeverity === "success" ? "var(--primary-green)" : "#E65100",
+            border: `1px solid ${
+              alertSeverity === "success" ? "var(--primary-green)" : "#FB8C00"
+            }`,
           }}
           onClose={() => setConfirmAlertOpen(false)}
         >
-          Order confirmed successfully. A collector will be assigned soon.
+          {alertMessage}
         </Alert>
       )}
 
@@ -313,15 +522,38 @@ export default function CustomerOrders() {
         >
           Your Orders
         </Typography>
-        <Button
-          variant="contained"
-          className="customer-button"
-          onClick={() => setCreateDialogOpen(true)}
-          startIcon={<AddIcon />}
-          sx={{ mb: { xs: 2, sm: 0 } }}
-        >
-          New Order
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            className="customer-button-secondary"
+            onClick={() => setShippingAccountsDialogOpen(true)}
+            sx={{
+              borderColor: "var(--primary-green)",
+              color: "var(--primary-green)",
+            }}
+          >
+            Shipping Accounts
+          </Button>
+          <Button
+            variant="contained"
+            className="customer-button"
+            onClick={() => {
+              if (!hasLinkedShippingAccounts()) {
+                showAlert(
+                  "Please link at least one shipping account before creating orders.",
+                  "error"
+                );
+                setShippingAccountsDialogOpen(true);
+              } else {
+                setCreateDialogOpen(true);
+              }
+            }}
+            startIcon={<AddIcon />}
+            sx={{ mb: { xs: 2, sm: 0 } }}
+          >
+            New Order
+          </Button>
+        </Box>
       </Box>
 
       {orders.length === 0 ? (
@@ -337,14 +569,42 @@ export default function CustomerOrders() {
             <Typography variant="h6" sx={{ mb: 2, color: "var(--text-light)" }}>
               You don't have any orders yet
             </Typography>
-            <Button
-              variant="contained"
-              className="customer-button"
-              onClick={() => setCreateDialogOpen(true)}
-              startIcon={<AddIcon />}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
             >
-              Create Your First Order
-            </Button>
+              {!hasLinkedShippingAccounts() ? (
+                <>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2, textAlign: "center" }}
+                  >
+                    To start creating orders, you need to link at least one
+                    shipping account
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    className="customer-button"
+                    onClick={() => setShippingAccountsDialogOpen(true)}
+                  >
+                    Link Shipping Account
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="contained"
+                  className="customer-button"
+                  onClick={() => setCreateDialogOpen(true)}
+                  startIcon={<AddIcon />}
+                >
+                  Create Your First Order
+                </Button>
+              )}
+            </Box>
           </CardContent>
         </Card>
       ) : (
@@ -632,12 +892,299 @@ export default function CustomerOrders() {
         </>
       )}
 
-      {/* Create Order Dialog */}
+      {/* Shipping Accounts Dialog */}
+      <Dialog
+        open={shippingAccountsDialogOpen}
+        onClose={() => setShippingAccountsDialogOpen(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle
+          sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
+        >
+          Manage Shipping Accounts
+        </DialogTitle>
+        <DialogContent dividers>
+          {shippingAccounts.length === 0 ? (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                No shipping accounts linked yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Link a shipping account to start creating recycling orders
+              </Typography>
+              <Button
+                variant="contained"
+                className="customer-button"
+                onClick={() => {
+                  setAddShippingAccountDialogOpen(true);
+                  setShippingAccountsDialogOpen(false);
+                }}
+                startIcon={<AddIcon />}
+              >
+                Add Shipping Account
+              </Button>
+            </Box>
+          ) : (
+            <>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Your Linked Shipping Accounts
+                </Typography>
+                <Button
+                  variant="contained"
+                  className="customer-button"
+                  onClick={() => {
+                    setAddShippingAccountDialogOpen(true);
+                    setShippingAccountsDialogOpen(false);
+                  }}
+                  startIcon={<AddIcon />}
+                  size="small"
+                >
+                  Add Account
+                </Button>
+              </Box>
+
+              <Grid container spacing={2}>
+                {shippingAccounts.map((account) => (
+                  <Grid item xs={12} md={6} key={account.id}>
+                    <Card
+                      sx={{
+                        border: account.isDefault
+                          ? "2px solid var(--primary-green)"
+                          : "1px solid var(--grey-300)",
+                        position: "relative",
+                        overflow: "visible",
+                      }}
+                    >
+                      {account.isDefault && (
+                        <Chip
+                          label="Default"
+                          color="success"
+                          size="small"
+                          sx={{
+                            position: "absolute",
+                            top: -10,
+                            right: 20,
+                            backgroundColor: "var(--primary-green)",
+                          }}
+                        />
+                      )}
+                      <CardContent>
+                        <Typography variant="h6" gutterBottom>
+                          {account.name}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          gutterBottom
+                        >
+                          Provider: {account.provider}
+                        </Typography>
+                        <Divider sx={{ my: 1 }} />
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          Contact: {account.phone}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          Email: {account.email}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          Address: {account.address}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            mt: 2,
+                            gap: 1,
+                          }}
+                        >
+                          {!account.isDefault && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() =>
+                                handleSetDefaultShippingAccount(account.id)
+                              }
+                              sx={{
+                                borderColor: "var(--primary-green)",
+                                color: "var(--primary-green)",
+                              }}
+                            >
+                              Set as Default
+                            </Button>
+                          )}
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                              // In a real app, you would open an edit dialog here
+                              // For simplicity, we're just showing an alert
+                              showAlert(
+                                "Edit functionality would open a form",
+                                "info"
+                              );
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={() =>
+                              handleDeleteShippingAccount(account.id)
+                            }
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setShippingAccountsDialogOpen(false)}
+            className="customer-button-secondary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Shipping Account Dialog */}
+      <Dialog
+        open={addShippingAccountDialogOpen}
+        onClose={() => setAddShippingAccountDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
+        >
+          Add Shipping Account
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Account Name"
+                fullWidth
+                value={newShippingAccount.name}
+                onChange={(e) =>
+                  setNewShippingAccount({
+                    ...newShippingAccount,
+                    name: e.target.value,
+                  })
+                }
+                required
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Provider/Company"
+                fullWidth
+                value={newShippingAccount.provider}
+                onChange={(e) =>
+                  setNewShippingAccount({
+                    ...newShippingAccount,
+                    provider: e.target.value,
+                  })
+                }
+                required
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone Number"
+                fullWidth
+                value={newShippingAccount.phone}
+                onChange={(e) =>
+                  setNewShippingAccount({
+                    ...newShippingAccount,
+                    phone: e.target.value,
+                  })
+                }
+                required
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email"
+                fullWidth
+                type="email"
+                value={newShippingAccount.email}
+                onChange={(e) =>
+                  setNewShippingAccount({
+                    ...newShippingAccount,
+                    email: e.target.value,
+                  })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Address"
+                fullWidth
+                multiline
+                rows={2}
+                value={newShippingAccount.address}
+                onChange={(e) =>
+                  setNewShippingAccount({
+                    ...newShippingAccount,
+                    address: e.target.value,
+                  })
+                }
+                margin="normal"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => {
+              setAddShippingAccountDialogOpen(false);
+              setShippingAccountsDialogOpen(true);
+            }}
+            className="customer-button-secondary"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleAddShippingAccount();
+              setShippingAccountsDialogOpen(true);
+            }}
+            className="customer-button"
+            disabled={
+              !newShippingAccount.name ||
+              !newShippingAccount.phone ||
+              !newShippingAccount.provider
+            }
+          >
+            Add Account
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Order Dialog - Updated with Shipping Account selection and categorized waste items */}
       <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="md"
       >
         <DialogTitle
           sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
@@ -645,125 +1192,200 @@ export default function CustomerOrders() {
           Create New Recycling Order
         </DialogTitle>
         <DialogContent dividers>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Add details about the waste you want to recycle
-            </Typography>
-          </Box>
-
-          <TextField
-            label="Pickup Address"
-            fullWidth
-            value={newOrder.address}
-            onChange={(e) =>
-              setNewOrder({ ...newOrder, address: e.target.value })
-            }
-            margin="normal"
-            required
-          />
-
-          <Typography variant="subtitle2" sx={{ mt: 3, mb: 2 }}>
-            Items to Recycle:
-          </Typography>
-
-          {newOrder.items.map((item, index) => (
-            <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={5}>
-                <FormControl fullWidth required>
-                  <InputLabel>Type</InputLabel>
-                  <Select
-                    value={item.type}
-                    label="Type"
-                    onChange={(e) =>
-                      handleItemChange(index, "type", e.target.value)
-                    }
-                  >
-                    {wasteTypes.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <TextField
-                  label="Quantity"
-                  type="number"
-                  fullWidth
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleItemChange(
-                      index,
-                      "quantity",
-                      Math.max(1, parseInt(e.target.value) || 1)
-                    )
-                  }
-                  InputProps={{ inputProps: { min: 1 } }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Unit</InputLabel>
-                  <Select
-                    value={item.unit}
-                    label="Unit"
-                    onChange={(e) =>
-                      handleItemChange(index, "unit", e.target.value)
-                    }
-                  >
-                    <MenuItem value="kg">kg</MenuItem>
-                    <MenuItem value="items">items</MenuItem>
-                    <MenuItem value="bags">bags</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm={1}
-                sx={{ display: "flex", alignItems: "center" }}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ fontWeight: "bold" }}
               >
-                {index > 0 && (
-                  <IconButton
-                    onClick={() => handleRemoveItem(index)}
-                    color="error"
-                    size="small"
-                  >
-                    <CancelIcon />
-                  </IconButton>
-                )}
-              </Grid>
+                Order Details
+              </Typography>
+
+              <FormControl fullWidth margin="normal" required>
+                <InputLabel>Shipping Account</InputLabel>
+                <Select
+                  value={newOrder.shippingAccountId}
+                  label="Shipping Account"
+                  onChange={(e) =>
+                    setNewOrder({
+                      ...newOrder,
+                      shippingAccountId: e.target.value,
+                    })
+                  }
+                >
+                  {shippingAccounts.map((account) => (
+                    <MenuItem key={account.id} value={account.id}>
+                      {account.name} {account.isDefault ? "(Default)" : ""}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="Pickup Address"
+                fullWidth
+                value={newOrder.address}
+                onChange={(e) =>
+                  setNewOrder({ ...newOrder, address: e.target.value })
+                }
+                margin="normal"
+                required
+                multiline
+                rows={2}
+              />
+
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2,
+                  bgcolor: "var(--light-green)",
+                  borderRadius: 1,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "var(--primary-green)" }}
+                >
+                  Estimated Coins: {calculatePoints(newOrder.items)}
+                </Typography>
+                <Typography variant="caption" sx={{ display: "block", mt: 1 }}>
+                  Final amount may vary based on actual weight and quality
+                </Typography>
+              </Box>
             </Grid>
-          ))}
 
-          <Button
-            startIcon={<AddIcon />}
-            onClick={handleAddItem}
-            sx={{
-              mt: 1,
-              color: "var(--primary-green)",
-              "&:hover": {
-                backgroundColor: "rgba(46, 125, 50, 0.08)",
-              },
-            }}
-          >
-            Add Another Item
-          </Button>
+            <Grid item xs={12} md={6}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ fontWeight: "bold" }}
+              >
+                Items to Recycle
+              </Typography>
 
-          <Box
-            sx={{ mt: 3, p: 2, bgcolor: "var(--light-green)", borderRadius: 1 }}
-          >
-            <Typography
-              variant="subtitle2"
-              sx={{ color: "var(--primary-green)" }}
-            >
-              Estimated Coins: {calculatePoints(newOrder.items)}
-            </Typography>
-            <Typography variant="caption" sx={{ display: "block", mt: 1 }}>
-              Final amount may vary based on actual weight and quality
-            </Typography>
-          </Box>
+              {newOrder.items.map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    mb: 3,
+                    p: 2,
+                    border: "1px solid var(--grey-200)",
+                    borderRadius: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2">
+                      Item {index + 1}
+                    </Typography>
+                    {index > 0 && (
+                      <IconButton
+                        onClick={() => handleRemoveItem(index)}
+                        color="error"
+                        size="small"
+                      >
+                        <CancelIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  <FormControl fullWidth required sx={{ mb: 2 }}>
+                    <InputLabel>Type</InputLabel>
+                    <Select
+                      value={item.type}
+                      label="Type"
+                      onChange={(e) =>
+                        handleItemChange(index, "type", e.target.value)
+                      }
+                    >
+                      {wasteCategories
+                        .map((category) => (
+                          <MenuItem
+                            key={category.name}
+                            disabled
+                            sx={{
+                              opacity: 1,
+                              fontWeight: "bold",
+                              backgroundColor: "var(--light-green)",
+                            }}
+                          >
+                            {category.name}
+                          </MenuItem>
+                        ))
+                        .concat(
+                          wasteCategories.flatMap((category) =>
+                            category.types.map((type) => (
+                              <MenuItem
+                                key={type.id}
+                                value={type.id}
+                                sx={{ pl: 4 }}
+                              >
+                                {type.label} ({type.points} points/unit)
+                              </MenuItem>
+                            ))
+                          )
+                        )}
+                    </Select>
+                  </FormControl>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Quantity"
+                        type="number"
+                        fullWidth
+                        value={item.quantity}
+                        onChange={(e) =>
+                          handleItemChange(
+                            index,
+                            "quantity",
+                            Math.max(1, parseInt(e.target.value) || 1)
+                          )
+                        }
+                        InputProps={{ inputProps: { min: 1 } }}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Unit</InputLabel>
+                        <Select
+                          value={item.unit}
+                          label="Unit"
+                          onChange={(e) =>
+                            handleItemChange(index, "unit", e.target.value)
+                          }
+                        >
+                          <MenuItem value="kg">kg</MenuItem>
+                          <MenuItem value="items">items</MenuItem>
+                          <MenuItem value="bags">bags</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </Box>
+              ))}
+
+              <Button
+                startIcon={<AddIcon />}
+                onClick={handleAddItem}
+                sx={{
+                  mt: 1,
+                  color: "var(--primary-green)",
+                  "&:hover": {
+                    backgroundColor: "rgba(46, 125, 50, 0.08)",
+                  },
+                }}
+              >
+                Add Another Item
+              </Button>
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button
@@ -777,6 +1399,7 @@ export default function CustomerOrders() {
             className="customer-button"
             disabled={
               newOrder.address === "" ||
+              newOrder.shippingAccountId === "" ||
               newOrder.items.some((item) => item.type === "")
             }
           >
@@ -785,15 +1408,249 @@ export default function CustomerOrders() {
         </DialogActions>
       </Dialog>
 
-      {/* Order Details Dialog */}
+      {/* Update the Order Details Dialog to replace map with text location */}
+      {selectedOrder && (
+        <Dialog
+          open={trackingDialogOpen}
+          onClose={() => setTrackingDialogOpen(false)}
+          fullWidth
+          maxWidth="md"
+          aria-labelledby="tracking-dialog-title"
+          disableRestoreFocus
+        >
+          <DialogTitle
+            id="tracking-dialog-title"
+            sx={{
+              bgcolor: "var(--light-green)",
+              color: "var(--primary-green)",
+            }}
+          >
+            Track Order #{selectedOrder.id}
+          </DialogTitle>
+          <DialogContent dividers>
+            {/* Enhanced location tracking history */}
+            <Box
+              sx={{
+                mb: 3,
+                borderRadius: 1,
+              }}
+            >
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  color: "var(--primary-green)",
+                  display: "flex",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
+                <TimelineIcon sx={{ mr: 1 }} /> Location History
+              </Typography>
+
+              {/* Location Timeline */}
+              <Box sx={{ pl: 2 }}>
+                {selectedOrder.locationHistory ? (
+                  selectedOrder.locationHistory.map((item, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        mb:
+                          index === selectedOrder.locationHistory.length - 1
+                            ? 0
+                            : 4,
+                        position: "relative",
+                      }}
+                    >
+                      {/* Location Pin */}
+                      <Box
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          bgcolor:
+                            index === selectedOrder.locationHistory.length - 1
+                              ? "var(--primary-green)"
+                              : "var(--light-green)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color:
+                            index === selectedOrder.locationHistory.length - 1
+                              ? "white"
+                              : "var(--primary-green)",
+                          border: "2px solid",
+                          borderColor: "var(--primary-green)",
+                          zIndex: 2,
+                        }}
+                      >
+                        <LocationOnIcon />
+                      </Box>
+
+                      {/* Vertical connecting line */}
+                      {index < selectedOrder.locationHistory.length - 1 && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            left: 20,
+                            top: 40,
+                            bottom: -20,
+                            width: 2,
+                            bgcolor: "var(--grey-300)",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
+
+                      {/* Location details */}
+                      <Box sx={{ ml: 2, flex: 1 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: "bold",
+                            color:
+                              index === selectedOrder.locationHistory.length - 1
+                                ? "var(--primary-green)"
+                                : "inherit",
+                          }}
+                        >
+                          {item.location}
+                          {index === selectedOrder.locationHistory.length - 1 &&
+                            selectedOrder.status === "In Progress" && (
+                              <Chip
+                                label="Current"
+                                color="success"
+                                size="small"
+                                sx={{ ml: 1, fontWeight: "bold" }}
+                              />
+                            )}
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mt: 0.5,
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            {item.status}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {item.time}
+                          </Typography>
+                        </Box>
+
+                        {/* Additional info for current location */}
+                        {index === selectedOrder.locationHistory.length - 1 &&
+                          selectedOrder.status === "In Progress" && (
+                            <Box
+                              sx={{
+                                mt: 1,
+                                p: 1,
+                                bgcolor: "rgba(46, 125, 50, 0.05)",
+                                borderRadius: 1,
+                                border: "1px dashed var(--primary-green)",
+                              }}
+                            >
+                              <Typography variant="body2">
+                                <strong>Estimated arrival:</strong> 15 minutes
+                              </Typography>
+                            </Box>
+                          )}
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body1" color="text.secondary">
+                    No location tracking available for this order.
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ fontWeight: "bold" }}
+              >
+                Current Status
+              </Typography>
+              <Typography variant="body1">
+                {
+                  selectedOrder.timeline[selectedOrder.timeline.length - 1]
+                    .status
+                }
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Last updated:{" "}
+                {selectedOrder.timeline[selectedOrder.timeline.length - 1].time}
+              </Typography>
+            </Box>
+
+            {selectedOrder.collectorName && (
+              <Box
+                sx={{ p: 2, bgcolor: "var(--light-green)", borderRadius: 1 }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  sx={{ fontWeight: "bold", color: "var(--primary-green)" }}
+                >
+                  Collector Information
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2">
+                      Name: {selectedOrder.collectorName}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2">
+                      Contact: {selectedOrder.collectorContact}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button
+              className="customer-button-secondary"
+              startIcon={<ReceiptIcon />}
+              onClick={() => {
+                setTrackingDialogOpen(false);
+                setTimeout(() => setDetailsDialogOpen(true), 10);
+              }}
+            >
+              View Details
+            </Button>
+            <Button
+              onClick={() => setTrackingDialogOpen(false)}
+              className="customer-button"
+              autoFocus
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {/* Also fix the Details Dialog */}
       {selectedOrder && (
         <Dialog
           open={detailsDialogOpen}
           onClose={() => setDetailsDialogOpen(false)}
           fullWidth
           maxWidth="md"
+          aria-labelledby="details-dialog-title"
+          disableRestoreFocus
         >
           <DialogTitle
+            id="details-dialog-title"
             sx={{
               bgcolor: "var(--light-green)",
               color: "var(--primary-green)",
@@ -956,113 +1813,7 @@ export default function CustomerOrders() {
             <Button
               onClick={() => setDetailsDialogOpen(false)}
               className="customer-button-secondary"
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-
-      {/* Order Tracking Dialog */}
-      {selectedOrder && (
-        <Dialog
-          open={trackingDialogOpen}
-          onClose={() => setTrackingDialogOpen(false)}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle
-            sx={{
-              bgcolor: "var(--light-green)",
-              color: "var(--primary-green)",
-            }}
-          >
-            Track Order #{selectedOrder.id}
-          </DialogTitle>
-          <DialogContent dividers>
-            <Box
-              sx={{
-                height: "300px",
-                bgcolor: "var(--grey-200)",
-                mb: 3,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 1,
-              }}
-            >
-              {/* In a real app, this would be a Google Maps component showing the collector's location */}
-              <Box sx={{ textAlign: "center" }}>
-                <LocationOnIcon
-                  sx={{ fontSize: 60, color: "var(--primary-green)" }}
-                />
-                <Typography>Map showing collector's location</Typography>
-                <Typography variant="caption">
-                  (This would be a real map in production)
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{ fontWeight: "bold" }}
-              >
-                Current Status
-              </Typography>
-              <Typography variant="body1">
-                {
-                  selectedOrder.timeline[selectedOrder.timeline.length - 1]
-                    .status
-                }
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Last updated:{" "}
-                {selectedOrder.timeline[selectedOrder.timeline.length - 1].time}
-              </Typography>
-            </Box>
-
-            {selectedOrder.collectorName && (
-              <Box
-                sx={{ p: 2, bgcolor: "var(--light-green)", borderRadius: 1 }}
-              >
-                <Typography
-                  variant="subtitle1"
-                  gutterBottom
-                  sx={{ fontWeight: "bold", color: "var(--primary-green)" }}
-                >
-                  Collector Information
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2">
-                      Name: {selectedOrder.collectorName}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2">
-                      Contact: {selectedOrder.collectorContact}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-          </DialogContent>
-          <DialogActions sx={{ px: 3, py: 2 }}>
-            <Button
-              className="customer-button-secondary"
-              startIcon={<ReceiptIcon />}
-              onClick={() => {
-                setTrackingDialogOpen(false);
-                setDetailsDialogOpen(true);
-              }}
-            >
-              View Details
-            </Button>
-            <Button
-              onClick={() => setTrackingDialogOpen(false)}
-              className="customer-button"
+              autoFocus
             >
               Close
             </Button>
