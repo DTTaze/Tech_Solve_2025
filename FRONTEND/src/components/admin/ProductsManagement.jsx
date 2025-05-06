@@ -8,7 +8,7 @@ import {
   updateItemApi,
 } from "../../utils/api";
 import { Box } from "@mui/material";
-import ProductForm from "../ui/form/ProductForm";
+import ProductForm from "./form/ProductForm";
 
 export default function ProductsManagement() {
   const [products, setProducts] = useState([]);

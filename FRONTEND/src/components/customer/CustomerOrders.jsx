@@ -43,6 +43,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CancelIcon from "@mui/icons-material/Cancel";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import TimelineIcon from "@mui/icons-material/Timeline";
+import EditIcon from "@mui/icons-material/Edit";
 
 // Import extracted components
 import OrdersList from "./orders/OrdersList";
@@ -85,7 +86,13 @@ export default function CustomerOrders() {
     useState(false);
   const [addShippingAccountDialogOpen, setAddShippingAccountDialogOpen] =
     useState(false);
+  const [editShippingAccountDialogOpen, setEditShippingAccountDialogOpen] =
+    useState(false);
+  const [buyerInfoDialogOpen, setBuyerInfoDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedShippingAccount, setSelectedShippingAccount] = useState(null);
+  const [isEditingShippingAccount, setIsEditingShippingAccount] =
+    useState(false);
   const [newOrder, setNewOrder] = useState({
     address: "",
     items: [{ type: "", quantity: 1, unit: "kg" }],
@@ -100,6 +107,12 @@ export default function CustomerOrders() {
     email: "",
     address: "",
     provider: "",
+  });
+  const [buyerInfo, setBuyerInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    notes: "",
   });
   const [shippingAccounts, setShippingAccounts] = useState([
     {
@@ -180,6 +193,10 @@ export default function CustomerOrders() {
       ],
       collectorName: "John Recycler",
       collectorContact: "555-0123",
+      buyerName: "",
+      buyerPhone: "",
+      buyerEmail: "",
+      notes: "",
     };
 
     setOrders([order, ...orders]);
@@ -213,12 +230,45 @@ export default function CustomerOrders() {
     });
   };
 
-  const handleEditShippingAccount = (accountId, updatedData) => {
+  const handleEditShippingAccount = (account) => {
+    setSelectedShippingAccount(account);
+    setNewShippingAccount({
+      name: account.name,
+      phone: account.phone,
+      email: account.email,
+      address: account.address,
+      provider: account.provider,
+    });
+    setIsEditingShippingAccount(true);
+    setShippingAccountsDialogOpen(false);
+    setAddShippingAccountDialogOpen(true);
+  };
+
+  const handleUpdateShippingAccount = () => {
     const updatedAccounts = shippingAccounts.map((account) =>
-      account.id === accountId ? { ...account, ...updatedData } : account
+      account.id === selectedShippingAccount.id
+        ? {
+            ...account,
+            name: newShippingAccount.name,
+            phone: newShippingAccount.phone,
+            email: newShippingAccount.email,
+            address: newShippingAccount.address,
+            provider: newShippingAccount.provider,
+          }
+        : account
     );
+
     setShippingAccounts(updatedAccounts);
+    setAddShippingAccountDialogOpen(false);
+    setIsEditingShippingAccount(false);
     showAlert("Shipping account updated successfully!");
+    setNewShippingAccount({
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+      provider: "",
+    });
   };
 
   const handleDeleteShippingAccount = (accountId) => {
@@ -274,6 +324,36 @@ export default function CustomerOrders() {
     const items = [...newOrder.items];
     items[index][field] = value;
     setNewOrder({ ...newOrder, items });
+  };
+
+  const handleOpenEditBuyerInfo = (order) => {
+    setSelectedOrder(order);
+    setBuyerInfo({
+      name: order.buyerName || "",
+      phone: order.buyerPhone || "",
+      email: order.buyerEmail || "",
+      notes: order.notes || "",
+    });
+    setBuyerInfoDialogOpen(true);
+  };
+
+  const handleUpdateBuyerInfo = () => {
+    const updatedOrders = orders.map((order) => {
+      if (order.id === selectedOrder.id) {
+        return {
+          ...order,
+          buyerName: buyerInfo.name,
+          buyerPhone: buyerInfo.phone,
+          buyerEmail: buyerInfo.email,
+          notes: buyerInfo.notes,
+        };
+      }
+      return order;
+    });
+
+    setOrders(updatedOrders);
+    setBuyerInfoDialogOpen(false);
+    showAlert("Buyer information updated successfully!");
   };
 
   const handleViewDetails = (order) => {
@@ -451,6 +531,7 @@ export default function CustomerOrders() {
           handleTrackOrder={handleTrackOrder}
           handleConfirmOrder={handleConfirmOrder}
           handleCancelOrder={handleCancelOrder}
+          handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
         />
       )}
 
@@ -468,17 +549,22 @@ export default function CustomerOrders() {
           handleDeleteShippingAccount={handleDeleteShippingAccount}
           handleOpenAddDialog={() => {
             setShippingAccountsDialogOpen(false);
+            setIsEditingShippingAccount(false);
             setAddShippingAccountDialogOpen(true);
           }}
           handleCloseDialog={() => setShippingAccountsDialogOpen(false)}
-          showAlert={showAlert}
         />
       </Dialog>
 
-      {/* Add Shipping Account Dialog */}
+      {/* Add/Edit Shipping Account Dialog */}
       <Dialog
         open={addShippingAccountDialogOpen}
-        onClose={() => setAddShippingAccountDialogOpen(false)}
+        onClose={() => {
+          setAddShippingAccountDialogOpen(false);
+          if (isEditingShippingAccount) {
+            setShippingAccountsDialogOpen(true);
+          }
+        }}
         fullWidth
         maxWidth="sm"
       >
@@ -486,8 +572,10 @@ export default function CustomerOrders() {
           newShippingAccount={newShippingAccount}
           setNewShippingAccount={setNewShippingAccount}
           handleAddShippingAccount={handleAddShippingAccount}
+          handleUpdateShippingAccount={handleUpdateShippingAccount}
           handleCloseDialog={() => setAddShippingAccountDialogOpen(false)}
           handleOpenManageDialog={() => setShippingAccountsDialogOpen(true)}
+          isEditing={isEditingShippingAccount}
         />
       </Dialog>
 
@@ -520,6 +608,7 @@ export default function CustomerOrders() {
           order={selectedOrder}
           handleConfirmOrder={handleConfirmOrder}
           handleCancelOrder={handleCancelOrder}
+          handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
         />
       )}
 
@@ -532,6 +621,83 @@ export default function CustomerOrders() {
           handleViewDetails={handleViewDetails}
         />
       )}
+
+      {/* Edit Buyer Information Dialog */}
+      <Dialog
+        open={buyerInfoDialogOpen}
+        onClose={() => setBuyerInfoDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
+        >
+          Update Buyer Information
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Buyer Name"
+                fullWidth
+                value={buyerInfo.name}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, name: e.target.value })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone Number"
+                fullWidth
+                value={buyerInfo.phone}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, phone: e.target.value })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email"
+                fullWidth
+                type="email"
+                value={buyerInfo.email}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, email: e.target.value })
+                }
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Additional Notes"
+                fullWidth
+                multiline
+                rows={3}
+                value={buyerInfo.notes}
+                onChange={(e) =>
+                  setBuyerInfo({ ...buyerInfo, notes: e.target.value })
+                }
+                margin="normal"
+                placeholder="Special instructions or requests"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setBuyerInfoDialogOpen(false)}
+            className="customer-button-secondary"
+          >
+            Cancel
+          </Button>
+          <Button onClick={handleUpdateBuyerInfo} className="customer-button">
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

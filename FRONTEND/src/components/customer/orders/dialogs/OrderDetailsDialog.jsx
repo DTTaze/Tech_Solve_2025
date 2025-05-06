@@ -16,9 +16,11 @@ import {
   TableRow,
   TableCell,
   Button,
+  Divider,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import EditIcon from "@mui/icons-material/Edit";
 import OrderTimeline from "../OrderTimeline";
 import { getStatusColor } from "../../../../utils/orderUtils";
 
@@ -28,6 +30,7 @@ const OrderDetailsDialog = ({
   order,
   handleConfirmOrder,
   handleCancelOrder,
+  handleOpenEditBuyerInfo,
 }) => {
   if (!order) return null;
 
@@ -114,6 +117,95 @@ const OrderDetailsDialog = ({
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Buyer Information Section */}
+            <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: 1,
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  Buyer Information
+                </Typography>
+                {order.status === "Pending Confirmation" && (
+                  <Button
+                    size="small"
+                    startIcon={<EditIcon />}
+                    onClick={() => {
+                      onClose();
+                      handleOpenEditBuyerInfo(order);
+                    }}
+                    sx={{
+                      color: "var(--primary-green)",
+                    }}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </Box>
+              {order.buyerName ||
+              order.buyerPhone ||
+              order.buyerEmail ||
+              order.notes ? (
+                <Box
+                  sx={{
+                    p: 2,
+                    border: "1px solid var(--grey-200)",
+                    borderRadius: 1,
+                  }}
+                >
+                  {order.buyerName && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Name: {order.buyerName}
+                    </Typography>
+                  )}
+                  {order.buyerPhone && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Phone: {order.buyerPhone}
+                    </Typography>
+                  )}
+                  {order.buyerEmail && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      Email: {order.buyerEmail}
+                    </Typography>
+                  )}
+                  {order.notes && (
+                    <>
+                      <Divider sx={{ my: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Notes: {order.notes}
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+              ) : (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  {order.status === "Pending Confirmation"
+                    ? "No buyer information yet. Click Edit to add details."
+                    : "No buyer information provided."}
+                </Typography>
+              )}
+            </Box>
 
             {order.collectorName && (
               <>

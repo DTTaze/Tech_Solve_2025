@@ -13,15 +13,17 @@ const AddShippingAccountForm = ({
   newShippingAccount,
   setNewShippingAccount,
   handleAddShippingAccount,
+  handleUpdateShippingAccount,
   handleCloseDialog,
   handleOpenManageDialog,
+  isEditing = false,
 }) => {
   return (
     <>
       <DialogTitle
         sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
       >
-        Add Shipping Account
+        {isEditing ? "Edit Shipping Account" : "Add Shipping Account"}
       </DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2} sx={{ mt: 0.5 }}>
@@ -115,7 +117,11 @@ const AddShippingAccountForm = ({
         </Button>
         <Button
           onClick={() => {
-            handleAddShippingAccount();
+            if (isEditing) {
+              handleUpdateShippingAccount();
+            } else {
+              handleAddShippingAccount();
+            }
             handleOpenManageDialog();
           }}
           className="customer-button"
@@ -125,7 +131,7 @@ const AddShippingAccountForm = ({
             !newShippingAccount.provider
           }
         >
-          Add Account
+          {isEditing ? "Save Changes" : "Add Account"}
         </Button>
       </DialogActions>
     </>

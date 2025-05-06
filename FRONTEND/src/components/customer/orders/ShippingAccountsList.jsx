@@ -21,7 +21,6 @@ const ShippingAccountsList = ({
   handleDeleteShippingAccount,
   handleOpenAddDialog,
   handleCloseDialog,
-  showAlert,
 }) => {
   return (
     <>
@@ -146,13 +145,7 @@ const ShippingAccountsList = ({
                           size="small"
                           variant="outlined"
                           color="primary"
-                          onClick={() => {
-                            // In a real app, you would open an edit dialog here
-                            showAlert(
-                              "Edit functionality would open a form",
-                              "info"
-                            );
-                          }}
+                          onClick={() => handleEditShippingAccount(account)}
                         >
                           Edit
                         </Button>

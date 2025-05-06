@@ -21,6 +21,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import EditIcon from "@mui/icons-material/Edit";
 import { getStatusColor } from "../../../utils/orderUtils";
 
 const OrdersList = ({
@@ -29,6 +30,7 @@ const OrdersList = ({
   handleTrackOrder,
   handleConfirmOrder,
   handleCancelOrder,
+  handleOpenEditBuyerInfo,
 }) => {
   const isMobile = useMediaQuery("(max-width:600px)");
 
@@ -117,6 +119,23 @@ const OrdersList = ({
 
                         {order.status === "Pending Confirmation" && (
                           <>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => handleOpenEditBuyerInfo(order)}
+                              sx={{
+                                minWidth: 0,
+                                p: "4px 8px",
+                                borderColor: "var(--primary-green)",
+                                color: "var(--primary-green)",
+                                "&:hover": {
+                                  borderColor: "var(--dark-green)",
+                                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                                },
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </Button>
                             <Button
                               size="small"
                               variant="contained"
@@ -242,6 +261,7 @@ const OrdersList = ({
                       gap: 1,
                       justifyContent: "flex-end",
                       mt: 1,
+                      flexWrap: "wrap",
                     }}
                   >
                     <Button
@@ -280,6 +300,21 @@ const OrdersList = ({
 
                     {order.status === "Pending Confirmation" && (
                       <>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleOpenEditBuyerInfo(order)}
+                          sx={{
+                            borderColor: "var(--primary-green)",
+                            color: "var(--primary-green)",
+                            "&:hover": {
+                              borderColor: "var(--dark-green)",
+                              backgroundColor: "rgba(46, 125, 50, 0.08)",
+                            },
+                          }}
+                        >
+                          Edit Buyer Info
+                        </Button>
                         <Button
                           size="small"
                           variant="contained"
