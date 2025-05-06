@@ -79,6 +79,11 @@ export default function CustomerQRScanner() {
     setSelectedEvent(event.target.value);
   };
 
+  const handleStartScan = () => {
+    setScanning(true);
+    setLoading(true);
+  };
+
   const handleStopScan = () => {
     setScanning(false);
     setLoading(false);
@@ -213,8 +218,10 @@ export default function CustomerQRScanner() {
               <QRScanner
                 scanning={scanning}
                 loading={loading}
+                onStartScan={handleStartScan}
                 onStopScan={handleStopScan}
                 onScanResult={handleScanResult}
+                disabled={!selectedEvent}
               />
 
               {!selectedEvent && (
