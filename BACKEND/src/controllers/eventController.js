@@ -126,12 +126,24 @@ const handleCheckInUserByUserId = async (req,res) => {
     const user_id = Number(req.body.user_id)
     const result = await eventService.checkInUserByUserId(event_id, user_id);
     if (!result) {
-      return res.error(404, "Event not found");
+      return res.error(404, "EventUser not found");
     }
     return res.success("User checked in successfully", result);
   } catch (error){
-    console.error("Error check in event:", error);
-    return res.error(500,"Error check in event:",error);
+    console.error("Error check in eventUser:", error);
+    return res.error(500,"Error check in eventUser:",error);
+  }
+}
+
+const handleCheckOutUserByUserId = async (req,res) => {
+  try{
+    const event_id = Number(req.body.event_id)
+    const user_id = Number(req.body.user_id)
+    const result = await eventService.checkOutUserByUserId(event_id, user_id);
+    return res.success("User checked in successfully", result);
+  } catch (error){
+    console.error("Error check out eventUser:", error);
+    return res.error(500,"Error check out eventUser:",error);
   }
 }
 
@@ -147,5 +159,6 @@ module.exports = {
   handleAcceptEvent,
   handleUpdateEvent,
   handleDeleteEvent,
-  handleCheckInUserByUserId
+  handleCheckInUserByUserId,
+  handleCheckOutUserByUserId
 };

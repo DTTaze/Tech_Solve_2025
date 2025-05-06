@@ -544,7 +544,13 @@ const checkInUserByUserId = async (event_id, user_id) => {
     if (!event_id || !user_id) {
       throw new Error("Event ID and User ID are required");
     }
-    const event = await Event.findByPk(event_id);
+
+    const user = await getUserByID(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const event = await getEventById(event_id)
     if (!event) {
       throw new Error("Event not found");
     }
@@ -560,6 +566,46 @@ const checkInUserByUserId = async (event_id, user_id) => {
     await eventUser.update({ joined_at: new Date() });
 
     //del cache eventuser id
+    await deleteCache(`event:id:${event_id}`)
+    await deleteCache('eventuser:all')
+
+    return eventUser;
+  } catch (error) {
+    console.error("Error checking in user:", error);
+    throw error;
+  }
+};
+
+const checkOutUserByUserId = async (event_id, user_id) => {
+  try {
+    if (!event_id || !user_id) {
+      throw new Error("Event ID and User ID are required");
+    }
+    user_id = Number(user_id);
+    event_id = Number(event_id);
+
+    const user = await getUserByID(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const event = await getEventById(event_id)
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    const eventUser = await EventUser.findOne({
+      where: { event_id, user_id },
+    });
+
+    if (!eventUser) {
+      throw new Error("User not found in this event");
+    }
+
+    await eventUser.update({ completed_at: new Date() });
+
+    //del cache eventuser id
+    await deleteCache(`event:id:${event_id}`)
     await deleteCache('eventuser:all')
 
     return eventUser;
@@ -580,4 +626,5 @@ module.exports = {
   updateEvent,
   deleteEvent,
   checkInUserByUserId,
+  checkOutUserByUserId
 };
