@@ -124,10 +124,7 @@ const cancelDeliveryOrder = async (order_code, token, shop_id, seller_id) => {
       { headers: buildHeaders(token, shop_id) }
     );
 
-    await DeliveryOrder.update(
-      { status: "cancel" },
-      { where: { order_code } }
-    );
+    await DeliveryOrder.update({ status: "cancel" }, { where: { order_code } });
 
     if (seller_id) {
       await deleteCache(`delivery:orders:seller:${seller_id}`);

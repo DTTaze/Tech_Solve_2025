@@ -82,11 +82,11 @@ services:
     networks:
       - greenflag_network
 
-  worker:
+  purchase_worker:
     build:
       context: ./BACKEND
       dockerfile: Dockerfile
-    container_name: worker_container
+    container_name: purchase_worker_container
     restart: always
     env_file:
       - ./BACKEND/.env
@@ -106,7 +106,63 @@ services:
       - ./BACKEND:/app
       - /app/node_modules
     working_dir: /app
-    command: ["node", "src/services/worker.js"]
+    command: ["node", "src/workers/purchaseWorker.js"]
+    networks:
+      - greenflag_network
+
+  order_worker:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    container_name: order_worker_container
+    restart: always
+    env_file:
+      - ./BACKEND/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - mysql
+    volumes:
+      - ./BACKEND:/app
+      - /app/node_modules
+    working_dir: /app
+    command: ["node", "src/workers/orderSyncWorker.js"]
+    networks:
+      - greenflag_network
+
+  cron:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    container_name: cron_container
+    restart: always
+    env_file:
+      - ./BACKEND/.env
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - mysql
+    volumes:
+      - ./BACKEND:/app
+      - /app/node_modules
+    working_dir: /app
+    command: ["node", "src/cron/syncGHNOrdersCron.js"]
     networks:
       - greenflag_network
 
