@@ -279,6 +279,13 @@ export const getEventUserByEventIdApi = (event_id) => {
   return axios.get(`api/events/user/${event_id}`);
 };
 
+export const acceptEventApi = (event_id) => {
+  return axios.post(`api/events/accept/${event_id}`);
+}
+
+export const getEventSignedApi = () => {
+  return axios.get("api/events/signed");
+}
 export const CheckInUserByUserIdApi = (event_id) => {
   return axios.post(`api/events/check_in`, { event_id });
 };

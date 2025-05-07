@@ -1,35 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getQRApi } from "../../utils/api";
 
-export default function QRCodeDisplay() {
+export default function QRCodeDisplay({ initialText }) {
   const [qr, setQr] = useState("");
-  const [text, setText] = useState("");
 
-  const handleGenerate = async () => {
-    try {
-      const response = await getQRApi(text);
-      setQr(response.data);
-    } catch (error) {
-      console.error("Error generating QR:", error);
-    }
-  };
+  useEffect(() => {
+    const generateQR = async () => {
+      if (initialText) {
+        try {
+          const response = await getQRApi(initialText);
+          console.log("qr response: ", response);
+          setQr(response.data);
+        } catch (error) {
+          console.error("Error generating QR:", error);
+        }
+      }
+    };
+
+    generateQR();
+  }, [initialText]);
 
   return (
-    <div className="flex flex-col items-center p-4 gap-4">
-      <input
-        className="border p-2 rounded w-64"
-        type="text"
-        placeholder="Nhập nội dung..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <button
-        onClick={handleGenerate}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Tạo QR Code
-      </button>
-      {qr && <img src={qr} alt="QR Code" className="mt-4 border shadow-lg" />}
+    <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+      {qr && (
+        <img
+          src={qr}
+          alt="QR Code"
+          className="w-64 h-64 object-contain border-2 border-gray-200 rounded-lg shadow-md"
+        />
+      )}
     </div>
   );
 }
