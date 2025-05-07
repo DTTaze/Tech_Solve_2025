@@ -11,6 +11,8 @@ const EventBanner = ({userInfo}) => {
   const [participatedEvents, setParticipatedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  console.log("userInfo in EventBanner: ", userInfo)
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -25,7 +27,7 @@ const EventBanner = ({userInfo}) => {
         const signedEventsResponse = await getEventSignedApi();
         console.log("signed events Response: ", signedEventsResponse)
         const signedEventIds =
-          signedEventsResponse?.data?.map((event) => event.id) || [];
+          signedEventsResponse?.data?.map((event) => event.event_id) || [];
 
         // Set events and participated events
         setEvents(eventsResponse.data);

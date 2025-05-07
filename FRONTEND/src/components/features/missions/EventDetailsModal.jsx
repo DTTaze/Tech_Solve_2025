@@ -15,24 +15,54 @@ const EventDetailsModal = ({
   const handleJoinEvent = async () => {
     try {
       await acceptEventApi(event.id);
-      toast.success("Tham gia sự kiện thành công!");
+      toast.success("Tham gia sự kiện thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        style: {
+          background: "#4CAF50",
+          color: "white",
+          fontSize: "16px",
+          fontWeight: "500",
+        },
+      });
       onClose();
     } catch (error) {
       console.error("Error joining event:", error);
-      toast.error("Không thể tham gia sự kiện");
+      toast.error("❌ Không thể tham gia sự kiện", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        style: {
+          background: "#f44336",
+          color: "white",
+          fontSize: "16px",
+          fontWeight: "500",
+        },
+      });
     }
   };
 
   const isRegistrationOpen = new Date(event.end_time) > new Date();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all">
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-2xl font-bold text-gray-800">{event.title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <svg
               className="w-6 h-6"
@@ -93,7 +123,7 @@ const EventDetailsModal = ({
           ) : isRegistrationOpen ? (
             <button
               onClick={handleJoinEvent}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors transform hover:scale-[1.02] active:scale-[0.98]"
             >
               Tham gia
             </button>
