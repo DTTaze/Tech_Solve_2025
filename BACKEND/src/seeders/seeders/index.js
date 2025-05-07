@@ -14,6 +14,7 @@ const coinsSeeder = require("./seeder-coins");
 const rankSeeder = require("./seeder-rank");
 const userankSeeder = require("./seeder-userank");
 const eventSeeder = require("./seeder-event");
+const eventuserSeeder = require("./seeder-eventuser");
 const deliveryAccount = require("./seeder-delivery_account");
 
 const seeders = [
@@ -35,7 +36,8 @@ const seeders = [
   { model: require("../../models").TaskType, seeder: taskTypeSeeder },
   { model: require("../../models").TaskUser, seeder: taskUserSeeder },
   { model: require("../../models").Event, seeder: eventSeeder },
-  { model: require("../../models").Event, seeder: deliveryAccount },
+  { model: require("../../models").EventUser, seeder: eventuserSeeder },
+  { model: require("../../models").DeliveryAccount, seeder: deliveryAccount },
 ];
 
 (async () => {
