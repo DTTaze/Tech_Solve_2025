@@ -7,11 +7,8 @@ import MissionCompleted from "../components/features/user/MissionCompleted.jsx";
 import PurchaseOrder from "../components/features/user/PurchaseOrder.jsx";
 import ProfileCardSkeleton from "../components/features/user/ProfileCardSkeleton.jsx";
 import PersonalInfoFormSkeleton from "../components/features/user/PersonalInfomationSkeleton.jsx";
-
-// Placeholder components for submenu items
-function ChangePassword() {
-  return <div className="p-4 bg-white rounded-lg shadow-md">Đổi mật khẩu (Chưa triển khai)</div>;
-}
+import ChangePassword from "../components/features/user/ChangePassword.jsx";
+import DeleteAccount from "../components/features/user/DeleteAccount.jsx";
 
 function UserProfile() {
   const { auth } = useContext(AuthContext);
@@ -35,7 +32,7 @@ function UserProfile() {
       case "Đổi mật khẩu":
         return <ChangePassword />;
       case "Xóa tài khoản":
-        return <DeleteAccount />;
+        return <DeleteAccount />
       case "Nhiệm vụ hoàn thành":
         return <MissionCompleted />;
       case "Đơn mua":
@@ -50,7 +47,7 @@ function UserProfile() {
       <div className="w-[80vw] m-auto flex gap-3">
         <div className="w-[30%] mt-4">
           {isLoading ? (
-            <PersonalInfoFormSkeleton />
+            <ProfileCardSkeleton />
           ) : (
             <ProfileCard setSelectedTab={setSelectedTab} />
           )}
