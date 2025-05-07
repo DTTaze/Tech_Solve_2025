@@ -24,9 +24,9 @@ function UserProfile() {
     switch (selectedTab) {
       case "Thông tin cá nhân":
         return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
-      case "Nhiệm vụ":
+      case "Nhiệm vụ hoàn thành":
         return <MissionCompleted />;
-      case "Lịch sử giao dịch":
+      case "Đơn mua":
         return <PurchaseOrder />; 
       default:
         return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;

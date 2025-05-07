@@ -5,7 +5,6 @@ import {
   updateUserAvatarApi,
   getUserAvatarByIdApi,
 } from "../../../utils/api.js";
-import Loader from "../../ui/Loader.jsx";
 
 function MenuItem({ text, onClick }) {
   return (
@@ -19,7 +18,7 @@ function MenuItem({ text, onClick }) {
 }
 
 function ProfileCard({ setSelectedTab }) {
-  const { auth, appLoading, setAuth } = useContext(AuthContext);
+  const { auth, setAuth } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState("");
   const fileInputRef = useRef(null);
@@ -46,7 +45,6 @@ function ProfileCard({ setSelectedTab }) {
     }
   }, [auth?.user?.id, isFetched, setAuth]);
 
-  if (appLoading) return <Loader></Loader>;
   if (!auth.isAuthenticated) return <p>User not logged in.</p>;
 
   const { user } = auth;
@@ -85,7 +83,7 @@ function ProfileCard({ setSelectedTab }) {
       <div className="flex flex-wrap items-center space-x-4 sm:space-x-6">
         <div className="relative flex h-20 w-20 sm:h-16 sm:w-16 shrink-0">
           <img
-            key={avatarUrl} // ép React re-render ảnh ngay khi URL thay đổi
+            key={avatarUrl}
             alt="Avatar"
             className={`h-full w-full rounded-lg object-cover cursor-pointer ${loading ? "opacity-50" : "opacity-100"}`}
             src={avatarUrl}
