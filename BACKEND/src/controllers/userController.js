@@ -105,7 +105,7 @@ const handleDeleteUser = async (req, res) => {
 
 const handleGetUser = async (req, res) => {
   try {
-    let result = await userService.getUserByID(req.params.id);
+    let result = await userService.getUserByID(Number(req.params.id));
     return res.success("Get user by ID success", result);
   } catch (error) {
     return res.error(500, "Failed to get user by ID", error.message);
