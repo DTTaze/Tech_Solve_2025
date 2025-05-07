@@ -77,14 +77,14 @@ const ShippingAccountsList = ({
                 <Grid item xs={12} md={6} key={account.id}>
                   <Card
                     sx={{
-                      border: account.isDefault
+                      border: account.is_default
                         ? "2px solid var(--primary-green)"
                         : "1px solid var(--grey-300)",
                       position: "relative",
                       overflow: "visible",
                     }}
                   >
-                    {account.isDefault && (
+                    {account.is_default && (
                       <Chip
                         label="Default"
                         color="success"
@@ -128,7 +128,7 @@ const ShippingAccountsList = ({
                           gap: 1,
                         }}
                       >
-                        {!account.isDefault && (
+                        {!account.is_default && (
                           <Button
                             size="small"
                             variant="outlined"

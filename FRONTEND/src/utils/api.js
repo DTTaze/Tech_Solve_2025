@@ -304,22 +304,22 @@ export const cancelShippingOrderApi = (orderCode) => {
   return axios.post(`api/delivery/ghn/cancel/${orderCode}`);
 };
 
-export const getShippingAccountsApi = () => {
-  return axios.get("api/users/shipping-accounts");
+export const getShippingAccountsByUserApi = () => {
+  return axios.get("api/delivery/accounts/user");
 };
 
 export const createShippingAccountApi = (data) => {
-  return axios.post("api/users/shipping-accounts", data);
+  return axios.post("api/delivery/accounts/create", data);
 };
 
-export const updateShippingAccountApi = (accountId, data) => {
-  return axios.put(`api/users/shipping-accounts/${accountId}`, data);
+export const updateShippingAccountApi = (id, data) => {
+  return axios.put(`api/delivery/accounts/${id}`, data);
 };
 
-export const deleteShippingAccountApi = (accountId) => {
-  return axios.delete(`api/users/shipping-accounts/${accountId}`);
+export const deleteShippingAccountApi = (id) => {
+  return axios.delete(`api/delivery/accounts/${id}`);
 };
 
-export const setDefaultShippingAccountApi = (accountId) => {
-  return axios.post(`api/users/shipping-accounts/${accountId}/default`);
+export const setDefaultShippingAccountApi = (id) => {
+  return axios.patch(`api/delivery/accounts/user/set-default/${id}`);
 };
