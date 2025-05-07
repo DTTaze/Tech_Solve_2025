@@ -626,7 +626,7 @@ function Mission() {
         <MissionHeader userInfo={userInfo} loading={loading} />
 
         {/* Event Banner */}
-        <EventBanner />
+        <EventBanner userInfo={userInfo}/>
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-8">
