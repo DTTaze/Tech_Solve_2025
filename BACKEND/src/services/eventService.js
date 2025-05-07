@@ -301,7 +301,7 @@ const getEventUserByEventId = async (event_id) => {
 
 const createEvent = async (Data, user_id, images) => {
   try {
-    const { title, description, location, capacity, start_time, end_time } =
+    const { title, description, location, capacity,end_sign, start_time, end_time } =
       Data;
 
     // Validate required fields
@@ -334,6 +334,7 @@ const createEvent = async (Data, user_id, images) => {
       description,
       location,
       capacity,
+      end_sign: new Date(end_sign),
       start_time: new Date(start_time),
       end_time: new Date(end_time),
     });
