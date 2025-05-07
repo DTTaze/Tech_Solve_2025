@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { getAllTaskCompletedById, getUserApi } from "../../../utils/api";
 
-function CompletedTasksList() {
+function MissionCompleted() {
   const [userCompletedTasks, setUserCompletedTasks] = useState([]);
   const [sortKey, setSortKey] = useState("id");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -104,4 +104,4 @@ function CompletedTasksList() {
   );
 }
 
-export default CompletedTasksList;
+export default MissionCompleted;
