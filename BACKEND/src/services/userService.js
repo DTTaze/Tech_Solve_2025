@@ -282,7 +282,7 @@ const getUserByID = async (id) => {
       ],
     });
     if (!user) throw new Error("User not found");
-
+    delete user.password;
     await setUserCache(user);
     return user;
   } catch (e) {
