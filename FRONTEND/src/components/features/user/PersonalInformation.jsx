@@ -116,7 +116,7 @@ function PersonalInformation() {
   ];
 
   return (
-    <div className="p-4 border bg-white rounded-lg shadow-md">
+    <div className="p-4 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center">
         <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
         {!isEditing && (
