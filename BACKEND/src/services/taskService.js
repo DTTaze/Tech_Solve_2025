@@ -149,9 +149,9 @@ const deleteTask = async (id) => {
 
 const acceptTask = async (task_id, user_id) => {
   try {
-    if (!task_id || !user_id) {
+    if (!task_id || !user_id)
       throw new Error("Task ID and User ID are required");
-    }
+
     task_id = Number(task_id);
     user_id = Number(user_id);
     if (!Number.isInteger(task_id) || !Number.isInteger(user_id)) {
@@ -162,13 +162,15 @@ const acceptTask = async (task_id, user_id) => {
     const user = await User.findByPk(user_id);
     if (!user) throw new Error("User not found");
     const result = await TaskUser.create({ user_id, task_id });
-    //Cache usertask
-    await setCache(`taskuser:id:${result.id}`, result);
+    
+    await setCache(`taskUser:id:${result.id}`, result);
+
     let all_user_task_ids = await getCache(`all:User:taskId:${user_id}`);
-    if (all_user_task_ids){ 
-      all_user_task_ids.push(Number(user_id));
-      await setCache(`all:User:taskId:${user_id}`);
-    };
+    if (!Array.isArray(all_user_task_ids)) {
+      all_user_task_ids = [];
+    }
+    all_user_task_ids.push(result.id);
+    await setCache(`all:User:taskId:${user_id}`, all_user_task_ids);
 
     return result;
   } catch (e) {

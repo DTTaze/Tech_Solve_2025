@@ -21,17 +21,7 @@ export default function Customer() {
       try {
         const userResponse = await getUserApi();
         if (userResponse?.data) {
-          setUserInfo({
-            id: userResponse.data.id,
-            full_name: userResponse.data.full_name || "Customer",
-            avatar_url: userResponse.data.avatar_url,
-            username: userResponse.data.username || "Guest",
-            coins: userResponse.data.coins, // Store the entire coins object
-            email: userResponse.data.email,
-            phone_number: userResponse.data.phone_number,
-            last_logined: userResponse.data.last_logined,
-            role: userResponse.data.role,
-          });
+          setUserInfo(userResponse.data);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
