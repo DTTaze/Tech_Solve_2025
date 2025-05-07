@@ -60,6 +60,10 @@ const getEventById = async (eventId) => {
       ],
     });
 
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
     const uploadedImages = await Image.findAll({
       where: {
         reference_id: eventId,
@@ -68,10 +72,15 @@ const getEventById = async (eventId) => {
       attributes: ["url"],
     });
 
-    if (!event) {
-      throw new Error("Event not found");
-    }
+    const imagesFormat = uploadedImages.reduce((acc, image) => {
+      if (!acc[image.reference_id]) {
+        acc[image.reference_id] = [];
+      }
+      acc[image.reference_id].push(image.url);
+      return acc;
+    },{});
 
+    //Cache event
     const cachedEventFormat = {
       ...event.toJSON(),
       imagesId: uploadedImages.map((image) => image.id),
@@ -82,7 +91,7 @@ const getEventById = async (eventId) => {
 
     return {
       ...event.toJSON(),
-      images: uploadedImages.map((image) => image.url),
+      images: imagesFormat,
     };
   } catch (error) {
     console.error("Error retrieving event:", error);
@@ -292,7 +301,7 @@ const getEventUserByEventId = async (event_id) => {
 
 const createEvent = async (Data, user_id, images) => {
   try {
-    const { title, description, location, capacity, start_time, end_time } =
+    const { title, description, location, capacity,end_sign, start_time, end_time } =
       Data;
 
     // Validate required fields
@@ -325,6 +334,7 @@ const createEvent = async (Data, user_id, images) => {
       description,
       location,
       capacity,
+      end_sign: new Date(end_sign),
       start_time: new Date(start_time),
       end_time: new Date(end_time),
     });
