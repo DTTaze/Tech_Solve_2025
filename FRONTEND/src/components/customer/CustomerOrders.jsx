@@ -268,20 +268,43 @@ export default function CustomerOrders() {
 
   const handleAddShippingAccount = async () => {
     try {
-      const response = await createShippingAccountApi(newShippingAccount);
-      const addedAccount = response.data;
-      console.log("check add acc", response);
-      const newAccount = {
-        ...addedAccount,
+      const accountData = {
+        ...newShippingAccount,
+        user_id: userInfo.id,
         is_default: shippingAccounts.length === 0,
       };
 
-      setShippingAccounts((prev) => [...prev, newAccount]);
-      setAddShippingAccountDialogOpen(false);
-      showAlert("Shipping account added successfully!");
+      const response = await createShippingAccountApi(accountData);
+
+      if (response && response.data) {
+        const addedAccount = response.data;
+        setShippingAccounts((prev) => [...prev, addedAccount]);
+        setAddShippingAccountDialogOpen(false);
+        showAlert("Shipping account added successfully!");
+        resetShippingAccountForm();
+      } else {
+        await fetchShippingAccounts();
+        setAddShippingAccountDialogOpen(false);
+        showAlert("Shipping account added successfully!");
+        resetShippingAccountForm();
+      }
     } catch (error) {
       console.error("Error adding shipping account:", error);
-      showAlert("Failed to add shipping account. Please try again.", "error");
+      let errorMessage = "Failed to add shipping account. Please try again.";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (!newShippingAccount.name) {
+        errorMessage = "Account name is required";
+      } else if (!newShippingAccount.carrier) {
+        errorMessage = "Carrier is required";
+      } else if (!newShippingAccount.shop_id) {
+        errorMessage = "Shop ID is required";
+      } else if (!newShippingAccount.token) {
+        errorMessage = "Token is required";
+      }
+
+      showAlert(errorMessage, "error");
     }
   };
 
@@ -329,7 +352,6 @@ export default function CustomerOrders() {
   const handleDeleteShippingAccount = async (accountId) => {
     try {
       await deleteShippingAccountApi(accountId);
-
       const updatedAccounts = shippingAccounts.filter(
         (account) => account.id !== accountId
       );
@@ -339,6 +361,7 @@ export default function CustomerOrders() {
         updatedAccounts.length > 0
       ) {
         updatedAccounts[0].is_default = true;
+        await setDefaultShippingAccountApi(updatedAccounts[0].id);
       }
 
       setShippingAccounts(updatedAccounts);
