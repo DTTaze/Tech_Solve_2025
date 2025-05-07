@@ -2,17 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import { getUserApi, updateUserPublicApi } from "../../../utils/api.js";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
-import PersonalInfomationSkeleton from "./PersonalnfomationSkeleton.jsx";
+import PersonalInfomationSkeleton from "./PersonalInfomationSkeleton.jsx";
 
-function PersonalInfoForm() {
+function PersonalInformation() {
   const [user, setUser] = useState(null);
+  const [originalUser, setOriginalUser] = useState(null);
   const [errors, setErrors] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
 
   const fetchUser = useCallback(async () => {
     try {
       const response = await getUserApi({ params: { t: Date.now() } });
       if (response.data) {
         setUser(response.data);
+        setOriginalUser(response.data);
       }
     } catch (error) {
       console.error("Lỗi khi lấy thông tin người dùng:", error);
@@ -81,19 +84,25 @@ function PersonalInfoForm() {
       return;
     }
 
-    setLoading(true);
     try {
-      console.log("Dữ liệu gửi đi:", user);
       const res = await updateUserPublicApi(user.public_id, user);
-      console.log("Phản hồi từ updateUserPublicApi:", res.data);
       await fetchUser();
       alert("Cập nhật thông tin thành công!");
+      setIsEditing(false);
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
       alert("Cập nhật thất bại!");
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setUser(originalUser);
+    setErrors({});
+    setIsEditing(false);
   };
 
   if (!user) return <PersonalInfomationSkeleton />;
@@ -107,26 +116,54 @@ function PersonalInfoForm() {
   ];
 
   return (
-    <div className="p-4 border bg-white rounded-lg shadow-md">
-      <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
+    <div className="p-4 bg-white rounded-lg shadow-md">
+      <div className="flex justify-between items-center">
+        <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
+        {!isEditing && (
+          <Button
+            text="Chỉnh sửa hồ sơ"
+            onClick={handleEdit}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          />
+        )}
+      </div>
       <hr className="my-2 border-gray-300" />
 
       <form className="space-y-4" onSubmit={handleUpdate}>
-        {inputFields.map(({ id, label }) => (
-          <InputField
-            key={id}
-            id={id}
-            label={label}
-            value={user[id] || ""}
-            onChange={handleChange}
-            error={errors[id]}
-          />
-        ))}
+        <div className="grid grid-cols-3 gap-4">
+          {inputFields.map(({ id, label }) => (
+            <div key={id} >
+              <InputField
+                id={id}
+                label={label}
+                value={user[id] || ""}
+                onChange={handleChange}
+                error={errors[id]}
+                disabled={!isEditing}
+                className={isEditing ? "" : "bg-gray-100 cursor-not-allowed"}
+              />
+            </div>
+          ))}
+        </div>
 
-        <Button text="Cập nhật"></Button>
+        {isEditing && (
+          <div className="flex space-x-2">
+            <Button
+              text="Lưu"
+              type="submit"
+              className="bg-green-500 hover:bg-green-600 text-white"
+            />
+            <Button
+              text="Hủy"
+              type="button"
+              onClick={handleCancel}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            />
+          </div>
+        )}
       </form>
     </div>
   );
 }
 
-export default PersonalInfoForm;
+export default PersonalInformation;

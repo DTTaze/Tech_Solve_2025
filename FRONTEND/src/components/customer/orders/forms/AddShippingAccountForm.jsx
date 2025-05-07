@@ -28,7 +28,7 @@ const AddShippingAccountForm = ({
       handleUpdateShippingAccount();
     } else {
       handleAddShippingAccount();
-      resetForm(); // Reset form after add
+      resetForm();
     }
     handleOpenManageDialog();
   };
