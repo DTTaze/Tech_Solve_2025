@@ -587,19 +587,26 @@ const getItemByIdUser = async (user_id) => {
 const addAddressById = async (user_id, newAddress) => {
   try {
     if (!newAddress) throw new Error("newAddress is required");
-    const user = await User.findByPk(user_id);
 
+    const user = await User.findByPk(user_id);
     if (!user) {
       throw new Error("User not found");
     }
 
-    // Ensure address is an array
-    const updatedAddresses = Array.isArray(user.address) ? [...user.address, newAddress] : [newAddress];
+    // Ensure user.address is an array
+    const currentAddresses = Array.isArray(user.address) ? user.address : [];
+
+    // Check if the user already has 3 addresses
+    if (currentAddresses.length >= 3) {
+      throw new Error("Maximum of 3 addresses allowed");
+    }
+
+    const updatedAddresses = [...currentAddresses, newAddress];
 
     // Update the address field
     await user.update({ address: updatedAddresses });
 
-    //delete cache user
+    // Delete cache
     await deleteCache(`user:id:${user_id}`);
 
     return user;
@@ -607,6 +614,7 @@ const addAddressById = async (user_id, newAddress) => {
     throw e;
   }
 };
+
 
 const addDeleteressById = async (user_id, indexOfAddress) => {
   try {
