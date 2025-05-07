@@ -62,13 +62,12 @@ import {
   wasteTypesMap,
 } from "../../data/ordersMockData";
 
-// Import API functions
 import {
   createShippingOrderApi,
   getShippingOrderDetailApi,
   updateShippingOrderApi,
   cancelShippingOrderApi,
-  getShippingAccountsApi,
+  getShippingAccountsByUserApi,
   createShippingAccountApi,
   updateShippingAccountApi,
   deleteShippingAccountApi,
@@ -95,6 +94,7 @@ const emptyShippingAccountForm = {
   shop_id: "",
   token: "",
   carrier: "",
+  is_default: false,
 };
 
 export default function CustomerOrders() {
@@ -139,6 +139,7 @@ export default function CustomerOrders() {
   // Fetch shipping accounts on component mount
   useEffect(() => {
     fetchShippingAccounts();
+    fetchOrders();
   }, []);
 
   const fetchShippingAccounts = async () => {
@@ -146,42 +147,12 @@ export default function CustomerOrders() {
       setIsLoadingAccounts(true);
       setErrorMessage("");
 
-      // In a real app, you would fetch from API
-      // const response = await getShippingAccountsApi();
-      // if (response && response.data) {
-      //   setShippingAccounts(response.data);
-      // }
-
-      // Using mock data for now
-      setTimeout(() => {
-        setShippingAccounts([
-          {
-            id: "1",
-            name: "SP xanh ghn",
-            shop_id: "196506",
-            token: "c3f24415-29b9-11f0-9b81-222185cb68c8",
-            carrier: "ghn",
-            isDefault: true,
-          },
-          {
-            id: "2",
-            name: "SP xanh ghtk (incomming)",
-            shop_id: "123456",
-            token: "fake_token",
-            carrier: "ghtk",
-            isDefault: false,
-          },
-          {
-            id: "3",
-            name: "SP xanh grab (incomming)",
-            shop_id: "123456",
-            token: "fake_token",
-            carrier: "grab",
-            isDefault: false,
-          },
-        ]);
+      const response = await getShippingAccountsByUserApi();
+      console.log("check newShippingAccount", newShippingAccount);
+      if (response && response.data) {
+        setShippingAccounts(response.data);
         setIsLoadingAccounts(false);
-      }, 800);
+      }
     } catch (error) {
       console.error("Error fetching shipping accounts:", error);
       setErrorMessage("Failed to load shipping accounts. Please try again.");
@@ -297,20 +268,15 @@ export default function CustomerOrders() {
 
   const handleAddShippingAccount = async () => {
     try {
-      // In a real application, this would send the data to an API
-      // const response = await createShippingAccountApi(newShippingAccount);
-      // const addedAccount = response.data;
-
-      // Simulate API call
+      const response = await createShippingAccountApi(newShippingAccount);
+      const addedAccount = response.data;
+      console.log("check add acc", response);
       const newAccount = {
-        id: `sa-${Math.floor(Math.random() * 1000)
-          .toString()
-          .padStart(3, "0")}`,
-        ...newShippingAccount,
-        isDefault: shippingAccounts.length === 0,
+        ...addedAccount,
+        is_default: shippingAccounts.length === 0,
       };
 
-      setShippingAccounts([...shippingAccounts, newAccount]);
+      setShippingAccounts((prev) => [...prev, newAccount]);
       setAddShippingAccountDialogOpen(false);
       showAlert("Shipping account added successfully!");
     } catch (error) {
@@ -334,26 +300,19 @@ export default function CustomerOrders() {
 
   const handleUpdateShippingAccount = async () => {
     try {
-      // In a real application, this would send the data to an API
-      // const response = await updateShippingAccountApi(
-      //   selectedShippingAccount.id,
-      //   newShippingAccount
-      // );
-
-      // Simulate API call
-      const updatedAccounts = shippingAccounts.map((account) =>
-        account.id === selectedShippingAccount.id
-          ? {
-              ...account,
-              name: newShippingAccount.name,
-              shop_id: newShippingAccount.shop_id,
-              token: newShippingAccount.token,
-              carrier: newShippingAccount.carrier,
-            }
-          : account
+      const response = await updateShippingAccountApi(
+        selectedShippingAccount.id,
+        newShippingAccount
       );
 
-      setShippingAccounts(updatedAccounts);
+      const updatedAccount = response.data;
+
+      setShippingAccounts((prevAccounts) =>
+        prevAccounts.map((account) =>
+          account.id === updatedAccount.id ? updatedAccount : account
+        )
+      );
+
       setAddShippingAccountDialogOpen(false);
       setIsEditingShippingAccount(false);
       showAlert("Shipping account updated successfully!");
@@ -369,21 +328,17 @@ export default function CustomerOrders() {
 
   const handleDeleteShippingAccount = async (accountId) => {
     try {
-      // In a real application, this would send the request to an API
-      // await deleteShippingAccountApi(accountId);
+      await deleteShippingAccountApi(accountId);
 
-      // Simulate API call
       const updatedAccounts = shippingAccounts.filter(
         (account) => account.id !== accountId
       );
 
-      // If we're deleting the default account and there are other accounts,
-      // set the first remaining one as default
       if (
-        shippingAccounts.find((acc) => acc.id === accountId)?.isDefault &&
+        shippingAccounts.find((acc) => acc.id === accountId)?.is_default &&
         updatedAccounts.length > 0
       ) {
-        updatedAccounts[0].isDefault = true;
+        updatedAccounts[0].is_default = true;
       }
 
       setShippingAccounts(updatedAccounts);
@@ -399,15 +354,15 @@ export default function CustomerOrders() {
 
   const handleSetDefaultShippingAccount = async (accountId) => {
     try {
-      // In a real application, this would send the request to an API
-      // await setDefaultShippingAccountApi(accountId);
-
-      // Simulate API call
-      const updatedAccounts = shippingAccounts.map((account) => ({
-        ...account,
-        isDefault: account.id === accountId,
-      }));
-      setShippingAccounts(updatedAccounts);
+      const response = await setDefaultShippingAccountApi(accountId);
+      const updatedAccount = response.data;
+      setShippingAccounts((prev) =>
+        prev.map((account) =>
+          account.id === updatedAccount.id
+            ? { ...updatedAccount, is_default: true }
+            : { ...account, is_default: false }
+        )
+      );
       showAlert("Default shipping account updated!");
     } catch (error) {
       console.error("Error setting default shipping account:", error);
