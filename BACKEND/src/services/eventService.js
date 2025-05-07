@@ -242,8 +242,9 @@ const getEventSigned = async (user_id) => {
     for ( const eventuser of allEventUsers){
       if (Number(eventuser.user_id) === Number(user_id)){
         const eventuserFormat = {
-          ...eventuser.toJSON(),
-        }
+          ...(typeof eventuser.toJSON === 'function' ? eventuser.toJSON() : eventuser),
+        };
+        
         delete eventuserFormat.users
         result.push(eventuserFormat);
       }
