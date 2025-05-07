@@ -104,6 +104,7 @@ const LoginPage = () => {
         <Button 
           text="Đăng nhập" 
           disabled={isLoginDisabled}
+          width="100%"
         />
         
         <div className="text-right">
