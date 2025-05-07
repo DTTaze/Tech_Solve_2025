@@ -44,7 +44,10 @@ const createUser = async (data) => {
       phone_number,
       address,
     } = data;
+
+    address = Array.isArray(address) ? address : [address];
     role_id = Number(role_id);
+
     if (isNaN(role_id)) throw new Error("Invalid Role ID");
 
     let roledata = await getCache(`role:id:${role_id}`);
@@ -581,6 +584,61 @@ const getItemByIdUser = async (user_id) => {
   }
 };
 
+const addAddressById = async (user_id, newAddress) => {
+  try {
+    if (!newAddress) throw new Error("newAddress is required");
+    const user = await User.findByPk(user_id);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Ensure address is an array
+    const updatedAddresses = Array.isArray(user.address) ? [...user.address, newAddress] : [newAddress];
+
+    // Update the address field
+    await user.update({ address: updatedAddresses });
+
+    //delete cache user
+    await deleteCache(`user:id:${user_id}`);
+
+    return user;
+  } catch (e) {
+    throw e;
+  }
+};
+
+const addDeleteressById = async (user_id, indexOfAddress) => {
+  try {
+    const user = await User.findByPk(user_id);
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (!Array.isArray(user.address)) {
+      throw new Error("Address field is not an array");
+    }
+
+    // If index is out of bounds
+    if (indexOfAddress < 0 || indexOfAddress >= user.address.length) {
+      throw new Error("Invalid address index");
+    }
+
+    // Remove the address at the given index
+    const updatedAddresses = user.address.filter((_, idx) => idx !== indexOfAddress);
+
+    await user.update({ address: updatedAddresses });
+
+    //delete cache user
+    await deleteCache(`user:id:${user_id}`);
+
+    return user;
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
@@ -596,4 +654,6 @@ module.exports = {
   getAllTasksById,
   getItemByIdUser,
   refreshAccessToken,
+  addAddressById,
+  addDeleteressById
 };

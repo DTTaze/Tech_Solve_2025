@@ -93,7 +93,7 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
       },
       address: {
-        type: DataTypes.STRING,
+        type: DataTypes.JSON,
         allowNull: true,
       },
       rank_id: {
