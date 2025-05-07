@@ -284,7 +284,7 @@ export const CheckInUserByUserIdApi = (event_id) => {
 };
 
 export const createShippingOrderApi = (data, token, shop_id) => {
-  return axios.post("api/delivery/ghn/create-order", data, {
+  return axios.post("api/delivery/carrier/ghn/create-order", data, {
     headers: {
       token: token,
       shop_id: shop_id,
@@ -293,15 +293,15 @@ export const createShippingOrderApi = (data, token, shop_id) => {
 };
 
 export const getShippingOrderDetailApi = (orderCode) => {
-  return axios.get(`api/delivery/ghn/detail/${orderCode}`);
+  return axios.get(`api/delivery/carrier/ghn/detail/${orderCode}`);
 };
 
 export const updateShippingOrderApi = (data) => {
-  return axios.post("api/delivery/ghn/update", data);
+  return axios.post("api/delivery/carrier/ghn/update", data);
 };
 
 export const cancelShippingOrderApi = (orderCode) => {
-  return axios.post(`api/delivery/ghn/cancel/${orderCode}`);
+  return axios.post(`api/delivery/carrier/ghn/cancel/${orderCode}`);
 };
 
 export const getShippingAccountsByUserApi = () => {

@@ -115,9 +115,35 @@ export default function CustomerOrders() {
   const [isEditingShippingAccount, setIsEditingShippingAccount] =
     useState(false);
   const [newOrder, setNewOrder] = useState({
-    token: "",
-    items: [{ type: "", quantity: 1, unit: "kg" }],
-    shippingAccountId: "",
+    senderPhone: "",
+    senderAddress: "",
+    receiverPhone: "",
+    receiverAddress: "",
+    receiverName: "",
+    receiverDistrict: "",
+    receiverWard: "",
+    productName: "Áo Polo",
+    productWeight: "1,200",
+    productQuantity: "1",
+    productCode: "Polo123",
+    packageWeight: "200",
+    packageLength: "1",
+    packageWidth: "19",
+    packageHeight: "10",
+    packageVolumeWeight: "76",
+    codAmount: "200000",
+    totalValue: "100000",
+    cashOnDeliveryFailure: false,
+    failureCharge: "0",
+    customerOrderCode: "",
+    deliveryNote: "no_view",
+    notes: "Tintest 123",
+    servicePackage: "light",
+    pickupOption: "pickup",
+    pickupLocation: "",
+    packages: [],
+    paymentParty: "receiver",
+    promotionCode: "",
   });
   const [confirmAlertOpen, setConfirmAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -219,14 +245,36 @@ export default function CustomerOrders() {
       const order = {
         id: orders.length + 1,
         date: new Date().toISOString().split("T")[0],
-        items: [...newOrder.items],
         status: "Pending Confirmation",
-        points: calculatePoints(newOrder.items),
-        token: newOrder.token,
-        shippingAccountId: newOrder.shippingAccountId,
-        shippingAccount: shippingAccounts.find(
-          (acc) => acc.id === newOrder.shippingAccountId
-        ),
+        senderPhone: newOrder.senderPhone,
+        senderAddress: newOrder.senderAddress,
+        receiverPhone: newOrder.receiverPhone,
+        receiverAddress: newOrder.receiverAddress,
+        receiverName: newOrder.receiverName,
+        receiverDistrict: newOrder.receiverDistrict,
+        receiverWard: newOrder.receiverWard,
+        productName: newOrder.productName,
+        productWeight: newOrder.productWeight,
+        productQuantity: newOrder.productQuantity,
+        productCode: newOrder.productCode,
+        packageWeight: newOrder.packageWeight,
+        packageLength: newOrder.packageLength,
+        packageWidth: newOrder.packageWidth,
+        packageHeight: newOrder.packageHeight,
+        packageVolumeWeight: newOrder.packageVolumeWeight,
+        codAmount: newOrder.codAmount,
+        totalValue: newOrder.totalValue,
+        cashOnDeliveryFailure: newOrder.cashOnDeliveryFailure,
+        failureCharge: newOrder.failureCharge,
+        customerOrderCode: newOrder.customerOrderCode,
+        deliveryNote: newOrder.deliveryNote,
+        notes: newOrder.notes,
+        servicePackage: newOrder.servicePackage,
+        pickupOption: newOrder.pickupOption,
+        pickupLocation: newOrder.pickupLocation,
+        packages: newOrder.packages,
+        paymentParty: newOrder.paymentParty,
+        promotionCode: newOrder.promotionCode,
         timeline: [
           {
             time: new Date().toLocaleString(),
@@ -240,25 +288,47 @@ export default function CustomerOrders() {
         locationHistory: [
           {
             time: new Date().toLocaleString(),
-            location: newOrder.token,
+            location: newOrder.senderAddress,
             status: "Order Created",
           },
         ],
         collectorName: "John Recycler",
         collectorContact: "555-0123",
-        buyerName: "",
-        buyerPhone: "",
-        buyerEmail: "",
-        notes: "",
       };
 
       setOrders([order, ...orders]);
       setCreateDialogOpen(false);
       showAlert("Order created successfully!");
       setNewOrder({
-        address: "",
-        items: [{ type: "", quantity: 1, unit: "kg" }],
-        shippingAccountId: "",
+        senderPhone: "",
+        senderAddress: "",
+        receiverPhone: "",
+        receiverAddress: "",
+        receiverName: "",
+        receiverDistrict: "",
+        receiverWard: "",
+        productName: "Áo Polo",
+        productWeight: "1,200",
+        productQuantity: "1",
+        productCode: "Polo123",
+        packageWeight: "200",
+        packageLength: "1",
+        packageWidth: "19",
+        packageHeight: "10",
+        packageVolumeWeight: "76",
+        codAmount: "200000",
+        totalValue: "100000",
+        cashOnDeliveryFailure: false,
+        failureCharge: "0",
+        customerOrderCode: "",
+        deliveryNote: "no_view",
+        notes: "Tintest 123",
+        servicePackage: "light",
+        pickupOption: "pickup",
+        pickupLocation: "",
+        packages: [],
+        paymentParty: "receiver",
+        promotionCode: "",
       });
     } catch (error) {
       console.error("Error creating order:", error);
@@ -268,20 +338,43 @@ export default function CustomerOrders() {
 
   const handleAddShippingAccount = async () => {
     try {
-      const response = await createShippingAccountApi(newShippingAccount);
-      const addedAccount = response.data;
-      console.log("check add acc", response);
-      const newAccount = {
-        ...addedAccount,
+      const accountData = {
+        ...newShippingAccount,
+        user_id: userInfo.id,
         is_default: shippingAccounts.length === 0,
       };
 
-      setShippingAccounts((prev) => [...prev, newAccount]);
-      setAddShippingAccountDialogOpen(false);
-      showAlert("Shipping account added successfully!");
+      const response = await createShippingAccountApi(accountData);
+
+      if (response && response.data) {
+        const addedAccount = response.data;
+        setShippingAccounts((prev) => [...prev, addedAccount]);
+        setAddShippingAccountDialogOpen(false);
+        showAlert("Shipping account added successfully!");
+        resetShippingAccountForm();
+      } else {
+        await fetchShippingAccounts();
+        setAddShippingAccountDialogOpen(false);
+        showAlert("Shipping account added successfully!");
+        resetShippingAccountForm();
+      }
     } catch (error) {
       console.error("Error adding shipping account:", error);
-      showAlert("Failed to add shipping account. Please try again.", "error");
+      let errorMessage = "Failed to add shipping account. Please try again.";
+
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (!newShippingAccount.name) {
+        errorMessage = "Account name is required";
+      } else if (!newShippingAccount.carrier) {
+        errorMessage = "Carrier is required";
+      } else if (!newShippingAccount.shop_id) {
+        errorMessage = "Shop ID is required";
+      } else if (!newShippingAccount.token) {
+        errorMessage = "Token is required";
+      }
+
+      showAlert(errorMessage, "error");
     }
   };
 
@@ -329,7 +422,6 @@ export default function CustomerOrders() {
   const handleDeleteShippingAccount = async (accountId) => {
     try {
       await deleteShippingAccountApi(accountId);
-
       const updatedAccounts = shippingAccounts.filter(
         (account) => account.id !== accountId
       );
@@ -339,6 +431,7 @@ export default function CustomerOrders() {
         updatedAccounts.length > 0
       ) {
         updatedAccounts[0].is_default = true;
+        await setDefaultShippingAccountApi(updatedAccounts[0].id);
       }
 
       setShippingAccounts(updatedAccounts);
