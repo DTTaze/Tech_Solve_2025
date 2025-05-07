@@ -13,7 +13,8 @@ import {
   AllTaskByIdApi,
   getAllTasksByTypeNameApi,
 } from "../utils/api.js";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import TaskCardSkeleton from "../components/features/missions/TaskCardSkeleton.jsx";
 import TasksList from "../components/features/missions/TasksList.jsx";
 import MissionHeader from "../components/features/missions/MissionHeader.jsx";
@@ -82,6 +83,7 @@ function Mission() {
         if (userResponse?.data) {
           console.log("Setting user info:", userResponse.data);
           const dataOfUser = {
+            public_id: userResponse.data.public_id,
             id: userResponse.data.id,
             full_name: userResponse.data.full_name || "User",
             email: userResponse.data.email,
@@ -209,17 +211,77 @@ function Mission() {
               return updatedUser;
             });
 
-            toast.success(`Nhận được ${task.coins} xu!`);
+            toast.success(`🎉 Chúc mừng! Bạn đã nhận được ${task.coins} xu!`, {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+              style: {
+                background: "#4CAF50",
+                color: "white",
+                fontSize: "16px",
+                fontWeight: "500",
+              },
+            });
           } catch (error) {
             console.error("API call failed:", error);
-            toast.error("Không thể hoàn thành nhiệm vụ");
+            toast.error("❌ Không thể hoàn thành nhiệm vụ", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "colored",
+              style: {
+                background: "#f44336",
+                color: "white",
+                fontSize: "16px",
+                fontWeight: "500",
+              },
+            });
           }
         } else {
-          toast.info("Đã cập nhật tiến độ!");
+          toast.info("📈 Đã cập nhật tiến độ!", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            style: {
+              background: "#2196F3",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "500",
+            },
+          });
         }
       } catch (error) {
         console.error("Task completion error:", error);
-        toast.error("Đã xảy ra lỗi khi hoàn thành nhiệm vụ");
+        toast.error("❌ Đã xảy ra lỗi khi hoàn thành nhiệm vụ", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          style: {
+            background: "#f44336",
+            color: "white",
+            fontSize: "16px",
+            fontWeight: "500",
+          },
+        });
       } finally {
         setCompletingTask(null);
       }
@@ -622,11 +684,23 @@ function Mission() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <MissionHeader userInfo={userInfo} loading={loading} />
 
         {/* Event Banner */}
-        <EventBanner />
+        <EventBanner userInfo={userInfo} />
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-8">
