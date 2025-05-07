@@ -436,41 +436,44 @@ const findOrCreateUser = async (profile) => {
   }
 };
 
-const getAllTasksById = async (id) => {
+const getAllTasksById = async (user_id) => {
   try {
-    if (!id) throw new Error("User's id cannot be null");
-    const cacheAllUserTaskId = await getCache(`all:User:taskId:${id}`);
-    if (cacheAllUserTaskId) {
-      let result = [];
-      for (const UserTaskId of cacheAllUserTaskId) {
-        let taskUser = await getCache(`taskUser:id:${UserTaskId}`);
+    if (!user_id) throw new Error("User ID is required");
+
+    const cacheKey = `all:User:taskId:${user_id}`;
+    const taskUserIds = await getCache(cacheKey);
+    const result = [];
+
+    if (Array.isArray(taskUserIds) && taskUserIds.length > 0) {
+      for (const id of taskUserIds) {
+        let taskUser = await getCache(`taskUser:id:${id}`);
         if (!taskUser) {
           taskUser = await TaskUser.findOne({
-            where: { id: UserTaskId },
+            where: { id },
             include: [{ model: Task, as: "tasks", required: true }],
           });
-          if (taskUser) await setCache(`taskUser:id:${UserTaskId}`, taskUser);
-          else throw new Error("TaskUser not found");
+          if (taskUser) await setCache(`taskUser:id:${id}`, taskUser);
         }
-        result.push(taskUser);
+        if (taskUser) result.push(taskUser);
       }
+
       return result;
     }
 
-    const TaskUsers = await TaskUser.findAll({
-      where: { user_id: id },
+    const taskUsers = await TaskUser.findAll({
+      where: { user_id },
       include: [{ model: Task, as: "tasks", required: true }],
     });
 
-    const listOfUserTaskId = TaskUsers.map((taskUser) => taskUser.id);
-    await setCache(`all:User:taskId:${id}`, listOfUserTaskId);
-    for (const taskUser of TaskUsers) {
-      await setCache(`taskUser:id:${taskUser.id}`, taskUser);
+    const ids = taskUsers.map((t) => t.id);
+    await setCache(cacheKey, ids);
+    for (const t of taskUsers) {
+      await setCache(`taskUser:id:${t.id}`, t);
     }
 
-    return TaskUsers;
-  } catch (e) {
-    throw e;
+    return taskUsers;
+  } catch (err) {
+    throw err;
   }
 };
 
