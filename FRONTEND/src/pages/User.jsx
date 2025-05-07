@@ -1,11 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../contexts/auth.context";
 import ProfileCard from "../components/features/user/ProfileCard.jsx";
-import PersonalInfoForm from "../components/features/user/PersonalInformation.jsx";
+import PersonalInfomation from "../components/features/user/PersonalInformation.jsx";
 import MissionCompleted from "../components/features/user/MissionCompleted.jsx";
 import PurchaseOrder from "../components/features/user/PurchaseOrder.jsx";
 import ProfileCardSkeleton from "../components/features/user/ProfileCardSkeleton.jsx";
-import PersonalInfoFormSkeleton from "../components/features/user/PersonalnfomationSkeleton.jsx";
+import PersonalInfoFormSkeleton from "../components/features/user/PersonalInfomationSkeleton.jsx";
 
 function UserProfile() {
   const { auth } = useContext(AuthContext); 
@@ -23,13 +23,13 @@ function UserProfile() {
   const renderContent = () => {
     switch (selectedTab) {
       case "Thông tin cá nhân":
-        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
+        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfomation />;
       case "Nhiệm vụ hoàn thành":
         return <MissionCompleted />;
       case "Đơn mua":
         return <PurchaseOrder />; 
       default:
-        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
+        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfomation />;
     }
   };
 
