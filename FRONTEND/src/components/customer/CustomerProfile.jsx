@@ -130,9 +130,11 @@ export default function CustomerProfile() {
 
   const generateQRCode = async () => {
     try {
-      const response = await getQRApi(userInfo?.id || "");
+      console.log("check user info", userInfo);
+      const response = await getQRApi(userInfo?.public_id || "");
+      console.log("check qr res", response);
       if (response?.data) {
-        setQrCode(response.data.qr_url);
+        setQrCode(response.data);
         setShowQrDialog(true);
       }
     } catch (error) {
@@ -837,7 +839,13 @@ export default function CustomerProfile() {
             }}
           >
             {qrCode ? (
-              <Box sx={{ textAlign: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
                 <img
                   src={qrCode}
                   alt="QR Code"
@@ -859,10 +867,10 @@ export default function CustomerProfile() {
                       bgcolor: "rgba(46, 125, 50, 0.2)",
                     },
                   }}
-                  onClick={() => copyToClipboard(userInfo?.id)}
+                  onClick={() => copyToClipboard(userInfo?.public_id)}
                 >
                   <Typography variant="body2" fontWeight="medium">
-                    User ID: {userInfo?.id}
+                    Public ID: {userInfo?.public_id}
                   </Typography>
                   <Tooltip title="Copy ID">
                     <ContentCopyIcon fontSize="small" />
