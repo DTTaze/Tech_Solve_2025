@@ -37,7 +37,7 @@ router.get(
   "/accounts/:id",
   deliveryAccountController.handleGetDeliveryAccountById
 );
-router.post("/accounts/", deliveryAccountController.handleCreateDeliveryAccount);
+router.post("/accounts/create", deliveryAccountController.handleCreateDeliveryAccount);
 router.put(
   "/accounts/:id",
   deliveryAccountController.handleUpdateDeliveryAccount
