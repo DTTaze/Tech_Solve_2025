@@ -4,11 +4,26 @@ const getHeadersFromRequest = (req) => {
   const token = req.headers["token"];
   const shop_id = req.headers["shop_id"];
 
-  if (!token || !shop_id) {
+  if (!token && !shop_id) {
     throw new Error("Missing GHN Token or ShopId in headers");
   }
 
   return { token, shop_id };
+};
+
+const handlePreviewOrderWithoutOrderCode = async (req, res) => {
+  try {
+    const { token, shop_id } = getHeadersFromRequest(req);
+    const shipmentData = req.body;
+    const data = await deliveryOrderService.previewOrderWithoutOrderCode(
+      shipmentData,
+      token,
+      shop_id,
+    );
+    return res.success("Preview order success", data);
+  } catch (error) {
+    return res.error(500, "Failed to preview order", error.message);
+  }
 };
 
 const handleGetAllProvinces = async (req, res) => {
@@ -33,6 +48,7 @@ const handleGetAllDistrictsByProvince = async (req, res) => {
       token,
       province_id
     );
+    console.log(data);
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: error.message || "Internal Server Error" });
@@ -156,4 +172,5 @@ module.exports = {
   handleGetAllProvinces,
   handleGetAllDistrictsByProvince,
   handleGetAllWardsByDistrict,
+  handlePreviewOrderWithoutOrderCode,
 };

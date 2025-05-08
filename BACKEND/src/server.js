@@ -40,7 +40,6 @@ const io = new Server(server, {
 // Initialize socket manager
 initSocketManager(io);
 
-
 // Cấu hình CORS
 app.use(
   cors({
@@ -50,7 +49,13 @@ app.use(
       "https://greenflag.id.vn",
     ],
     methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["X-Requested-With", "Content-Type", "Authorization"],
+    allowedHeaders: [
+      "X-Requested-With",
+      "Content-Type",
+      "Authorization",
+      "token",
+      "shop_id",
+    ],
     credentials: true,
   })
 );

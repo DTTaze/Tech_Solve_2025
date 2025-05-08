@@ -27,6 +27,8 @@ import {
   InputBase,
   Card,
   CardContent,
+  CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -37,6 +39,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+
+// Import API functions
+import {
+  getAllProvincesApi,
+  getAllDistrictsByProvinceApi,
+  getAllWardsByDistrictApi,
+  getShippingAccountsByUserApi,
+} from "../../../../utils/api";
 
 // Product List Dialog Component
 const ProductListDialog = ({ open, onClose, onAddProduct }) => {
@@ -471,6 +481,27 @@ const CreateOrderForm = ({
   const [senderDistricts, setSenderDistricts] = useState([]);
   const [senderWards, setSenderWards] = useState([]);
 
+  // Loading states
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
+  const [loadingSenderProvinces, setLoadingSenderProvinces] = useState(false);
+  const [loadingSenderDistricts, setLoadingSenderDistricts] = useState(false);
+  const [loadingSenderWards, setLoadingSenderWards] = useState(false);
+
+  // Search states
+  const [provinceSearch, setProvinceSearch] = useState("");
+  const [districtSearch, setDistrictSearch] = useState("");
+  const [wardSearch, setWardSearch] = useState("");
+  const [senderProvinceSearch, setSenderProvinceSearch] = useState("");
+  const [senderDistrictSearch, setSenderDistrictSearch] = useState("");
+  const [senderWardSearch, setSenderWardSearch] = useState("");
+
+  // Error states
+  const [provinceError, setProvinceError] = useState("");
+  const [districtError, setDistrictError] = useState("");
+  const [wardError, setWardError] = useState("");
+
   // Sender province/district/ward effects
   useEffect(() => {
     if (newOrder.from_province_id) {
@@ -766,6 +797,345 @@ const CreateOrderForm = ({
     }
   }, []);
 
+  // Fetch provinces for recipient
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        setLoadingProvinces(true);
+        setProvinceError("");
+
+        // Get default shipping account for API token
+        const accountsResponse = await getShippingAccountsByUserApi();
+        if (
+          !accountsResponse ||
+          !accountsResponse.data ||
+          accountsResponse.data.length === 0
+        ) {
+          setProvinceError(
+            "No shipping accounts found. Please add a shipping account first."
+          );
+          setLoadingProvinces(false);
+          return;
+        }
+
+        const defaultAccount =
+          accountsResponse.data.find((acc) => acc.is_default) ||
+          accountsResponse.data[0];
+        const response = await getAllProvincesApi(defaultAccount.token);
+
+        if (response.code === 200) {
+          setProvinces(
+            response.data.map((province) => ({
+              id: province.ProvinceID,
+              name: province.ProvinceName,
+              code: province.Code,
+            }))
+          );
+        } else {
+          setProvinceError("Failed to load provinces");
+        }
+      } catch (error) {
+        console.error("Error fetching provinces:", error);
+        setProvinceError("Error loading provinces. Please try again.");
+      } finally {
+        setLoadingProvinces(false);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  // Fetch provinces for sender
+  useEffect(() => {
+    const fetchSenderProvinces = async () => {
+      try {
+        setLoadingSenderProvinces(true);
+
+        // Get default shipping account for API token
+        const accountsResponse = await getShippingAccountsByUserApi();
+        if (
+          !accountsResponse ||
+          !accountsResponse.data ||
+          accountsResponse.data.length === 0
+        ) {
+          setLoadingSenderProvinces(false);
+          return;
+        }
+
+        const defaultAccount =
+          accountsResponse.data.find((acc) => acc.is_default) ||
+          accountsResponse.data[0];
+
+        // Fetch provinces
+        const response = await getAllProvincesApi(defaultAccount.token);
+
+        if (response.code === 200) {
+          setSenderProvinces(
+            response.data.map((province) => ({
+              id: province.ProvinceID,
+              name: province.ProvinceName,
+              code: province.Code,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching sender provinces:", error);
+      } finally {
+        setLoadingSenderProvinces(false);
+      }
+    };
+
+    fetchSenderProvinces();
+  }, []);
+
+  // Fetch districts when province changes (recipient)
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (!newOrder.to_province_id) return;
+
+      try {
+        setLoadingDistricts(true);
+        setDistrictError("");
+        setDistricts([]);
+
+        // Get default shipping account for API token
+        const accountsResponse = await getShippingAccountsByUserApi();
+        if (
+          !accountsResponse ||
+          !accountsResponse.data ||
+          accountsResponse.data.length === 0
+        ) {
+          setDistrictError(
+            "No shipping accounts found. Please add a shipping account first."
+          );
+          setLoadingDistricts(false);
+          return;
+        }
+
+        const defaultAccount =
+          accountsResponse.data.find((acc) => acc.is_default) ||
+          accountsResponse.data[0];
+
+        const response = await getAllDistrictsByProvinceApi(
+          newOrder.to_province_id,
+          defaultAccount.token
+        );
+
+        if ((response.code = 200)) {
+          setDistricts(
+            response.data.map((district) => ({
+              id: district.DistrictID,
+              name: district.DistrictName,
+              province_id: newOrder.to_province_id,
+            }))
+          );
+        } else {
+          setDistrictError("Failed to load districts");
+        }
+
+        // Clear district and ward selections
+        setNewOrder({
+          ...newOrder,
+          to_district_id: null,
+          to_ward_code: "",
+          to_district_name: "",
+          to_ward_name: "",
+        });
+        setWards([]);
+      } catch (error) {
+        console.error("Error fetching districts:", error);
+        setDistrictError("Error loading districts. Please try again.");
+      } finally {
+        setLoadingDistricts(false);
+      }
+    };
+
+    fetchDistricts();
+  }, [newOrder.to_province_id]);
+
+  // Fetch districts when province changes (sender)
+  useEffect(() => {
+    const fetchSenderDistricts = async () => {
+      if (!newOrder.from_province_id) return;
+
+      try {
+        setLoadingSenderDistricts(true);
+        setSenderDistricts([]);
+
+        // Get default shipping account for API token
+        const accountsResponse = await getShippingAccountsByUserApi();
+        if (
+          !accountsResponse ||
+          !accountsResponse.data ||
+          accountsResponse.data.length === 0
+        ) {
+          setLoadingSenderDistricts(false);
+          return;
+        }
+
+        const defaultAccount =
+          accountsResponse.data.find((acc) => acc.is_default) ||
+          accountsResponse.data[0];
+
+        // Fetch districts
+        const response = await getAllDistrictsByProvinceApi(
+          newOrder.from_province_id,
+          defaultAccount.token
+        );
+
+        if (response.code === 200) {
+          setSenderDistricts(
+            response.data.map((district) => ({
+              id: district.DistrictID,
+              name: district.DistrictName,
+              province_id: newOrder.from_province_id,
+            }))
+          );
+        }
+
+        // Clear district and ward selections
+        setNewOrder({
+          ...newOrder,
+          from_district_id: null,
+          from_ward_code: "",
+          from_district_name: "",
+          from_ward_name: "",
+        });
+        setSenderWards([]);
+      } catch (error) {
+        console.error("Error fetching sender districts:", error);
+      } finally {
+        setLoadingSenderDistricts(false);
+      }
+    };
+
+    fetchSenderDistricts();
+  }, [newOrder.from_province_id]);
+
+  // Fetch wards when district changes (recipient)
+  useEffect(() => {
+    const fetchWards = async () => {
+      if (!newOrder.to_district_id) return;
+
+      try {
+        setLoadingWards(true);
+        setWardError("");
+        setWards([]);
+
+        // Get default shipping account for API token
+        const accountsResponse = await getShippingAccountsByUserApi();
+        if (
+          !accountsResponse ||
+          !accountsResponse.data ||
+          accountsResponse.data.length === 0
+        ) {
+          setWardError(
+            "No shipping accounts found. Please add a shipping account first."
+          );
+          setLoadingWards(false);
+          return;
+        }
+
+        const defaultAccount =
+          accountsResponse.data.find((acc) => acc.is_default) ||
+          accountsResponse.data[0];
+
+        const response = await getAllWardsByDistrictApi(
+          newOrder.to_district_id,
+          defaultAccount.token
+        );
+
+        if (response.code === 200) {
+          setWards(
+            response.data.map((ward) => ({
+              code: ward.WardCode,
+              name: ward.WardName,
+              district_id: newOrder.to_district_id,
+            }))
+          );
+        } else {
+          setWardError("Failed to load wards");
+        }
+
+        const selectedDistrict = districts.find(
+          (d) => d.id === newOrder.to_district_id
+        );
+        setNewOrder({
+          ...newOrder,
+          to_district_name: selectedDistrict ? selectedDistrict.name : "",
+          to_ward_code: "",
+          to_ward_name: "",
+        });
+      } catch (error) {
+        console.error("Error fetching wards:", error);
+        setWardError("Error loading wards. Please try again.");
+      } finally {
+        setLoadingWards(false);
+      }
+    };
+
+    fetchWards();
+  }, [newOrder.to_district_id, districts]);
+
+  // Fetch wards when district changes (sender)
+  useEffect(() => {
+    const fetchSenderWards = async () => {
+      if (!newOrder.from_district_id) return;
+
+      try {
+        setLoadingSenderWards(true);
+        setSenderWards([]);
+
+        // Get default shipping account for API token
+        const accountsResponse = await getShippingAccountsByUserApi();
+        if (
+          !accountsResponse ||
+          !accountsResponse.data ||
+          accountsResponse.data.length === 0
+        ) {
+          setLoadingSenderWards(false);
+          return;
+        }
+
+        const defaultAccount =
+          accountsResponse.data.find((acc) => acc.is_default) ||
+          accountsResponse.data[0];
+
+        // Fetch wards
+        const response = await getAllWardsByDistrictApi(
+          newOrder.from_district_id,
+          defaultAccount.token
+        );
+
+        if (response.code === 200) {
+          setSenderWards(
+            response.data.map((ward) => ({
+              code: ward.WardCode,
+              name: ward.WardName,
+              district_id: newOrder.from_district_id,
+            }))
+          );
+        }
+
+        const selectedDistrict = senderDistricts.find(
+          (d) => d.id === newOrder.from_district_id
+        );
+        setNewOrder({
+          ...newOrder,
+          from_district_name: selectedDistrict ? selectedDistrict.name : "",
+          from_ward_code: "",
+          from_ward_name: "",
+        });
+      } catch (error) {
+        console.error("Error fetching sender wards:", error);
+      } finally {
+        setLoadingSenderWards(false);
+      }
+    };
+
+    fetchSenderWards();
+  }, [newOrder.from_district_id, senderDistricts]);
+
   return (
     <>
       <DialogTitle
@@ -1054,73 +1424,201 @@ const CreateOrderForm = ({
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth>
                     <InputLabel>Tỉnh/Thành phố</InputLabel>
-                    <Select
-                      label="Tỉnh/Thành phố"
-                      value={newOrder.to_province_id || ""}
-                      onChange={(e) => {
-                        const provinceId = e.target.value;
-                        const selectedProvince = provinces.find(
-                          (p) => p.id === provinceId
-                        );
-                        setNewOrder({
-                          ...newOrder,
-                          to_province_id: provinceId,
-                          to_province_name: selectedProvince
-                            ? selectedProvince.name
-                            : "",
-                        });
-                      }}
-                    >
-                      {provinces.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
-                          {province.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {loadingProvinces ? (
+                      <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        <Typography variant="body2">Đang tải...</Typography>
+                      </Box>
+                    ) : provinceError ? (
+                      <Typography color="error" variant="body2">
+                        {provinceError}
+                      </Typography>
+                    ) : (
+                      <Autocomplete
+                        options={provinces}
+                        getOptionLabel={(option) => option.name}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Tỉnh/Thành phố"
+                            placeholder="Tìm kiếm tỉnh/thành phố"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <>
+                                  <InputAdornment position="start">
+                                    <SearchIcon />
+                                  </InputAdornment>
+                                  {params.InputProps.startAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                        value={
+                          provinces.find(
+                            (p) => p.id === newOrder.to_province_id
+                          ) || null
+                        }
+                        onChange={(event, newValue) => {
+                          if (newValue) {
+                            setNewOrder({
+                              ...newOrder,
+                              to_province_id: newValue.id,
+                              to_province_name: newValue.name,
+                            });
+                          } else {
+                            setNewOrder({
+                              ...newOrder,
+                              to_province_id: null,
+                              to_province_name: "",
+                            });
+                          }
+                        }}
+                        filterOptions={(options, { inputValue }) =>
+                          options.filter((option) =>
+                            option.name
+                              .toLowerCase()
+                              .includes(inputValue.toLowerCase())
+                          )
+                        }
+                      />
+                    )}
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth disabled={!newOrder.to_province_id}>
                     <InputLabel>Quận/Huyện</InputLabel>
-                    <Select
-                      label="Quận/Huyện"
-                      value={newOrder.to_district_id || ""}
-                      onChange={(e) => {
-                        setNewOrder({
-                          ...newOrder,
-                          to_district_id: e.target.value,
-                          receiverDistrict: e.target.value.toString(),
-                        });
-                      }}
-                    >
-                      {districts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {loadingDistricts ? (
+                      <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        <Typography variant="body2">Đang tải...</Typography>
+                      </Box>
+                    ) : districtError ? (
+                      <Typography color="error" variant="body2">
+                        {districtError}
+                      </Typography>
+                    ) : (
+                      <Autocomplete
+                        options={districts}
+                        getOptionLabel={(option) => option.name}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Quận/Huyện"
+                            placeholder="Tìm kiếm quận/huyện"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <>
+                                  <InputAdornment position="start">
+                                    <SearchIcon />
+                                  </InputAdornment>
+                                  {params.InputProps.startAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                        value={
+                          districts.find(
+                            (d) => d.id === newOrder.to_district_id
+                          ) || null
+                        }
+                        onChange={(event, newValue) => {
+                          if (newValue) {
+                            setNewOrder({
+                              ...newOrder,
+                              to_district_id: newValue.id,
+                              to_district_name: newValue.name,
+                              receiverDistrict: newValue.id.toString(),
+                            });
+                          } else {
+                            setNewOrder({
+                              ...newOrder,
+                              to_district_id: null,
+                              to_district_name: "",
+                              receiverDistrict: "",
+                            });
+                          }
+                        }}
+                        filterOptions={(options, { inputValue }) =>
+                          options.filter((option) =>
+                            option.name
+                              .toLowerCase()
+                              .includes(inputValue.toLowerCase())
+                          )
+                        }
+                        disabled={!newOrder.to_province_id}
+                      />
+                    )}
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FormControl fullWidth disabled={!newOrder.to_district_id}>
                     <InputLabel>Phường/Xã</InputLabel>
-                    <Select
-                      label="Phường/Xã"
-                      value={newOrder.to_ward_code || ""}
-                      onChange={(e) => {
-                        setNewOrder({
-                          ...newOrder,
-                          to_ward_code: e.target.value,
-                          receiverWard: e.target.value,
-                        });
-                      }}
-                    >
-                      {wards.map((ward) => (
-                        <MenuItem key={ward.code} value={ward.code}>
-                          {ward.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {loadingWards ? (
+                      <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        <Typography variant="body2">Đang tải...</Typography>
+                      </Box>
+                    ) : wardError ? (
+                      <Typography color="error" variant="body2">
+                        {wardError}
+                      </Typography>
+                    ) : (
+                      <Autocomplete
+                        options={wards}
+                        getOptionLabel={(option) => option.name}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Phường/Xã"
+                            placeholder="Tìm kiếm phường/xã"
+                            InputProps={{
+                              ...params.InputProps,
+                              startAdornment: (
+                                <>
+                                  <InputAdornment position="start">
+                                    <SearchIcon />
+                                  </InputAdornment>
+                                  {params.InputProps.startAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                        value={
+                          wards.find((w) => w.code === newOrder.to_ward_code) ||
+                          null
+                        }
+                        onChange={(event, newValue) => {
+                          if (newValue) {
+                            setNewOrder({
+                              ...newOrder,
+                              to_ward_code: newValue.code,
+                              to_ward_name: newValue.name,
+                              receiverWard: newValue.code,
+                            });
+                          } else {
+                            setNewOrder({
+                              ...newOrder,
+                              to_ward_code: "",
+                              to_ward_name: "",
+                              receiverWard: "",
+                            });
+                          }
+                        }}
+                        filterOptions={(options, { inputValue }) =>
+                          options.filter((option) =>
+                            option.name
+                              .toLowerCase()
+                              .includes(inputValue.toLowerCase())
+                          )
+                        }
+                        disabled={!newOrder.to_district_id}
+                      />
+                    )}
                   </FormControl>
                 </Grid>
               </Grid>

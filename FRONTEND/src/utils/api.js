@@ -450,3 +450,34 @@ export const deleteShippingAccountApi = (id) => {
 export const setDefaultShippingAccountApi = (id) => {
   return axios.patch(`api/delivery/accounts/user/set-default/${id}`);
 };
+
+export const getAllProvincesApi = (token) => {
+  return axios.get("api/delivery/carrier/ghn/master-data/province", {
+    headers: {
+      token: token,
+    },
+  });
+};
+
+export const getAllDistrictsByProvinceApi = (province_id, token) => {
+  return axios.post(
+    `api/delivery/carrier/ghn/master-data/district`,
+    { province_id },
+    {
+      headers: {
+        token: token,
+      },
+    }
+  );
+};
+
+export const getAllWardsByDistrictApi = (district_id, token) => {
+  return axios.get(
+    `api/delivery/carrier/ghn/master-data/ward?district_id=${district_id}`,
+    {
+      headers: {
+        token: token,
+      },
+    }
+  );
+};
