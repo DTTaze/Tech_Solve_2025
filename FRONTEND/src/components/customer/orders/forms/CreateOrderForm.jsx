@@ -822,11 +822,7 @@ const CreateOrderForm = ({
       };
 
       // Only initialize if there's at least some data
-      if (
-        newOrder.productName ||
-        newOrder.productCode ||
-        newOrder.senderPhone
-      ) {
+      if (newOrder.productName || newOrder.productCode || newOrder.from_phone) {
         setNewOrder({
           ...newOrder,
           items: [defaultItem],
@@ -1248,34 +1244,57 @@ const CreateOrderForm = ({
                 borderRadius: "4px",
               }}
             >
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{ fontWeight: "bold", mb: 2 }}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
               >
-                Bên gửi
-              </Typography>
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  sx={{ fontWeight: "bold", mb: 0 }}
+                >
+                  Bên gửi
+                </Typography>
+
+                <Tooltip title="Sử dụng API token để lấy thông tin từ GHN">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<KeyIcon />}
+                    onClick={handleUseTokenForShipping}
+                    sx={{
+                      borderColor: "#f97316",
+                      color: "#f97316",
+                      "&:hover": {
+                        borderColor: "#ea580c",
+                        backgroundColor: "rgba(249, 115, 22, 0.04)",
+                      },
+                    }}
+                  >
+                    Lấy thông tin từ token
+                  </Button>
+                </Tooltip>
+              </Box>
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                <TextField
-                  label="Số điện thoại"
-                  fullWidth
-                  required
+                  <TextField
+                    label="Số điện thoại"
+                    fullWidth
+                    required
                     disabled={isViewMode}
-                    value={newOrder.from_phone || newOrder.senderPhone || ""}
-                  onChange={(e) =>
+                    value={newOrder.from_phone || ""}
+                    onChange={(e) =>
                       !isViewMode &&
                       updateOrder({
                         from_phone: e.target.value,
                       })
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">📱</InputAdornment>
-                    ),
-                  }}
-                />
+                    }
+                  />
                 </Grid>
 
                 <Grid item xs={12} md={6}>
@@ -1295,19 +1314,16 @@ const CreateOrderForm = ({
                 </Grid>
 
                 <Grid item xs={12}>
-                <TextField
-                  label="Địa chỉ"
-                  fullWidth
-                  required
+                  <TextField
+                    label="Địa chỉ"
+                    fullWidth
+                    required
                     disabled={isViewMode}
-                    value={
-                      newOrder.from_address || newOrder.senderAddress || ""
-                    }
-                  onChange={(e) =>
+                    value={newOrder.from_address || ""}
+                    onChange={(e) =>
                       !isViewMode &&
                       updateOrder({
                         from_address: e.target.value,
-                        senderAddress: e.target.value,
                       })
                     }
                   />
@@ -1418,7 +1434,7 @@ const CreateOrderForm = ({
                             </MenuItem>
                           ))}
                       </Select>
-              </FormControl>
+                    </FormControl>
                   )}
                 </Grid>
 
@@ -1460,9 +1476,6 @@ const CreateOrderForm = ({
                             from_district_id: districtId,
                             from_district_name: selectedDistrict
                               ? selectedDistrict.name
-                              : "",
-                            senderDistrict: districtId
-                              ? districtId.toString()
                               : "",
                           });
                         }}
@@ -1578,7 +1591,6 @@ const CreateOrderForm = ({
                             from_ward_name: selectedWard
                               ? selectedWard.name
                               : "",
-                            senderWard: wardCode,
                           });
                         }}
                         displayEmpty
@@ -1703,53 +1715,23 @@ const CreateOrderForm = ({
                 borderRadius: "4px",
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
-              }}
-            >
               <Typography
                 variant="subtitle1"
                 gutterBottom
-                  sx={{ fontWeight: "bold", mb: 0 }}
+                sx={{ fontWeight: "bold", mb: 2 }}
               >
                 Bên nhận
               </Typography>
-
-                <Tooltip title="Sử dụng API token để lấy thông tin từ GHN">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<KeyIcon />}
-                    onClick={handleUseTokenForShipping}
-                    sx={{
-                      borderColor: "#f97316",
-                      color: "#f97316",
-                      "&:hover": {
-                        borderColor: "#ea580c",
-                        backgroundColor: "rgba(249, 115, 22, 0.04)",
-                      },
-                    }}
-                  >
-                    Lấy thông tin từ token
-                  </Button>
-                </Tooltip>
-              </Box>
-
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     label="Số điện thoại"
                     fullWidth
                     required
-                    value={newOrder.to_phone || newOrder.receiverPhone || ""}
+                    value={newOrder.to_phone || ""}
                     onChange={(e) =>
                       updateOrder({
                         to_phone: e.target.value,
-                        receiverPhone: e.target.value,
                       })
                     }
                   />
@@ -1759,11 +1741,10 @@ const CreateOrderForm = ({
                     label="Họ tên"
                     fullWidth
                     required
-                    value={newOrder.to_name || newOrder.receiverName || ""}
+                    value={newOrder.to_name || ""}
                     onChange={(e) =>
                       updateOrder({
                         to_name: e.target.value,
-                        receiverName: e.target.value,
                       })
                     }
                   />
@@ -1773,13 +1754,10 @@ const CreateOrderForm = ({
                     label="Địa chỉ"
                     fullWidth
                     required
-                    value={
-                      newOrder.to_address || newOrder.receiverAddress || ""
-                    }
+                    value={newOrder.to_address || ""}
                     onChange={(e) =>
                       updateOrder({
                         to_address: e.target.value,
-                        receiverAddress: e.target.value,
                       })
                     }
                   />
@@ -1810,7 +1788,7 @@ const CreateOrderForm = ({
                     </Typography>
                   ) : (
                     <FormControl fullWidth variant="outlined" size="small">
-                    <Select
+                      <Select
                         value={newOrder.to_province_id || ""}
                         onChange={(e) => {
                           const provinceId = e.target.value;
@@ -1883,8 +1861,8 @@ const CreateOrderForm = ({
                               {province.name}
                             </MenuItem>
                           ))}
-                    </Select>
-                  </FormControl>
+                      </Select>
+                    </FormControl>
                   )}
                 </Grid>
 
@@ -1919,7 +1897,7 @@ const CreateOrderForm = ({
                       size="small"
                       disabled={!newOrder.to_province_id}
                     >
-                    <Select
+                      <Select
                         value={newOrder.to_district_id || ""}
                         onChange={(e) => {
                           const districtId = e.target.value;
@@ -1930,9 +1908,6 @@ const CreateOrderForm = ({
                             to_district_id: districtId,
                             to_district_name: selectedDistrict
                               ? selectedDistrict.name
-                              : "",
-                            receiverDistrict: districtId
-                              ? districtId.toString()
                               : "",
                           });
                         }}
@@ -1999,8 +1974,8 @@ const CreateOrderForm = ({
                               </Box>
                             </MenuItem>
                           ))}
-                    </Select>
-                  </FormControl>
+                      </Select>
+                    </FormControl>
                   )}
                 </Grid>
 
@@ -2045,7 +2020,6 @@ const CreateOrderForm = ({
                           updateOrder({
                             to_ward_code: wardCode,
                             to_ward_name: selectedWard ? selectedWard.name : "",
-                            receiverWard: wardCode,
                           });
                         }}
                         displayEmpty
@@ -2193,14 +2167,14 @@ const CreateOrderForm = ({
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           )}
-                  </Box>
+                        </Box>
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={3}>
-                      <TextField
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={3}>
+                            <TextField
                               label="Tên sản phẩm"
-                        fullWidth
-                        required
+                              fullWidth
+                              required
                               value={item.name || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
@@ -2210,14 +2184,14 @@ const CreateOrderForm = ({
                                   productName: e.target.value, // For backward compatibility
                                 });
                               }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="KL (gram)"
-                        fullWidth
-                        type="number"
-                        required
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="KL (gram)"
+                              fullWidth
+                              type="number"
+                              required
                               value={item.weight || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
@@ -2228,14 +2202,14 @@ const CreateOrderForm = ({
                                   productWeight: e.target.value, // For backward compatibility
                                 });
                               }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="Số lượng"
-                        fullWidth
-                        type="number"
-                        required
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Số lượng"
+                              fullWidth
+                              type="number"
+                              required
                               value={item.quantity || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
@@ -2246,12 +2220,12 @@ const CreateOrderForm = ({
                                   productQuantity: e.target.value, // For backward compatibility
                                 });
                               }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="Mã sản phẩm"
-                        fullWidth
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Mã sản phẩm"
+                              fullWidth
                               value={item.code || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
@@ -2347,9 +2321,9 @@ const CreateOrderForm = ({
                                 });
                               }}
                               placeholder="VD: Áo, Quần, Giày, ..."
-                      />
-                    </Grid>
-                  </Grid>
+                            />
+                          </Grid>
+                        </Grid>
                       </Box>
                     ))
                   ) : (
@@ -3062,10 +3036,10 @@ const CreateOrderForm = ({
                   pb: 1,
                 }}
               >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
                     justifyContent: "space-between",
                     px: 2,
                   }}
@@ -3075,10 +3049,10 @@ const CreateOrderForm = ({
                   </Typography>
 
                   <Box sx={{ display: "flex", width: "60%", maxWidth: 400 }}>
-                  <TextField
+                    <TextField
                       placeholder="Nhập mã khuyến mãi"
-                    size="small"
-                    fullWidth
+                      size="small"
+                      fullWidth
                       disabled={isViewMode}
                       value={newOrder.promotionCode || ""}
                       onChange={(e) =>
@@ -3088,56 +3062,56 @@ const CreateOrderForm = ({
                           promotionCode: e.target.value,
                         })
                       }
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                      },
-                    }}
-                  />
-                  <Button
-                    variant="outlined"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0,
+                        },
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
                       disabled={isViewMode}
-                    sx={{
-                      borderColor: "#f97316",
-                      color: "#f97316",
+                      sx={{
+                        borderColor: "#f97316",
+                        color: "#f97316",
                         minWidth: 80,
-                      borderTopLeftRadius: 0,
-                      borderBottomLeftRadius: 0,
-                      height: 40,
-                      borderLeft: 0,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                        height: 40,
+                        borderLeft: 0,
                         "&:hover": {
                           borderColor: "#ea580c",
                           backgroundColor: "rgba(249, 115, 22, 0.04)",
                         },
-                    }}
-                  >
+                      }}
+                    >
                       Áp dụng
-                  </Button>
+                    </Button>
+                  </Box>
                 </Box>
-              </Box>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     mt: 1,
                     mb: 1,
-                }}
-              >
-                <Box
-                  component="img"
+                  }}
+                >
+                  <Box
+                    component="img"
                     src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYuNjc1MzQgOS41MzMwMUw2LjQ1MDMyIDkuMjgyMUw2Ljc3OTQ0IDkuMTIyMjhMOC40OTQ3OSA4LjQ2MzA1TDYuNzkxODMgNy42OTA1M0w2LjQ0OTYzIDcuNTE2MDFMNi42OTE3OCA3LjI0OTk3TDcuNjgwNSA2LjE1MzQyTDYuMjEyNjYgNi4wNzE1NUw1Ljg2NTYxIDYuMDU0ODFMNS44MjU0NiA1LjcwOTc5TDUuNjQ1ODIgMy45ODY3N0w0LjUwMjk5IDUuMjcwMTJMNC4yODEwMyA1LjUyMzk5TDMuOTk5MDQgNS4zMDc5M0wyLjU2NDQyIDNCMEwxLjc0NzgyIDUuNzQ1MzZMMS42MTcxNiA2LjA4Njg2TDEuMjcwMTEgNi4xOTI0NkwxLjI3MDEyIDYuNjIxNzNMMC45ODUxNDYgNy44Mzg3OUwxLjIyMzY2IDguMTI4OTlMMC45NzIxMSA4LjQwNDI2TDAgOS41MDg5OEwxLjI3OTE0IDkuODMzNTlMMS42Mjk3MiA5LjkyMDYyTDEuNzQ3MTMgMTAuMjY0OUwyLjQ5MTYyIDEyTDMuODcxNDMgMTAuNjcxTDQuMTAwMzQgMTAuNDQ4MUw0LjMzODg3IDEwLjY2MDFMNi4wMTYyNiAxMi4xMTM3TDUuODk5MTMgMTAuMzczNUw1Ljg2NzA0IDEwLjAyNjFMNi4xOTc4NCAxMC4wNTE4TDYuNjc1MzQgOS41MzMwMVoiIGZpbGw9IiNFRjQ0NDQiLz4KPHBhdGggZD0iTTE3LjEyMzcgOS41MDc5OEwxNi4xMzk1IDguMzg5MTdMMTUuODk0NSA4LjEyMDg5TDE2LjE0MDIgNy44NDE0NkwxNy4xMjUgNi42MDk2M0wxNS44NTc5IDYuMTgwMDNMMTUuNTA4MiA2LjA3MDkzTDE1LjM3NjIgNS43MzE1M0wxNC41NTk2IDRMMTMuMTI1IDUuMzA3OTNMMTIuODQ2NCA1LjUyMDY0TDEyLjYyMTQgNS4yNjM0NEwxMS41MTUyIDRMMTEuMzM1NiA1LjcwOTc5TDExLjI5NTQgNi4wNTQ4MUwxMC45NDg0IDYuMDcxNTVMOS40ODAxNiA2LjE4NzkyTDEwLjQ2ODkgNy4yODQ0N0wxMC43MTc5IDcuNTM3NUwxMC4zNzU3IDcuNjkzNTZMOC40OTQ4IDguNDYzMDVMMTAuMjEwMSA5LjEzMTYyTDEwLjU0NTkgOS4yOTgzNkwxMC4zMjA5IDkuNTMzMDFMMTAuOTQ3NyAxMC4wNTE4TDExLjI3ODUgMTAuMDI2MUwxMS4yNDY0IDEwLjM3MzVMMTEuMTI5MyAxMi4xMTM3TDEyLjgwNjcgMTAuNjYwMUwxMy4wNDUyIDEwLjQ0ODFMMTMuMjc0MSAxMC42NzFMMTQuNjU0IDEyTDE1LjM5ODQgMTAuMjY0OUwxNS41MTU4IDkuOTIwNjJMMTUuODY2NCA5LjgzMzU5TDE3LjEyMzcgOS41MDc5OFoiIGZpbGw9IiNGRkQ3MDQiLz4KPHBhdGggZD0iTTEyLjY0NjggNi45MjIzOEwxMS4xODkgNi44NDc4NUwxMC44NTgxIDUuNDcwMjVMMTAuMDAyOSA2LjQ2NjY1TDguNjc1NjUgNi4xMzEyM0w5LjE4MzY0IDcuNDQyODVMOC4wMzc5OCA4LjE2MzM3TDkuMjk0NTQgOC42NjMxNkw4Ljg3OTk5IDEwLjAyODlMMTAuMTY0MSA5LjM0Nzc3TDExLjEyMjcgMTAuMjIxNEwxMS4wNjc3IDguNzY4NjlMMTIuNDA1MiA4LjM3MTk4TDExLjI0ODggNy42NzY2M0wxMi4wMTEzIDYuNjMxNjVMMTIuNjQ2OCA2LjkyMjM4WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg=="
-                  alt="GHN"
+                    alt="GHN"
                     sx={{ width: 18, height: 18, mr: 1 }}
-                />
-                <Typography
+                  />
+                  <Typography
                     variant="caption"
                     sx={{ color: "#1976d2", fontWeight: "medium" }}
-                >
+                  >
                     Sử dụng mã khuyến mãi từ GHN
-                </Typography>
+                  </Typography>
                 </Box>
               </Box>
             </Paper>
@@ -3171,16 +3145,16 @@ const CreateOrderForm = ({
             </Button>
           ) : (
             <>
-          <Button
-            onClick={handleCloseDialog}
-            variant="outlined"
-            sx={{ borderColor: "#f97316", color: "#f97316" }}
-          >
+              <Button
+                onClick={handleCloseDialog}
+                variant="outlined"
+                sx={{ borderColor: "#f97316", color: "#f97316" }}
+              >
                 Hủy
-          </Button>
-          <Button
-            onClick={handleCreateOrder}
-            variant="contained"
+              </Button>
+              <Button
+                onClick={handleCreateOrder}
+                variant="contained"
                 disabled={!formValid}
                 sx={{
                   bgcolor: "#f97316",
@@ -3196,7 +3170,7 @@ const CreateOrderForm = ({
                   : isBasedOnMode
                   ? "Tạo đơn mới"
                   : "Tạo đơn"}
-          </Button>
+              </Button>
             </>
           )}
         </Box>

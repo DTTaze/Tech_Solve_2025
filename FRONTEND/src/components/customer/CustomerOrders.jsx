@@ -289,9 +289,9 @@ export default function CustomerOrders() {
             id: order.id,
             orderCode: order.order_code,
             date: formattedDate,
-            receiverName: order.to_name,
-            receiverPhone: order.to_phone,
-            receiverAddress: order.to_address,
+            to_name: order.to_name,
+            to_phone: order.to_phone,
+            to_address: order.to_address,
             status: status,
             items: dummyItems,
             codAmount: order.cod_amount,
@@ -374,80 +374,26 @@ export default function CustomerOrders() {
 
       console.log("check response from creating order", response);
 
-      // Simulate API call
-      // const order = {
-      //   id: orders.length + 1,
-      //   date: new Date().toISOString().split("T")[0],
-      //   status: "Pending Confirmation",
-      //   senderPhone: newOrder.senderPhone,
-      //   senderAddress: newOrder.senderAddress,
-      //   receiverPhone: newOrder.receiverPhone,
-      //   receiverAddress: newOrder.receiverAddress,
-      //   receiverName: newOrder.receiverName,
-      //   receiverDistrict: newOrder.receiverDistrict,
-      //   receiverWard: newOrder.receiverWard,
-      //   productName: newOrder.productName,
-      //   productWeight: newOrder.productWeight,
-      //   productQuantity: newOrder.productQuantity,
-      //   productCode: newOrder.productCode,
-      //   packageWeight: newOrder.packageWeight,
-      //   packageLength: newOrder.packageLength,
-      //   packageWidth: newOrder.packageWidth,
-      //   packageHeight: newOrder.packageHeight,
-      //   packageVolumeWeight: newOrder.packageVolumeWeight,
-      //   codAmount: newOrder.codAmount,
-      //   totalValue: newOrder.totalValue,
-      //   cashOnDeliveryFailure: newOrder.cashOnDeliveryFailure,
-      //   failureCharge: newOrder.failureCharge,
-      //   customerOrderCode: newOrder.customerOrderCode,
-      //   deliveryNote: newOrder.deliveryNote,
-      //   notes: newOrder.notes,
-      //   servicePackage: newOrder.servicePackage,
-      //   pickupOption: newOrder.pickupOption,
-      //   pickupLocation: newOrder.pickupLocation,
-      //   packages: newOrder.packages,
-      //   paymentParty: newOrder.paymentParty,
-      //   promotionCode: newOrder.promotionCode,
-      //   timeline: [
-      //     {
-      //       time: new Date().toLocaleString(),
-      //       status: "Order Created",
-      //     },
-      //     {
-      //       time: new Date().toLocaleString(),
-      //       status: "Waiting for Confirmation",
-      //     },
-      //   ],
-      //   locationHistory: [
-      //     {
-      //       time: new Date().toLocaleString(),
-      //       location: newOrder.senderAddress,
-      //       status: "Order Created",
-      //     },
-      //   ],
-      //   collectorName: "John Recycler",
-      //   collectorContact: "555-0123",
-      // };
       const order = {
         payment_type_id: 2,
         note: newOrder.note,
         required_note: newOrder.deliveryNote,
-        return_phone: newOrder.senderPhone,
-        return_address: newOrder.senderAddress,
+        return_phone: newOrder.from_phone,
+        return_address: newOrder.from_address,
         return_district_id: null,
         return_ward_code: "",
         client_order_code: newOrder.customerOrderCode || "",
         from_name: "TinTest124", // bạn có thể cho vào state nếu cần động
-        from_phone: newOrder.senderPhone,
-        from_address: newOrder.senderAddress,
-        from_ward_name: newOrder.senderWard || "Phường 14",
-        from_district_name: newOrder.senderDistrict || "Quận 10",
+        from_phone: newOrder.from_phone,
+        from_address: newOrder.from_address,
+        from_ward_name: newOrder.from_ward_name,
+        from_district_name: newOrder.from_district_name,
         from_province_name: "HCM",
-        to_name: newOrder.receiverName,
-        to_phone: newOrder.receiverPhone,
-        to_address: newOrder.receiverAddress,
-        to_ward_name: newOrder.receiverWard || "Phường 14",
-        to_district_name: newOrder.receiverDistrict || "Quận 10",
+        to_name: newOrder.to_name,
+        to_phone: newOrder.to_phone,
+        to_address: newOrder.to_address,
+        to_ward_name: newOrder.to_ward_name,
+        to_district_name: newOrder.to_district_name,
         to_province_name: "HCM",
         cod_amount: parseInt(newOrder.codAmount),
         content: "Theo New York Times",
@@ -676,8 +622,8 @@ export default function CustomerOrders() {
       // Prepare GHN update data
       const updateData = {
         order_code: selectedOrder.orderCode,
-        to_name: buyerInfo.name || selectedOrder.receiverName,
-        to_phone: buyerInfo.phone || selectedOrder.receiverPhone,
+        to_name: buyerInfo.name || selectedOrder.to_name,
+        to_phone: buyerInfo.phone || selectedOrder.to_phone,
         note: buyerInfo.notes || selectedOrder.notes,
       };
 
@@ -693,8 +639,8 @@ export default function CustomerOrders() {
         if (order.id === selectedOrder.id) {
           return {
             ...order,
-            receiverName: buyerInfo.name || order.receiverName,
-            receiverPhone: buyerInfo.phone || order.receiverPhone,
+            to_name: buyerInfo.name || order.to_name,
+            to_phone: buyerInfo.phone || order.to_phone,
             notes: buyerInfo.notes || order.notes,
             timeline: [
               ...order.timeline,
@@ -766,7 +712,7 @@ export default function CustomerOrders() {
         let updatedLocationHistory = [
           {
             time: new Date(order.date).toLocaleString(),
-            location: order.receiverAddress,
+            location: order.to_address,
             status: "Order Created",
           },
         ];
@@ -855,7 +801,7 @@ export default function CustomerOrders() {
             ...(order.locationHistory || []),
             {
               time: new Date().toLocaleString(),
-              location: order.receiverAddress,
+              location: order.to_address,
               status: "Order Cancelled",
             },
           ];
@@ -906,7 +852,7 @@ export default function CustomerOrders() {
             ...(order.locationHistory || []),
             {
               time: timestamp,
-              location: order.receiverAddress,
+              location: order.to_address,
               status: "Order Confirmed",
             },
           ];
@@ -956,13 +902,13 @@ export default function CustomerOrders() {
 
     // Copy the relevant data from the existing order to the new order form
     const basedOnOrder = {
-      senderPhone: order.senderPhone || "",
-      senderAddress: order.senderAddress || "",
-      receiverPhone: order.receiverPhone || "",
-      receiverAddress: order.receiverAddress || "",
-      receiverName: order.receiverName || "",
-      receiverDistrict: order.receiverDistrict || "",
-      receiverWard: order.receiverWard || "",
+      from_phone: order.from_phone || "",
+      from_address: order.from_address || "",
+      to_phone: order.to_phone || "",
+      to_address: order.to_address || "",
+      to_name: order.to_name || "",
+      to_district_name: order.to_district_name || "",
+      to_ward_name: order.to_ward_name || "",
       productName: order.productName || "Áo Polo",
       productWeight: order.productWeight || "1,200",
       productQuantity: order.productQuantity || "1",
@@ -998,13 +944,13 @@ export default function CustomerOrders() {
     // Copy all data from the existing order to the form
     const editableOrder = {
       ...order,
-      senderPhone: order.senderPhone || "",
-      senderAddress: order.senderAddress || "",
-      receiverPhone: order.receiverPhone || "",
-      receiverAddress: order.receiverAddress || "",
-      receiverName: order.receiverName || "",
-      receiverDistrict: order.receiverDistrict || "",
-      receiverWard: order.receiverWard || "",
+      from_phone: order.from_phone || "",
+      from_address: order.from_address || "",
+      to_phone: order.to_phone || "",
+      to_address: order.to_address || "",
+      to_name: order.to_name || "",
+      to_district_name: order.to_district_name || "",
+      to_ward_name: order.to_ward_name || "",
       productName: order.productName || "Áo Polo",
       productWeight: order.productWeight || "1,200",
       productQuantity: order.productQuantity || "1",
@@ -1047,13 +993,13 @@ export default function CustomerOrders() {
       // Prepare update data
       const updateData = {
         order_code: selectedOrder.orderCode,
-        to_name: newOrder.receiverName || selectedOrder.receiverName,
-        to_phone: newOrder.receiverPhone || selectedOrder.receiverPhone,
-        to_address: newOrder.receiverAddress || selectedOrder.receiverAddress,
-        to_ward_code: newOrder.receiverWard || selectedOrder.receiverWard,
+        to_name: newOrder.to_name || selectedOrder.to_name,
+        to_phone: newOrder.to_phone || selectedOrder.to_phone,
+        to_address: newOrder.to_address || selectedOrder.to_address,
+        // to_ward_code: newOrder.to_ward_name || selectedOrder.to_ward_name,
         to_district_id:
-          parseInt(newOrder.receiverDistrict) ||
-          parseInt(selectedOrder.receiverDistrict),
+          parseInt(newOrder.to_district_name) ||
+          parseInt(selectedOrder.to_district_name),
         content: newOrder.productName,
         weight: parseInt(newOrder.productWeight) || 200,
         length: parseInt(newOrder.packageLength) || 10,
@@ -1332,37 +1278,7 @@ export default function CustomerOrders() {
           setCreateDialogOpen(false);
           setIsEditingOrder(false);
           setIsCreatingBasedOn(false);
-          setNewOrder({
-            senderPhone: "",
-            senderAddress: "",
-            receiverPhone: "",
-            receiverAddress: "",
-            receiverName: "",
-            receiverDistrict: "",
-            receiverWard: "",
-            productName: "Áo Polo",
-            productWeight: "1,200",
-            productQuantity: "1",
-            productCode: "Polo123",
-            packageWeight: "200",
-            packageLength: "1",
-            packageWidth: "19",
-            packageHeight: "10",
-            packageVolumeWeight: "76",
-            codAmount: "200000",
-            totalValue: "100000",
-            cashOnDeliveryFailure: false,
-            failureCharge: "0",
-            customerOrderCode: "",
-            deliveryNote: "no_view",
-            notes: "Tintest 123",
-            servicePackage: "light",
-            pickupOption: "pickup",
-            pickupLocation: "",
-            packages: [],
-            paymentParty: "receiver",
-            promotionCode: "",
-          });
+          setNewOrder(initialOrderPayload);
         }}
         fullWidth
         maxWidth="md"
