@@ -420,17 +420,18 @@ const findOrCreateUser = async (profile) => {
   try {
     const existingUser = await User.findOne({
       where: { email: profile.emails[0].value },
+      include: [
+        { model: Role, as: "roles" },
+        { model: Coin, as: "coins" }, 
+        { model: Rank, as: "ranks" }  
+      ]
     });
+    
     if (existingUser) {
-      const userWithIncludes = {
-        ...existingUser.toJSON(),
-        roles: roledata,
-        coins: newCoin,
-        ranks: newRank,
-      };
       await setUserCache(existingUser);
       return existingUser;
     }
+    
 
     const name = removeSpecialChars(profile.displayName);
     const newUser = await User.create({
