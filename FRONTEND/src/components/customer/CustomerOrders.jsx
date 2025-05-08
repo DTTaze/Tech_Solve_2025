@@ -366,13 +366,13 @@ export default function CustomerOrders() {
       const selectedAccount = shippingAccounts[0];
       console.log("check newOrder from creating order", newOrder);
       console.log("check selectedAccount from creating order", selectedAccount);
-      const response = await createShippingOrderApi({
-        items: newOrder.items,
-        token: selectedAccount.token,
-        shop_id: selectedAccount.shop_id,
-      });
+      // const response = await createShippingOrderApi({
+      //   items: newOrder.items,
+      //   token: selectedAccount.token,
+      //   shop_id: selectedAccount.shop_id,
+      // });
 
-      console.log("check response from creating order", response);
+      // console.log("check response from creating order", response);
 
       // Simulate API call
       // const order = {
