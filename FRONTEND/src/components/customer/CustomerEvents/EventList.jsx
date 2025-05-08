@@ -77,8 +77,8 @@ const EventList = ({ events, onEdit, onDelete, onAdd }) => {
               <TableCell>
                 <Box
                   component="img"
-                  src={event.images?.[0]?.url || "/placeholder-image.jpg"}
-                  alt={event.name}
+                  src={event.images?.[0] || "/placeholder-image.jpg"}
+                  alt={event.title}
                   sx={{
                     width: 60,
                     height: 60,
@@ -87,7 +87,7 @@ const EventList = ({ events, onEdit, onDelete, onAdd }) => {
                   }}
                 />
               </TableCell>
-              <TableCell>{event.name}</TableCell>
+              <TableCell>{event.title}</TableCell>
               <TableCell>{event.location}</TableCell>
               <TableCell>
                 {new Date(event.start_time).toLocaleDateString()}

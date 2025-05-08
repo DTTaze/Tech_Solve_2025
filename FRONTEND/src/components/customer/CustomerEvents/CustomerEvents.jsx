@@ -43,6 +43,8 @@ const CustomerEvents = () => {
       setLoading(true);
       setError(null);
       const response = await getOwnerEventApi();
+
+      console.log("events response: ", response)
       if (response.data) {
         setEvents(response.data);
       }

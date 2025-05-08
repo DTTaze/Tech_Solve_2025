@@ -14,12 +14,13 @@ import {
   Box,
   Typography,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const ItemDialog = ({ open, onClose, onSave, item }) => {
+const ItemDialog = ({ open, onClose, onSave, item, isSubmitting }) => {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -293,13 +294,17 @@ const ItemDialog = ({ open, onClose, onSave, item }) => {
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose} disabled={isSubmitting}>
+          Cancel
+        </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
           className="customer-button"
+          disabled={isSubmitting}
+          startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
         >
-          {item ? "Update" : "Create"}
+          {isSubmitting ? "Saving..." : item ? "Update" : "Create"}
         </Button>
       </DialogActions>
     </Dialog>

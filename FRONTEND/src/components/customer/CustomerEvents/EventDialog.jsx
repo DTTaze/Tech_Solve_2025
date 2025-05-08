@@ -21,7 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const EventDialog = ({ open, onClose, onSave, event }) => {
   const [formData, setFormData] = useState({
-    name: "",
+    title: "",
     description: "",
     location: "",
     capacity: "",
@@ -37,7 +37,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
   useEffect(() => {
     if (event) {
       setFormData({
-        name: event.name || "",
+        title: event.title || "",
         description: event.description || "",
         location: event.location || "",
         capacity: event.capacity || "",
@@ -63,7 +63,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      title: "",
       description: "",
       location: "",
       capacity: "",
@@ -120,8 +120,8 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
     }
     if (!formData.location.trim()) {
       newErrors.location = "Location is required";
@@ -179,12 +179,12 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Name"
-              name="name"
-              value={formData.name}
+              label="Title"
+              name="title"
+              value={formData.title}
               onChange={handleChange}
-              error={!!errors.name}
-              helperText={errors.name}
+              error={!!errors.title}
+              helperText={errors.title}
               required
             />
           </Grid>

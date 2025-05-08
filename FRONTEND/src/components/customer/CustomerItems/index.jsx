@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ItemFilters from "./ItemFilters";
 import ItemTable from "./ItemTable";
@@ -25,6 +31,7 @@ const CustomerItems = () => {
     status: "all",
     minPrice: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchUserInfo();
@@ -132,6 +139,7 @@ const CustomerItems = () => {
 
   const handleSaveItem = async (formData, images) => {
     try {
+      setIsSubmitting(true);
       if (selectedItem) {
         // Update existing item
         const response = await updateItemOfCustomerApi(
@@ -150,9 +158,10 @@ const CustomerItems = () => {
         }
       }
       setOpenDialog(false);
-    } catch (err) {
-      console.error("Error saving item:", err);
-      alert("Failed to save item. Please try again.");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to save item");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -202,24 +211,37 @@ const CustomerItems = () => {
         </Button>
       </Box>
 
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       <ItemFilters
         filters={filters}
         onFilterChange={handleFilterChange}
         onReset={handleResetFilters}
       />
 
-      <ItemTable
-        items={filteredItems}
-        onEdit={handleEditItem}
-        onDelete={handleDeleteItem}
-        onAdd={handleAddItem}
-      />
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <ItemTable
+          items={filteredItems}
+          onEdit={handleEditItem}
+          onDelete={handleDeleteItem}
+          onAdd={handleAddItem}
+        />
+      )}
 
       <ItemDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         onSave={handleSaveItem}
         item={selectedItem}
+        isSubmitting={isSubmitting}
       />
     </Box>
   );
