@@ -19,58 +19,43 @@ import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const EventDialog = ({ open, onClose, onSave, event }) => {
+const ItemDialog = ({ open, onClose, onSave, item }) => {
   const [formData, setFormData] = useState({
     name: "",
+    price: "",
+    stock: "",
     description: "",
-    location: "",
-    capacity: "",
-    start_time: "",
-    end_time: "",
-    end_sign: "",
-    status: "upcoming",
+    status: "available",
+    purchase_limit_per_day: 1,
   });
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (event) {
+    if (item) {
       setFormData({
-        name: event.name || "",
-        description: event.description || "",
-        location: event.location || "",
-        capacity: event.capacity || "",
-        start_time: event.start_time
-          ? new Date(event.start_time).toISOString().slice(0, 16)
-          : "",
-        end_time: event.end_time
-          ? new Date(event.end_time).toISOString().slice(0, 16)
-          : "",
-        end_sign: event.end_sign || "",
-        status: event.status || "upcoming",
+        name: item.name || "",
+        price: item.price || "",
+        stock: item.stock || "",
+        description: item.description || "",
+        status: item.status || "available",
+        purchase_limit_per_day: item.purchase_limit_per_day || 1,
       });
-      // Ensure images is always an array
-      const eventImages = event.images || [];
-      const imageUrls = Array.isArray(eventImages)
-        ? eventImages.map((img) => img.url || img)
-        : [];
-      setPreviewImages(imageUrls);
+      setPreviewImages(item.images || []);
     } else {
       resetForm();
     }
-  }, [event]);
+  }, [item]);
 
   const resetForm = () => {
     setFormData({
       name: "",
+      price: "",
+      stock: "",
       description: "",
-      location: "",
-      capacity: "",
-      start_time: "",
-      end_time: "",
-      end_sign: "",
-      status: "upcoming",
+      status: "available",
+      purchase_limit_per_day: 1,
     });
     setImages([]);
     setPreviewImages([]);
@@ -94,7 +79,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + previewImages.length > 5) {
+    if (files.length + images.length > 5) {
       alert("You can only upload up to 5 images");
       return;
     }
@@ -110,10 +95,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
     setPreviewImages((prev) => {
       const newPreviews = [...prev];
-      // Only revoke URL if it's a blob URL (from new uploads)
-      if (newPreviews[index]?.startsWith("blob:")) {
-        URL.revokeObjectURL(newPreviews[index]);
-      }
+      URL.revokeObjectURL(newPreviews[index]);
       return newPreviews.filter((_, i) => i !== index);
     });
   };
@@ -123,24 +105,17 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
     }
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
+    if (!formData.price || formData.price <= 0) {
+      newErrors.price = "Price must be greater than 0";
     }
-    if (!formData.capacity || formData.capacity < 1) {
-      newErrors.capacity = "Capacity must be at least 1";
+    if (!formData.stock || formData.stock < 0) {
+      newErrors.stock = "Stock must be 0 or greater";
     }
-    if (!formData.start_time) {
-      newErrors.start_time = "Start time is required";
-    }
-    if (!formData.end_time) {
-      newErrors.end_time = "End time is required";
-    }
-    if (formData.start_time && formData.end_time) {
-      const start = new Date(formData.start_time);
-      const end = new Date(formData.end_time);
-      if (end <= start) {
-        newErrors.end_time = "End time must be after start time";
-      }
+    if (
+      !formData.purchase_limit_per_day ||
+      formData.purchase_limit_per_day < 1
+    ) {
+      newErrors.purchase_limit_per_day = "Daily limit must be at least 1";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -161,7 +136,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        {event ? "Edit Event" : "Add New Event"}
+        {item ? "Edit Item" : "Add New Item"}
         <IconButton
           aria-label="close"
           onClick={handleClose}
@@ -188,85 +163,46 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
               required
             />
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Description"
-              name="description"
-              multiline
-              rows={4}
-              value={formData.description}
-              onChange={handleChange}
-            />
-          </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              error={!!errors.location}
-              helperText={errors.location}
-              required
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Capacity"
-              name="capacity"
+              label="Price"
+              name="price"
               type="number"
-              value={formData.capacity}
+              value={formData.price}
               onChange={handleChange}
-              error={!!errors.capacity}
-              helperText={errors.capacity}
+              error={!!errors.price}
+              helperText={errors.price}
               required
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Start Time"
-              name="start_time"
-              type="datetime-local"
-              value={formData.start_time}
-              onChange={handleChange}
-              error={!!errors.start_time}
-              helperText={errors.start_time}
-              required
-              InputLabelProps={{
-                shrink: true,
+              InputProps={{
+                startAdornment: "$",
               }}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="End Time"
-              name="end_time"
-              type="datetime-local"
-              value={formData.end_time}
+              label="Stock"
+              name="stock"
+              type="number"
+              value={formData.stock}
               onChange={handleChange}
-              error={!!errors.end_time}
-              helperText={errors.end_time}
+              error={!!errors.stock}
+              helperText={errors.stock}
               required
-              InputLabelProps={{
-                shrink: true,
-              }}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="End Sign Up Time"
-              name="end_sign"
-              type="datetime-local"
-              value={formData.end_sign}
+              label="Daily Purchase Limit"
+              name="purchase_limit_per_day"
+              type="number"
+              value={formData.purchase_limit_per_day}
               onChange={handleChange}
-              InputLabelProps={{
-                shrink: true,
-              }}
+              error={!!errors.purchase_limit_per_day}
+              helperText={errors.purchase_limit_per_day}
+              required
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -278,11 +214,22 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
                 onChange={handleChange}
                 label="Status"
               >
-                <MenuItem value="upcoming">Upcoming</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="available">Available</MenuItem>
+                <MenuItem value="sold_out">Sold Out</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
               </Select>
             </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Description"
+              name="description"
+              multiline
+              rows={4}
+              value={formData.description}
+              onChange={handleChange}
+            />
           </Grid>
           <Grid item xs={12}>
             <Box sx={{ mb: 2 }}>
@@ -352,11 +299,11 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
           variant="contained"
           className="customer-button"
         >
-          {event ? "Update" : "Create"}
+          {item ? "Update" : "Create"}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default EventDialog;
+export default ItemDialog;

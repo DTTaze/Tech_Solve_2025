@@ -3,225 +3,205 @@ import {
   Box,
   Typography,
   Button,
-  Tabs,
-  Tab,
-  useMediaQuery,
-  useTheme,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import { useOutletContext } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
+import EventDialog from "./EventDialog";
+import EventList from "./EventList";
+import EventFilters from "./EventFilters";
 import {
-  createEventApi,
   getOwnerEventApi,
+  createEventApi,
   updateEventApi,
   deleteEventApi,
 } from "../../../utils/api";
-import EventFilters from "./EventFilters";
-import EventList from "./EventList";
-import EventDialog from "./EventDialog";
 
-export default function CustomerEvents() {
-  const userInfo = useOutletContext();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [tabValue, setTabValue] = useState(0);
-  const [open, setOpen] = useState(false);
+const CustomerEvents = () => {
   const [events, setEvents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all",
+    minPrice: "",
+  });
 
-  // Fetch events data
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const response = await getOwnerEventApi();
-
-        console.log("event response: ", response);
-        if (response && response.data) {
-          setEvents(response.data);
-        }
-      } catch (err) {
-        setError("Failed to fetch events");
-        console.error("Error fetching events:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEvents();
   }, []);
 
-  // Filter events based on selected tab, search term, and category
-  const filteredEvents = events.filter((event) => {
-    const matchesTab =
-      tabValue === 0 ||
-      (tabValue === 1 && event.status === "active") ||
-      (tabValue === 2 && event.status === "upcoming") ||
-      (tabValue === 3 && event.status === "completed");
+  useEffect(() => {
+    filterEvents();
+  }, [events, filters]);
 
-    const matchesSearch =
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "all" || event.category === selectedCategory;
-
-    return matchesTab && matchesSearch && matchesCategory;
-  });
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
-  const handleOpenDialog = (event = null) => {
-    setSelectedEvent(event);
-    setOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpen(false);
-    setSelectedEvent(null);
-  };
-
-  const handleSaveEvent = async (formData) => {
+  const fetchEvents = async () => {
     try {
-      const eventData = {
-        title: formData.title,
-        description: formData.description,
-        location: formData.location,
-        capacity: parseInt(formData.capacity),
-        start_time: formData.start_time,
-        end_time: formData.end_time,
-        end_sign: formData.end_sign,
-        status: formData.status,
-      };
-
-      let response;
-      if (selectedEvent) {
-        // Only include images in the update if a new image was selected
-        const images = formData.images ? [formData.images] : undefined;
-        response = await updateEventApi(selectedEvent.id, eventData, images);
-      } else {
-        // For new events, always include images (even if empty array)
-        const images = formData.images ? [formData.images] : [];
-        response = await createEventApi(eventData, images);
+      setLoading(true);
+      setError(null);
+      const response = await getOwnerEventApi();
+      if (response.data) {
+        setEvents(response.data);
       }
-
-      if (response && response.data) {
-        const updatedEvents = await getOwnerEventApi();
-        if (updatedEvents && updatedEvents.data) {
-          setEvents(updatedEvents.data);
-        }
-      }
-      handleCloseDialog();
-    } catch (error) {
-      console.error("Error saving event:", error);
-      setError("Failed to save event");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch events");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteEvent = async (id) => {
-    try {
-      const response = await deleteEventApi(id);
-      if (response && response.data) {
-        const updatedEvents = await getOwnerEventApi();
-        if (updatedEvents && updatedEvents.data) {
-          setEvents(updatedEvents.data);
-        }
+  const filterEvents = () => {
+    let filtered = [...events];
+
+    // Filter by search term
+    if (filters.search) {
+      filtered = filtered.filter((event) =>
+        event.name.toLowerCase().includes(filters.search.toLowerCase())
+      );
+    }
+
+    // Filter by status
+    if (filters.status !== "all") {
+      filtered = filtered.filter((event) => event.status === filters.status);
+    }
+
+    // Filter by minimum price
+    if (filters.minPrice) {
+      filtered = filtered.filter(
+        (event) => event.price >= parseFloat(filters.minPrice)
+      );
+    }
+
+    setFilteredEvents(filtered);
+  };
+
+  const handleFilterChange = (name, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      search: "",
+      status: "all",
+      minPrice: "",
+    });
+  };
+
+  const handleAddEvent = () => {
+    setSelectedEvent(null);
+    setOpenDialog(true);
+  };
+
+  const handleEditEvent = (event) => {
+    setSelectedEvent(event);
+    setOpenDialog(true);
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        setLoading(true);
+        await deleteEventApi(eventId);
+        await fetchEvents();
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to delete event");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      setError("Failed to delete event");
+    }
+  };
+
+  const handleSaveEvent = async (formData, images) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (selectedEvent) {
+        await updateEventApi(selectedEvent.id, formData, images);
+      } else {
+        await createEventApi(formData, images);
+      }
+
+      await fetchEvents();
+      setOpenDialog(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save event");
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <Box className="customer-content-container">
-        <Typography>Loading events...</Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box className="customer-content-container">
-        <Typography color="error">{error}</Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box className="customer-content-container">
-      <Box className="customer-section">
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 3,
-          }}
+    <Box sx={{ p: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography variant="h5" component="h2">
+          Events Management
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddEvent}
+          className="customer-button"
         >
-          <Typography className="customer-section-title">
-            Event Management
-          </Typography>
-
-          <Button
-            className="customer-button"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-          >
-            Create Event
-          </Button>
-        </Box>
-
-        <EventFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
-
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          sx={{
-            mb: 3,
-            "& .MuiTabs-indicator": {
-              backgroundColor: "var(--primary-green)",
-            },
-            "& .MuiTab-root.Mui-selected": {
-              color: "var(--primary-green)",
-            },
-          }}
-        >
-          <Tab label="All Events" />
-          <Tab label="Active" />
-          <Tab label="Upcoming" />
-          <Tab label="Completed" />
-        </Tabs>
-
-        <EventList
-          events={filteredEvents}
-          onEdit={handleOpenDialog}
-          onDelete={handleDeleteEvent}
-          onCreate={() => handleOpenDialog()}
-        />
+          Add Event
+        </Button>
       </Box>
 
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      <EventFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onReset={handleResetFilters}
+      />
+
+      <EventList
+        events={filteredEvents}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+        onAdd={handleAddEvent}
+      />
+
       <EventDialog
-        open={open}
-        onClose={handleCloseDialog}
-        selectedEvent={selectedEvent}
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
         onSave={handleSaveEvent}
+        event={selectedEvent}
       />
     </Box>
   );
-}
+};
+
+export default CustomerEvents;

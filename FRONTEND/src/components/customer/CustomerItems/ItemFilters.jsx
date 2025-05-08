@@ -10,12 +10,12 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 
-const EventFilters = ({ filters, onFilterChange, onReset }) => {
+const ItemFilters = ({ filters, onFilterChange, onReset }) => {
   const statusOptions = [
     { value: "all", label: "All Status" },
-    { value: "active", label: "Active" },
-    { value: "upcoming", label: "Upcoming" },
-    { value: "completed", label: "Completed" },
+    { value: "available", label: "Available" },
+    { value: "sold_out", label: "Sold Out" },
+    { value: "pending", label: "Pending" },
   ];
 
   const handlePriceChange = (e) => {
@@ -32,7 +32,7 @@ const EventFilters = ({ filters, onFilterChange, onReset }) => {
           <TextField
             fullWidth
             size="small"
-            placeholder="Search events..."
+            placeholder="Search items..."
             value={filters.search}
             onChange={(e) => onFilterChange("search", e.target.value)}
             InputProps={{
@@ -96,4 +96,4 @@ const EventFilters = ({ filters, onFilterChange, onReset }) => {
   );
 };
 
-export default EventFilters;
+export default ItemFilters;
