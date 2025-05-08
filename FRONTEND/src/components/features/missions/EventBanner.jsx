@@ -11,21 +11,18 @@ const EventBanner = ({userInfo}) => {
   const [participatedEvents, setParticipatedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  console.log("userInfo in EventBanner: ", userInfo)
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         // Fetch all events
         const eventsResponse = await getAllEventsApi();
-        console.log("events response: ", eventsResponse)
         if (!eventsResponse?.data) {
           throw new Error("Không thể tải danh sách sự kiện");
         }
 
         // Fetch signed events
         const signedEventsResponse = await getEventSignedApi();
-        console.log("signed events Response: ", signedEventsResponse)
         const signedEventIds =
           signedEventsResponse?.data?.map((event) => event.event_id) || [];
 
@@ -56,7 +53,6 @@ const EventBanner = ({userInfo}) => {
   }, [events, isModalOpen]);
 
   const handleOpenModal = (event) => {
-    console.log("event in handleOpenModal: ", event);
     setSelectedEvent(event);
     setIsModalOpen(true);
   };

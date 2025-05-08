@@ -8,15 +8,9 @@ import Button from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
 import { Eye, EyeOff } from "lucide-react";
 
-const roleMap = {
-  1: "Admin",
-  2: "User",
-  3: "Customer",
-};
-
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { setAuth } = useContext(AuthContext);
+  const { auth, setAuth } = useContext(AuthContext);
   const { notify } = useNotification();
   const [identifier, setIdentifier] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,38 +22,37 @@ const LoginPage = () => {
     e.preventDefault();
 
     const newErrors = {};
-    if (!identifier.trim()) newErrors.identifier = "Vui lòng nhập email hoặc username.";
+    if (!identifier.trim())
+      newErrors.identifier = "Vui lòng nhập email hoặc username.";
     if (!password) newErrors.password = "Vui lòng nhập mật khẩu.";
+
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     try {
-      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(identifier);
+      const isEmail = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(
+        identifier
+      );
       const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
 
       const res = await loginUserApi(loginData);
-
       if (res && res.status === 200) {
         notify("success", "Đăng nhập thành công!");
-        const user = res.data.user;
-        const roleId = user.role_id;
-        const userRole = roleMap[roleId] || "User";
-
         setAuth({
           isAuthenticated: true,
-          user: { ...user, roles: { id: roleId } }, 
+          user: res.data.user,
         });
-
-        const roleRedirectMap = {
-          Admin: "/admin",
-          User: "/", 
-          Customer: "/customer",
-        };
-
-        const redirectPath = roleRedirectMap[userRole] || "/user";
-        navigate(redirectPath);
+        if (res.data.user.role_id === 1) {
+          navigate("/admin");
+        } else if (res.data.user.role_id === 2) {
+          navigate("/");
+        } else if (res.data.user.role_id === 3) {
+          navigate("/customer");
+        } else {
+          notify("error", "Đã xảy ra lỗi, vui lòng thử lại sau");
+        }
       } else {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }
@@ -109,6 +102,7 @@ const LoginPage = () => {
           }
         />
 
+        {/* Nút đăng nhập sẽ bị vô hiệu hóa khi isLoginDisabled = true */}
         <Button
           text="Đăng nhập"
           disabled={isLoginDisabled}

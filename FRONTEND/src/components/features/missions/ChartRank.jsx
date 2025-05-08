@@ -15,6 +15,7 @@ function Ranking() {
       try {
         setLoading(true);
         const response = await rearrangeRankApi();
+        console.log("ranking response: ", response)
 
         if (response.data && response.success) {
           const ranks = response.data;
@@ -24,6 +25,7 @@ function Ranking() {
             ranks.map(async (rank) => {
               try {
                 const userResponse = await getUserByIdApi(rank.user_id);
+                console.log("user response in ranking", userResponse)
 
                 if (userResponse.data && userResponse.success) {
                   return {
@@ -44,7 +46,7 @@ function Ranking() {
 
           // Filter out null values and users with role_id !== 2
           const filteredRanks = ranksWithUserDetails.filter(
-            (rank) => rank !== null && rank.user && rank.user.role_id === 2
+            (rank) => rank !== null && rank.user && rank.user.roles.id === 2
           );
 
           // Transform the data for the chart
@@ -57,6 +59,7 @@ function Ranking() {
           };
 
           setRankData(transformedData);
+          console.log("filteredRanks data: ", ranksWithUserDetails)
         }
       } catch (err) {
         console.error("Error fetching ranking data:", err);
@@ -68,6 +71,8 @@ function Ranking() {
 
     fetchRankingData();
   }, []);
+
+  
 
   if (loading) {
     return (
