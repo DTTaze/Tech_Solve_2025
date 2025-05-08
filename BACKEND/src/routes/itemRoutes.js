@@ -34,6 +34,7 @@ router.post(
   checkItemDailyLimit,
   itemController.handlePurchaseItem
 );
+router.patch("/customer/confirm/:order_id", itemController.handleConfirmOrder)
 
 router.get("/public/:public_id", itemController.handleGetItemByPublicId);
 router.put(

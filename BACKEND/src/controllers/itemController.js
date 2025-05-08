@@ -123,6 +123,17 @@ const handleDeleteItemByPublicId = async (req, res) => {
   }
 };
 
+const handleConfirmOrder = async (req, res) => {
+  try {
+    const order_id = req.params.order_id;
+    const decision = req.body.decision
+    const result = await itemService.confirmOrder(order_id,decision);
+    return res.success("Item deleted successfully", result);
+  } catch (error) {
+    return res.error(500, "Failed to delete item", error.message);
+  }
+};
+
 module.exports = {
   handleUploadItem,
   handleGetAllItems,
@@ -135,4 +146,5 @@ module.exports = {
   handleGetItemByPublicId,
   handleUpdateItemByPublicId,
   handleDeleteItemByPublicId,
+  handleConfirmOrder
 };

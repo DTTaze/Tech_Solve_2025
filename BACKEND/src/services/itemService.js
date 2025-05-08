@@ -2,11 +2,12 @@ const { nanoid } = require("nanoid");
 const db = require("../models/index");
 const Item = db.Item;
 const User = db.User;
+const Image = db.Image;
+const DeliveryOrder = db.DeliveryOrder
 const purchaseQueue = require("../queues/purchaseQueue");
 const { uploadImages } = require("../services/imageService");
 const { sequelize } = require("../models");
 const { where } = require("sequelize");
-const Image = db.Image;
 const cloudinary = require("cloudinary").v2;
 const { emitStockUpdate } = require("./socketService");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
@@ -369,6 +370,19 @@ const deleteItemByPublicId = async (public_id) => {
   }
 };
 
+const confirmOrder = async (order_id,decision) => {
+  try {
+    const item = await Item.findOne({ where: { public_id } });
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    return await deleteItem(item.id);
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createItem,
   getAllItems,
@@ -380,4 +394,5 @@ module.exports = {
   getItemByPublicId,
   updateItemByPublicId,
   deleteItemByPublicId,
+  confirmOrder
 };
