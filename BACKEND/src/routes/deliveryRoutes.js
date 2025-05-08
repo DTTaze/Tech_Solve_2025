@@ -27,6 +27,18 @@ router.get(
   "/carrier/ghn/orders/user",
   deliveryOrderController.handleGetAllDeliveryOrdersBySeller
 );
+router.get(
+  "/carrier/ghn/master-data/province",
+  deliveryOrderController.handleGetAllProvinces
+);
+router.get(
+  "/carrier/ghn/master-data/district",
+  deliveryOrderController.handleGetAllDistrictsByProvince
+);
+router.get(
+  "/carrier/ghn/master-data/ward",
+  deliveryOrderController.handleGetAllWardsByDistrict
+);
 
 //manage shipping account
 router.get(

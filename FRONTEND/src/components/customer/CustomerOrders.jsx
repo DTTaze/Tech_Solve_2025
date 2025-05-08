@@ -34,6 +34,8 @@ import {
   AccordionDetails,
   Alert,
   CircularProgress,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
@@ -67,6 +69,7 @@ import {
   getShippingOrderDetailApi,
   updateShippingOrderApi,
   cancelShippingOrderApi,
+  getAllShippingOrdersBySeller,
   getShippingAccountsByUserApi,
   createShippingAccountApi,
   updateShippingAccountApi,
@@ -97,9 +100,33 @@ const emptyShippingAccountForm = {
   is_default: false,
 };
 
+// Add this TabPanel component
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
+    </div>
+  );
+}
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
+
 export default function CustomerOrders() {
   const userInfo = useOutletContext();
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -114,37 +141,62 @@ export default function CustomerOrders() {
   const [selectedShippingAccount, setSelectedShippingAccount] = useState(null);
   const [isEditingShippingAccount, setIsEditingShippingAccount] =
     useState(false);
-  const [newOrder, setNewOrder] = useState({
-    senderPhone: "",
-    senderAddress: "",
-    receiverPhone: "",
-    receiverAddress: "",
-    receiverName: "",
-    receiverDistrict: "",
-    receiverWard: "",
-    productName: "Áo Polo",
-    productWeight: "1,200",
-    productQuantity: "1",
-    productCode: "Polo123",
-    packageWeight: "200",
-    packageLength: "1",
-    packageWidth: "19",
-    packageHeight: "10",
-    packageVolumeWeight: "76",
-    codAmount: "200000",
-    totalValue: "100000",
-    cashOnDeliveryFailure: false,
-    failureCharge: "0",
-    customerOrderCode: "",
-    deliveryNote: "no_view",
-    notes: "Tintest 123",
-    servicePackage: "light",
-    pickupOption: "pickup",
-    pickupLocation: "",
-    packages: [],
-    paymentParty: "receiver",
-    promotionCode: "",
-  });
+  const [tabValue, setTabValue] = useState(0);
+  const [isEditingOrder, setIsEditingOrder] = useState(false);
+  const [isCreatingBasedOn, setIsCreatingBasedOn] = useState(false);
+  const initialOrderPayload = {
+    payment_type_id: 2,
+    note: "",
+    required_note: "KHONGCHOXEMHANG",
+    return_phone: "",
+    return_address: "",
+    return_district_id: null,
+    return_ward_code: "",
+    client_order_code: "",
+    from_name: "",
+    from_phone: "",
+    from_address: "",
+    from_ward_name: "",
+    from_district_name: "",
+    from_province_name: "",
+    to_name: "",
+    to_phone: "",
+    to_address: "",
+    to_ward_name: "",
+    to_district_name: "",
+    to_province_name: "",
+    cod_amount: 0,
+    content: "",
+    length: 0,
+    width: 0,
+    height: 0,
+    weight: 0,
+    cod_failed_amount: 0,
+    pick_station_id: null,
+    deliver_station_id: null,
+    insurance_value: 0,
+    service_type_id: 2,
+    coupon: null,
+    pickup_time: null,
+    pick_shift: [],
+    items: [
+      {
+        name: "",
+        code: "",
+        quantity: 0,
+        price: 0,
+        length: 0,
+        width: 0,
+        height: 0,
+        weight: 0,
+        category: {
+          level1: "",
+        },
+      },
+    ],
+  };
+
+  const [newOrder, setNewOrder] = useState(initialOrderPayload);
   const [confirmAlertOpen, setConfirmAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
@@ -192,12 +244,89 @@ export default function CustomerOrders() {
       setIsLoadingOrders(true);
       setErrorMessage("");
 
-      // In a real app, you would fetch from API
-      // For now, we're using mock data with a timeout to simulate loading
-      setTimeout(() => {
-        setOrders(mockOrders);
-        setIsLoadingOrders(false);
-      }, 800);
+      const response = await getAllShippingOrdersBySeller();
+      console.log("Orders from API:", response.data);
+      if (response && response.data) {
+        // Map the API response to the format our component expects
+        const formattedOrders = response.data.map((order) => {
+          // Map GHN status codes to UI-friendly status
+          let status;
+          switch (order.status) {
+            case "ready_to_pick":
+              status = "Pending Confirmation";
+              break;
+            case "picking":
+            case "storing":
+            case "transporting":
+              status = "In Progress";
+              break;
+            case "delivered":
+              status = "Completed";
+              break;
+            case "cancel":
+              status = "Cancelled";
+              break;
+            default:
+              status = "Pending Confirmation";
+          }
+
+          // Format date from ISO to local date format
+          const formattedDate = new Date(
+            order.created_date
+          ).toLocaleDateString();
+
+          // Create a dummy items array (since GHN doesn't provide item details in the orders list)
+          const dummyItems = [
+            {
+              type: "Package",
+              quantity: 1,
+              unit: "pkg",
+              weight: order.weight ? `${order.weight}g` : "N/A",
+            },
+          ];
+
+          return {
+            id: order.id,
+            orderCode: order.order_code,
+            date: formattedDate,
+            receiverName: order.to_name,
+            receiverPhone: order.to_phone,
+            receiverAddress: order.to_address,
+            status: status,
+            items: dummyItems,
+            codAmount: order.cod_amount,
+            shippingFee: order.total_amount - order.cod_amount,
+            totalAmount: order.total_amount,
+            createdAt: order.created_at,
+            updatedAt: order.updated_at,
+            // Add timeline and location history for the order tracking view
+            timeline: [
+              {
+                time: new Date(order.created_date).toLocaleString(),
+                status: "Order Created",
+              },
+              {
+                time: new Date(order.updated_at).toLocaleString(),
+                status: `Status: ${status}`,
+              },
+            ],
+            locationHistory: [
+              {
+                time: new Date(order.created_date).toLocaleString(),
+                location: "Sender Address",
+                status: "Order Created",
+              },
+            ],
+            // Additional fields
+            points: 0, // No points in GHN, but UI requires it
+            collectorName: "GHN Delivery",
+            collectorContact: "1900 636 677",
+          };
+        });
+
+        setOrders(formattedOrders);
+      }
+      setIsLoadingOrders(false);
     } catch (error) {
       console.error("Error fetching orders:", error);
       setErrorMessage("Failed to load orders. Please try again.");
@@ -234,102 +363,122 @@ export default function CustomerOrders() {
     }
 
     try {
-      // In a real application, this would send the order to an API
+      const selectedAccount = shippingAccounts[0];
+
       // const response = await createShippingOrderApi({
       //   items: newOrder.items,
-      //   token: newOrder.token,
-      //   shippingAccountId: newOrder.shippingAccountId,
       // });
-
+      console.log("check res from creating order", newOrder);
+      console.log("check res from creating order", selectedAccount);
       // Simulate API call
+      // const order = {
+      //   id: orders.length + 1,
+      //   date: new Date().toISOString().split("T")[0],
+      //   status: "Pending Confirmation",
+      //   senderPhone: newOrder.senderPhone,
+      //   senderAddress: newOrder.senderAddress,
+      //   receiverPhone: newOrder.receiverPhone,
+      //   receiverAddress: newOrder.receiverAddress,
+      //   receiverName: newOrder.receiverName,
+      //   receiverDistrict: newOrder.receiverDistrict,
+      //   receiverWard: newOrder.receiverWard,
+      //   productName: newOrder.productName,
+      //   productWeight: newOrder.productWeight,
+      //   productQuantity: newOrder.productQuantity,
+      //   productCode: newOrder.productCode,
+      //   packageWeight: newOrder.packageWeight,
+      //   packageLength: newOrder.packageLength,
+      //   packageWidth: newOrder.packageWidth,
+      //   packageHeight: newOrder.packageHeight,
+      //   packageVolumeWeight: newOrder.packageVolumeWeight,
+      //   codAmount: newOrder.codAmount,
+      //   totalValue: newOrder.totalValue,
+      //   cashOnDeliveryFailure: newOrder.cashOnDeliveryFailure,
+      //   failureCharge: newOrder.failureCharge,
+      //   customerOrderCode: newOrder.customerOrderCode,
+      //   deliveryNote: newOrder.deliveryNote,
+      //   notes: newOrder.notes,
+      //   servicePackage: newOrder.servicePackage,
+      //   pickupOption: newOrder.pickupOption,
+      //   pickupLocation: newOrder.pickupLocation,
+      //   packages: newOrder.packages,
+      //   paymentParty: newOrder.paymentParty,
+      //   promotionCode: newOrder.promotionCode,
+      //   timeline: [
+      //     {
+      //       time: new Date().toLocaleString(),
+      //       status: "Order Created",
+      //     },
+      //     {
+      //       time: new Date().toLocaleString(),
+      //       status: "Waiting for Confirmation",
+      //     },
+      //   ],
+      //   locationHistory: [
+      //     {
+      //       time: new Date().toLocaleString(),
+      //       location: newOrder.senderAddress,
+      //       status: "Order Created",
+      //     },
+      //   ],
+      //   collectorName: "John Recycler",
+      //   collectorContact: "555-0123",
+      // };
       const order = {
-        id: orders.length + 1,
-        date: new Date().toISOString().split("T")[0],
-        status: "Pending Confirmation",
-        senderPhone: newOrder.senderPhone,
-        senderAddress: newOrder.senderAddress,
-        receiverPhone: newOrder.receiverPhone,
-        receiverAddress: newOrder.receiverAddress,
-        receiverName: newOrder.receiverName,
-        receiverDistrict: newOrder.receiverDistrict,
-        receiverWard: newOrder.receiverWard,
-        productName: newOrder.productName,
-        productWeight: newOrder.productWeight,
-        productQuantity: newOrder.productQuantity,
-        productCode: newOrder.productCode,
-        packageWeight: newOrder.packageWeight,
-        packageLength: newOrder.packageLength,
-        packageWidth: newOrder.packageWidth,
-        packageHeight: newOrder.packageHeight,
-        packageVolumeWeight: newOrder.packageVolumeWeight,
-        codAmount: newOrder.codAmount,
-        totalValue: newOrder.totalValue,
-        cashOnDeliveryFailure: newOrder.cashOnDeliveryFailure,
-        failureCharge: newOrder.failureCharge,
-        customerOrderCode: newOrder.customerOrderCode,
-        deliveryNote: newOrder.deliveryNote,
-        notes: newOrder.notes,
-        servicePackage: newOrder.servicePackage,
-        pickupOption: newOrder.pickupOption,
-        pickupLocation: newOrder.pickupLocation,
-        packages: newOrder.packages,
-        paymentParty: newOrder.paymentParty,
-        promotionCode: newOrder.promotionCode,
-        timeline: [
+        payment_type_id: 2,
+        note: newOrder.notes,
+        required_note: newOrder.deliveryNote,
+        return_phone: newOrder.senderPhone,
+        return_address: newOrder.senderAddress,
+        return_district_id: null,
+        return_ward_code: "",
+        client_order_code: newOrder.customerOrderCode || "",
+        from_name: "TinTest124", // bạn có thể cho vào state nếu cần động
+        from_phone: newOrder.senderPhone,
+        from_address: newOrder.senderAddress,
+        from_ward_name: newOrder.senderWard || "Phường 14",
+        from_district_name: newOrder.senderDistrict || "Quận 10",
+        from_province_name: "HCM",
+        to_name: newOrder.receiverName,
+        to_phone: newOrder.receiverPhone,
+        to_address: newOrder.receiverAddress,
+        to_ward_name: newOrder.receiverWard || "Phường 14",
+        to_district_name: newOrder.receiverDistrict || "Quận 10",
+        to_province_name: "HCM",
+        cod_amount: parseInt(newOrder.codAmount),
+        content: "Theo New York Times",
+        length: parseInt(newOrder.packageLength),
+        width: parseInt(newOrder.packageWidth),
+        height: parseInt(newOrder.packageHeight),
+        weight: parseInt(newOrder.productWeight),
+        cod_failed_amount: parseInt(newOrder.failureCharge) || 0,
+        pick_station_id: 1444,
+        deliver_station_id: null,
+        insurance_value: parseInt(newOrder.totalValue),
+        service_type_id: 2,
+        coupon: null,
+        pickup_time: Math.floor(Date.now() / 1000), // Unix timestamp
+        pick_shift: [2],
+        items: [
           {
-            time: new Date().toLocaleString(),
-            status: "Order Created",
-          },
-          {
-            time: new Date().toLocaleString(),
-            status: "Waiting for Confirmation",
+            name: newOrder.productName,
+            code: newOrder.productCode,
+            quantity: parseInt(newOrder.productQuantity),
+            price: parseInt(newOrder.codAmount),
+            length: parseInt(newOrder.packageLength),
+            width: parseInt(newOrder.packageWidth),
+            height: parseInt(newOrder.packageHeight),
+            weight: parseInt(newOrder.productWeight),
+            category: {
+              level1: "Áo", // hardcode hoặc để user chọn category
+            },
           },
         ],
-        locationHistory: [
-          {
-            time: new Date().toLocaleString(),
-            location: newOrder.senderAddress,
-            status: "Order Created",
-          },
-        ],
-        collectorName: "John Recycler",
-        collectorContact: "555-0123",
       };
-
       setOrders([order, ...orders]);
       setCreateDialogOpen(false);
       showAlert("Order created successfully!");
-      setNewOrder({
-        senderPhone: "",
-        senderAddress: "",
-        receiverPhone: "",
-        receiverAddress: "",
-        receiverName: "",
-        receiverDistrict: "",
-        receiverWard: "",
-        productName: "Áo Polo",
-        productWeight: "1,200",
-        productQuantity: "1",
-        productCode: "Polo123",
-        packageWeight: "200",
-        packageLength: "1",
-        packageWidth: "19",
-        packageHeight: "10",
-        packageVolumeWeight: "76",
-        codAmount: "200000",
-        totalValue: "100000",
-        cashOnDeliveryFailure: false,
-        failureCharge: "0",
-        customerOrderCode: "",
-        deliveryNote: "no_view",
-        notes: "Tintest 123",
-        servicePackage: "light",
-        pickupOption: "pickup",
-        pickupLocation: "",
-        packages: [],
-        paymentParty: "receiver",
-        promotionCode: "",
-      });
+      setNewOrder(initialOrderPayload);
     } catch (error) {
       console.error("Error creating order:", error);
       showAlert("Failed to create order. Please try again.", "error");
@@ -507,21 +656,49 @@ export default function CustomerOrders() {
 
   const handleUpdateBuyerInfo = async () => {
     try {
-      // In a real application, this would send the data to an API
-      // const response = await updateShippingOrderApi({
-      //   orderId: selectedOrder.id,
-      //   buyerInfo: buyerInfo
-      // });
+      if (!selectedOrder) {
+        throw new Error("No order selected");
+      }
 
-      // Simulate API call
+      // Find the shipping account (in a real app, this would be associated with the order)
+      const shippingAccount =
+        shippingAccounts.find((account) => account.is_default) ||
+        shippingAccounts[0];
+
+      if (!shippingAccount) {
+        throw new Error("No shipping account found to update this order");
+      }
+
+      // Prepare GHN update data
+      const updateData = {
+        order_code: selectedOrder.orderCode,
+        to_name: buyerInfo.name || selectedOrder.receiverName,
+        to_phone: buyerInfo.phone || selectedOrder.receiverPhone,
+        note: buyerInfo.notes || selectedOrder.notes,
+      };
+
+      // Call the GHN API to update the order
+      await updateShippingOrderApi({
+        orderData: updateData,
+        token: shippingAccount.token,
+        shopId: shippingAccount.shop_id,
+      });
+
+      // Update our local state
       const updatedOrders = orders.map((order) => {
         if (order.id === selectedOrder.id) {
           return {
             ...order,
-            buyerName: buyerInfo.name,
-            buyerPhone: buyerInfo.phone,
-            buyerEmail: buyerInfo.email,
-            notes: buyerInfo.notes,
+            receiverName: buyerInfo.name || order.receiverName,
+            receiverPhone: buyerInfo.phone || order.receiverPhone,
+            notes: buyerInfo.notes || order.notes,
+            timeline: [
+              ...order.timeline,
+              {
+                time: new Date().toLocaleString(),
+                status: "Buyer Information Updated",
+              },
+            ],
           };
         }
         return order;
@@ -530,6 +707,9 @@ export default function CustomerOrders() {
       setOrders(updatedOrders);
       setBuyerInfoDialogOpen(false);
       showAlert("Buyer information updated successfully!");
+
+      // Refresh orders to get updated data
+      fetchOrders();
     } catch (error) {
       console.error("Error updating buyer information:", error);
       showAlert(
@@ -549,18 +729,96 @@ export default function CustomerOrders() {
 
   const handleTrackOrder = async (order) => {
     try {
-      // In a real app, you might want to refresh the order details from the server
-      // const response = await getShippingOrderDetailApi(order.id);
-      // const updatedOrder = response.data;
-      // setSelectedOrder(updatedOrder);
+      setIsLoadingOrders(true);
 
-      setSelectedOrder(order);
+      // Fetch the latest tracking information from GHN using the order code
+      const response = await getShippingOrderDetailApi(order.orderCode);
+
+      if (response && response.data && response.data.data) {
+        const trackingData = response.data.data;
+
+        // Create timeline events from tracking data
+        let updatedTimeline = [
+          {
+            time: new Date(order.date).toLocaleString(),
+            status: "Order Created",
+          },
+        ];
+
+        // Add status logs if available
+        if (
+          trackingData.status_histories &&
+          trackingData.status_histories.length > 0
+        ) {
+          trackingData.status_histories.forEach((history) => {
+            updatedTimeline.push({
+              time: new Date(history.timestamp).toLocaleString(),
+              status: history.status_name || history.status || "Status Updated",
+            });
+          });
+        }
+
+        // Create location history from tracking data
+        let updatedLocationHistory = [
+          {
+            time: new Date(order.date).toLocaleString(),
+            location: order.receiverAddress,
+            status: "Order Created",
+          },
+        ];
+
+        // Add location logs if available
+        if (trackingData.log && trackingData.log.length > 0) {
+          trackingData.log.forEach((logEntry) => {
+            updatedLocationHistory.push({
+              time: new Date(logEntry.timestamp).toLocaleString(),
+              location: logEntry.location || "Unknown",
+              status: logEntry.status || "Location Updated",
+            });
+          });
+        }
+
+        // Update the order with current status and tracking info
+        const updatedOrder = {
+          ...order,
+          status:
+            trackingData.status === "cancel"
+              ? "Cancelled"
+              : trackingData.status === "delivered"
+              ? "Completed"
+              : trackingData.status === "storing" ||
+                trackingData.status === "picking" ||
+                trackingData.status === "transporting"
+              ? "In Progress"
+              : "Pending Confirmation",
+          timeline: updatedTimeline,
+          locationHistory: updatedLocationHistory,
+          expectedDelivery:
+            trackingData.expected_delivery_time || order.expectedDelivery,
+          // Update any other fields that might have changed
+        };
+
+        // Update this order in our local state
+        const updatedOrders = orders.map((o) =>
+          o.id === order.id ? updatedOrder : o
+        );
+
+        setOrders(updatedOrders);
+        setSelectedOrder(updatedOrder);
+      } else {
+        // If no data returned from API, just show what we have
+        setSelectedOrder(order);
+      }
+
+      setIsLoadingOrders(false);
+
       // Set a small timeout to resolve the aria-hidden focus issue
       setTimeout(() => {
         setTrackingDialogOpen(true);
       }, 10);
     } catch (error) {
       console.error("Error fetching order tracking details:", error);
+      setIsLoadingOrders(false);
       showAlert(
         "Failed to load tracking information. Please try again.",
         "error"
@@ -570,10 +828,15 @@ export default function CustomerOrders() {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      // In a real application, this would send the request to an API
-      // await cancelShippingOrderApi(orderId);
+      const orderToCancel = orders.find((order) => order.id === orderId);
+      if (!orderToCancel) {
+        throw new Error("Order not found");
+      }
 
-      // Simulate API call
+      // Call the API to cancel the order using the GHN order code
+      await cancelShippingOrderApi(orderToCancel.orderCode);
+
+      // Update the local state with the cancelled order
       const updatedOrders = orders.map((order) => {
         if (order.id === orderId) {
           const newTimeline = [
@@ -588,7 +851,7 @@ export default function CustomerOrders() {
             ...(order.locationHistory || []),
             {
               time: new Date().toLocaleString(),
-              location: order.location,
+              location: order.receiverAddress,
               status: "Order Cancelled",
             },
           ];
@@ -598,13 +861,15 @@ export default function CustomerOrders() {
             status: "Cancelled",
             timeline: newTimeline,
             locationHistory: newLocationHistory,
-            points: 0,
           };
         }
         return order;
       });
       setOrders(updatedOrders);
-      showAlert("Order has been cancelled.");
+      showAlert("Order has been cancelled successfully.");
+
+      // Refresh orders from the server to get updated status
+      fetchOrders();
     } catch (error) {
       console.error("Error cancelling order:", error);
       showAlert("Failed to cancel order. Please try again.", "error");
@@ -613,13 +878,15 @@ export default function CustomerOrders() {
 
   const handleConfirmOrder = async (orderId) => {
     try {
-      // In a real application, this would send the request to an API
-      // await updateShippingOrderApi({
-      //   orderId: orderId,
-      //   status: "In Progress"
-      // });
+      const orderToConfirm = orders.find((order) => order.id === orderId);
+      if (!orderToConfirm) {
+        throw new Error("Order not found");
+      }
 
-      // Simulate API call
+      // In GHN's API, we don't actually need to confirm an order as it's automatically confirmed
+      // This is mainly for the UI state management
+      // For demonstration, we'll update the order status in our local state
+
       const updatedOrders = orders.map((order) => {
         if (order.id === orderId) {
           const timestamp = new Date().toLocaleString();
@@ -635,7 +902,7 @@ export default function CustomerOrders() {
             ...(order.locationHistory || []),
             {
               time: timestamp,
-              location: order.location,
+              location: order.receiverAddress,
               status: "Order Confirmed",
             },
           ];
@@ -650,12 +917,164 @@ export default function CustomerOrders() {
         return order;
       });
       setOrders(updatedOrders);
-      showAlert(
-        "Order confirmed successfully. A collector will be assigned soon."
-      );
+      showAlert("Order confirmed. The delivery carrier has been notified.");
+
+      // In a real implementation, you might want to refresh the orders to get updated status
+      // fetchOrders();
     } catch (error) {
       console.error("Error confirming order:", error);
       showAlert("Failed to confirm order. Please try again.", "error");
+    }
+  };
+
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  // Filter orders by status for each tab
+  const pendingOrders = orders.filter(
+    (order) => order.status === "Pending Confirmation"
+  );
+  const confirmedOrders = orders.filter(
+    (order) => order.status === "In Progress"
+  );
+  const completedOrders = orders.filter(
+    (order) => order.status === "Completed"
+  );
+  const cancelledOrders = orders.filter(
+    (order) => order.status === "Cancelled"
+  );
+
+  const handleCreateBasedOn = (order) => {
+    // Create a new order based on the selected order
+    setIsCreatingBasedOn(true);
+
+    // Copy the relevant data from the existing order to the new order form
+    const basedOnOrder = {
+      senderPhone: order.senderPhone || "",
+      senderAddress: order.senderAddress || "",
+      receiverPhone: order.receiverPhone || "",
+      receiverAddress: order.receiverAddress || "",
+      receiverName: order.receiverName || "",
+      receiverDistrict: order.receiverDistrict || "",
+      receiverWard: order.receiverWard || "",
+      productName: order.productName || "Áo Polo",
+      productWeight: order.productWeight || "1,200",
+      productQuantity: order.productQuantity || "1",
+      productCode: order.productCode || "Polo123",
+      packageWeight: order.packageWeight || "200",
+      packageLength: order.packageLength || "1",
+      packageWidth: order.packageWidth || "19",
+      packageHeight: order.packageHeight || "10",
+      packageVolumeWeight: order.packageVolumeWeight || "76",
+      codAmount: order.codAmount || "200000",
+      totalValue: order.totalValue || "100000",
+      cashOnDeliveryFailure: order.cashOnDeliveryFailure || false,
+      failureCharge: order.failureCharge || "0",
+      customerOrderCode: "", // New order should have a new code
+      deliveryNote: order.deliveryNote || "no_view",
+      notes: order.notes || "Tintest 123",
+      servicePackage: order.servicePackage || "light",
+      pickupOption: order.pickupOption || "pickup",
+      pickupLocation: order.pickupLocation || "",
+      packages: order.packages || [],
+      paymentParty: order.paymentParty || "receiver",
+      promotionCode: "",
+    };
+
+    setNewOrder(basedOnOrder);
+    setCreateDialogOpen(true);
+  };
+
+  const handleEditOrder = (order) => {
+    setIsEditingOrder(true);
+    setSelectedOrder(order);
+
+    // Copy all data from the existing order to the form
+    const editableOrder = {
+      ...order,
+      senderPhone: order.senderPhone || "",
+      senderAddress: order.senderAddress || "",
+      receiverPhone: order.receiverPhone || "",
+      receiverAddress: order.receiverAddress || "",
+      receiverName: order.receiverName || "",
+      receiverDistrict: order.receiverDistrict || "",
+      receiverWard: order.receiverWard || "",
+      productName: order.productName || "Áo Polo",
+      productWeight: order.productWeight || "1,200",
+      productQuantity: order.productQuantity || "1",
+      productCode: order.productCode || "Polo123",
+      packageWeight: order.packageWeight || "200",
+      packageLength: order.packageLength || "1",
+      packageWidth: order.packageWidth || "19",
+      packageHeight: order.packageHeight || "10",
+      packageVolumeWeight: order.packageVolumeWeight || "76",
+      codAmount: order.codAmount || "0",
+      totalValue: order.totalValue || "0",
+      cashOnDeliveryFailure: order.cashOnDeliveryFailure || false,
+      failureCharge: order.failureCharge || "0",
+      customerOrderCode: order.orderCode || "",
+      deliveryNote: order.deliveryNote || "no_view",
+      notes: order.notes || "",
+      servicePackage: order.servicePackage || "light",
+      pickupOption: order.pickupOption || "pickup",
+      pickupLocation: order.pickupLocation || "",
+      packages: order.packages || [],
+      paymentParty: order.paymentParty || "receiver",
+      promotionCode: order.promotionCode || "",
+    };
+
+    setNewOrder(editableOrder);
+    setCreateDialogOpen(true);
+  };
+
+  const handleUpdateOrder = async () => {
+    try {
+      // Find shipping account (in a real app would be stored with the order)
+      const shippingAccount =
+        shippingAccounts.find((account) => account.is_default) ||
+        shippingAccounts[0];
+
+      if (!shippingAccount) {
+        throw new Error("No shipping account found to update this order");
+      }
+
+      // Prepare update data
+      const updateData = {
+        order_code: selectedOrder.orderCode,
+        to_name: newOrder.receiverName || selectedOrder.receiverName,
+        to_phone: newOrder.receiverPhone || selectedOrder.receiverPhone,
+        to_address: newOrder.receiverAddress || selectedOrder.receiverAddress,
+        to_ward_code: newOrder.receiverWard || selectedOrder.receiverWard,
+        to_district_id:
+          parseInt(newOrder.receiverDistrict) ||
+          parseInt(selectedOrder.receiverDistrict),
+        content: newOrder.productName,
+        weight: parseInt(newOrder.productWeight) || 200,
+        length: parseInt(newOrder.packageLength) || 10,
+        width: parseInt(newOrder.packageWidth) || 10,
+        height: parseInt(newOrder.packageHeight) || 10,
+        cod_amount: parseInt(newOrder.codAmount) || 0,
+        note: newOrder.notes,
+      };
+
+      // Call the API to update the order
+      await updateShippingOrderApi({
+        orderData: updateData,
+        token: shippingAccount.token,
+        shopId: shippingAccount.shop_id,
+      });
+
+      showAlert("Order updated successfully!");
+      setCreateDialogOpen(false);
+      setIsEditingOrder(false);
+
+      // Refresh orders to get updated data
+      fetchOrders();
+    } catch (error) {
+      console.error("Error updating order:", error);
+      showAlert("Failed to update order. Please try again.", "error");
     }
   };
 
@@ -759,14 +1178,94 @@ export default function CustomerOrders() {
           }
         />
       ) : (
-        <OrdersList
-          orders={orders}
-          handleViewDetails={handleViewDetails}
-          handleTrackOrder={handleTrackOrder}
-          handleConfirmOrder={handleConfirmOrder}
-          handleCancelOrder={handleCancelOrder}
-          handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
-        />
+        <Box sx={{ width: "100%" }}>
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              aria-label="order status tabs"
+              sx={{
+                "& .MuiTab-root": {
+                  color: "text.secondary",
+                  "&.Mui-selected": { color: "var(--primary-green)" },
+                },
+                "& .MuiTabs-indicator": {
+                  backgroundColor: "var(--primary-green)",
+                },
+              }}
+            >
+              <Tab
+                label={`Pending (${pendingOrders.length})`}
+                {...a11yProps(0)}
+              />
+              <Tab
+                label={`In Progress (${confirmedOrders.length})`}
+                {...a11yProps(1)}
+              />
+              <Tab
+                label={`Completed (${completedOrders.length})`}
+                {...a11yProps(2)}
+              />
+              <Tab
+                label={`Cancelled (${cancelledOrders.length})`}
+                {...a11yProps(3)}
+              />
+            </Tabs>
+          </Box>
+
+          <TabPanel value={tabValue} index={0}>
+            <OrdersList
+              orders={pendingOrders}
+              handleViewDetails={handleViewDetails}
+              handleTrackOrder={handleTrackOrder}
+              handleConfirmOrder={handleConfirmOrder}
+              handleCancelOrder={handleCancelOrder}
+              handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
+              handleEditOrder={handleEditOrder}
+              handleCreateBasedOn={handleCreateBasedOn}
+              withFilters={true}
+            />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={1}>
+            <OrdersList
+              orders={confirmedOrders}
+              handleViewDetails={handleViewDetails}
+              handleTrackOrder={handleTrackOrder}
+              handleConfirmOrder={handleConfirmOrder}
+              handleCancelOrder={handleCancelOrder}
+              handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
+              handleEditOrder={handleEditOrder}
+              handleCreateBasedOn={handleCreateBasedOn}
+              withFilters={true}
+            />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={2}>
+            <OrdersList
+              orders={completedOrders}
+              handleViewDetails={handleViewDetails}
+              handleTrackOrder={handleTrackOrder}
+              handleConfirmOrder={handleConfirmOrder}
+              handleCancelOrder={handleCancelOrder}
+              handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
+              handleCreateBasedOn={handleCreateBasedOn}
+              withFilters={true}
+            />
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={3}>
+            <OrdersList
+              orders={cancelledOrders}
+              handleViewDetails={handleViewDetails}
+              handleTrackOrder={handleTrackOrder}
+              handleConfirmOrder={handleConfirmOrder}
+              handleCancelOrder={handleCancelOrder}
+              handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
+              withFilters={true}
+            />
+          </TabPanel>
+        </Box>
       )}
 
       {/* Shipping Accounts Dialog */}
@@ -825,21 +1324,64 @@ export default function CustomerOrders() {
       {/* Create Order Dialog */}
       <Dialog
         open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
+        onClose={() => {
+          setCreateDialogOpen(false);
+          setIsEditingOrder(false);
+          setIsCreatingBasedOn(false);
+          setNewOrder({
+            senderPhone: "",
+            senderAddress: "",
+            receiverPhone: "",
+            receiverAddress: "",
+            receiverName: "",
+            receiverDistrict: "",
+            receiverWard: "",
+            productName: "Áo Polo",
+            productWeight: "1,200",
+            productQuantity: "1",
+            productCode: "Polo123",
+            packageWeight: "200",
+            packageLength: "1",
+            packageWidth: "19",
+            packageHeight: "10",
+            packageVolumeWeight: "76",
+            codAmount: "200000",
+            totalValue: "100000",
+            cashOnDeliveryFailure: false,
+            failureCharge: "0",
+            customerOrderCode: "",
+            deliveryNote: "no_view",
+            notes: "Tintest 123",
+            servicePackage: "light",
+            pickupOption: "pickup",
+            pickupLocation: "",
+            packages: [],
+            paymentParty: "receiver",
+            promotionCode: "",
+          });
+        }}
         fullWidth
         maxWidth="md"
       >
         <CreateOrderForm
           newOrder={newOrder}
           setNewOrder={setNewOrder}
-          handleCreateOrder={handleCreateOrder}
-          handleCloseDialog={() => setCreateDialogOpen(false)}
+          handleCreateOrder={
+            isEditingOrder ? handleUpdateOrder : handleCreateOrder
+          }
+          handleCloseDialog={() => {
+            setCreateDialogOpen(false);
+            setIsEditingOrder(false);
+            setIsCreatingBasedOn(false);
+          }}
           calculatePoints={calculatePoints}
           shippingAccounts={shippingAccounts}
           wasteCategories={wasteCategories}
           handleAddItem={handleAddItem}
           handleRemoveItem={handleRemoveItem}
           handleItemChange={handleItemChange}
+          isEditMode={isEditingOrder}
+          isBasedOnMode={isCreatingBasedOn}
         />
       </Dialog>
 

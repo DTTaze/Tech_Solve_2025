@@ -11,6 +11,53 @@ const getHeadersFromRequest = (req) => {
   return { token, shop_id };
 };
 
+const handleGetAllProvinces = async (req, res) => {
+  try {
+    const { token } = getHeadersFromRequest(req);
+    const data = await deliveryOrderService.getAllProvinces(token);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Internal Server Error" });
+  }
+};
+
+const handleGetAllDistrictsByProvince = async (req, res) => {
+  try {
+    const { token } = getHeadersFromRequest(req);
+    const { province_id } = req.body;
+    if (!province_id) {
+      return res.status(400).json({ message: "province_id is required" });
+    }
+
+    const data = await deliveryOrderService.getAllDistrictsByProvince(
+      token,
+      province_id
+    );
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Internal Server Error" });
+  }
+};
+
+const handleGetAllWardsByDistrict = async (req, res) => {
+  try {
+    const { token } = getHeadersFromRequest(req);
+    const { district_id } = req.query;
+
+    if (!district_id) {
+      return res.status(400).json({ message: "district_id is required" });
+    }
+
+    const data = await deliveryOrderService.getWardsByDistrict(
+      token,
+      district_id
+    );
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Internal Server Error" });
+  }
+};
+
 const handleCreateDeliveryOrder = async (req, res) => {
   try {
     const { token, shop_id } = getHeadersFromRequest(req);
@@ -78,8 +125,9 @@ const handleCancelDeliveryOrder = async (req, res) => {
 const handleGetAllDeliveryOrdersBySeller = async (req, res) => {
   try {
     const sellerId = req.user.id;
-    const orders =
-      await deliveryOrderService.getDeliveryOrdersBySeller(sellerId);
+    const orders = await deliveryOrderService.getDeliveryOrdersBySeller(
+      sellerId
+    );
     return res.success("Get all delivery orders by sellerId success", orders);
   } catch (error) {
     return res.error(
@@ -105,4 +153,7 @@ module.exports = {
   handleUpdateDeliveryOrder,
   handleGetAllDeliveryOrdersBySeller,
   handleGetAllDeliveryOrders,
+  handleGetAllProvinces,
+  handleGetAllDistrictsByProvince,
+  handleGetAllWardsByDistrict,
 };

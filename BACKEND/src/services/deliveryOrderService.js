@@ -10,6 +10,71 @@ const buildHeaders = (token, shop_id) => ({
   ShopId: shop_id,
 });
 
+const getAllProvinces = async (token) => {
+  try {
+    const url = `${ghnBaseUrl}/master-data/province`;
+    const response = await axios.get(url, { headers: buildHeaders(token) });
+    return response.data;
+  } catch (error) {
+    const errData = error.response?.data?.code_message_value || {
+      message: error.message,
+    };
+    console.error("GHN API Error (getProvince):", errData);
+    throw new Error(errData);
+  }
+};
+
+const getAllDistrictsByProvince = async (token, province_id) => {
+  try {
+    const url = `${ghnBaseUrl}/master-data/district`;
+
+    const response = await axios.get(
+      url,
+      { province_id },
+      { headers: buildHeaders(token) }
+    );
+    return response.data;
+  } catch (error) {
+    const errData = error.response?.data?.code_message_value || {
+      message: error.message,
+    };
+    console.error("GHN API Error (getDistrictByProvince):", errData);
+    throw new Error(errData);
+  }
+};
+
+const getWardsByDistrict = async (token) => {
+  try {
+    const url = `${ghnBaseUrl}/master-data/ward?district_id=${district_id}`;
+    const response = await axios.get(url, { headers: buildHeaders(token) });
+    return response.data;
+  } catch (error) {
+    const errData = error.response?.data?.code_message_value || {
+      message: error.message,
+    };
+    console.error("GHN API Error (getWardsByDistrict):", errData);
+    throw new Error(errData);
+  }
+};
+
+const previewOrderWithoutOrderCode = async (order_code, token, shop_id) => {
+  try {
+    const url = `${ghnBaseUrl}/v2/shipping-order/preview`;
+    const response = await axios.get(
+      url,
+      { order_code },
+      { headers: buildHeaders(token, shop_id) }
+    );
+    return response.data;
+  } catch (error) {
+    const errData = error.response?.data?.code_message_value || {
+      message: error.message,
+    };
+    console.error("GHN API Error (getOrderInfo):", errData);
+    throw new Error(errData);
+  }
+};
+
 const getDeliveryOrderInfo = async (order_code, token, shop_id) => {
   try {
     const url = `${ghnBaseUrl}/v2/shipping-order/detail`;
@@ -178,4 +243,7 @@ module.exports = {
   updateDeliveryOrder,
   cancelDeliveryOrder,
   getDeliveryOrdersBySeller,
+  getAllProvinces,
+  getAllDistrictsByProvince,
+  getWardsByDistrict,
 };
