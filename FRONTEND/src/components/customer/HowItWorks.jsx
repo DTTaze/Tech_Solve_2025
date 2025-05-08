@@ -7,52 +7,57 @@ export default function HowItWorks() {
       number: 1,
       title: "Select an Event",
       description:
-        "Choose the event that participants will be joining. This ensures users are added to the correct event.",
+        "Choose the event that participants will be joining or leaving. This ensures users are added to or removed from the correct event.",
     },
     {
       number: 2,
+      title: "Choose Action",
+      description:
+        "Select whether you want to check in (add) or check out (remove) participants from the event.",
+    },
+    {
+      number: 3,
       title: "Scan User QR Code",
       description:
         "Ask participants to show their unique QR code from their user profile or event registration email.",
     },
     {
-      number: 3,
-      title: "Confirm Attendance",
+      number: 4,
+      title: "Confirm Action",
       description:
-        "The system automatically registers the user to the event. You can view and manage all participants in the User Management section.",
+        "The system automatically registers or removes the user from the event. You can view and manage all participants in the list.",
     },
   ];
 
   return (
-    <Box mt={3}>
-      <Typography variant="h6" gutterBottom>
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h5" gutterBottom>
         How It Works
       </Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         {steps.map((step) => (
-          <Grid item xs={12} sm={4} key={step.number}>
-            <Card sx={{ height: "100%" }}>
+          <Grid item xs={12} sm={6} md={3} key={step.number}>
+            <Card
+              sx={{
+                height: "100%",
+                border: "1px solid var(--light-green)",
+                borderRadius: "8px",
+              }}
+            >
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <Box
-                    sx={{
-                      bgcolor: "var(--light-green)",
-                      color: "var(--primary-green)",
-                      width: 30,
-                      height: 30,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mr: 1,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {step.number}
-                  </Box>
-                  <Typography variant="h6">{step.title}</Typography>
-                </Box>
-                <Typography variant="body2">{step.description}</Typography>
+                <Typography
+                  variant="h6"
+                  color="primary"
+                  sx={{ mb: 1, color: "var(--primary-green)" }}
+                >
+                  Step {step.number}
+                </Typography>
+                <Typography variant="h6" gutterBottom>
+                  {step.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {step.description}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>

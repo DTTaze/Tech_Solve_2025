@@ -286,8 +286,19 @@ export const acceptEventApi = (event_id) => {
 export const getEventSignedApi = () => {
   return axios.get("api/events/signed");
 }
-export const CheckInUserByUserIdApi = (event_id) => {
-  return axios.post(`api/events/check_in`, { event_id });
+
+export const CheckInUserByUserIdApi = (user_id, event_id) => {
+  return axios.put("api/events/check_in", {
+    event_id: event_id,
+    user_id: user_id
+  });
+};
+
+export const CheckOutUserByUserIdApi = (user_id, event_id) => {
+  return axios.put("api/events/check_out", {
+    event_id: event_id,
+    user_id: user_id
+  });
 };
 
 export const createShippingOrderApi = (data, token, shop_id) => {
