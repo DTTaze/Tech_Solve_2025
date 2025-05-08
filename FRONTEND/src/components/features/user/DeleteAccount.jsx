@@ -91,12 +91,12 @@ function DeleteAccount() {
             text="Hủy"
             type="button"
             onClick={() => setPassword("")}
-            className="bg-gray-500 hover:bg-gray-600 text-white"
+            padding="15px"
           />
           <Button
             text="Xác nhận xóa"
             type="submit"
-            className="bg-red-500 hover:bg-red-600 text-white"
+            padding="15px"
           />
         </div>
       </form>

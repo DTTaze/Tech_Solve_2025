@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -158,7 +158,7 @@ const ProductListDialog = ({ open, onClose, onAddProduct }) => {
                   }}
                 >
                   <img
-                    src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01NS41MDcgMzEuMDk1SDI0LjI2MVYzMy4zMzNINTUuNTA3VjMxLjA5NVoiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01NS41MDcgNDIuMzgxSDI0LjI2MVY0NC42MTlINTUuNTA3VjQyLjM4MVoiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0zOS44ODEgNTMuNjY3SDI0LjI2MVY1NS45MDVIMzkuODgxVjUzLjY2N1oiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02NS45OTggMjcuOTk4VjU5LjMzM0gxMy45OThWMjAuNjY3SDU4LjY2N0w2NS45OTggMjcuOTk4Wk02MS42NjUgMjkuMzM0SDU3LjMzMVYyNS4wMDFMNjEuNjY1IDI5LjMzNFpNNjMuOTM0IDMxLjYwMUw1NS4wNjQgMjIuNzMyQzU0Ljk2ODQgMjIuNjM0MyA1NC44MzUgMjIuNjY2OCA1NC43OTQ3IDIyLjY4MTNDNTQuNzgyMiAyMi42ODYgNTQuNzcyOCAyMi42ODk1IDU0Ljc2NjcgMjIuNjkwN0M1NC43NjE0IDIyLjY5MTcgNTQuNzUzNyAyMi42OTMzIDU0Ljc0NTMgMjIuNjk0N0M1NC43MzkgMjIuNjk1NyA1NC43MzI0IDIyLjY5NjcgNTQuNzI1NSAyMi42OTc1QzU0LjcyMTYgMjIuNjk4IDU0LjcxNzcgMjIuNjk4NCA1NC43MTM3IDIyLjY5ODhDNTQuNzA1NiAyMi42OTk1IDU0LjY5NzIgMjIuNyA1NC42ODggMjIuN0gxMy45OThDMTIuNzEzIDIyLjcgMTEuNjY1IDIzLjc0OCAxMS42NjUgMjVWNkguMzMzQzExLjY2NSA2MC42MjUgMTUuMzkgNjEuNjY3IDE2LjY2NSA2MS42NjdINjMuMzMyQzY0LjYwNyA2MS42NjcgNjguMzMyIDYwLjYyNSA2OC4zMzIgNTUuMDAxVjI5LjMzNEM2OC4zMzIgMjkuMzI1IDY4LjMzMjcgMjkuMzE3IDY4LjMzMzMgMjkuMzA4OEM2OC4zMzM3IDI5LjMwMzIgNjguMzM0MiAyOS4yOTc0IDY4LjMzNDUgMjkuMjkxNEM2OC4zMzUzIDI5LjI3NjcgNjguMzM1NyAyOS4yNjEgNjguMzMyIDI5LjI0NTdDNjguMzMxMyAyOS4yNDIgNjguMzMwMyAyOS4yMzc1IDY4LjMyOTIgMjkuMjMyN0M2OC4zMjgyIDI5LjIyOCA2OC4zMjcgMjkuMjIzIDY4LjMyNTcgMjkuMjE4QzY4LjMyMTcgMjkuMjA1IDY4LjMxNyAyOS4xOTIzIDY4LjMxMDcgMjkuMTgxN0M2OC4zMDQ3IDI5LjE3MTcgNjguMjk3MiAyOS4xNjI4IDY4LjI4OSAyOS4xNTU3QzY4LjI3OTcgMjkuMTQ3NSA2OC4yNjk1IDI5LjE0MDggNjguMjU5IDI5LjEzNUM2OC4yNTQyIDI5LjEzMjUgNjguMjQ5NSAyOS4xMzAyIDY4LjI0NSAyOS4xMjhDNjguMjMzMiAyOS4xMjI1IDY4LjIyMTIgMjkuMTE4MiA2OC4yMDkgMjkuMTE1QzY4LjIwMTUgMjkuMTEzMiA2OC4xOTQgMjkuMTExNSA2OC4xODY1IDI5LjExMDJDNjguMTgxNyAyOS4xMDk1IDY4LjE3NyAyOS4xMDg4IDY4LjE3MjIgMjkuMTA4QzY4LjE2MSAyOS4xMDY1IDY4LjE0OTUgMjkuMTA2IDY4LjEzOCAyOS4xMDZINjMuOTk4QzYzLjk2MiAyOS4xMDYgNjMuOTI2IDI5LjExMSA2My44OSAyOS4xMkg2My44ODc1QzYzLjg4MzcgMjkuMTIyNSA2My44NzkgMjkuMTI1NyA2My44NzQyIDI5LjEyOU02My44NzQyIDI5LjEyOUM2My44NjggMjkuMTMzMyA2My44NjI1IDI5LjEzOCA2My44NTcyIDI5LjE0MkM2My44NTE3IDI5LjE0NiA2My44NDYgMjkuMTUwNSA2My44NDA1IDI5LjE1NUM2My44MzcyIDI5LjE1OCA2My44MzM3IDI5LjE2MDcgNjMuODMwNSAyOS4xNjM1QzYzLjgyNDcgMjkuMTY4NSA2My44MTg3IDI5LjE3MzIgNjMuODEzMiAyOS4xNzkzQzYzLjgwNTcgMjkuMTg3MiA2My43OTg1IDI5LjE5NTggNjMuNzkyIDI5LjIwNUM2My43ODkyIDI5LjIwODcgNjMuNzg2NSAyOS4yMTI3IDYzLjc4NCAyOS4yMTY3QzYzLjc3NzUgMjkuMjI2IDYzLjc3MTUgMjkuMjM2IDYzLjc2NjIgMjkuMjQ2MkM2My43NTUgMjkuMjY3MiA2My43NDYyIDI5LjI4OTggNjMuNzQwNSAyOS4zMTNDNjMuNzM5IDI5LjMxODMgNjMuNzM3NyAyOS4zMjM1IDYzLjczNjUgMjkuMzI4N0M2My43MzQ4IDI5LjMzNTggNjMuNzMzMiAyOS4zNDMgNjMuNzMyIDI5LjM1QzYzLjczMTggMjkuMzU0NyA2My43MzE2IDI5LjM1OTcgNjMuNzMxNSAyOS4zNjQ3QzYzLjczMTEgMjkuMzc1IDYzLjczMTIgMjkuMzg1NSA2My43MzE3IDI5LjM5NkM2My43MzE4IDI5LjM5OSA2My43MzIgMjkuNDAyIDYzLjczMjIgMjkuNDA1QzYzLjczNCAyOS40MzE1IDYzLjczODIgMjkuNDU3NSA2My43NDQ1IDI5LjQ4MkM2My43NDczIDI5LjQ5MzUgNjMuNzUwNSAyOS41MDQzIDYzLjc1NDIgMjkuNTE0OEM2My43NiAyOS41MzEyIDYzLjc2NzUgMjkuNTQ2NSA2My43NzYgMjkuNTYwN0M2My43NzkyIDI5LjU2NjUgNjMuNzgyNyAyOS41NzIzIDYzLjc4NjUgMjkuNTc3OEM2My43OTc1IDI5LjU5MzggNjMuODA5NyAyOS42MDg1IDYzLjgyMzIgMjkuNjIxN0M2My44MjY1IDI5LjYyNTUgNjMuODMgMjkuNjI5IDYzLjgzMzUgMjkuNjMyNUM2My44NDU3IDI5LjY0NDUgNjMuODU5IDI5LjY1NTggNjMuODczNSAyOS42NjU1QzYzLjg3ODUgMjkuNjY5IDYzLjg4MzUgMjkuNjcyMyA2My44ODg3IDI5LjY3NTVDNjMuODk5NyAyOS42ODIgNjMuOTExMiAyOS42ODggNjMuOTIzMiAyOS42OTI1QzYzLjkyODUgMjkuNjk0NSA2My45MzM3IDI5LjY5NjMgNjMuOTM5IDI5LjY5OEM2My45NTY1IDI5LjcwNCA2My45NzQ1IDI5LjcwODIgNjMuOTkzMiAyOS43MUgyOS43MDVDNjQuMDAxNSAyOS43MSA2NC4wMSAyOS43MDkzIDY0LjAxODUgMjkuNzA4QzY0LjAyODIgMjkuNzA2NSA2NC4wMzggMjkuNzA0MiA2NC4wNDc1IDI5LjcwMUM2NC4wNTI1IDI5LjY5OTMgNjQuMDU3MiAyOS42OTc1IDY0LjA2MiAyOS42OTU1QzY0LjA3NDIgMjkuNjkwNSA2NC4wODYgMjkuNjg0NSA2NC4wOTc1IDI5LjY3NzVDNjQuMTAyNSAyOS42NzQzIDY0LjEwNzUgMjkuNjcxIDY0LjExMjUgMjkuNjY3NVM2NC4xMjY1IDI5LjY1NTggNjQuMTM4NSAyOS42NDM1QzY0LjE0MjIgMjkuNjQgNjQuMTQ1NyAyOS42MzYzIDY0LjE0OSAyOS42MzI1QzY0LjE2MjcgMjkuNjE5IDY0LjE3NTIgMjkuNjA0MiA2NC4xODYgMjkuNTg4QzY0LjE4OTcgMjkuNTgyNyA2NC4xOTMgMjkuNTc3MiA2NC4xOTY1IDI5LjU3MTVDNjQuMjA1MiAyOS41NTcgNjQuMjEzIDI5LjU0MTUgNjQuMjE5IDI5LjUyNUM2NC4yMjI3IDI5LjUxNDUgNjQuMjI2IDI5LjUwMzcgNjQuMjI4NyAyOS40OTI1QzY0LjIzNSAyOS40NjggNjQuMjM5MiAyOS40NDIgNjQuMjQxIDI5LjQxNUM2NC4yNDEzIDI5LjQxMTIgNjQuMjQxNSAyOS40MDc1IDY0LjI0MTcgMjkuNDAzN0M2NC4yNDIyIDI5LjM5MyA2NC4yNDIzIDI5LjM4MjIgNjQuMjQxNyAyOS4zNzE3QzY0LjI0MTUgMjkuMzY3IDY0LjI0MTMgMjkuMzYyMiA2NC4yNDEgMjkuMzU3N0M2NC4yMzk3IDI5LjM0OTIgNjQuMjM4MiAyOS4zNDA4IDY0LjIzNjIgMjkuMzMyNUM2NC4yMzUgMjkuMzI3NSA2NC4yMzM3IDI5LjMyMjUgNjQuMjMyMiAyOS4zMTc1QzY0LjIyNjUgMjkuMjk0MiA2NC4yMTc3IDI5LjI3MTggNjQuMjA2NSAyOS4yNTFDNjQuMjAxMiAyOS4yNDA3IDY0LjE5NTIgMjkuMjMxIDY0LjE4ODcgMjkuMjIxN0M2NC4xODYyIDI5LjIxNzcgNjQuMTgzNyAyOS4yMTM3IDY0LjE4MSAyOS4yMDk3QzY0LjE3NDUgMjkuMjAwMiA2NC4xNjcyIDI5LjE5MTIgNjQuMTU5NSAyOS4xODNDNjQuMTU0MiAyOS4xNzc1IDY0LjE0ODcgMjkuMTcyNyA2NC4xNDMgMjkuMTY4QzY0LjE0IDI5LjE2NTIgNjQuMTM2NyAyOS4xNjI1IDY0LjEzMzIgMjkuMTU5N0M2NC4xMjc3IDI5LjE1NTIgNjQuMTIyMiAyOS4xNTA3IDY0LjExNjUgMjkuMTQ2N0M2NC4xMTEyIDI5LjE0MjcgNjQuMTA1NyAyOS4xMzg1IDY0LjEgMjkuMTM0NUw2NC4wODkgMjkuMTI3NUw2My45MzQgMzEuNjAxWiIgZmlsbD0iI0NDQ0NDQyIvPgo8L3N2Zz4K"
+                    src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01NS41MDcgMzEuMDk1SDI0LjI2MVYzMy4zMzNINTUuNTA3VjMxLjA5NVoiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01NS41MDcgNDIuMzgxSDI0LjI2MVY0NC42MTlINTUuNTA3VjQyLjM4MVoiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0zOS44ODEgNTMuNjY3SDI0LjI2MVY1NS45MDVIMzkuODgxVjUzLjY2N1oiIGZpbGw9IiNDQ0NDQ0MiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02NS45OTggMjcuOTk4VjU5LjMzM0gxMy45OThWMjAuNjY3SDU4LjY2N0w2NS45OTggMjcuOTk4Wk02MS42NjUgMjkuMzM0SDU3LjMzMVYyNS4wMDFMNjEuNjY1IDI5LjMzNFpNNjMuOTM0IDMxLjYwMUw1NS4wNjQgMjIuNzMyQzU0Ljk2ODQgMjIuNjM0MyA1NC44MzUgMjIuNjY2OCA1NC43OTQ3IDIyLjY4MTNDNTQuNzgyMiAyMi42ODYgNTQuNzcyOCAyMi42ODk1IDU0Ljc2NjcgMjIuNjkwN0M1NC43NjE0IDIyLjY5MTcgNTQuNzUzNyAyMi42OTMzIDU0Ljc0NTMgMjIuNjk0N0M1NC43MzkgMjIuNjk1NyA1NC43MzI0IDIyLjY5NjcgNTQuNzI1NSAyMi42OTc1QzU0LjcyMTYgMjIuNjk4IDU0LjcxNzcgMjIuNjk4NCA1NC43MTM3IDIyLjY5ODhDNTQuNzA1NiAyMi42OTk1IDU0LjY5NzIgMjIuNyA1NC42ODggMjIuN0gxMy45OThDMTIuNzEzIDIyLjcgMTEuNjY1IDIzLjc0OCAxMS42NjUgMjVWNkguMzMzQzExLjY2NSA2MC42MjUgMTUuMzkgNjEuNjY3IDE2LjY2NSA2MS42NjdINjMuMzMyQzY0LjYwNyA2MS42NjcgNjguMzMyIDYwLjYyNSA2OC4zMzIgNTUuMDAxVjI5LjMzNEM2OC4zMzIgMjkuMzI1IDY4LjMzMjcgMjkuMzE3IDY4LjMzMzMgMjkuMzA4OEM2OC4zMzM3IDI5LjMwMzIgNjguMzM0MiAyOS4yOTc0IDY4LjMzNDUgMjkuMjkxNEM2OC4zMzUzIDI5LjI3NjcgNjguMzM1NyAyOS4yNjEgNjguMzMyIDI5LjI0NTdDNjguMzMxMyAyOS4yNDIgNjguMzMwMyAyOS4yMzc1IDY4LjMyOTIgMjkuMjMyN0M2OC4zMjgyIDI5LjIyOCA2OC4zMjcgMjkuMjIzIDY4LjMyNTcgMjkuMjE4QzY4LjMyMTcgMjkuMjA1IDY4LjMxNyAyOS4xOTIzIDY4LjMxMDcgMjkuMTgxN0M2OC4zMDQ3IDI5LjE3MTcgNjguMjk3MiAyOS4xNjI4IDY4LjI4OTIgMjkuMTU1N0M2OC4yNzk3IDI5LjE0NzUgNjguMjY5NSAyOS4xNDA4IDY4LjI1OTQgMjkuMTM1N0M2OC4yNTQyIDI5LjEzMjUgNjguMjQ5NSAyOS4xMzAyIDY4LjI0NSAyOS4xMjhDNjguMjMzMiAyOS4xMjI1IDY4LjIyMTIgMjkuMTE4MiA2OC4yMDkgMjkuMTE1QzY4LjIwMTUgMjkuMTEzMiA2OC4xOTQgMjkuMTExNSA2OC4xODY1IDI5LjExMDJDNjguMTgxNyAyOS4xMDk1IDY4LjE3NyAyOS4xMDg4IDY4LjE3MjIgMjkuMTA4QzY4LjE2MSAyOS4xMDY1IDY4LjE0OTUgMjkuMTA2IDY4LjEzOCAyOS4xMDZINjMuOTk4QzYzLjk2MiAyOS4xMDYgNjMuOTI2IDI5LjExMSA2My44OSAyOS4xMkg2My44ODc1QzYzLjg4MzcgMjkuMTIyNSA2My44NzkgMjkuMTI1NyA2My44NzQyIDI5LjEyOU02My44NzQyIDI5LjEyOUM2My44NjggMjkuMTMzMyA2My44NjI1IDI5LjEzOCA2My44NTcyIDI5LjE0MkM2My44NTE3IDI5LjE0NiA2My44NDYgMjkuMTUwNSA2My44NDA1IDI5LjE1NUM2My44MzcyIDI5LjE1OCA2My44MzM3IDI5LjE2MDcgNjMuODMwNSAyOS4xNjM1QzYzLjgyNDcgMjkuMTY4NSA2My44MTg3IDI5LjE3MzIgNjMuODEzMiAyOS4xNzkzQzYzLjgwNTcgMjkuMTg3MiA2My43OTg1IDI5LjE5NTggNjMuNzkyIDI5LjIwNUM2My43ODkyIDI5LjIwODcgNjMuNzg2NSAyOS4yMTI3IDYzLjc4NCAyOS4yMTY3QzYzLjc3NzUgMjkuMjI2IDYzLjc3MTUgMjkuMjM2IDYzLjc2NjIgMjkuMjQ2MkM2My43NTUgMjkuMjY3MiA2My43NDYyIDI5LjI4OTggNjMuNzQwNSAyOS4zMTNDNjMuNzM5IDI5LjMxODMgNjMuNzM3NyAyOS4zMjM1IDYzLjczNjUgMjkuMzI4N0M2My43MzQ4IDI5LjMzNTggNjMuNzMzMiAyOS4zNDMgNjMuNzMyIDI5LjM1QzYzLjczMTggMjkuMzU0NyA2My43MzE2IDI5LjM1OTcgNjMuNzMxNSAyOS4zNjQ3QzYzLjczMTEgMjkuMzc1IDYzLjczMTIgMjkuMzg1NSA2My43MzE3IDI5LjM5NkM2My43MzE4IDI5LjM5OSA2My43MzIgMjkuNDAyIDYzLjczMjIgMjkuNDA1QzYzLjczNCAyOS40MzE1IDYzLjczODIgMjkuNDU3NSA2My43NDQ1IDI5LjQ4MkM2My43NDczIDI5LjQ5MzUgNjMuNzUwNSAyOS41MDQzIDYzLjc1NDIgMjkuNTE0OEM2My43NiAyOS41MzEyIDYzLjc2NzUgMjkuNTQ2NSA2My43NzYgMjkuNTYwN0M2My43NzkyIDI5LjU2NjUgNjMuNzgyNyAyOS41NzIzIDYzLjc4NjUgMjkuNTc3OEM2My43OTc1IDI5LjU5MzggNjMuODA5NyAyOS42MDg1IDYzLjgyMzIgMjkuNjIxN0M2My44MjY1IDI5LjYyNTUgNjMuODMgMjkuNjI5IDYzLjgzMzUgMjkuNjMyNUM2My44NDU3IDI5LjY0NDUgNjMuODU5IDI5LjY1NTggNjMuODczNSAyOS42NjU1QzYzLjg3ODUgMjkuNjY5IDYzLjg4MzUgMjkuNjcyMyA2My44ODg3IDI5LjY3NTVDNjMuODk5NyAyOS42ODIgNjMuOTExMiAyOS42ODggNjMuOTIzMiAyOS42OTI1QzYzLjkyODUgMjkuNjk0NSA2My45MzM3IDI5LjY5NjMgNjMuOTM5IDI5LjY5OEM2My45NTY1IDI5LjcwNCA2My45NzQ1IDI5LjcwODIgNjMuOTkzMiAyOS43MUgyOS43MDVDNjQuMDAxNSAyOS43MSA2NC4wMSAyOS43MDkzIDY0LjAxODUgMjkuNzA4QzY0LjAyODIgMjkuNzA2NSA2NC4wMzggMjkuNzA0MiA2NC4wNDc1IDI5LjcwMUM2NC4wNTI1IDI5LjY5OTMgNjQuMDU3MiAyOS42OTc1IDY0LjA2MiAyOS42OTU1QzY0LjA3NDIgMjkuNjkwNSA2NC4wODYgMjkuNjg0NSA2NC4wOTc1IDI5LjY3NzVDNjQuMTAyNSAyOS42NzQzIDY0LjEwNzUgMjkuNjcxIDY0LjExMjUgMjkuNjY3NVM2NC4xMjY1IDI5LjY1NTggNjQuMTM4NSAyOS42NDM1QzY0LjE0MjIgMjkuNjQgNjQuMTQ1NyAyOS42MzYzIDY0LjE0OSAyOS42MzI1QzY0LjE2MjcgMjkuNjE5IDY0LjE3NTIgMjkuNjA0MiA2NC4xODYgMjkuNTg4QzY0LjE4OTcgMjkuNTgyNyA2NC4xOTMgMjkuNTc3MiA2NC4xOTY1IDI5LjU3MTVDNjQuMjA1MiAyOS41NTcgNjQuMjEzIDI5LjU0MTUgNjQuMjE5IDI5LjUyNUM2NC4yMjI3IDI5LjUxNDUgNjQuMjI2IDI5LjUwMzcgNjQuMjI4NyAyOS40OTI1QzY0LjIzNSAyOS40NjggNjQuMjM5MiAyOS40NDIgNjQuMjQxIDI5LjQxNUM2NC4yNDEzIDI5LjQxMTIgNjQuMjQxNSAyOS40MDc1IDY0LjI0MTcgMjkuNDAzN0M2NC4yNDIyIDI5LjM5MyA2NC4yNDIzIDI5LjM4MjIgNjQuMjQxNyAyOS4zNzE3QzY0LjI0MTUgMjkuMzY3IDY0LjI0MTMgMjkuMzYyMiA2NC4yNDEgMjkuMzU3N0M2NC4yMzk3IDI5LjM0OTIgNjQuMjM4MiAyOS4zNDA4IDY0LjIzNjIgMjkuMzMyNUM2NC4yMzUgMjkuMzI3NSA2NC4yMzM3IDI5LjMyMjUgNjQuMjMyMiAyOS4zMTc1QzY0LjIyNjUgMjkuMjk0MiA2NC4yMTc3IDI5LjI3MTggNjQuMjA2NSAyOS4yNTFDNjQuMjAxMiAyOS4yNDA3IDY0LjE5NTIgMjkuMjMxIDY0LjE4ODcgMjkuMjIxN0M2NC4xODYyIDI5LjIxNzcgNjQuMTgzNyAyOS4yMTM3IDY0LjE4MSAyOS4yMDk3QzY0LjE3NDUgMjkuMjAwMiA2NC4xNjcyIDI5LjE5MTIgNjQuMTU5NSAyOS4xODNDNjQuMTU0MiAyOS4xNzc1IDY0LjE0ODcgMjkuMTcyNyA2NC4xNDMgMjkuMTY4QzY0LjE0IDI5LjE2NTIgNjQuMTM2NyAyOS4xNjI1IDY0LjEzMzIgMjkuMTU5N0M2NC4xMjc3IDI5LjE1NTIgNjQuMTIyMiAyOS4xNTA3IDY0LjExNjUgMjkuMTQ2N0M2NC4xMTEyIDI5LjE0MjcgNjQuMTA1NyAyOS4xMzg1IDY0LjEgMjkuMTM0NUw2NC4wODkgMjkuMTI3NUw2My45MzQgMzEuNjAxWiIgZmlsbD0iI0NDQ0NDQyIvPgo8L3N2Zz4K"
                     alt="Empty state"
                     width="80"
                     height="80"
@@ -444,6 +444,9 @@ const CreateOrderForm = ({
   handleAddItem,
   handleRemoveItem,
   handleItemChange,
+  isViewMode = false,
+  isEditMode = false,
+  isBasedOnMode = false,
 }) => {
   const [servicePackage, setServicePackage] = useState(
     newOrder.servicePackage || "light"
@@ -452,20 +455,278 @@ const CreateOrderForm = ({
     newOrder.pickupOption || "pickup"
   );
   const [productListDialogOpen, setProductListDialogOpen] = useState(false);
+  const [provinces, setProvinces] = useState([
+    { id: 201, name: "Hà Nội" },
+    { id: 202, name: "TP Hồ Chí Minh" },
+    { id: 203, name: "Đà Nẵng" },
+  ]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const [senderProvinces, setSenderProvinces] = useState([
+    { id: 201, name: "Hà Nội" },
+    { id: 202, name: "TP Hồ Chí Minh" },
+    { id: 203, name: "Đà Nẵng" },
+  ]);
+  const [senderDistricts, setSenderDistricts] = useState([]);
+  const [senderWards, setSenderWards] = useState([]);
+
+  // Sender province/district/ward effects
+  useEffect(() => {
+    if (newOrder.from_province_id) {
+      // In a real implementation, you would fetch districts from an API
+      const fetchedDistricts = [];
+
+      if (newOrder.from_province_id === 202) {
+        // HCM
+        fetchedDistricts.push(
+          { id: 1442, name: "Quận 1", province_id: 202 },
+          { id: 1443, name: "Quận 2", province_id: 202 },
+          { id: 1444, name: "Quận 3", province_id: 202 },
+          { id: 1445, name: "Quận 10", province_id: 202 }
+        );
+      } else if (newOrder.from_province_id === 201) {
+        // Hanoi
+        fetchedDistricts.push(
+          { id: 1447, name: "Quận Ba Đình", province_id: 201 },
+          { id: 1448, name: "Quận Hoàn Kiếm", province_id: 201 }
+        );
+      } else {
+        // Da Nang or other
+        fetchedDistricts.push(
+          { id: 1449, name: "Quận Hải Châu", province_id: 203 },
+          { id: 1450, name: "Quận Thanh Khê", province_id: 203 }
+        );
+      }
+
+      setSenderDistricts(fetchedDistricts);
+      // Clear ward and district selection when province changes
+      setNewOrder({
+        ...newOrder,
+        from_district_id: null,
+        from_ward_code: "",
+        from_district_name: "",
+        from_ward_name: "",
+      });
+      setSenderWards([]);
+    }
+  }, [newOrder.from_province_id]);
+
+  useEffect(() => {
+    if (newOrder.from_district_id) {
+      // In a real implementation, you would fetch wards from an API
+      const fetchedWards = [];
+
+      // Simple mock data for different districts
+      if (newOrder.from_district_id === 1444) {
+        // Quận 3 - HCM
+        fetchedWards.push(
+          { code: "W01", name: "Phường 1", district_id: 1444 },
+          { code: "W02", name: "Phường 2", district_id: 1444 },
+          { code: "W03", name: "Phường 3", district_id: 1444 },
+          { code: "W14", name: "Phường 14", district_id: 1444 }
+        );
+      } else {
+        // Default wards for other districts
+        fetchedWards.push(
+          {
+            code: "W07",
+            name: "Phường A",
+            district_id: newOrder.from_district_id,
+          },
+          {
+            code: "W08",
+            name: "Phường B",
+            district_id: newOrder.from_district_id,
+          }
+        );
+      }
+
+      setSenderWards(fetchedWards);
+      // Set district name and clear ward selection
+      const selectedDistrict = senderDistricts.find(
+        (d) => d.id === newOrder.from_district_id
+      );
+      setNewOrder({
+        ...newOrder,
+        from_district_name: selectedDistrict ? selectedDistrict.name : "",
+        from_ward_code: "",
+        from_ward_name: "",
+      });
+    }
+  }, [newOrder.from_district_id, senderDistricts]);
+
+  useEffect(() => {
+    if (newOrder.from_ward_code) {
+      const selectedWard = senderWards.find(
+        (w) => w.code === newOrder.from_ward_code
+      );
+      if (selectedWard) {
+        setNewOrder({
+          ...newOrder,
+          from_ward_name: selectedWard.name,
+        });
+      }
+    }
+  }, [newOrder.from_ward_code, senderWards]);
+
+  // Simulate district data based on selected province
+  useEffect(() => {
+    if (newOrder.to_province_id) {
+      // In a real implementation, you would fetch districts from an API
+      const fetchedDistricts = [];
+
+      if (newOrder.to_province_id === 202) {
+        // HCM
+        fetchedDistricts.push(
+          { id: 1442, name: "Quận 1", province_id: 202 },
+          { id: 1443, name: "Quận 2", province_id: 202 },
+          { id: 1444, name: "Quận 3", province_id: 202 },
+          { id: 1445, name: "Quận 10", province_id: 202 }
+        );
+      } else if (newOrder.to_province_id === 201) {
+        // Hanoi
+        fetchedDistricts.push(
+          { id: 1447, name: "Quận Ba Đình", province_id: 201 },
+          { id: 1448, name: "Quận Hoàn Kiếm", province_id: 201 }
+        );
+      } else {
+        // Da Nang or other
+        fetchedDistricts.push(
+          { id: 1449, name: "Quận Hải Châu", province_id: 203 },
+          { id: 1450, name: "Quận Thanh Khê", province_id: 203 }
+        );
+      }
+
+      setDistricts(fetchedDistricts);
+      // Clear ward and district selection when province changes
+      setNewOrder({
+        ...newOrder,
+        to_district_id: null,
+        to_ward_code: "",
+        to_district_name: "",
+        to_ward_name: "",
+      });
+      setWards([]);
+    }
+  }, [newOrder.to_province_id]);
+
+  // Simulate ward data based on selected district
+  useEffect(() => {
+    if (newOrder.to_district_id) {
+      // In a real implementation, you would fetch wards from an API
+      const fetchedWards = [];
+
+      // Simple mock data for different districts
+      if (newOrder.to_district_id === 1444) {
+        // Quận 3 - HCM
+        fetchedWards.push(
+          { code: "W01", name: "Phường 1", district_id: 1444 },
+          { code: "W02", name: "Phường 2", district_id: 1444 },
+          { code: "W03", name: "Phường 3", district_id: 1444 },
+          { code: "W14", name: "Phường 14", district_id: 1444 }
+        );
+      } else if (newOrder.to_district_id === 1445) {
+        // Quận 10 - HCM
+        fetchedWards.push(
+          { code: "W04", name: "Phường 4", district_id: 1445 },
+          { code: "W05", name: "Phường 5", district_id: 1445 },
+          { code: "W06", name: "Phường 6", district_id: 1445 }
+        );
+      } else {
+        // Default wards for other districts
+        fetchedWards.push(
+          {
+            code: "W07",
+            name: "Phường A",
+            district_id: newOrder.to_district_id,
+          },
+          {
+            code: "W08",
+            name: "Phường B",
+            district_id: newOrder.to_district_id,
+          }
+        );
+      }
+
+      setWards(fetchedWards);
+      // Set district name and clear ward selection
+      const selectedDistrict = districts.find(
+        (d) => d.id === newOrder.to_district_id
+      );
+      setNewOrder({
+        ...newOrder,
+        to_district_name: selectedDistrict ? selectedDistrict.name : "",
+        to_ward_code: "",
+        to_ward_name: "",
+      });
+    }
+  }, [newOrder.to_district_id, districts]);
+
+  // Set ward name when ward is selected
+  useEffect(() => {
+    if (newOrder.to_ward_code) {
+      const selectedWard = wards.find((w) => w.code === newOrder.to_ward_code);
+      if (selectedWard) {
+        setNewOrder({
+          ...newOrder,
+          to_ward_name: selectedWard.name,
+        });
+      }
+    }
+  }, [newOrder.to_ward_code, wards]);
 
   const handleServicePackageChange = (event) => {
-    setServicePackage(event.target.value);
-    setNewOrder({ ...newOrder, servicePackage: event.target.value });
+    if (isViewMode) return;
+    const selectedPackage = event.target.value;
+    setServicePackage(selectedPackage);
+
+    // Map the service package to the appropriate service_type_id for GHN API
+    // According to GHN documentation:
+    // - 1: Express (nhanh)
+    // - 2: Standard (tiêu chuẩn)
+    let serviceTypeId = 2; // Default to Standard
+
+    if (selectedPackage === "express") {
+      serviceTypeId = 1; // Express
+    }
+
+    setNewOrder({
+      ...newOrder,
+      servicePackage: selectedPackage,
+      service_type_id: serviceTypeId,
+    });
   };
 
   const handlePickupOptionChange = (event) => {
+    if (isViewMode) return;
     setPickupOption(event.target.value);
     setNewOrder({ ...newOrder, pickupOption: event.target.value });
   };
 
   const handleAddProduct = (product) => {
+    if (isViewMode) return;
+
+    // Create a new item object matching the initialOrderPayload structure
+    const newItem = {
+      name: product.name || "",
+      code: product.code || "",
+      quantity: product.quantity || 1,
+      price: 0, // Default price, can be updated later
+      length: 0, // Default dimensions, can be updated later
+      width: 0,
+      height: 0,
+      weight: product.weight || 0,
+      category: {
+        level1: "", // Default category
+      },
+    };
+
+    // Add the new item to the items array
     setNewOrder({
       ...newOrder,
+      items: [...(newOrder.items || []), newItem],
+      // Also update the old properties for backward compatibility
       productName: product.name,
       productWeight: product.weight,
       productQuantity: product.quantity,
@@ -473,12 +734,50 @@ const CreateOrderForm = ({
     });
   };
 
+  // Initialize items array if empty
+  useEffect(() => {
+    if (!newOrder.items || newOrder.items.length === 0) {
+      // Create a default item based on existing product data or empty values
+      const defaultItem = {
+        name: newOrder.productName || "",
+        code: newOrder.productCode || "",
+        quantity: parseInt(newOrder.productQuantity) || 1,
+        price: parseInt(newOrder.codAmount) || 0,
+        length: parseInt(newOrder.packageLength) || 0,
+        width: parseInt(newOrder.packageWidth) || 0,
+        height: parseInt(newOrder.packageHeight) || 0,
+        weight: parseInt(newOrder.productWeight) || 0,
+        category: {
+          level1: "Áo", // Default category
+        },
+      };
+
+      // Only initialize if there's at least some data
+      if (
+        newOrder.productName ||
+        newOrder.productCode ||
+        newOrder.senderPhone
+      ) {
+        setNewOrder({
+          ...newOrder,
+          items: [defaultItem],
+        });
+      }
+    }
+  }, []);
+
   return (
     <>
       <DialogTitle
         sx={{ bgcolor: "var(--light-green)", color: "var(--primary-green)" }}
       >
-        Tạo đơn mới
+        {isViewMode
+          ? `Chi tiết đơn hàng #${newOrder.orderCode || newOrder.id}`
+          : isEditMode
+          ? `Chỉnh sửa đơn hàng #${newOrder.orderCode || newOrder.id}`
+          : isBasedOnMode
+          ? "Tạo đơn hàng mới từ đơn hiện có"
+          : "Tạo đơn mới"}
       </DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={3}>
@@ -501,34 +800,148 @@ const CreateOrderForm = ({
                 Bên gửi
               </Typography>
 
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Số điện thoại"
-                  fullWidth
-                  required
-                  value={newOrder.senderPhone || ""}
-                  onChange={(e) =>
-                    setNewOrder({ ...newOrder, senderPhone: e.target.value })
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">📱</InputAdornment>
-                    ),
-                  }}
-                />
-              </FormControl>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Số điện thoại"
+                    fullWidth
+                    required
+                    disabled={isViewMode}
+                    value={newOrder.from_phone || newOrder.senderPhone || ""}
+                    onChange={(e) =>
+                      !isViewMode &&
+                      setNewOrder({
+                        ...newOrder,
+                        from_phone: e.target.value,
+                        senderPhone: e.target.value,
+                      })
+                    }
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">📱</InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
 
-              <FormControl fullWidth margin="normal">
-                <TextField
-                  label="Địa chỉ"
-                  fullWidth
-                  required
-                  value={newOrder.senderAddress || ""}
-                  onChange={(e) =>
-                    setNewOrder({ ...newOrder, senderAddress: e.target.value })
-                  }
-                />
-              </FormControl>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    label="Họ tên người gửi"
+                    fullWidth
+                    required
+                    disabled={isViewMode}
+                    value={newOrder.from_name || ""}
+                    onChange={(e) =>
+                      !isViewMode &&
+                      setNewOrder({
+                        ...newOrder,
+                        from_name: e.target.value,
+                      })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    label="Địa chỉ"
+                    fullWidth
+                    required
+                    disabled={isViewMode}
+                    value={
+                      newOrder.from_address || newOrder.senderAddress || ""
+                    }
+                    onChange={(e) =>
+                      !isViewMode &&
+                      setNewOrder({
+                        ...newOrder,
+                        from_address: e.target.value,
+                        senderAddress: e.target.value,
+                      })
+                    }
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth disabled={isViewMode}>
+                    <InputLabel>Tỉnh/Thành phố</InputLabel>
+                    <Select
+                      label="Tỉnh/Thành phố"
+                      value={newOrder.from_province_id || ""}
+                      onChange={(e) => {
+                        const provinceId = e.target.value;
+                        const selectedProvince = senderProvinces.find(
+                          (p) => p.id === provinceId
+                        );
+                        setNewOrder({
+                          ...newOrder,
+                          from_province_id: provinceId,
+                          from_province_name: selectedProvince
+                            ? selectedProvince.name
+                            : "",
+                        });
+                      }}
+                    >
+                      {senderProvinces.map((province) => (
+                        <MenuItem key={province.id} value={province.id}>
+                          {province.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    fullWidth
+                    disabled={!newOrder.from_province_id || isViewMode}
+                  >
+                    <InputLabel>Quận/Huyện</InputLabel>
+                    <Select
+                      label="Quận/Huyện"
+                      value={newOrder.from_district_id || ""}
+                      onChange={(e) => {
+                        setNewOrder({
+                          ...newOrder,
+                          from_district_id: e.target.value,
+                          senderDistrict: e.target.value.toString(),
+                        });
+                      }}
+                    >
+                      {senderDistricts.map((district) => (
+                        <MenuItem key={district.id} value={district.id}>
+                          {district.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <FormControl
+                    fullWidth
+                    disabled={!newOrder.from_district_id || isViewMode}
+                  >
+                    <InputLabel>Phường/Xã</InputLabel>
+                    <Select
+                      label="Phường/Xã"
+                      value={newOrder.from_ward_code || ""}
+                      onChange={(e) => {
+                        setNewOrder({
+                          ...newOrder,
+                          from_ward_code: e.target.value,
+                          senderWard: e.target.value,
+                        });
+                      }}
+                    >
+                      {senderWards.map((ward) => (
+                        <MenuItem key={ward.code} value={ward.code}>
+                          {ward.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
 
               <FormControl fullWidth sx={{ mt: 2 }}>
                 <RadioGroup
@@ -596,25 +1009,12 @@ const CreateOrderForm = ({
                     label="Số điện thoại"
                     fullWidth
                     required
-                    value={newOrder.receiverPhone || ""}
+                    value={newOrder.to_phone || newOrder.receiverPhone || ""}
                     onChange={(e) =>
                       setNewOrder({
                         ...newOrder,
+                        to_phone: e.target.value,
                         receiverPhone: e.target.value,
-                      })
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Địa chỉ"
-                    fullWidth
-                    required
-                    value={newOrder.receiverAddress || ""}
-                    onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
-                        receiverAddress: e.target.value,
                       })
                     }
                   />
@@ -624,47 +1024,102 @@ const CreateOrderForm = ({
                     label="Họ tên"
                     fullWidth
                     required
-                    value={newOrder.receiverName || ""}
+                    value={newOrder.to_name || newOrder.receiverName || ""}
                     onChange={(e) =>
-                      setNewOrder({ ...newOrder, receiverName: e.target.value })
+                      setNewOrder({
+                        ...newOrder,
+                        to_name: e.target.value,
+                        receiverName: e.target.value,
+                      })
                     }
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12}>
+                  <TextField
+                    label="Địa chỉ"
+                    fullWidth
+                    required
+                    value={
+                      newOrder.to_address || newOrder.receiverAddress || ""
+                    }
+                    onChange={(e) =>
+                      setNewOrder({
+                        ...newOrder,
+                        to_address: e.target.value,
+                        receiverAddress: e.target.value,
+                      })
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
                   <FormControl fullWidth>
-                    <InputLabel>Quận - Huyện</InputLabel>
+                    <InputLabel>Tỉnh/Thành phố</InputLabel>
                     <Select
-                      label="Quận - Huyện"
-                      value={newOrder.receiverDistrict || ""}
-                      onChange={(e) =>
+                      label="Tỉnh/Thành phố"
+                      value={newOrder.to_province_id || ""}
+                      onChange={(e) => {
+                        const provinceId = e.target.value;
+                        const selectedProvince = provinces.find(
+                          (p) => p.id === provinceId
+                        );
                         setNewOrder({
                           ...newOrder,
-                          receiverDistrict: e.target.value,
-                        })
-                      }
+                          to_province_id: provinceId,
+                          to_province_name: selectedProvince
+                            ? selectedProvince.name
+                            : "",
+                        });
+                      }}
                     >
-                      <MenuItem value="quan3">Quận 3 - Hồ Chí Minh</MenuItem>
-                      <MenuItem value="quan1">Quận 1 - Hồ Chí Minh</MenuItem>
-                      <MenuItem value="quan2">Quận 2 - Hồ Chí Minh</MenuItem>
+                      {provinces.map((province) => (
+                        <MenuItem key={province.id} value={province.id}>
+                          {province.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Phường - Xã</InputLabel>
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth disabled={!newOrder.to_province_id}>
+                    <InputLabel>Quận/Huyện</InputLabel>
                     <Select
-                      label="Phường - Xã"
-                      value={newOrder.receiverWard || ""}
-                      onChange={(e) =>
+                      label="Quận/Huyện"
+                      value={newOrder.to_district_id || ""}
+                      onChange={(e) => {
                         setNewOrder({
                           ...newOrder,
-                          receiverWard: e.target.value,
-                        })
-                      }
+                          to_district_id: e.target.value,
+                          receiverDistrict: e.target.value.toString(),
+                        });
+                      }}
                     >
-                      <MenuItem value="phuong8">Phường 8</MenuItem>
-                      <MenuItem value="phuong9">Phường 9</MenuItem>
-                      <MenuItem value="phuong10">Phường 10</MenuItem>
+                      {districts.map((district) => (
+                        <MenuItem key={district.id} value={district.id}>
+                          {district.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth disabled={!newOrder.to_district_id}>
+                    <InputLabel>Phường/Xã</InputLabel>
+                    <Select
+                      label="Phường/Xã"
+                      value={newOrder.to_ward_code || ""}
+                      onChange={(e) => {
+                        setNewOrder({
+                          ...newOrder,
+                          to_ward_code: e.target.value,
+                          receiverWard: e.target.value,
+                        });
+                      }}
+                    >
+                      {wards.map((ward) => (
+                        <MenuItem key={ward.code} value={ward.code}>
+                          {ward.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -710,69 +1165,241 @@ const CreateOrderForm = ({
                     </Button>
                   </Box>
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="Sản phẩm"
-                        fullWidth
-                        required
-                        value={newOrder.productName || "Áo Polo"}
-                        onChange={(e) =>
-                          setNewOrder({
-                            ...newOrder,
-                            productName: e.target.value,
-                          })
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="KL (gram)"
-                        fullWidth
-                        type="number"
-                        required
-                        value={newOrder.productWeight || "1,200"}
-                        onChange={(e) =>
-                          setNewOrder({
-                            ...newOrder,
-                            productWeight: e.target.value,
-                          })
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="Số lượng"
-                        fullWidth
-                        type="number"
-                        required
-                        value={newOrder.productQuantity || "1"}
-                        onChange={(e) =>
-                          setNewOrder({
-                            ...newOrder,
-                            productQuantity: e.target.value,
-                          })
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        label="Mã sản phẩm"
-                        fullWidth
-                        value={newOrder.productCode || "Polo123"}
-                        onChange={(e) =>
-                          setNewOrder({
-                            ...newOrder,
-                            productCode: e.target.value,
-                          })
-                        }
-                      />
-                    </Grid>
-                  </Grid>
+                  {newOrder.items && newOrder.items.length > 0 ? (
+                    newOrder.items.map((item, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          mb: 3,
+                          border: "1px solid #f0f0f0",
+                          p: 2,
+                          borderRadius: 1,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            mb: 2,
+                          }}
+                        >
+                          <Typography variant="subtitle2">
+                            Sản phẩm {index + 1}
+                          </Typography>
+                          {newOrder.items.length > 1 && (
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems.splice(index, 1);
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                });
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </Box>
+
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Tên sản phẩm"
+                              fullWidth
+                              required
+                              value={item.name || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].name = e.target.value;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  productName: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="KL (gram)"
+                              fullWidth
+                              type="number"
+                              required
+                              value={item.weight || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].weight =
+                                  parseInt(e.target.value) || 0;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  productWeight: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Số lượng"
+                              fullWidth
+                              type="number"
+                              required
+                              value={item.quantity || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].quantity =
+                                  parseInt(e.target.value) || 1;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  productQuantity: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Mã sản phẩm"
+                              fullWidth
+                              value={item.code || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].code = e.target.value;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  productCode: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Giá (đ)"
+                              fullWidth
+                              type="number"
+                              value={item.price || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].price =
+                                  parseInt(e.target.value) || 0;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Dài (cm)"
+                              fullWidth
+                              type="number"
+                              value={item.length || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].length =
+                                  parseInt(e.target.value) || 0;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  packageLength: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Rộng (cm)"
+                              fullWidth
+                              type="number"
+                              value={item.width || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].width =
+                                  parseInt(e.target.value) || 0;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  packageWidth: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <TextField
+                              label="Cao (cm)"
+                              fullWidth
+                              type="number"
+                              value={item.height || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                updatedItems[index].height =
+                                  parseInt(e.target.value) || 0;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                  packageHeight: e.target.value, // For backward compatibility
+                                });
+                              }}
+                            />
+                          </Grid>
+                          <Grid item xs={12}>
+                            <TextField
+                              label="Loại sản phẩm"
+                              fullWidth
+                              value={item.category?.level1 || ""}
+                              onChange={(e) => {
+                                const updatedItems = [...newOrder.items];
+                                if (!updatedItems[index].category) {
+                                  updatedItems[index].category = { level1: "" };
+                                }
+                                updatedItems[index].category.level1 =
+                                  e.target.value;
+                                setNewOrder({
+                                  ...newOrder,
+                                  items: updatedItems,
+                                });
+                              }}
+                              placeholder="VD: Áo, Quần, Giày, ..."
+                            />
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    ))
+                  ) : (
+                    <Box sx={{ textAlign: "center", py: 3 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        Chưa có sản phẩm nào
+                      </Typography>
+                    </Box>
+                  )}
 
                   <Button
                     startIcon={<AddIcon />}
-                    onClick={handleAddItem}
+                    onClick={() => {
+                      const newItem = {
+                        name: "",
+                        code: "",
+                        quantity: 1,
+                        price: 0,
+                        length: 0,
+                        width: 0,
+                        height: 0,
+                        weight: 0,
+                        category: {
+                          level1: "",
+                        },
+                      };
+
+                      setNewOrder({
+                        ...newOrder,
+                        items: [...(newOrder.items || []), newItem],
+                      });
+                    }}
                     sx={{
                       mt: 2,
                       color: "var(--primary-green)",
@@ -1056,10 +1683,11 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.packageWeight || "200"}
+                    value={newOrder.weight || newOrder.packageWeight || "200"}
                     onChange={(e) =>
                       setNewOrder({
                         ...newOrder,
+                        weight: parseInt(e.target.value) || 0,
                         packageWeight: e.target.value,
                       })
                     }
@@ -1071,10 +1699,11 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.packageLength || "1"}
+                    value={newOrder.length || newOrder.packageLength || "1"}
                     onChange={(e) =>
                       setNewOrder({
                         ...newOrder,
+                        length: parseInt(e.target.value) || 0,
                         packageLength: e.target.value,
                       })
                     }
@@ -1086,9 +1715,13 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.packageWidth || "19"}
+                    value={newOrder.width || newOrder.packageWidth || "19"}
                     onChange={(e) =>
-                      setNewOrder({ ...newOrder, packageWidth: e.target.value })
+                      setNewOrder({
+                        ...newOrder,
+                        width: parseInt(e.target.value) || 0,
+                        packageWidth: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -1098,10 +1731,11 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.packageHeight || "10"}
+                    value={newOrder.height || newOrder.packageHeight || "10"}
                     onChange={(e) =>
                       setNewOrder({
                         ...newOrder,
+                        height: parseInt(e.target.value) || 0,
                         packageHeight: e.target.value,
                       })
                     }
@@ -1123,9 +1757,13 @@ const CreateOrderForm = ({
                     label="Tổng tiền thu hộ (COD)"
                     fullWidth
                     type="number"
-                    value={newOrder.codAmount || "200000"}
+                    value={newOrder.cod_amount || newOrder.codAmount || "0"}
                     onChange={(e) =>
-                      setNewOrder({ ...newOrder, codAmount: e.target.value })
+                      setNewOrder({
+                        ...newOrder,
+                        cod_amount: parseInt(e.target.value) || 0,
+                        codAmount: e.target.value,
+                      })
                     }
                     InputProps={{
                       endAdornment: (
@@ -1139,9 +1777,15 @@ const CreateOrderForm = ({
                     label="Tổng giá trị hàng hóa"
                     fullWidth
                     type="number"
-                    value={newOrder.totalValue || "100000"}
+                    value={
+                      newOrder.insurance_value || newOrder.totalValue || "0"
+                    }
                     onChange={(e) =>
-                      setNewOrder({ ...newOrder, totalValue: e.target.value })
+                      setNewOrder({
+                        ...newOrder,
+                        insurance_value: parseInt(e.target.value) || 0,
+                        totalValue: e.target.value,
+                      })
                     }
                     InputProps={{
                       endAdornment: (
@@ -1155,12 +1799,16 @@ const CreateOrderForm = ({
               <Box sx={{ mt: 2, display: "flex", alignItems: "center" }}>
                 <Checkbox
                   checked={newOrder.cashOnDeliveryFailure || false}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
                     setNewOrder({
                       ...newOrder,
-                      cashOnDeliveryFailure: e.target.checked,
-                    })
-                  }
+                      cashOnDeliveryFailure: isChecked,
+                      cod_failed_amount: isChecked
+                        ? newOrder.cod_failed_amount || 0
+                        : 0,
+                    });
+                  }}
                   color="success"
                 />
                 <Typography>Giao thất bại thu tiền</Typography>
@@ -1168,9 +1816,15 @@ const CreateOrderForm = ({
                   type="number"
                   size="small"
                   sx={{ ml: 2, width: "100px" }}
-                  value={newOrder.failureCharge || "0"}
+                  value={
+                    newOrder.cod_failed_amount || newOrder.failureCharge || "0"
+                  }
                   onChange={(e) =>
-                    setNewOrder({ ...newOrder, failureCharge: e.target.value })
+                    setNewOrder({
+                      ...newOrder,
+                      cod_failed_amount: parseInt(e.target.value) || 0,
+                      failureCharge: e.target.value,
+                    })
                   }
                   disabled={!newOrder.cashOnDeliveryFailure}
                 />
@@ -1181,169 +1835,20 @@ const CreateOrderForm = ({
                   label="Mã đơn riêng khách hàng"
                   fullWidth
                   placeholder="Nhập mã đơn riêng khách hàng (nếu có)"
-                  value={newOrder.customerOrderCode || ""}
+                  value={
+                    newOrder.client_order_code ||
+                    newOrder.customerOrderCode ||
+                    ""
+                  }
                   onChange={(e) =>
                     setNewOrder({
                       ...newOrder,
+                      client_order_code: e.target.value,
                       customerOrderCode: e.target.value,
                     })
                   }
                 />
               </Box>
-            </Paper>
-          </Grid>
-
-          {/* Gói dịch vụ */}
-          <Grid item xs={12}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                mb: 3,
-                border: "1px solid #e0e0e0",
-                borderRadius: "4px",
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{ fontWeight: "bold", mb: 2 }}
-              >
-                Gói dịch vụ
-              </Typography>
-
-              <RadioGroup
-                value={servicePackage}
-                onChange={handleServicePackageChange}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    gap: 2,
-                  }}
-                >
-                  {/* Light package option */}
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      flex: 1,
-                      p: 2,
-                      border: `2px solid ${
-                        servicePackage === "light" ? "#f97316" : "#e0e0e0"
-                      }`,
-                      borderRadius: "4px",
-                      position: "relative",
-                      bgcolor:
-                        servicePackage === "light"
-                          ? "rgba(249, 115, 22, 0.05)"
-                          : "transparent",
-                    }}
-                  >
-                    <FormControlLabel
-                      value="light"
-                      control={
-                        <Radio
-                          sx={{
-                            color: "#f97316",
-                            "&.Mui-checked": {
-                              color: "#f97316",
-                            },
-                          }}
-                        />
-                      }
-                      label={
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Box
-                            component="span"
-                            sx={{ display: "flex", alignItems: "center" }}
-                          >
-                            📦 Hàng nhẹ ( &lt; 20kg )
-                          </Box>
-                          <InfoIcon
-                            sx={{
-                              ml: 1,
-                              fontSize: "1rem",
-                              color: "text.secondary",
-                            }}
-                          />
-                        </Box>
-                      }
-                    />
-                    <Box sx={{ ml: 4, mt: 1 }}>
-                      <Typography variant="body2">
-                        Ngày giao dự kiến: 07/05/2025
-                      </Typography>
-                      <Typography variant="body2">
-                        Cước phí: 22.000 đ
-                      </Typography>
-                    </Box>
-                  </Paper>
-
-                  {/* Heavy package option */}
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      flex: 1,
-                      p: 2,
-                      border: `2px solid ${
-                        servicePackage === "heavy" ? "#f97316" : "#e0e0e0"
-                      }`,
-                      borderRadius: "4px",
-                      position: "relative",
-                      bgcolor:
-                        servicePackage === "heavy"
-                          ? "rgba(249, 115, 22, 0.05)"
-                          : "transparent",
-                    }}
-                  >
-                    <FormControlLabel
-                      value="heavy"
-                      control={
-                        <Radio
-                          sx={{
-                            color: "#f97316",
-                            "&.Mui-checked": {
-                              color: "#f97316",
-                            },
-                          }}
-                        />
-                      }
-                      label={
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Box
-                            component="span"
-                            sx={{ display: "flex", alignItems: "center" }}
-                          >
-                            🚚 Hàng nặng ( &gt;= 20kg )
-                          </Box>
-                          <InfoIcon
-                            sx={{
-                              ml: 1,
-                              fontSize: "1rem",
-                              color: "text.secondary",
-                            }}
-                          />
-                        </Box>
-                      }
-                    />
-                    <Box sx={{ ml: 4, mt: 1 }}>
-                      <Typography variant="body2">
-                        Ngày giao dự kiến: 07/05/2025
-                      </Typography>
-                      <Typography variant="body2">
-                        Cước phí: 2.090.000 đ{" "}
-                        <Typography
-                          component="span"
-                          sx={{ color: "text.secondary", fontSize: "0.8rem" }}
-                        >
-                          (giá ước tính)
-                        </Typography>
-                      </Typography>
-                    </Box>
-                  </Paper>
-                </Box>
-              </RadioGroup>
             </Paper>
           </Grid>
 
@@ -1370,13 +1875,30 @@ const CreateOrderForm = ({
               </Typography>
 
               <RadioGroup
-                value={newOrder.deliveryNote || "no_view"}
-                onChange={(e) =>
-                  setNewOrder({ ...newOrder, deliveryNote: e.target.value })
+                value={
+                  newOrder.required_note ||
+                  newOrder.deliveryNote ||
+                  "KHONGCHOXEMHANG"
                 }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  let mappedValue = value;
+
+                  // Map old values to new API values if needed
+                  if (value === "no_view") mappedValue = "KHONGCHOXEMHANG";
+                  else if (value === "view_no_try")
+                    mappedValue = "CHOXEMHANGKHONGTHU";
+                  else if (value === "try") mappedValue = "CHOTHUHANG";
+
+                  setNewOrder({
+                    ...newOrder,
+                    required_note: mappedValue,
+                    deliveryNote: value,
+                  });
+                }}
               >
                 <FormControlLabel
-                  value="no_view"
+                  value="KHONGCHOXEMHANG"
                   control={
                     <Radio
                       sx={{
@@ -1388,7 +1910,7 @@ const CreateOrderForm = ({
                   label="Không cho xem hàng"
                 />
                 <FormControlLabel
-                  value="view_no_try"
+                  value="CHOXEMHANGKHONGTHU"
                   control={
                     <Radio
                       sx={{
@@ -1400,7 +1922,7 @@ const CreateOrderForm = ({
                   label="Cho xem hàng không cho thử"
                 />
                 <FormControlLabel
-                  value="try"
+                  value="CHOTHUHANG"
                   control={
                     <Radio
                       sx={{
@@ -1419,9 +1941,13 @@ const CreateOrderForm = ({
                 multiline
                 rows={3}
                 sx={{ mt: 2 }}
-                value={newOrder.notes || "Tintest 123"}
+                value={newOrder.note || newOrder.notes || ""}
                 onChange={(e) =>
-                  setNewOrder({ ...newOrder, notes: e.target.value })
+                  setNewOrder({
+                    ...newOrder,
+                    note: e.target.value,
+                    notes: e.target.value,
+                  })
                 }
                 placeholder="Thêm ghi chú cho đơn hàng"
               />
@@ -1564,63 +2090,92 @@ const CreateOrderForm = ({
                 </Box>
               </Box>
 
+              {/* Promotion code section - updated for better visual balance */}
               <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mt: 3,
-                  mb: 3,
-                }}
-              >
-                <Box sx={{ display: "flex", width: "80%", maxWidth: 500 }}>
-                  <TextField
-                    placeholder="Nhập mã khuyến mại"
-                    size="small"
-                    fullWidth
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                      },
-                    }}
-                  />
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      borderColor: "#f97316",
-                      color: "#f97316",
-                      minWidth: 40,
-                      borderTopLeftRadius: 0,
-                      borderBottomLeftRadius: 0,
-                      height: 40,
-                      borderLeft: 0,
-                    }}
-                  >
-                    →
-                  </Button>
-                </Box>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderTop: "1px dashed #e0e0e0",
+                  mt: 2,
+                  pt: 2,
+                  pb: 1,
                 }}
               >
                 <Box
-                  component="img"
-                  src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYuNjc1MzQgOS41MzMwMUw2LjQ1MDMyIDkuMjgyMUw2Ljc3OTQ0IDkuMTIyMjhMOC40OTQ3OSA4LjQ2MzA1TDYuNzkxODMgNy42OTA1M0w2LjQ0OTYzIDcuNTE2MDFMNi42OTE3OCA3LjI0OTk3TDcuNjgwNSA2LjE1MzQyTDYuMjEyNjYgNi4wNzE1NUw1Ljg2NTYxIDYuMDU0ODFMNS44MjU0NiA1LjcwOTc5TDUuNjQ1ODIgMy45ODY3N0w0LjUwMjk5IDUuMjcwMTJMNC4yODEwMyA1LjUyMzk5TDMuOTk5MDQgNS4zMDc5M0wyLjU2NDQyIDNCMEwxLjc0NzgyIDUuNzQ1MzZMMS42MTcxNiA2LjA4Njg2TDEuMjcwMTEgNi4xOTI0NkwwIDYuNjIxNzNMMC45ODUxNDYgNy44Mzg3OUwxLjIyMzY2IDguMTI4OTlMMC45NzIxMSA4LjQwNDI2TDAgOS41MDg5OEwxLjI3OTE0IDkuODMzNTlMMS42Mjk3MiA5LjkyMDYyTDEuNzQ3MTMgMTAuMjY0OUwyLjQ5MTYyIDEyTDMuODcxNDMgMTAuNjcxTDQuMTAwMzQgMTAuNDQ4MUw0LjMzODg3IDEwLjY2MDFMNi4wMTYyNiAxMi4xMTM3TDUuODk5MTMgMTAuMzczNUw1Ljg2NzA0IDEwLjAyNjFMNi4xOTc4NCAxMC4wNTE4TDYuNjc1MzQgOS41MzMwMVoiIGZpbGw9IiNFRjQ0NDQiLz4KPHBhdGggZD0iTTE3LjEyMzcgOS41MDc5OEwxNi4xMzk1IDguMzg5MTdMMTUuODk0NSA4LjEyMDg5TDE2LjE0MDIgNy44NDE0NkwxNy4xMjUgNi42MDk2M0wxNS44NTc5IDYuMTgwMDNMMTUuNTA4MiA2LjA3MDkzTDE1LjM3NjIgNS43MzE1M0wxNC41NTk2IDRMMTMuMTI1IDUuMzA3OTNMMTIuODQ2NCA1LjUyMDY0TDEyLjYyMTQgNS4yNjM0NEwxMS41MTUyIDRMMTEuMzM1NiA1LjcwOTc5TDExLjI5NTQgNi4wNTQ4MUwxMC45NDg0IDYuMDcxNTVMOS40ODAxNiA2LjE4NzkyTDEwLjQ2ODkgNy4yODQ0N0wxMC43MTc5IDcuNTM3NUwxMC4zNzU3IDcuNjkzNTZMOC40OTQ4IDguNDYzMDVMMTAuMjEwMSA5LjEzMTYyTDEwLjU0NTkgOS4yOTgzNkwxMC4zMjA5IDkuNTMzMDFMMTAuOTQ3NyAxMC4wNTE4TDExLjI3ODUgMTAuMDI2MUwxMS4yNDY0IDEwLjM3MzVMMTEuMTI5MyAxMi4xMTM3TDEyLjgwNjcgMTAuNjYwMUwxMy4wNDUyIDEwLjQ0ODFMMTMuMjc0MSAxMC42NzFMMTQuNjU0IDEyTDE1LjM5ODQgMTAuMjY0OUwxNS41MTU4IDkuOTIwNjJMMTUuODY2NCA5LjgzMzU5TDE3LjEyMzcgOS41MDc5OFoiIGZpbGw9IiNGRkQ3MDQiLz4KPHBhdGggZD0iTTEyLjY0NjggNi45MjIzOEwxMS4xODkgNi44NDc4NUwxMC44NTgxIDUuNDcwMjVMMTAuMDAyOSA2LjQ2NjY1TDguNjc1NjUgNi4xMzEyM0w5LjE4MzY0IDcuNDQyODVMOC4wMzc5OCA4LjE2MzM3TDkuMjk0NTQgOC42NjMxNkw4Ljg3OTk5IDEwLjAyODlMMTAuMTY0MSA5LjM0Nzc3TDExLjEyMjcgMTAuMjIxNEwxMS4wNjc3IDguNzY4NjlMMTIuNDA1MiA4LjM3MTk4TDExLjI0ODggNy42NzY2M0wxMi4wMTEzIDYuNjMxNjVMMTIuNjQ2OCA2LjkyMjM4WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg=="
-                  alt="GHN"
-                  sx={{ width: 24, height: 24, mr: 1 }}
-                />
-                <Typography
-                  variant="subtitle2"
-                  sx={{ fontWeight: "medium", color: "#1976d2" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    px: 2,
+                  }}
                 >
-                  Mã khuyến mãi từ GHN
-                </Typography>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Mã khuyến mãi
+                  </Typography>
+
+                  <Box sx={{ display: "flex", width: "60%", maxWidth: 400 }}>
+                    <TextField
+                      placeholder="Nhập mã khuyến mãi"
+                      size="small"
+                      fullWidth
+                      disabled={isViewMode}
+                      value={newOrder.promotionCode || ""}
+                      onChange={(e) =>
+                        !isViewMode &&
+                        setNewOrder({
+                          ...newOrder,
+                          promotionCode: e.target.value,
+                        })
+                      }
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0,
+                        },
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      disabled={isViewMode}
+                      sx={{
+                        borderColor: "#f97316",
+                        color: "#f97316",
+                        minWidth: 80,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                        height: 40,
+                        borderLeft: 0,
+                        "&:hover": {
+                          borderColor: "#ea580c",
+                          backgroundColor: "rgba(249, 115, 22, 0.04)",
+                        },
+                      }}
+                    >
+                      Áp dụng
+                    </Button>
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mt: 1,
+                    mb: 1,
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYuNjc1MzQgOS41MzMwMUw2LjQ1MDMyIDkuMjgyMUw2Ljc3OTQ0IDkuMTIyMjhMOC40OTQ3OSA4LjQ2MzA1TDYuNzkxODMgNy42OTA1M0w2LjQ0OTYzIDcuNTE2MDFMNi42OTE3OCA3LjI0OTk3TDcuNjgwNSA2LjE1MzQyTDYuMjEyNjYgNi4wNzE1NUw1Ljg2NTYxIDYuMDU0ODFMNS44MjU0NiA1LjcwOTc5TDUuNjQ1ODIgMy45ODY3N0w0LjUwMjk5IDUuMjcwMTJMNC4yODEwMyA1LjUyMzk5TDMuOTk5MDQgNS4zMDc5M0wyLjU2NDQyIDNCMEwxLjc0NzgyIDUuNzQ1MzZMMS42MTcxNiA2LjA4Njg2TDEuMjcwMTEgNi4xOTI0NkwxLjI3MDEyIDYuNjIxNzNMMC45ODUxNDYgNy44Mzg3OUwxLjIyMzY2IDguMTI4OTlMMC45NzIxMSA4LjQwNDI2TDAgOS41MDg5OEwxLjI3OTE0IDkuODMzNTlMMS42Mjk3MiA5LjkyMDYyTDEuNzQ3MTMgMTAuMjY0OUwyLjQ5MTYyIDEyTDMuODcxNDMgMTAuNjcxTDQuMTAwMzQgMTAuNDQ4MUw0LjMzODg3IDEwLjY2MDFMNi4wMTYyNiAxMi4xMTM3TDUuODk5MTMgMTAuMzczNUw1Ljg2NzA0IDEwLjAyNjFMNi4xOTc4NCAxMC4wNTE4TDYuNjc1MzQgOS41MzMwMVoiIGZpbGw9IiNFRjQ0NDQiLz4KPHBhdGggZD0iTTE3LjEyMzcgOS41MDc5OEwxNi4xMzk1IDguMzg5MTdMMTUuODk0NSA4LjEyMDg5TDE2LjE0MDIgNy44NDE0NkwxNy4xMjUgNi42MDk2M0wxNS44NTc5IDYuMTgwMDNMMTUuNTA4MiA2LjA3MDkzTDE1LjM3NjIgNS43MzE1M0wxNC41NTk2IDRMMTMuMTI1IDUuMzA3OTNMMTIuODQ2NCA1LjUyMDY0TDEyLjYyMTQgNS4yNjM0NEwxMS41MTUyIDRMMTEuMzM1NiA1LjcwOTc5TDExLjI5NTQgNi4wNTQ4MUwxMC45NDg0IDYuMDcxNTVMOS40ODAxNiA2LjE4NzkyTDEwLjQ2ODkgNy4yODQ0N0wxMC43MTc5IDcuNTM3NUwxMC4zNzU3IDcuNjkzNTZMOC40OTQ4IDguNDYzMDVMMTAuMjEwMSA5LjEzMTYyTDEwLjU0NTkgOS4yOTgzNkwxMC4zMjA5IDkuNTMzMDFMMTAuOTQ3NyAxMC4wNTE4TDExLjI3ODUgMTAuMDI2MUwxMS4yNDY0IDEwLjM3MzVMMTEuMTI5MyAxMi4xMTM3TDEyLjgwNjcgMTAuNjYwMUwxMy4wNDUyIDEwLjQ0ODFMMTMuMjc0MSAxMC42NzFMMTQuNjU0IDEyTDE1LjM5ODQgMTAuMjY0OUwxNS41MTU4IDkuOTIwNjJMMTUuODY2NCA5LjgzMzU5TDE3LjEyMzcgOS41MDc5OFoiIGZpbGw9IiNGRkQ3MDQiLz4KPHBhdGggZD0iTTEyLjY0NjggNi45MjIzOEwxMS4xODkgNi44NDc4NUwxMC44NTgxIDUuNDcwMjVMMTAuMDAyOSA2LjQ2NjY1TDguNjc1NjUgNi4xMzEyM0w5LjE4MzY0IDcuNDQyODVMOC4wMzc5OCA4LjE2MzM3TDkuMjk0NTQgOC42NjMxNkw4Ljg3OTk5IDEwLjAyODlMMTAuMTY0MSA5LjM0Nzc3TDExLjEyMjcgMTAuMjIxNEwxMS4wNjc3IDguNzY4NjlMMTIuNDA1MiA4LjM3MTk4TDExLjI0ODggNy42NzY2M0wxMi4wMTEzIDYuNjMxNjVMMTIuNjQ2OCA2LjkyMjM4WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg=="
+                    alt="GHN"
+                    sx={{ width: 18, height: 18, mr: 1 }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#1976d2", fontWeight: "medium" }}
+                  >
+                    Sử dụng mã khuyến mãi từ GHN
+                  </Typography>
+                </Box>
               </Box>
             </Paper>
           </Grid>
@@ -1640,20 +2195,39 @@ const CreateOrderForm = ({
             justifyContent: "space-between",
           }}
         >
-          <Button
-            onClick={handleCloseDialog}
-            variant="outlined"
-            sx={{ borderColor: "#f97316", color: "#f97316" }}
-          >
-            Hủy đơn
-          </Button>
-          <Button
-            onClick={handleCreateOrder}
-            variant="contained"
-            sx={{ bgcolor: "#f97316", "&:hover": { bgcolor: "#ea580c" } }}
-          >
-            Tạo đơn
-          </Button>
+          {isViewMode ? (
+            <Button
+              onClick={handleCloseDialog}
+              variant="outlined"
+              sx={{
+                borderColor: "var(--primary-green)",
+                color: "var(--primary-green)",
+              }}
+            >
+              Đóng
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={handleCloseDialog}
+                variant="outlined"
+                sx={{ borderColor: "#f97316", color: "#f97316" }}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={handleCreateOrder}
+                variant="contained"
+                sx={{ bgcolor: "#f97316", "&:hover": { bgcolor: "#ea580c" } }}
+              >
+                {isEditMode
+                  ? "Cập nhật đơn"
+                  : isBasedOnMode
+                  ? "Tạo đơn mới"
+                  : "Tạo đơn"}
+              </Button>
+            </>
+          )}
         </Box>
       </DialogActions>
 

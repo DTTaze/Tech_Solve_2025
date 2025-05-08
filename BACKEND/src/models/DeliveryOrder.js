@@ -32,6 +32,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       status: {
         type: DataTypes.ENUM(
+          "pending",
+          "rejected",
+          "accepted",
           "ready_to_pick", // Chờ lấy hàng
           "picking", // Đang lấy hàng
           "money_collect_picking", // Đang tương tác với người gửi
@@ -56,6 +59,7 @@ module.exports = (sequelize, DataTypes) => {
           "damage" // Hàng hư hỏng
         ),
         allowNull: false,
+        defaultValue: "pending",
       },
       to_name: {
         type: DataTypes.STRING,

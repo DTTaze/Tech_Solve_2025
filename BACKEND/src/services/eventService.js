@@ -285,11 +285,10 @@ const getEventUserByEventId = async (event_id) => {
   try {
     const allEventUser = await getAllEventUser();
     console.log("allEventUser :", allEventUser);
-    const users = allEventUser
+    const eventUsers = allEventUser
     .filter((eventUser) => Number(eventUser.event_id) === Number(event_id))
-    .map((eventUser) => eventUser.User);
   
-    return users;
+    return eventUsers;
 
   }catch (error) {
     console.error("Error retrieving event users:", error);

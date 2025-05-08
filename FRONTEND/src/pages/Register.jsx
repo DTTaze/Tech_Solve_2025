@@ -151,7 +151,7 @@ function RegisterPage() {
             </button>
           }
         />
-        <SubmitButton text="Đăng ký" loading={loading} />
+        <SubmitButton text="Đăng ký" width="100%" padding="15px" loading={loading} />
       </form>
 
       <div className="flex items-center mt-6">

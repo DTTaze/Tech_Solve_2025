@@ -118,7 +118,7 @@ function Address() {
         <Button
           text="Thêm địa chỉ mới"
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white"
+          padding="15px"
         />
       </div>
       <hr className="my-2 border-gray-300" />
@@ -146,11 +146,12 @@ function Address() {
                 text="Cập nhật"
                 onClick={() => handleUpdateAddress(addr.id)}
                 className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm"
+                padding="10px"
               />
               <Button
                 text="Xóa"
                 onClick={() => handleDeleteAddress(addr.id)}
-                className="bg-red-500 hover:bg-red-600 text-white text-sm"
+                padding="10px"
               />
               {defaultAddressId !== addr.id && (
                 <Button
@@ -166,7 +167,7 @@ function Address() {
 
       {/* Modal for Adding New Address */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg">
             <h4 className="font-semibold text-lg mb-4">Thêm địa chỉ mới</h4>
             <div className="grid grid-cols-2 gap-4 mb-4">
