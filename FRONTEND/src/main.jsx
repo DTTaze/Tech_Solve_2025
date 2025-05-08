@@ -10,7 +10,13 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import MissionPage from "./pages/Mission.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
-import UserProfilePage from "./pages/User.jsx";
+import User from "./pages/User.jsx";
+import PersonalInformation from "./components/features/user/PersonalInformation.jsx";
+import Address from "./components/features/user/Address.jsx";
+import PurchaseOrder from "./components/features/user/PurchaseOrder.jsx";
+import ChangePassword from "./components/features/user/ChangePassword.jsx";
+import DeleteAccount from "./components/features/user/DeleteAccount.jsx";
+import MissionCompleted from "./components/features/user/MissionCompleted.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import Admin from "./pages/Admin.jsx";
 import AdminDashboard from "./components/admin/AdminDashboard.jsx";
@@ -27,7 +33,6 @@ import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
 import AdminQueue from "./pages/AdminQueue.jsx";
 import ProductsManagement from "./components/admin/ProductsManagement.jsx";
-import SocketTest from "./components/SocketTest.jsx";
 import CustomerQRScanner from "./components/customer/CustomerQRScanner.jsx";
 import CustomerUsers from "./components/customer/CustomerUsers.jsx";
 import CustomerItems from "./components/customer/CustomerItems.jsx";
@@ -41,91 +46,94 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      {
-        index: true,
-        element: <Homepage />,
-      },
-      {
-        path: "profile",
-        element: <UserProfilePage />,
-      },
+      { index: true, element: <Homepage /> },
+      { path: "login", element: <LoginPage /> },
+      { path: "register", element: <RegisterPage /> },
+      { path: "forgot_password", element: <ForgotPassword /> },
+      { path: "auth/success", element: <AuthCallback /> },
+      { path: "qr", element: <QRCodeDisplay /> },
       {
         path: "missions",
-        element: <MissionPage />,
+        element: (
+          <ProtectedRoute>
+            <MissionPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "market",
-        element: <MarketPage />,
-      },
-      {
-        path: "forgot_password",
-        element: <ForgotPassword />,
-      },
-      {
-        path: "admin",
         element: (
-          <ProtectedRoute requiredRole="Admin">
-            <Admin />
+          <ProtectedRoute>
+            <MarketPage />
           </ProtectedRoute>
         ),
-        children: [
-          { index: true, element: <AdminDashboard /> },
-          { path: "users", element: <UsersManagement /> },
-          {
-            path: "content",
-            element: <ContentManagement />,
-            children: [
-              { path: "missions", element: <MissionsManagement /> },
-              { path: "items", element: <ItemsManagement /> },
-              { path: "products", element: <ProductsManagement /> },
-              { path: "events", element: <ProductsManagement /> },
-            ],
-          },
-          { path: "rbac", element: <RolesPermissions /> },
-          { path: "transactions", element: <TransactionsManagement /> },
-          {
-            path: "queues",
-            element: <AdminQueue />,
-          },
-        ],
-      },
-      {
-        path: "auth/success",
-        element: <AuthCallback />,
-      },
-      {
-        path: "customer",
-        element: (
-          <ProtectedRoute requiredRole={["Customer", "Admin"]}>
-            <Customer />
-          </ProtectedRoute>
-        ),
-        children: [
-          { index: true, element: <CustomerDashboard /> },
-          { path: "profile", element: <CustomerProfile /> },
-          { path: "orders", element: <CustomerOrders /> },
-          { path: "rewards", element: <CustomerRewards /> },
-          { path: "scanner", element: <CustomerQRScanner /> },
-          { path: "users", element: <CustomerUsers /> },
-          { path: "items", element: <CustomerItems /> },
-          { path: "events", element: <CustomerEvents /> },
-        ],
-      },
-      {
-        path: "qr",
-        element: <QRCodeDisplay />,
       },
     ],
   },
+
   {
-    path: "register",
-    element: <RegisterPage />,
+    path: "user",
+    element: <User />, 
+    children: [
+      { index: true, element: <PersonalInformation /> },
+      { path: "account", element: <PersonalInformation /> },
+      { path: "address", element: <Address /> },
+      { path: "purchase", element: <PurchaseOrder /> },
+      { path: "change-password", element: <ChangePassword /> },
+      { path: "delete-account", element: <DeleteAccount /> },
+      { path: "missions", element: <MissionCompleted /> },
+    ]
   },
+
+  // --- ADMIN ROUTES ---
   {
-    path: "login",
-    element: <LoginPage />,
+    path: "/admin",
+    element: (
+      <ProtectedRoute requiredRole="Admin">
+        <Admin />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: "users", element: <UsersManagement /> },
+      { path: "rbac", element: <RolesPermissions /> },
+      { path: "transactions", element: <TransactionsManagement /> },
+      { path: "queues", element: <AdminQueue /> },
+
+      {
+        path: "content",
+        element: <ContentManagement />,
+        children: [
+          { path: "missions", element: <MissionsManagement /> },
+          { path: "items", element: <ItemsManagement /> },
+          { path: "products", element: <ProductsManagement /> },
+          { path: "events", element: <ProductsManagement /> }, 
+        ],
+      },
+    ],
+  },
+
+  // --- CUSTOMER ROUTES ---
+  {
+    path: "/customer",
+    element: (
+      <ProtectedRoute requiredRole={["Customer", "Admin"]}>
+        <Customer />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <CustomerDashboard /> },
+      { path: "profile", element: <CustomerProfile /> },
+      { path: "orders", element: <CustomerOrders /> },
+      { path: "rewards", element: <CustomerRewards /> },
+      { path: "scanner", element: <CustomerQRScanner /> },
+      { path: "users", element: <CustomerUsers /> },
+      { path: "items", element: <CustomerItems /> },
+      { path: "events", element: <CustomerEvents /> },
+    ],
   },
 ]);
+
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

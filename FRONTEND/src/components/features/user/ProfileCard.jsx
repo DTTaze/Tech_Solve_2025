@@ -1,20 +1,21 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../../../contexts/auth.context.jsx";
+import { NavLink } from "react-router-dom";
 import {
   uploadUserAvatarApi,
   updateUserAvatarApi,
   getUserAvatarByIdApi,
 } from "../../../utils/api.js";
 
-function MenuItem({ text, onClick, hasSubmenu, isOpen, children }) {
+function MenuItem({ text, path, hasSubmenu, isOpen, onClick, children }) {
   return (
     <div>
-      <div
-        className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
-        onClick={onClick}
-      >
-        <span className="text-sm text-gray-700 flex-1">{text}</span>
-        {hasSubmenu && (
+      {hasSubmenu ? (
+        <div
+          className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
+          onClick={onClick}
+        >
+          <span className="text-sm text-gray-700 flex-1">{text}</span>
           <svg
             className={`w-4 h-4 transform ${isOpen ? "rotate-90" : ""}`}
             fill="none"
@@ -23,29 +24,40 @@ function MenuItem({ text, onClick, hasSubmenu, isOpen, children }) {
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
           </svg>
-        )}
-      </div>
-      {hasSubmenu && isOpen && (
-        <div className="ml-4 space-y-2">
-          {children}
         </div>
+      ) : (
+        <NavLink
+          to={path}
+          className={({ isActive }) =>
+            `flex items-center p-2 rounded-lg hover:bg-gray-100 ${
+              isActive ? "bg-blue-200 font-semibold" : ""
+            }`
+          }
+        >
+          <span className="text-sm text-gray-700 flex-1">{text}</span>
+        </NavLink>
       )}
+      {hasSubmenu && isOpen && <div className="ml-4 space-y-2">{children}</div>}
     </div>
   );
 }
 
-function SubMenuItem({ text, onClick }) {
+function SubMenuItem({ text, path }) {
   return (
-    <div
-      className="flex items-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
-      onClick={onClick}
+    <NavLink
+      to={path}
+      className={({ isActive }) =>
+        `flex items-center p-2 rounded-lg hover:bg-gray-100 ${
+          isActive ? "bg-blue-200 font-semibold" : ""
+        }`
+      }
     >
       <span className="text-sm text-gray-600">{text}</span>
-    </div>
+    </NavLink>
   );
 }
 
-function ProfileCard({ setSelectedTab }) {
+function ProfileCard() {
   const { auth, setAuth } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [avatar, setAvatar] = useState("");
@@ -107,11 +119,19 @@ function ProfileCard({ setSelectedTab }) {
     }
   };
 
-  const accountSubmenuItems = [
-    { text: "Xem hồ sơ", tab: "Xem hồ sơ" },
-    { text: "Địa chỉ", tab: "Địa chỉ" },
-    { text: "Đổi mật khẩu", tab: "Đổi mật khẩu" },
-    { text: "Xóa tài khoản", tab: "Xóa tài khoản" },
+  const menuItems = [
+    {
+      text: "Tài khoản của tôi",
+      hasSubmenu: true,
+      subItems: [
+        { text: "Xem hồ sơ", path: "/user/account" },
+        { text: "Địa chỉ", path: "/user/address" },
+        { text: "Đổi mật khẩu", path: "/user/change-password" },
+        { text: "Xóa tài khoản", path: "/user/delete-account" },
+      ],
+    },
+    { text: "Nhiệm vụ hoàn thành", path: "/user/missions" },
+    { text: "Đơn mua", path: "/user/purchase" },
   ];
 
   return (
@@ -144,28 +164,24 @@ function ProfileCard({ setSelectedTab }) {
       </div>
       <div className="my-4 h-px w-full border-b"></div>
       <div className="space-y-2">
-        <MenuItem
-          text="Tài khoản của tôi"
-          hasSubmenu
-          isOpen={isAccountMenuOpen}
-          onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-        >
-          {accountSubmenuItems.map(({ text, tab }) => (
-            <SubMenuItem
-              key={text}
-              text={text}
-              onClick={() => setSelectedTab(tab)}
-            />
-          ))}
-        </MenuItem>
-        <MenuItem
-          text="Nhiệm vụ hoàn thành"
-          onClick={() => setSelectedTab("Nhiệm vụ hoàn thành")}
-        />
-        <MenuItem
-          text="Đơn mua"
-          onClick={() => setSelectedTab("Đơn mua")}
-        />
+        {menuItems.map((item) => (
+          <MenuItem
+            key={item.text}
+            text={item.text}
+            path={item.path}
+            hasSubmenu={item.hasSubmenu}
+            isOpen={item.hasSubmenu && isAccountMenuOpen}
+            onClick={item.hasSubmenu ? () => setIsAccountMenuOpen(!isAccountMenuOpen) : null}
+          >
+            {item.subItems?.map((subItem) => (
+              <SubMenuItem
+                key={subItem.text}
+                text={subItem.text}
+                path={subItem.path}
+              />
+            ))}
+          </MenuItem>
+        ))}
       </div>
     </div>
   );

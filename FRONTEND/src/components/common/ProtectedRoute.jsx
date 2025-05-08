@@ -2,30 +2,36 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../contexts/auth.context";
 
+const roleMap = {
+  1: "Admin",
+  2: "User",
+  3: "Customer",
+};
+
+const getUserRole = (auth) => {
+  const roleId = auth?.user?.roles?.id;
+  return roleMap[roleId] || null;
+};
+
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { auth } = useContext(AuthContext);
   const location = useLocation();
 
-  if (!auth.isAuthenticated) {
+  if (!auth?.isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const roleMap = {
-    1: "Admin",
-    2: "User",
-    3: "Customer",
-  };
+  if (!requiredRole) {
+    return children;
+  }
 
-  const userRole = roleMap[auth.user?.roles.id]?.toLowerCase() || "unknown";
+  const userRole = getUserRole(auth);
+
   const requiredRoles = Array.isArray(requiredRole)
-    ? requiredRole
-    : [requiredRole];
+    ? requiredRole.map((r) => r.toLowerCase())
+    : [requiredRole.toLowerCase()];
 
-  const hasAccess = requiredRoles.some(
-    (role) => role.toLowerCase() === userRole
-  );
-
-  if (!hasAccess) {
+  if (!userRole || !requiredRoles.includes(userRole.toLowerCase())) {
     return <Navigate to="/" replace />;
   }
 
