@@ -401,11 +401,11 @@ export const deleteItemOfCustomerApi = (id) => {
   return axios.delete(`api/items/${id}`);
 }
 
-export const createShippingOrderApi = (data) => {
-  return axios.post("api/delivery/carrier/ghn/create-order", data.items, {
+export const createShippingOrderApi = (data, token, shop_id) => {
+  return axios.post("api/delivery/carrier/ghn/create-order", data, {
     headers: {
-      token: data.token,
-      shop_id: data.shippingAccountId,
+      token: token,
+      shop_id: shop_id,
     },
   });
 };
@@ -418,11 +418,11 @@ export const getAllShippingOrdersBySeller = () => {
   return axios.get("api/delivery/carrier/ghn/orders/user");
 };
 
-export const updateShippingOrderApi = (data) => {
-  return axios.post("api/delivery/carrier/ghn/update", data.orderData, {
+export const updateShippingOrderApi = (data, token, shop_id) => {
+  return axios.post("api/delivery/carrier/ghn/update", data, {
     headers: {
-      token: data.token,
-      shop_id: data.shopId,
+      token: token,
+      shop_id: shop_id,
     },
   });
 };

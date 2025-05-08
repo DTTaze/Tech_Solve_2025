@@ -17,6 +17,7 @@ const getEventById = async (eventId) => {
     const cachedEvent = await getCache(`event:id:${eventId}`);
     if (cachedEvent) {
       console.log("cachedEvent", cachedEvent);
+      console.log("imageIds:",cachedEvent.imagesId)
       const event = (cachedEvent);
       let uploadedImages = [];
       for (const imageId of event.imagesId) {
@@ -31,13 +32,7 @@ const getEventById = async (eventId) => {
       };
       const creator = await getUserByID(event.creator_id);
 
-      const imagesFormat = uploadedImages.reduce((acc, image) => {
-        if (!acc[image.reference_id]) {
-          acc[image.reference_id] = [];
-        }
-        acc[image.reference_id].push(image.url);
-        return acc;
-      },{});
+      const imagesFormat = uploadedImages.map(image => image.url);
 
       const eventFormat = {
         ...event,
@@ -72,13 +67,7 @@ const getEventById = async (eventId) => {
       attributes: ["url"],
     });
 
-    const imagesFormat = uploadedImages.reduce((acc, image) => {
-      if (!acc[image.reference_id]) {
-        acc[image.reference_id] = [];
-      }
-      acc[image.reference_id].push(image.url);
-      return acc;
-    },{});
+    const imagesFormat = uploadedImages.map(image => image.url);
 
     //Cache event
     const cachedEventFormat = {
@@ -133,13 +122,7 @@ const getAllEvents = async () => {
         },
         attributes: ["url"],
       });
-      const imagesFormat = uploadedImages.reduce((acc, image) => {
-        if (!acc[image.reference_id]) {
-          acc[image.reference_id] = [];
-        }
-        acc[image.reference_id].push(image.url);
-        return acc;
-      },{});
+      const imagesFormat = uploadedImages.map(image => image.url);
       const eventFormat = {
         ...event.toJSON(),
         images: imagesFormat,

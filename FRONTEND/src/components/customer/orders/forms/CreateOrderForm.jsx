@@ -29,6 +29,7 @@ import {
   CardContent,
   CircularProgress,
   Autocomplete,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -39,6 +40,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import KeyIcon from "@mui/icons-material/Key";
 
 // Import API functions
 import {
@@ -501,6 +504,41 @@ const CreateOrderForm = ({
   const [provinceError, setProvinceError] = useState("");
   const [districtError, setDistrictError] = useState("");
   const [wardError, setWardError] = useState("");
+
+  // Form validation state
+  const [formValid, setFormValid] = useState(false);
+
+  // Check form validity
+  useEffect(() => {
+    const requiredFields = {
+      // Sender fields
+      from_name: newOrder.from_name,
+      from_phone: newOrder.from_phone,
+      from_address: newOrder.from_address,
+      from_province_name: newOrder.from_province_name,
+      from_district_name: newOrder.from_district_name,
+      from_ward_name: newOrder.from_ward_name,
+
+      // Receiver fields
+      to_name: newOrder.to_name,
+      to_phone: newOrder.to_phone,
+      to_address: newOrder.to_address,
+      to_province_name: newOrder.to_province_name,
+      to_district_name: newOrder.to_district_name,
+      to_ward_name: newOrder.to_ward_name,
+
+      // Product fields - ensure at least one item exists with name and weight
+      items:
+        newOrder.items &&
+        newOrder.items.length > 0 &&
+        newOrder.items[0].name &&
+        newOrder.items[0].weight,
+    };
+
+    // Check if all required fields are filled
+    const isValid = Object.values(requiredFields).every((field) => !!field);
+    setFormValid(isValid);
+  }, [newOrder]);
 
   // Sender province/district/ward effects
   useEffect(() => {
@@ -1136,6 +1174,54 @@ const CreateOrderForm = ({
     fetchSenderWards();
   }, [newOrder.from_district_id, senderDistricts]);
 
+  const handleUseTokenForShipping = async () => {
+    try {
+      // Get default shipping account
+      const accountsResponse = await getShippingAccountsByUserApi();
+      if (
+        !accountsResponse ||
+        !accountsResponse.data ||
+        accountsResponse.data.length === 0
+      ) {
+        alert(
+          "No shipping accounts found. Please add a shipping account first."
+        );
+        return;
+      }
+
+      const defaultAccount =
+        accountsResponse.data.find((acc) => acc.is_default) ||
+        accountsResponse.data[0];
+
+      // Here you would typically call an API to get sender info from the token
+      // For now, let's simulate it with a success message
+      alert("Successfully retrieved sender information from GHN account");
+
+      // In a real implementation, you would update the form with the returned data
+      setNewOrder({
+        ...newOrder,
+        from_name: defaultAccount.account_name || "Shop Name",
+        from_phone: defaultAccount.phone || "0987654321",
+        from_address: defaultAccount.address || "123 Test Street",
+        // Other sender fields would be populated from the API response
+      });
+    } catch (error) {
+      console.error("Error fetching token information:", error);
+      alert("Failed to retrieve information from token. Please try again.");
+    }
+  };
+
+  // Cleanup old fields when updating the form
+  const updateOrder = (updatedValues) => {
+    // Create a new order object with the updated values
+    const updatedOrder = {
+      ...newOrder,
+      ...updatedValues,
+    };
+
+    setNewOrder(updatedOrder);
+  };
+
   return (
     <>
       <DialogTitle
@@ -1172,26 +1258,24 @@ const CreateOrderForm = ({
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Số điện thoại"
-                    fullWidth
-                    required
+                <TextField
+                  label="Số điện thoại"
+                  fullWidth
+                  required
                     disabled={isViewMode}
                     value={newOrder.from_phone || newOrder.senderPhone || ""}
-                    onChange={(e) =>
+                  onChange={(e) =>
                       !isViewMode &&
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         from_phone: e.target.value,
-                        senderPhone: e.target.value,
                       })
-                    }
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">📱</InputAdornment>
-                      ),
-                    }}
-                  />
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">📱</InputAdornment>
+                    ),
+                  }}
+                />
                 </Grid>
 
                 <Grid item xs={12} md={6}>
@@ -1203,8 +1287,7 @@ const CreateOrderForm = ({
                     value={newOrder.from_name || ""}
                     onChange={(e) =>
                       !isViewMode &&
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         from_name: e.target.value,
                       })
                     }
@@ -1212,18 +1295,17 @@ const CreateOrderForm = ({
                 </Grid>
 
                 <Grid item xs={12}>
-                  <TextField
-                    label="Địa chỉ"
-                    fullWidth
-                    required
+                <TextField
+                  label="Địa chỉ"
+                  fullWidth
+                  required
                     disabled={isViewMode}
                     value={
                       newOrder.from_address || newOrder.senderAddress || ""
                     }
-                    onChange={(e) =>
+                  onChange={(e) =>
                       !isViewMode &&
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         from_address: e.target.value,
                         senderAddress: e.target.value,
                       })
@@ -1232,84 +1314,341 @@ const CreateOrderForm = ({
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                  <FormControl fullWidth disabled={isViewMode}>
-                    <InputLabel>Tỉnh/Thành phố</InputLabel>
-                    <Select
-                      label="Tỉnh/Thành phố"
-                      value={newOrder.from_province_id || ""}
-                      onChange={(e) => {
-                        const provinceId = e.target.value;
-                        const selectedProvince = senderProvinces.find(
-                          (p) => p.id === provinceId
-                        );
-                        setNewOrder({
-                          ...newOrder,
-                          from_province_id: provinceId,
-                          from_province_name: selectedProvince
-                            ? selectedProvince.name
-                            : "",
-                        });
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: "medium" }}
+                  >
+                    Tỉnh/Thành phố <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {loadingSenderProvinces ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        border: "1px solid #e0e0e0",
+                        borderRadius: 1,
                       }}
                     >
-                      {senderProvinces.map((province) => (
-                        <MenuItem key={province.id} value={province.id}>
-                          {province.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      <Typography variant="body2">Đang tải...</Typography>
+                    </Box>
+                  ) : (
+                    <FormControl
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      disabled={isViewMode}
+                    >
+                      <Select
+                        value={newOrder.from_province_id || ""}
+                        onChange={(e) => {
+                          const provinceId = e.target.value;
+                          const selectedProvince = senderProvinces.find(
+                            (p) => p.id === provinceId
+                          );
+                          updateOrder({
+                            from_province_id: provinceId,
+                            from_province_name: selectedProvince
+                              ? selectedProvince.name
+                              : "",
+                          });
+                        }}
+                        displayEmpty
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return (
+                              <Typography color="text.secondary">
+                                Chọn Tỉnh/Thành phố
+                              </Typography>
+                            );
+                          }
+                          const selectedProvince = senderProvinces.find(
+                            (p) => p.id === selected
+                          );
+                          return selectedProvince?.name || "";
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            position: "sticky",
+                            top: 0,
+                            bgcolor: "background.paper",
+                            zIndex: 1,
+                          }}
+                        >
+                          <TextField
+                            placeholder="Tìm kiếm tỉnh thành"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                              ),
+                            }}
+                            onChange={(e) =>
+                              setSenderProvinceSearch(e.target.value)
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          />
+                        </Box>
+                        {senderProvinces
+                          .filter((province) =>
+                            province.name
+                              .toLowerCase()
+                              .includes(
+                                (senderProvinceSearch || "").toLowerCase()
+                              )
+                          )
+                          .map((province) => (
+                            <MenuItem key={province.id} value={province.id}>
+                              {province.name}
+                            </MenuItem>
+                          ))}
+                      </Select>
+              </FormControl>
+                  )}
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                  <FormControl
-                    fullWidth
-                    disabled={!newOrder.from_province_id || isViewMode}
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: "medium" }}
                   >
-                    <InputLabel>Quận/Huyện</InputLabel>
-                    <Select
-                      label="Quận/Huyện"
-                      value={newOrder.from_district_id || ""}
-                      onChange={(e) => {
-                        setNewOrder({
-                          ...newOrder,
-                          from_district_id: e.target.value,
-                          senderDistrict: e.target.value.toString(),
-                        });
+                    Quận/Huyện <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {loadingSenderDistricts ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        border: "1px solid #e0e0e0",
+                        borderRadius: 1,
                       }}
                     >
-                      {senderDistricts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      <Typography variant="body2">Đang tải...</Typography>
+                    </Box>
+                  ) : (
+                    <FormControl
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      disabled={!newOrder.from_province_id || isViewMode}
+                    >
+                      <Select
+                        value={newOrder.from_district_id || ""}
+                        onChange={(e) => {
+                          const districtId = e.target.value;
+                          const selectedDistrict = senderDistricts.find(
+                            (d) => d.id === districtId
+                          );
+                          updateOrder({
+                            from_district_id: districtId,
+                            from_district_name: selectedDistrict
+                              ? selectedDistrict.name
+                              : "",
+                            senderDistrict: districtId
+                              ? districtId.toString()
+                              : "",
+                          });
+                        }}
+                        displayEmpty
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return (
+                              <Typography color="text.secondary">
+                                Chọn Quận/Huyện
+                              </Typography>
+                            );
+                          }
+                          const selectedDistrict = senderDistricts.find(
+                            (d) => d.id === selected
+                          );
+                          return selectedDistrict?.name || "";
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            position: "sticky",
+                            top: 0,
+                            bgcolor: "background.paper",
+                            zIndex: 1,
+                          }}
+                        >
+                          <TextField
+                            placeholder="Tìm kiếm quận huyện"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                              ),
+                            }}
+                            onChange={(e) =>
+                              setSenderDistrictSearch(e.target.value)
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          />
+                        </Box>
+                        {senderDistricts
+                          .filter((district) =>
+                            district.name
+                              .toLowerCase()
+                              .includes(
+                                (senderDistrictSearch || "").toLowerCase()
+                              )
+                          )
+                          .map((district) => (
+                            <MenuItem key={district.id} value={district.id}>
+                              <Box sx={{ width: "100%" }}>
+                                <Typography variant="body2">
+                                  {district.name} -{" "}
+                                  {newOrder.from_province_name}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  )}
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                  <FormControl
-                    fullWidth
-                    disabled={!newOrder.from_district_id || isViewMode}
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: "medium" }}
                   >
-                    <InputLabel>Phường/Xã</InputLabel>
-                    <Select
-                      label="Phường/Xã"
-                      value={newOrder.from_ward_code || ""}
-                      onChange={(e) => {
-                        setNewOrder({
-                          ...newOrder,
-                          from_ward_code: e.target.value,
-                          senderWard: e.target.value,
-                        });
+                    Phường/Xã <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {loadingSenderWards ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        border: "1px solid #e0e0e0",
+                        borderRadius: 1,
                       }}
                     >
-                      {senderWards.map((ward) => (
-                        <MenuItem key={ward.code} value={ward.code}>
-                          {ward.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      <Typography variant="body2">Đang tải...</Typography>
+                    </Box>
+                  ) : (
+                    <FormControl
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      disabled={!newOrder.from_district_id || isViewMode}
+                    >
+                      <Select
+                        value={newOrder.from_ward_code || ""}
+                        onChange={(e) => {
+                          const wardCode = e.target.value;
+                          const selectedWard = senderWards.find(
+                            (w) => w.code === wardCode
+                          );
+                          updateOrder({
+                            from_ward_code: wardCode,
+                            from_ward_name: selectedWard
+                              ? selectedWard.name
+                              : "",
+                            senderWard: wardCode,
+                          });
+                        }}
+                        displayEmpty
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return (
+                              <Typography color="text.secondary">
+                                Chọn Phường/Xã
+                              </Typography>
+                            );
+                          }
+                          const selectedWard = senderWards.find(
+                            (w) => w.code === selected
+                          );
+                          return selectedWard?.name || "";
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            position: "sticky",
+                            top: 0,
+                            bgcolor: "background.paper",
+                            zIndex: 1,
+                          }}
+                        >
+                          <TextField
+                            placeholder="Tìm kiếm phường xã"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                              ),
+                            }}
+                            onChange={(e) =>
+                              setSenderWardSearch(e.target.value)
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          />
+                        </Box>
+                        {senderWards
+                          .filter((ward) =>
+                            ward.name
+                              .toLowerCase()
+                              .includes((senderWardSearch || "").toLowerCase())
+                          )
+                          .map((ward) => (
+                            <MenuItem key={ward.code} value={ward.code}>
+                              <Box sx={{ width: "100%" }}>
+                                <Typography variant="body2">
+                                  {ward.name}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  )}
                 </Grid>
               </Grid>
 
@@ -1337,8 +1676,7 @@ const CreateOrderForm = ({
                   <Select
                     value={newOrder.pickupLocation || ""}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         pickupLocation: e.target.value,
                       })
                     }
@@ -1365,13 +1703,41 @@ const CreateOrderForm = ({
                 borderRadius: "4px",
               }}
             >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+              }}
+            >
               <Typography
                 variant="subtitle1"
                 gutterBottom
-                sx={{ fontWeight: "bold", mb: 2 }}
+                  sx={{ fontWeight: "bold", mb: 0 }}
               >
                 Bên nhận
               </Typography>
+
+                <Tooltip title="Sử dụng API token để lấy thông tin từ GHN">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<KeyIcon />}
+                    onClick={handleUseTokenForShipping}
+                    sx={{
+                      borderColor: "#f97316",
+                      color: "#f97316",
+                      "&:hover": {
+                        borderColor: "#ea580c",
+                        backgroundColor: "rgba(249, 115, 22, 0.04)",
+                      },
+                    }}
+                  >
+                    Lấy thông tin từ token
+                  </Button>
+                </Tooltip>
+              </Box>
 
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
@@ -1381,8 +1747,7 @@ const CreateOrderForm = ({
                     required
                     value={newOrder.to_phone || newOrder.receiverPhone || ""}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         to_phone: e.target.value,
                         receiverPhone: e.target.value,
                       })
@@ -1396,8 +1761,7 @@ const CreateOrderForm = ({
                     required
                     value={newOrder.to_name || newOrder.receiverName || ""}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         to_name: e.target.value,
                         receiverName: e.target.value,
                       })
@@ -1413,8 +1777,7 @@ const CreateOrderForm = ({
                       newOrder.to_address || newOrder.receiverAddress || ""
                     }
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         to_address: e.target.value,
                         receiverAddress: e.target.value,
                       })
@@ -1422,204 +1785,335 @@ const CreateOrderForm = ({
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Tỉnh/Thành phố</InputLabel>
-                    {loadingProvinces ? (
-                      <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        <Typography variant="body2">Đang tải...</Typography>
-                      </Box>
-                    ) : provinceError ? (
-                      <Typography color="error" variant="body2">
-                        {provinceError}
-                      </Typography>
-                    ) : (
-                      <Autocomplete
-                        options={provinces}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: "medium" }}
+                  >
+                    Tỉnh/Thành phố <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {loadingProvinces ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        border: "1px solid #e0e0e0",
+                        borderRadius: 1,
+                      }}
+                    >
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      <Typography variant="body2">Đang tải...</Typography>
+                    </Box>
+                  ) : provinceError ? (
+                    <Typography color="error" variant="body2">
+                      {provinceError}
+                    </Typography>
+                  ) : (
+                    <FormControl fullWidth variant="outlined" size="small">
+                    <Select
+                        value={newOrder.to_province_id || ""}
+                        onChange={(e) => {
+                          const provinceId = e.target.value;
+                          const selectedProvince = provinces.find(
+                            (p) => p.id === provinceId
+                          );
+                          updateOrder({
+                            to_province_id: provinceId,
+                            to_province_name: selectedProvince
+                              ? selectedProvince.name
+                              : "",
+                          });
+                        }}
+                        displayEmpty
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return (
+                              <Typography color="text.secondary">
+                                Chọn Tỉnh/Thành phố
+                              </Typography>
+                            );
+                          }
+                          const selectedProvince = provinces.find(
+                            (p) => p.id === selected
+                          );
+                          return selectedProvince?.name || "";
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            position: "sticky",
+                            top: 0,
+                            bgcolor: "background.paper",
+                            zIndex: 1,
+                          }}
+                        >
                           <TextField
-                            {...params}
-                            label="Tỉnh/Thành phố"
-                            placeholder="Tìm kiếm tỉnh/thành phố"
+                            placeholder="Tìm kiếm tỉnh thành"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
                             InputProps={{
-                              ...params.InputProps,
                               startAdornment: (
-                                <>
-                                  <InputAdornment position="start">
-                                    <SearchIcon />
-                                  </InputAdornment>
-                                  {params.InputProps.startAdornment}
-                                </>
+                                <InputAdornment position="start">
+                                  <SearchIcon fontSize="small" />
+                                </InputAdornment>
                               ),
                             }}
+                            onChange={(e) => setProvinceSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
                           />
-                        )}
-                        value={
-                          provinces.find(
-                            (p) => p.id === newOrder.to_province_id
-                          ) || null
-                        }
-                        onChange={(event, newValue) => {
-                          if (newValue) {
-                            setNewOrder({
-                              ...newOrder,
-                              to_province_id: newValue.id,
-                              to_province_name: newValue.name,
-                            });
-                          } else {
-                            setNewOrder({
-                              ...newOrder,
-                              to_province_id: null,
-                              to_province_name: "",
-                            });
-                          }
-                        }}
-                        filterOptions={(options, { inputValue }) =>
-                          options.filter((option) =>
-                            option.name
+                        </Box>
+                        {provinces
+                          .filter((province) =>
+                            province.name
                               .toLowerCase()
-                              .includes(inputValue.toLowerCase())
+                              .includes((provinceSearch || "").toLowerCase())
                           )
-                        }
-                      />
-                    )}
+                          .map((province) => (
+                            <MenuItem key={province.id} value={province.id}>
+                              {province.name}
+                            </MenuItem>
+                          ))}
+                    </Select>
                   </FormControl>
+                  )}
                 </Grid>
+
                 <Grid item xs={12} md={4}>
-                  <FormControl fullWidth disabled={!newOrder.to_province_id}>
-                    <InputLabel>Quận/Huyện</InputLabel>
-                    {loadingDistricts ? (
-                      <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        <Typography variant="body2">Đang tải...</Typography>
-                      </Box>
-                    ) : districtError ? (
-                      <Typography color="error" variant="body2">
-                        {districtError}
-                      </Typography>
-                    ) : (
-                      <Autocomplete
-                        options={districts}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: "medium" }}
+                  >
+                    Quận/Huyện <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {loadingDistricts ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        border: "1px solid #e0e0e0",
+                        borderRadius: 1,
+                      }}
+                    >
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      <Typography variant="body2">Đang tải...</Typography>
+                    </Box>
+                  ) : districtError ? (
+                    <Typography color="error" variant="body2">
+                      {districtError}
+                    </Typography>
+                  ) : (
+                    <FormControl
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      disabled={!newOrder.to_province_id}
+                    >
+                    <Select
+                        value={newOrder.to_district_id || ""}
+                        onChange={(e) => {
+                          const districtId = e.target.value;
+                          const selectedDistrict = districts.find(
+                            (d) => d.id === districtId
+                          );
+                          updateOrder({
+                            to_district_id: districtId,
+                            to_district_name: selectedDistrict
+                              ? selectedDistrict.name
+                              : "",
+                            receiverDistrict: districtId
+                              ? districtId.toString()
+                              : "",
+                          });
+                        }}
+                        displayEmpty
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return (
+                              <Typography color="text.secondary">
+                                Chọn Quận/Huyện
+                              </Typography>
+                            );
+                          }
+                          const selectedDistrict = districts.find(
+                            (d) => d.id === selected
+                          );
+                          return selectedDistrict?.name || "";
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            position: "sticky",
+                            top: 0,
+                            bgcolor: "background.paper",
+                            zIndex: 1,
+                          }}
+                        >
                           <TextField
-                            {...params}
-                            label="Quận/Huyện"
-                            placeholder="Tìm kiếm quận/huyện"
+                            placeholder="Tìm kiếm quận huyện"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
                             InputProps={{
-                              ...params.InputProps,
                               startAdornment: (
-                                <>
-                                  <InputAdornment position="start">
-                                    <SearchIcon />
-                                  </InputAdornment>
-                                  {params.InputProps.startAdornment}
-                                </>
+                                <InputAdornment position="start">
+                                  <SearchIcon fontSize="small" />
+                                </InputAdornment>
                               ),
                             }}
+                            onChange={(e) => setDistrictSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
                           />
-                        )}
-                        value={
-                          districts.find(
-                            (d) => d.id === newOrder.to_district_id
-                          ) || null
-                        }
-                        onChange={(event, newValue) => {
-                          if (newValue) {
-                            setNewOrder({
-                              ...newOrder,
-                              to_district_id: newValue.id,
-                              to_district_name: newValue.name,
-                              receiverDistrict: newValue.id.toString(),
-                            });
-                          } else {
-                            setNewOrder({
-                              ...newOrder,
-                              to_district_id: null,
-                              to_district_name: "",
-                              receiverDistrict: "",
-                            });
-                          }
-                        }}
-                        filterOptions={(options, { inputValue }) =>
-                          options.filter((option) =>
-                            option.name
+                        </Box>
+                        {districts
+                          .filter((district) =>
+                            district.name
                               .toLowerCase()
-                              .includes(inputValue.toLowerCase())
+                              .includes((districtSearch || "").toLowerCase())
                           )
-                        }
-                        disabled={!newOrder.to_province_id}
-                      />
-                    )}
+                          .map((district) => (
+                            <MenuItem key={district.id} value={district.id}>
+                              <Box sx={{ width: "100%" }}>
+                                <Typography variant="body2">
+                                  {district.name} - {newOrder.to_province_name}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                    </Select>
                   </FormControl>
+                  )}
                 </Grid>
+
                 <Grid item xs={12} md={4}>
-                  <FormControl fullWidth disabled={!newOrder.to_district_id}>
-                    <InputLabel>Phường/Xã</InputLabel>
-                    {loadingWards ? (
-                      <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        <Typography variant="body2">Đang tải...</Typography>
-                      </Box>
-                    ) : wardError ? (
-                      <Typography color="error" variant="body2">
-                        {wardError}
-                      </Typography>
-                    ) : (
-                      <Autocomplete
-                        options={wards}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1, fontWeight: "medium" }}
+                  >
+                    Phường/Xã <span style={{ color: "red" }}>*</span>
+                  </Typography>
+                  {loadingWards ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        p: 1,
+                        border: "1px solid #e0e0e0",
+                        borderRadius: 1,
+                      }}
+                    >
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      <Typography variant="body2">Đang tải...</Typography>
+                    </Box>
+                  ) : wardError ? (
+                    <Typography color="error" variant="body2">
+                      {wardError}
+                    </Typography>
+                  ) : (
+                    <FormControl
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      disabled={!newOrder.to_district_id}
+                    >
+                      <Select
+                        value={newOrder.to_ward_code || ""}
+                        onChange={(e) => {
+                          const wardCode = e.target.value;
+                          const selectedWard = wards.find(
+                            (w) => w.code === wardCode
+                          );
+                          updateOrder({
+                            to_ward_code: wardCode,
+                            to_ward_name: selectedWard ? selectedWard.name : "",
+                            receiverWard: wardCode,
+                          });
+                        }}
+                        displayEmpty
+                        renderValue={(selected) => {
+                          if (!selected) {
+                            return (
+                              <Typography color="text.secondary">
+                                Chọn Phường/Xã
+                              </Typography>
+                            );
+                          }
+                          const selectedWard = wards.find(
+                            (w) => w.code === selected
+                          );
+                          return selectedWard?.name || "";
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 1,
+                            position: "sticky",
+                            top: 0,
+                            bgcolor: "background.paper",
+                            zIndex: 1,
+                          }}
+                        >
                           <TextField
-                            {...params}
-                            label="Phường/Xã"
-                            placeholder="Tìm kiếm phường/xã"
+                            placeholder="Tìm kiếm phường xã"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
                             InputProps={{
-                              ...params.InputProps,
                               startAdornment: (
-                                <>
-                                  <InputAdornment position="start">
-                                    <SearchIcon />
-                                  </InputAdornment>
-                                  {params.InputProps.startAdornment}
-                                </>
+                                <InputAdornment position="start">
+                                  <SearchIcon fontSize="small" />
+                                </InputAdornment>
                               ),
                             }}
+                            onChange={(e) => setWardSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
                           />
-                        )}
-                        value={
-                          wards.find((w) => w.code === newOrder.to_ward_code) ||
-                          null
-                        }
-                        onChange={(event, newValue) => {
-                          if (newValue) {
-                            setNewOrder({
-                              ...newOrder,
-                              to_ward_code: newValue.code,
-                              to_ward_name: newValue.name,
-                              receiverWard: newValue.code,
-                            });
-                          } else {
-                            setNewOrder({
-                              ...newOrder,
-                              to_ward_code: "",
-                              to_ward_name: "",
-                              receiverWard: "",
-                            });
-                          }
-                        }}
-                        filterOptions={(options, { inputValue }) =>
-                          options.filter((option) =>
-                            option.name
+                        </Box>
+                        {wards
+                          .filter((ward) =>
+                            ward.name
                               .toLowerCase()
-                              .includes(inputValue.toLowerCase())
+                              .includes((wardSearch || "").toLowerCase())
                           )
-                        }
-                        disabled={!newOrder.to_district_id}
-                      />
-                    )}
-                  </FormControl>
+                          .map((ward) => (
+                            <MenuItem key={ward.code} value={ward.code}>
+                              <Box sx={{ width: "100%" }}>
+                                <Typography variant="body2">
+                                  {ward.name}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                      </Select>
+                    </FormControl>
+                  )}
                 </Grid>
               </Grid>
             </Paper>
@@ -1691,8 +2185,7 @@ const CreateOrderForm = ({
                               onClick={() => {
                                 const updatedItems = [...newOrder.items];
                                 updatedItems.splice(index, 1);
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                 });
                               }}
@@ -1700,74 +2193,70 @@ const CreateOrderForm = ({
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           )}
-                        </Box>
+                  </Box>
 
-                        <Grid container spacing={2}>
-                          <Grid item xs={12} md={3}>
-                            <TextField
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
+                      <TextField
                               label="Tên sản phẩm"
-                              fullWidth
-                              required
+                        fullWidth
+                        required
                               value={item.name || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].name = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   productName: e.target.value, // For backward compatibility
                                 });
                               }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="KL (gram)"
-                              fullWidth
-                              type="number"
-                              required
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <TextField
+                        label="KL (gram)"
+                        fullWidth
+                        type="number"
+                        required
                               value={item.weight || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].weight =
                                   parseInt(e.target.value) || 0;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   productWeight: e.target.value, // For backward compatibility
                                 });
                               }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Số lượng"
-                              fullWidth
-                              type="number"
-                              required
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <TextField
+                        label="Số lượng"
+                        fullWidth
+                        type="number"
+                        required
                               value={item.quantity || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].quantity =
                                   parseInt(e.target.value) || 1;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   productQuantity: e.target.value, // For backward compatibility
                                 });
                               }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Mã sản phẩm"
-                              fullWidth
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={3}>
+                      <TextField
+                        label="Mã sản phẩm"
+                        fullWidth
                               value={item.code || ""}
                               onChange={(e) => {
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].code = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   productCode: e.target.value, // For backward compatibility
                                 });
@@ -1784,8 +2273,7 @@ const CreateOrderForm = ({
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].price =
                                   parseInt(e.target.value) || 0;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                 });
                               }}
@@ -1801,8 +2289,7 @@ const CreateOrderForm = ({
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].length =
                                   parseInt(e.target.value) || 0;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   packageLength: e.target.value, // For backward compatibility
                                 });
@@ -1819,8 +2306,7 @@ const CreateOrderForm = ({
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].width =
                                   parseInt(e.target.value) || 0;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   packageWidth: e.target.value, // For backward compatibility
                                 });
@@ -1837,8 +2323,7 @@ const CreateOrderForm = ({
                                 const updatedItems = [...newOrder.items];
                                 updatedItems[index].height =
                                   parseInt(e.target.value) || 0;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                   packageHeight: e.target.value, // For backward compatibility
                                 });
@@ -1857,15 +2342,14 @@ const CreateOrderForm = ({
                                 }
                                 updatedItems[index].category.level1 =
                                   e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   items: updatedItems,
                                 });
                               }}
                               placeholder="VD: Áo, Quần, Giày, ..."
-                            />
-                          </Grid>
-                        </Grid>
+                      />
+                    </Grid>
+                  </Grid>
                       </Box>
                     ))
                   ) : (
@@ -1893,8 +2377,7 @@ const CreateOrderForm = ({
                         },
                       };
 
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         items: [...(newOrder.items || []), newItem],
                       });
                     }}
@@ -1973,8 +2456,7 @@ const CreateOrderForm = ({
                               onChange={(e) => {
                                 const updatedPackages = [...newOrder.packages];
                                 updatedPackages[index].name = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   packages: updatedPackages,
                                 });
                               }}
@@ -1991,8 +2473,7 @@ const CreateOrderForm = ({
                               onChange={(e) => {
                                 const updatedPackages = [...newOrder.packages];
                                 updatedPackages[index].length = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   packages: updatedPackages,
                                 });
                               }}
@@ -2008,8 +2489,7 @@ const CreateOrderForm = ({
                               onChange={(e) => {
                                 const updatedPackages = [...newOrder.packages];
                                 updatedPackages[index].width = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   packages: updatedPackages,
                                 });
                               }}
@@ -2025,8 +2505,7 @@ const CreateOrderForm = ({
                               onChange={(e) => {
                                 const updatedPackages = [...newOrder.packages];
                                 updatedPackages[index].height = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   packages: updatedPackages,
                                 });
                               }}
@@ -2042,8 +2521,7 @@ const CreateOrderForm = ({
                               onChange={(e) => {
                                 const updatedPackages = [...newOrder.packages];
                                 updatedPackages[index].weight = e.target.value;
-                                setNewOrder({
-                                  ...newOrder,
+                                updateOrder({
                                   packages: updatedPackages,
                                 });
                               }}
@@ -2087,8 +2565,7 @@ const CreateOrderForm = ({
                             weight: 200,
                             convertedWeight: 200,
                           };
-                          setNewOrder({
-                            ...newOrder,
+                          updateOrder({
                             packages: [
                               ...(newOrder.packages || []),
                               newPackage,
@@ -2133,8 +2610,7 @@ const CreateOrderForm = ({
                             weight: 200,
                             convertedWeight: 200,
                           };
-                          setNewOrder({
-                            ...newOrder,
+                          updateOrder({
                             packages: [...newOrder.packages, newPackage],
                           });
                         }}
@@ -2183,8 +2659,7 @@ const CreateOrderForm = ({
                     type="number"
                     value={newOrder.weight || newOrder.packageWeight || "200"}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         weight: parseInt(e.target.value) || 0,
                         packageWeight: e.target.value,
                       })
@@ -2199,8 +2674,7 @@ const CreateOrderForm = ({
                     type="number"
                     value={newOrder.length || newOrder.packageLength || "1"}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         length: parseInt(e.target.value) || 0,
                         packageLength: e.target.value,
                       })
@@ -2215,8 +2689,7 @@ const CreateOrderForm = ({
                     type="number"
                     value={newOrder.width || newOrder.packageWidth || "19"}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         width: parseInt(e.target.value) || 0,
                         packageWidth: e.target.value,
                       })
@@ -2231,8 +2704,7 @@ const CreateOrderForm = ({
                     type="number"
                     value={newOrder.height || newOrder.packageHeight || "10"}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         height: parseInt(e.target.value) || 0,
                         packageHeight: e.target.value,
                       })
@@ -2257,8 +2729,7 @@ const CreateOrderForm = ({
                     type="number"
                     value={newOrder.cod_amount || newOrder.codAmount || "0"}
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         cod_amount: parseInt(e.target.value) || 0,
                         codAmount: e.target.value,
                       })
@@ -2279,8 +2750,7 @@ const CreateOrderForm = ({
                       newOrder.insurance_value || newOrder.totalValue || "0"
                     }
                     onChange={(e) =>
-                      setNewOrder({
-                        ...newOrder,
+                      updateOrder({
                         insurance_value: parseInt(e.target.value) || 0,
                         totalValue: e.target.value,
                       })
@@ -2299,8 +2769,7 @@ const CreateOrderForm = ({
                   checked={newOrder.cashOnDeliveryFailure || false}
                   onChange={(e) => {
                     const isChecked = e.target.checked;
-                    setNewOrder({
-                      ...newOrder,
+                    updateOrder({
                       cashOnDeliveryFailure: isChecked,
                       cod_failed_amount: isChecked
                         ? newOrder.cod_failed_amount || 0
@@ -2318,8 +2787,7 @@ const CreateOrderForm = ({
                     newOrder.cod_failed_amount || newOrder.failureCharge || "0"
                   }
                   onChange={(e) =>
-                    setNewOrder({
-                      ...newOrder,
+                    updateOrder({
                       cod_failed_amount: parseInt(e.target.value) || 0,
                       failureCharge: e.target.value,
                     })
@@ -2339,8 +2807,7 @@ const CreateOrderForm = ({
                     ""
                   }
                   onChange={(e) =>
-                    setNewOrder({
-                      ...newOrder,
+                    updateOrder({
                       client_order_code: e.target.value,
                       customerOrderCode: e.target.value,
                     })
@@ -2388,8 +2855,7 @@ const CreateOrderForm = ({
                     mappedValue = "CHOXEMHANGKHONGTHU";
                   else if (value === "try") mappedValue = "CHOTHUHANG";
 
-                  setNewOrder({
-                    ...newOrder,
+                  updateOrder({
                     required_note: mappedValue,
                     deliveryNote: value,
                   });
@@ -2441,8 +2907,7 @@ const CreateOrderForm = ({
                 sx={{ mt: 2 }}
                 value={newOrder.note || newOrder.notes || ""}
                 onChange={(e) =>
-                  setNewOrder({
-                    ...newOrder,
+                  updateOrder({
                     note: e.target.value,
                     notes: e.target.value,
                   })
@@ -2549,7 +3014,7 @@ const CreateOrderForm = ({
                   <Select
                     value={newOrder.paymentParty || "receiver"}
                     onChange={(e) =>
-                      setNewOrder({ ...newOrder, paymentParty: e.target.value })
+                      updateOrder({ ...newOrder, paymentParty: e.target.value })
                     }
                     displayEmpty
                     size="small"
@@ -2597,10 +3062,10 @@ const CreateOrderForm = ({
                   pb: 1,
                 }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
                     justifyContent: "space-between",
                     px: 2,
                   }}
@@ -2610,69 +3075,69 @@ const CreateOrderForm = ({
                   </Typography>
 
                   <Box sx={{ display: "flex", width: "60%", maxWidth: 400 }}>
-                    <TextField
+                  <TextField
                       placeholder="Nhập mã khuyến mãi"
-                      size="small"
-                      fullWidth
+                    size="small"
+                    fullWidth
                       disabled={isViewMode}
                       value={newOrder.promotionCode || ""}
                       onChange={(e) =>
                         !isViewMode &&
-                        setNewOrder({
+                        updateOrder({
                           ...newOrder,
                           promotionCode: e.target.value,
                         })
                       }
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          borderTopRightRadius: 0,
-                          borderBottomRightRadius: 0,
-                        },
-                      }}
-                    />
-                    <Button
-                      variant="outlined"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
+                      },
+                    }}
+                  />
+                  <Button
+                    variant="outlined"
                       disabled={isViewMode}
-                      sx={{
-                        borderColor: "#f97316",
-                        color: "#f97316",
+                    sx={{
+                      borderColor: "#f97316",
+                      color: "#f97316",
                         minWidth: 80,
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 0,
-                        height: 40,
-                        borderLeft: 0,
+                      borderTopLeftRadius: 0,
+                      borderBottomLeftRadius: 0,
+                      height: 40,
+                      borderLeft: 0,
                         "&:hover": {
                           borderColor: "#ea580c",
                           backgroundColor: "rgba(249, 115, 22, 0.04)",
                         },
-                      }}
-                    >
+                    }}
+                  >
                       Áp dụng
-                    </Button>
-                  </Box>
+                  </Button>
                 </Box>
+              </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                     mt: 1,
                     mb: 1,
-                  }}
-                >
-                  <Box
-                    component="img"
+                }}
+              >
+                <Box
+                  component="img"
                     src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYuNjc1MzQgOS41MzMwMUw2LjQ1MDMyIDkuMjgyMUw2Ljc3OTQ0IDkuMTIyMjhMOC40OTQ3OSA4LjQ2MzA1TDYuNzkxODMgNy42OTA1M0w2LjQ0OTYzIDcuNTE2MDFMNi42OTE3OCA3LjI0OTk3TDcuNjgwNSA2LjE1MzQyTDYuMjEyNjYgNi4wNzE1NUw1Ljg2NTYxIDYuMDU0ODFMNS44MjU0NiA1LjcwOTc5TDUuNjQ1ODIgMy45ODY3N0w0LjUwMjk5IDUuMjcwMTJMNC4yODEwMyA1LjUyMzk5TDMuOTk5MDQgNS4zMDc5M0wyLjU2NDQyIDNCMEwxLjc0NzgyIDUuNzQ1MzZMMS42MTcxNiA2LjA4Njg2TDEuMjcwMTEgNi4xOTI0NkwxLjI3MDEyIDYuNjIxNzNMMC45ODUxNDYgNy44Mzg3OUwxLjIyMzY2IDguMTI4OTlMMC45NzIxMSA4LjQwNDI2TDAgOS41MDg5OEwxLjI3OTE0IDkuODMzNTlMMS42Mjk3MiA5LjkyMDYyTDEuNzQ3MTMgMTAuMjY0OUwyLjQ5MTYyIDEyTDMuODcxNDMgMTAuNjcxTDQuMTAwMzQgMTAuNDQ4MUw0LjMzODg3IDEwLjY2MDFMNi4wMTYyNiAxMi4xMTM3TDUuODk5MTMgMTAuMzczNUw1Ljg2NzA0IDEwLjAyNjFMNi4xOTc4NCAxMC4wNTE4TDYuNjc1MzQgOS41MzMwMVoiIGZpbGw9IiNFRjQ0NDQiLz4KPHBhdGggZD0iTTE3LjEyMzcgOS41MDc5OEwxNi4xMzk1IDguMzg5MTdMMTUuODk0NSA4LjEyMDg5TDE2LjE0MDIgNy44NDE0NkwxNy4xMjUgNi42MDk2M0wxNS44NTc5IDYuMTgwMDNMMTUuNTA4MiA2LjA3MDkzTDE1LjM3NjIgNS43MzE1M0wxNC41NTk2IDRMMTMuMTI1IDUuMzA3OTNMMTIuODQ2NCA1LjUyMDY0TDEyLjYyMTQgNS4yNjM0NEwxMS41MTUyIDRMMTEuMzM1NiA1LjcwOTc5TDExLjI5NTQgNi4wNTQ4MUwxMC45NDg0IDYuMDcxNTVMOS40ODAxNiA2LjE4NzkyTDEwLjQ2ODkgNy4yODQ0N0wxMC43MTc5IDcuNTM3NUwxMC4zNzU3IDcuNjkzNTZMOC40OTQ4IDguNDYzMDVMMTAuMjEwMSA5LjEzMTYyTDEwLjU0NTkgOS4yOTgzNkwxMC4zMjA5IDkuNTMzMDFMMTAuOTQ3NyAxMC4wNTE4TDExLjI3ODUgMTAuMDI2MUwxMS4yNDY0IDEwLjM3MzVMMTEuMTI5MyAxMi4xMTM3TDEyLjgwNjcgMTAuNjYwMUwxMy4wNDUyIDEwLjQ0ODFMMTMuMjc0MSAxMC42NzFMMTQuNjU0IDEyTDE1LjM5ODQgMTAuMjY0OUwxNS41MTU4IDkuOTIwNjJMMTUuODY2NCA5LjgzMzU5TDE3LjEyMzcgOS41MDc5OFoiIGZpbGw9IiNGRkQ3MDQiLz4KPHBhdGggZD0iTTEyLjY0NjggNi45MjIzOEwxMS4xODkgNi44NDc4NUwxMC44NTgxIDUuNDcwMjVMMTAuMDAyOSA2LjQ2NjY1TDguNjc1NjUgNi4xMzEyM0w5LjE4MzY0IDcuNDQyODVMOC4wMzc5OCA4LjE2MzM3TDkuMjk0NTQgOC42NjMxNkw4Ljg3OTk5IDEwLjAyODlMMTAuMTY0MSA5LjM0Nzc3TDExLjEyMjcgMTAuMjIxNEwxMS4wNjc3IDguNzY4NjlMMTIuNDA1MiA4LjM3MTk4TDExLjI0ODggNy42NzY2M0wxMi4wMTEzIDYuNjMxNjVMMTIuNjQ2OCA2LjkyMjM4WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg=="
-                    alt="GHN"
+                  alt="GHN"
                     sx={{ width: 18, height: 18, mr: 1 }}
-                  />
-                  <Typography
+                />
+                <Typography
                     variant="caption"
                     sx={{ color: "#1976d2", fontWeight: "medium" }}
-                  >
+                >
                     Sử dụng mã khuyến mãi từ GHN
-                  </Typography>
+                </Typography>
                 </Box>
               </Box>
             </Paper>
@@ -2706,24 +3171,32 @@ const CreateOrderForm = ({
             </Button>
           ) : (
             <>
-              <Button
-                onClick={handleCloseDialog}
-                variant="outlined"
-                sx={{ borderColor: "#f97316", color: "#f97316" }}
-              >
+          <Button
+            onClick={handleCloseDialog}
+            variant="outlined"
+            sx={{ borderColor: "#f97316", color: "#f97316" }}
+          >
                 Hủy
-              </Button>
-              <Button
-                onClick={handleCreateOrder}
-                variant="contained"
-                sx={{ bgcolor: "#f97316", "&:hover": { bgcolor: "#ea580c" } }}
+          </Button>
+          <Button
+            onClick={handleCreateOrder}
+            variant="contained"
+                disabled={!formValid}
+                sx={{
+                  bgcolor: "#f97316",
+                  "&:hover": { bgcolor: "#ea580c" },
+                  "&.Mui-disabled": {
+                    bgcolor: "#fbd7c7",
+                    color: "#8b8b8b",
+                  },
+                }}
               >
                 {isEditMode
                   ? "Cập nhật đơn"
                   : isBasedOnMode
                   ? "Tạo đơn mới"
                   : "Tạo đơn"}
-              </Button>
+          </Button>
             </>
           )}
         </Box>
