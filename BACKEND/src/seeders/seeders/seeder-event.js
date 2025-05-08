@@ -1,50 +1,130 @@
 "use strict";
 const { nanoid } = require("nanoid");
-const dayjs = require("dayjs");
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const now = dayjs();
-
     return queryInterface.bulkInsert("events", [
       {
+        id: 1,
         public_id: nanoid(),
         creator_id: 1,
         title: "Event 1",
         description: "Description for Event 1",
         location: "Location for Event 1",
         capacity: 100,
-        end_sign: now.subtract(10, "day").toDate(),
-        start_time: now.subtract(5, "day").toDate(),
-        end_time: now.subtract(4, "day").subtract(15, "hour").toDate(),
-        created_at: now.subtract(20, "day").toDate(),
-        updated_at: now.subtract(20, "day").toDate(),
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
+        start_time: Sequelize.literal("CURDATE() - INTERVAL 5 DAY"),
+        end_time: Sequelize.literal(
+          "CURDATE() - INTERVAL 4 DAY - INTERVAL 15 HOUR"
+        ),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 20 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 20 DAY"),
       },
       {
+        id: 2,
         public_id: nanoid(),
         creator_id: 3,
         title: "Event 2",
         description: "Description for Event 2",
         location: "Location for Event 2",
         capacity: 100,
-        end_sign: now.subtract(8, "day").toDate(),
-        start_time: now.add(5, "day").toDate(),
-        end_time: now.add(5, "day").add(5, "hour").toDate(),
-        created_at: now.subtract(10, "day").toDate(),
-        updated_at: now.subtract(10, "day").toDate(),
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 8 DAY"),
+
+        start_time: Sequelize.literal("CURDATE() + INTERVAL 5 DAY"),
+        end_time: Sequelize.literal(
+          "CURDATE() + INTERVAL 5 DAY + INTERVAL 5 HOUR"
+        ),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
       },
       {
+        id: 3,
+        public_id: nanoid(),
+        creator_id: 4,
+        title: "Event 3",
+        description: "Description for Event 3",
+        location: "Location for Event 3",
+        capacity: 100,
+        end_sign: Sequelize.literal("CURDATE() + INTERVAL 15 DAY"),
+        start_time: Sequelize.literal("CURDATE() + INTERVAL 20 DAY"),
+        end_time: Sequelize.literal(
+          "CURDATE() + INTERVAL 20 DAY + INTERVAL 5 HOUR"
+        ),
+        created_at: Sequelize.literal("CURDATE()"),
+        updated_at: Sequelize.literal("CURDATE()"),
+      },
+      {
+        id: 4,
         public_id: nanoid(),
         creator_id: 4,
         title: "Event 4",
         description: "Description for Event 4",
         location: "Location for Event 4",
         capacity: 100,
-        end_sign: now.subtract(8, "day").toDate(),
-        start_time: now.add(5, "day").toDate(),
-        end_time: now.add(5, "day").add(5, "hour").toDate(),
-        created_at: now.subtract(10, "day").toDate(),
-        updated_at: now.subtract(10, "day").toDate(),
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 15 DAY"),
+        start_time: Sequelize.literal("CURDATE() - INTERVAL 7 DAY"),
+        end_time: Sequelize.literal(
+          "CURDATE() - INTERVAL 6 DAY - INTERVAL 20 HOUR"
+        ),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 30 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 30 DAY"),
+      },
+      {
+        id: 5,
+        public_id: nanoid(),
+        creator_id: 3,
+        title: "Event 5",
+        description: "Description for Event 5",
+        location: "Location for Event 5",
+        capacity: 100,
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
+        start_time: Sequelize.literal("CURDATE() + INTERVAL 16 HOUR"),
+        end_time: Sequelize.literal("CURDATE() + INTERVAL 21 HOUR"),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 16 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 16 DAY"),
+      },
+      {
+        id: 6,
+        public_id: nanoid(),
+        creator_id: 1,
+        title: "Event 6",
+        description: "Description for Event 6",
+        location: "Location for Event 6",
+        capacity: 100,
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 13 DAY"),
+        start_time: Sequelize.literal("CURDATE() + INTERVAL 16 HOUR"),
+        end_time: Sequelize.literal("CURDATE() + INTERVAL 21 HOUR"),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 16 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 16 DAY"),
+      },
+      {
+        id: 7,
+        public_id: nanoid(),
+        creator_id: 3,
+        title: "Event 7",
+        description: "Description for Event 7",
+        location: "Location for Event 7",
+        capacity: 100,
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
+        start_time: Sequelize.literal("CURDATE() - INTERVAL 4 DAY"),
+        end_time: Sequelize.literal(
+          "CURDATE() - INTERVAL 3 DAY - INTERVAL 18 HOUR"
+        ),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
+      },
+      {
+        id: 8,
+        public_id: nanoid(),
+        creator_id: 4,
+        title: "Event 8",
+        description: "Description for Event 8",
+        location: "Location for Event 8",
+        capacity: 100,
+        end_sign: Sequelize.literal("CURDATE() - INTERVAL 15 DAY"),
+        start_time: Sequelize.literal("CURDATE() + INTERVAL 16 HOUR"),
+        end_time: Sequelize.literal("CURDATE() + INTERVAL 21 HOUR"),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
       },
     ]);
   },
