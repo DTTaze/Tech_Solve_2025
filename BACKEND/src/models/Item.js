@@ -59,6 +59,22 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         defaultValue: "pending",
       },
+      weight: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      length: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      width: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      height: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       purchase_limit_per_day: {
         type: DataTypes.INTEGER,
         allowNull: true,

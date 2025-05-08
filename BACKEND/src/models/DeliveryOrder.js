@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       order_code: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM(
@@ -87,11 +87,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       is_printed: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: false,
       },
       created_date: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       cod_amount: {
         type: DataTypes.INTEGER,

@@ -28,6 +28,10 @@ const ItemDialog = ({ open, onClose, onSave, item, isSubmitting }) => {
     description: "",
     status: "available",
     purchase_limit_per_day: 1,
+    weight: "",
+    length: "",
+    width: "",
+    height: "",
   });
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
@@ -42,6 +46,10 @@ const ItemDialog = ({ open, onClose, onSave, item, isSubmitting }) => {
         description: item.description || "",
         status: item.status || "available",
         purchase_limit_per_day: item.purchase_limit_per_day || 1,
+        weight: item.weight || "",
+        length: item.length || "",
+        width: item.width || "",
+        height: item.height || "",
       });
       setPreviewImages(item.images || []);
     } else {
@@ -57,6 +65,10 @@ const ItemDialog = ({ open, onClose, onSave, item, isSubmitting }) => {
       description: "",
       status: "available",
       purchase_limit_per_day: 1,
+      weight: "",
+      length: "",
+      width: "",
+      height: "",
     });
     setImages([]);
     setPreviewImages([]);
@@ -117,6 +129,18 @@ const ItemDialog = ({ open, onClose, onSave, item, isSubmitting }) => {
       formData.purchase_limit_per_day < 1
     ) {
       newErrors.purchase_limit_per_day = "Daily limit must be at least 1";
+    }
+    if (!formData.weight || formData.weight <= 0) {
+      newErrors.weight = "Weight must be greater than 0";
+    }
+    if (!formData.length || formData.length <= 0) {
+      newErrors.length = "Length must be greater than 0";
+    }
+    if (!formData.width || formData.width <= 0) {
+      newErrors.width = "Width must be greater than 0";
+    }
+    if (!formData.height || formData.height <= 0) {
+      newErrors.height = "Height must be greater than 0";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -190,6 +214,58 @@ const ItemDialog = ({ open, onClose, onSave, item, isSubmitting }) => {
               onChange={handleChange}
               error={!!errors.stock}
               helperText={errors.stock}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Weight (g)"
+              name="weight"
+              type="number"
+              value={formData.weight}
+              onChange={handleChange}
+              error={!!errors.weight}
+              helperText={errors.weight}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Length (cm)"
+              name="length"
+              type="number"
+              value={formData.length}
+              onChange={handleChange}
+              error={!!errors.length}
+              helperText={errors.length}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Width (cm)"
+              name="width"
+              type="number"
+              value={formData.width}
+              onChange={handleChange}
+              error={!!errors.width}
+              helperText={errors.width}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Height (cm)"
+              name="height"
+              type="number"
+              value={formData.height}
+              onChange={handleChange}
+              error={!!errors.height}
+              helperText={errors.height}
               required
             />
           </Grid>

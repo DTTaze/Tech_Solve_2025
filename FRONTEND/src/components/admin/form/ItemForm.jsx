@@ -25,6 +25,10 @@ export default function ItemForm({
     description: "",
     price: "",
     stock: "",
+    weight: "",
+    length: "",
+    width: "",
+    height: "",
     status: "",
     purchase_limit_per_day: "",
   });
@@ -33,11 +37,15 @@ export default function ItemForm({
     if (mode === "edit" && initialData) {
       setFormData({
         id: initialData?.id || null,
-        owner_id: initialData?.owner_id || null,
+        owner_id: initialData?.owner_id || "",
         name: initialData?.name || "",
         description: initialData?.description || "",
-        price: initialData?.price || null,
-        stock: initialData?.stock || null,
+        price: initialData?.price || "",
+        stock: initialData?.stock || "",
+        weight: initialData?.weight || "",
+        length: initialData?.length || "",
+        width: initialData?.width || "",
+        height: initialData?.height || "",
         status: initialData?.status || "",
         purchase_limit_per_day:
           initialData?.purchase_limit_per_day || "Không giới hạn",
@@ -50,6 +58,10 @@ export default function ItemForm({
         description: "",
         price: "",
         stock: "",
+        weight: "",
+        length: "",
+        width: "",
+        height: "",
         status: "",
         purchase_limit_per_day: "",
       });
@@ -109,6 +121,42 @@ export default function ItemForm({
             fullWidth
             required
           />
+          <TextField
+            margin="dense"
+            label="Cân nặng (g)"
+            name="weight"
+            value={formData.weight}
+            onChange={handleChange}
+            fullWidth
+            required
+          />
+          <TextField
+            margin="dense"
+            label="Chiều dài (cm)"
+            name="length"
+            value={formData.length}
+            onChange={handleChange}
+            fullWidth
+            required
+          />
+          <TextField
+            margin="dense"
+            label="Chiều rộng (cm)"
+            name="width"
+            value={formData.width}
+            onChange={handleChange}
+            fullWidth
+            required
+          />{" "}
+          <TextField
+            margin="dense"
+            label="Chiều cao (cm)"
+            name="height"
+            value={formData.height}
+            onChange={handleChange}
+            fullWidth
+            required
+          />
           <FormControl fullWidth margin="dense" required>
             <InputLabel id="status-label">Trạng thái</InputLabel>
             <Select
@@ -123,7 +171,6 @@ export default function ItemForm({
               <MenuItem value="sold_out">Hết hàng</MenuItem>
             </Select>
           </FormControl>
-
           <TextField
             margin="dense"
             label="Chủ sở hữu"
@@ -133,7 +180,6 @@ export default function ItemForm({
             fullWidth
             required
           />
-
           <TextField
             margin="dense"
             label="Giới hạn lượt mua/ngày"

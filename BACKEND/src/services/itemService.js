@@ -13,38 +13,50 @@ const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const createItem = async (itemData, user_id, images) => {
   try {
-    if (!itemData.name || !itemData.price || !itemData.stock) {
-      throw new Error("Missing required fields (name, price, stock)");
+    const {
+      name,
+      price,
+      stock,
+      description,
+      status,
+      purchase_limit_per_day,
+      weight,
+      length,
+      width,
+      height,
+    } = itemData;
+
+    if (!name || !price || !stock || !weight || !length || !width || !height) {
+      throw new Error(
+        "Missing required fields (name, price, stock, weight, length, width, height)"
+      );
     }
 
     if (!user_id) {
       throw new Error("Creator ID is required");
     }
 
-    if (itemData.purchase_limit_per_day < 1) {
-      throw new Error("Purchase limit per day must be at least 1");
-    }
-
-    if (itemData.price < 1) {
-      throw new Error("Price must be at least 1");
-    }
-
-    const stock = itemData.stock;
-    if (stock === undefined || stock < 1) {
-      throw new Error("Stock must be at least 1");
+    if (price < 1 || stock < 1 || purchase_limit_per_day < 1) {
+      throw new Error(
+        "Price, stock and purchase_limit_per_day must be at least 1"
+      );
     }
 
     const result = await sequelize.transaction(async (t) => {
       const newItem = await Item.create(
         {
           public_id: nanoid(),
-          name: itemData.name,
-          price: itemData.price,
-          stock: itemData.stock,
-          description: itemData.description,
-          status: itemData.status,
+          name,
+          price,
+          stock,
+          description,
+          status,
           creator_id: user_id,
-          purchase_limit_per_day: itemData.purchase_limit_per_day,
+          purchase_limit_per_day,
+          weight,
+          length,
+          width,
+          height,
         },
         { transaction: t }
       );
@@ -151,8 +163,18 @@ const getItemByIdUser = async (user_id) => {
 
 const updateItem = async (id, data, images) => {
   try {
-    let { name, price, stock, description, status, purchase_limit_per_day } =
-      data;
+    let {
+      name,
+      price,
+      stock,
+      description,
+      status,
+      purchase_limit_per_day,
+      weight,
+      length,
+      width,
+      height,
+    } = data;
     let item = await Item.findByPk(id);
     if (!item) {
       throw new Error("Item not found");
@@ -178,7 +200,10 @@ const updateItem = async (id, data, images) => {
       item.stock = stock;
       item.status = stock > 0 ? "available" : "sold_out";
     }
-
+    if (weight !== undefined) item.weight = weight;
+    if (length !== undefined) item.length = length;
+    if (width !== undefined) item.width = width;
+    if (height !== undefined) item.height = height;
     // Nếu có thay đổi về stock hoặc status, emit sự kiện
     if (originalStock !== item.stock || originalStatus !== item.status) {
       emitStockUpdate(id, item.stock, {
@@ -306,7 +331,8 @@ const getItemByPublicId = async (public_id) => {
 
 const updateItemByPublicId = async (public_id, data, images) => {
   try {
-    let { name, price, stock, description } = data;
+    let { name, price, stock, description, weight, length, width, height } =
+      data;
     let item = await Item.findOne({ where: { public_id } });
     if (!item) {
       throw new Error("Item not found");
@@ -324,6 +350,10 @@ const updateItemByPublicId = async (public_id, data, images) => {
       }
       item.stock = stock;
     }
+    if (weight !== undefined) item.weight = weight;
+    if (length !== undefined) item.length = length;
+    if (width !== undefined) item.width = width;
+    if (height !== undefined) item.height = height;
 
     let uploadedImages = [];
 
