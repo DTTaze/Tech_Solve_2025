@@ -18,7 +18,7 @@ const handlePreviewOrderWithoutOrderCode = async (req, res) => {
     const data = await deliveryOrderService.previewOrderWithoutOrderCode(
       shipmentData,
       token,
-      shop_id,
+      shop_id
     );
     return res.success("Preview order success", data);
   } catch (error) {
@@ -154,6 +154,20 @@ const handleGetAllDeliveryOrdersBySeller = async (req, res) => {
   }
 };
 
+const handleGetAllDeliveryOrdersByBuyer = async (req, res) => {
+  try {
+    const buyerId = req.user.id;
+    const orders = await deliveryOrderService.getDeliveryOrdersByBuyer(buyerId);
+    return res.success("Get all delivery orders by buyerId success", orders);
+  } catch (error) {
+    return res.error(
+      500,
+      "Get all delivery orders by buyerId failed",
+      error.message
+    );
+  }
+};
+
 const handleGetAllDeliveryOrders = async (req, res) => {
   try {
     const orders = await deliveryOrderService.getAllDeliveryOrders();
@@ -173,4 +187,5 @@ module.exports = {
   handleGetAllDistrictsByProvince,
   handleGetAllWardsByDistrict,
   handlePreviewOrderWithoutOrderCode,
+  handleGetAllDeliveryOrdersByBuyer,
 };

@@ -28,8 +28,12 @@ router.get(
   deliveryOrderController.handleGetAllDeliveryOrders
 );
 router.get(
-  "/carrier/ghn/orders/user",
+  "/carrier/ghn/orders/seller",
   deliveryOrderController.handleGetAllDeliveryOrdersBySeller
+);
+router.get(
+  "/carrier/ghn/orders/buyer",
+  deliveryOrderController.handleGetAllDeliveryOrdersByBuyer
 );
 router.get(
   "/carrier/ghn/master-data/province",

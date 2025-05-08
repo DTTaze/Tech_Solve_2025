@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "seller_id",
         onDelete: "CASCADE",
       });
+      DeliveryOrder.belongsTo(models.User, {
+        foreignKey: "buyer_id",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -19,6 +23,14 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
       seller_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
+        },
+      },
+      buyer_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {

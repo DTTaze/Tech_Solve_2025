@@ -237,6 +237,28 @@ const getDeliveryOrdersBySeller = async (seller_id) => {
   }
 };
 
+const getDeliveryOrdersByBuyer = async (buyer_id) => {
+  try {
+    const cacheKey = `delivery:orders:buyer:${buyer_id}`;
+    const cached = await getCache(cacheKey);
+
+    if (cached) {
+      console.log("Cache hit for delivery orders of buyer", buyer_id);
+      return cached;
+    }
+
+    const orders = await DeliveryOrder.findAll({
+      where: { buyer_id: buyer_id },
+    });
+
+    await setCache(cacheKey, orders, 60 * 60); // TTL 1h
+    return orders;
+  } catch (err) {
+    console.error("DB Error (getOrdersByBuyer):", err);
+    throw err;
+  }
+};
+
 module.exports = {
   createDeliveryOrder,
   getDeliveryOrderInfo,
@@ -248,4 +270,5 @@ module.exports = {
   getAllDistrictsByProvince,
   getWardsByDistrict,
   previewOrderWithoutOrderCode,
+  getDeliveryOrdersByBuyer,
 };

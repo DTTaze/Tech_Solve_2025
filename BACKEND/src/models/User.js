@@ -37,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "seller_id",
         onDelete: "CASCADE",
       });
+      User.hasMany(models.DeliveryOrder, {
+        foreignKey: "buyer_id",
+        onDelete: "CASCADE",
+      });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
       User.belongsTo(models.Rank, { foreignKey: "rank_id", as: "ranks" });
     }
