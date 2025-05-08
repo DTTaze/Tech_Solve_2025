@@ -217,19 +217,6 @@ function ItemCatalog({ items: propItems }) {
         alert("Bạn không có đủ số coins để giao dịch!");
         return;
       }
-      const today = new Date().toISOString().split("T")[0];
-      const purchasedToday = itemPurchases[today] || 0;
-      if (
-        selectedItem.purchaseLimitPerDay !== null &&
-        purchasedToday + quantity > selectedItem.purchaseLimitPerDay
-      ) {
-        alert(
-          `Bạn chỉ có thể mua thêm ${
-            selectedItem.purchaseLimitPerDay - purchasedToday
-          } sản phẩm này trong hôm nay!`
-        );
-        return;
-      }
       try {
         const response = await purchaseItemApi(auth.user.id, selectedItem.id, {
           name: selectedItem.name,

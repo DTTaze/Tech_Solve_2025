@@ -10,7 +10,13 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import MissionPage from "./pages/Mission.jsx";
 import MarketPage from "./pages/ExchangeMarket.jsx";
-import UserProfilePage from "./pages/User.jsx";
+import User from "./pages/User.jsx";
+import PersonalInformation from "./components/features/user/PersonalInformation.jsx";
+import Address from "./components/features/user/Address.jsx";
+import PurchaseOrder from "./components/features/user/PurchaseOrder.jsx";
+import ChangePassword from "./components/features/user/ChangePassword.jsx";
+import DeleteAccount from "./components/features/user/DeleteAccount.jsx";
+import MissionCompleted from "./components/features/user/MissionCompleted.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import Admin from "./pages/Admin.jsx";
 import AdminDashboard from "./components/admin/AdminDashboard.jsx";
@@ -45,10 +51,6 @@ const router = createBrowserRouter([
         element: <Homepage />,
       },
       {
-        path: "profile",
-        element: <UserProfilePage />,
-      },
-      {
         path: "missions",
         element: <MissionPage />,
       },
@@ -59,6 +61,23 @@ const router = createBrowserRouter([
       {
         path: "forgot_password",
         element: <ForgotPassword />,
+      },
+      {
+        path: "user",
+        element: (
+          <ProtectedRoute requiredRole="User">
+            <User />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <PersonalInformation /> },
+          { path: "account", element: <PersonalInformation /> },
+          { path: "address", element: <Address /> },
+          { path: "purchase", element: <PurchaseOrder /> },
+          { path: "change-password", element: <ChangePassword /> },
+          { path: "delete-account", element: <DeleteAccount /> },
+          { path: "missions", element: <MissionCompleted /> },
+        ]
       },
       {
         path: "admin",
