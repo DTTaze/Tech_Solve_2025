@@ -3,7 +3,6 @@ import { AuthContext } from "../contexts/auth.context";
 import { Outlet } from "react-router-dom";
 import ProfileCard from "../components/features/user/ProfileCard.jsx";
 import ProfileCardSkeleton from "../components/features/user/ProfileCardSkeleton.jsx";
-import UserHeader from "../layouts/Header";
 
 function User() {
   const { auth } = useContext(AuthContext);
@@ -19,7 +18,6 @@ function User() {
 
   return (
     <div className="w-screen min-h-screen bg-[#f7f8fa]">
-      <UserHeader /> 
       <div className="w-[80vw] m-auto flex gap-3">
         <div className="w-[30%] mt-4">
           {isLoading ? <ProfileCardSkeleton /> : <ProfileCard />}

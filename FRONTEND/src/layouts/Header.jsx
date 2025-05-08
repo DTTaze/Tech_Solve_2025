@@ -94,7 +94,6 @@ function UserHeader() {
     { key: "", label: "Trang chủ" },
     { key: "missions", label: "Nhiệm vụ" },
     { key: "market", label: "Trao đổi" },
-    { key: "qr", label: "Test tạo QR" },
   ];
 
   const avatarUrl =
