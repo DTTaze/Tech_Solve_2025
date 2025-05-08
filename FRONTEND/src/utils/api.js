@@ -373,11 +373,11 @@ export const upLoadItemApi = (formItemData, images) => {
       "Content-Type": "multipart/form-data",
     },
   });
-}
+};
 
 export const getItemByIdUserApi = (id) => {
   return axios.get(`api/items/users/${id}`);
-}
+};
 
 export const updateItemOfCustomerApi = (id, formItemData, images) => {
   const formData = new FormData();
@@ -399,11 +399,11 @@ export const updateItemOfCustomerApi = (id, formItemData, images) => {
       "Content-Type": "multipart/form-data",
     },
   });
-}
+};
 
 export const deleteItemOfCustomerApi = (id) => {
   return axios.delete(`api/items/${id}`);
-}
+};
 
 export const createShippingOrderApi = (data, token, shop_id) => {
   return axios.post("api/delivery/carrier/ghn/create-order", data, {

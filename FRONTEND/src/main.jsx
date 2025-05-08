@@ -64,11 +64,7 @@ const router = createBrowserRouter([
       },
       {
         path: "user",
-        element: (
-          <ProtectedRoute requiredRole="User">
-            <User />
-          </ProtectedRoute>
-        ),
+        element: <User />,
         children: [
           { index: true, element: <PersonalInformation /> },
           { path: "account", element: <PersonalInformation /> },
@@ -77,7 +73,7 @@ const router = createBrowserRouter([
           { path: "change-password", element: <ChangePassword /> },
           { path: "delete-account", element: <DeleteAccount /> },
           { path: "missions", element: <MissionCompleted /> },
-        ]
+        ],
       },
       {
         path: "admin",

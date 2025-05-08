@@ -226,8 +226,8 @@ export default function CustomerOrders() {
       setErrorMessage("");
 
       const response = await getShippingAccountsByUserApi();
-      console.log("check newShippingAccount", newShippingAccount);
-      if (response && response.data) {
+      console.log("check newShippingAccount", response);
+      if (response.status === 200) {
         setShippingAccounts(response.data);
         setIsLoadingAccounts(false);
       }
