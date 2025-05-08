@@ -810,10 +810,10 @@ const CreateOrderForm = ({
     setNewOrder({
       ...newOrder,
       items: [...(newOrder.items || []), newItem],
-      productName: product.name,
-      productWeight: product.weight,
-      productQuantity: product.quantity,
-      productCode: product.code,
+      weight: product.weight,
+      height: product.height,
+      width: product.width,
+      length: product.length,
     });
   };
 
@@ -826,12 +826,12 @@ const CreateOrderForm = ({
         code: newOrder.productCode || "",
         quantity: parseInt(newOrder.productQuantity) || 1,
         price: parseInt(newOrder.codAmount) || 0,
-        length: parseInt(newOrder.packageLength) || 0,
-        width: parseInt(newOrder.packageWidth) || 0,
-        height: parseInt(newOrder.packageHeight) || 0,
-        weight: parseInt(newOrder.productWeight) || 0,
+        length: parseInt(newOrder.length) || 0,
+        width: parseInt(newOrder.with) || 0,
+        height: parseInt(newOrder.height) || 0,
+        weight: parseInt(newOrder.weight) || 0,
         category: {
-          level1: "Áo", // Default category
+          level1: "Áo",
         },
       };
 
@@ -2193,9 +2193,51 @@ const CreateOrderForm = ({
                             mb: 2,
                           }}
                         >
-                          <Typography variant="subtitle2">
-                            Sản phẩm {index + 1}
-                          </Typography>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography
+                              variant="h5"
+                              sx={{ whiteSpace: "nowrap" }}
+                            >
+                              Sản phẩm {index + 1}
+                            </Typography>
+                          </Box>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} md={3} sx={{ ml: "auto" }}>
+                              <TextField
+                                label="KL (gram)"
+                                fullWidth
+                                type="number"
+                                required
+                                value={item.weight || ""}
+                                onChange={(e) => {
+                                  const updatedItems = [...newOrder.items];
+                                  updatedItems[index].weight =
+                                    parseInt(e.target.value) || 0;
+                                  updateOrder({
+                                    items: updatedItems,
+                                  });
+                                }}
+                              />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                              <TextField
+                                label="Số lượng"
+                                fullWidth
+                                type="number"
+                                required
+                                value={item.quantity || ""}
+                                onChange={(e) => {
+                                  const updatedItems = [...newOrder.items];
+                                  updatedItems[index].quantity =
+                                    parseInt(e.target.value) || 1;
+                                  updateOrder({
+                                    items: updatedItems,
+                                  });
+                                }}
+                              />
+                            </Grid>
+                          </Grid>
+
                           {newOrder.items.length > 1 && (
                             <IconButton
                               size="small"
@@ -2212,9 +2254,8 @@ const CreateOrderForm = ({
                             </IconButton>
                           )}
                         </Box>
-
                         <Grid container spacing={2}>
-                          <Grid item xs={12} md={3}>
+                          <Grid item xs={0} md={6}>
                             <TextField
                               label="Tên sản phẩm"
                               fullWidth
@@ -2225,48 +2266,12 @@ const CreateOrderForm = ({
                                 updatedItems[index].name = e.target.value;
                                 updateOrder({
                                   items: updatedItems,
-                                  productName: e.target.value, // For backward compatibility
+                                  // productName: e.target.value,
                                 });
                               }}
                             />
                           </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="KL (gram)"
-                              fullWidth
-                              type="number"
-                              required
-                              value={item.weight || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                updatedItems[index].weight =
-                                  parseInt(e.target.value) || 0;
-                                updateOrder({
-                                  items: updatedItems,
-                                  productWeight: e.target.value, // For backward compatibility
-                                });
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Số lượng"
-                              fullWidth
-                              type="number"
-                              required
-                              value={item.quantity || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                updatedItems[index].quantity =
-                                  parseInt(e.target.value) || 1;
-                                updateOrder({
-                                  items: updatedItems,
-                                  productQuantity: e.target.value, // For backward compatibility
-                                });
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
+                          <Grid item xs={12} md={6}>
                             <TextField
                               label="Mã sản phẩm"
                               fullWidth
@@ -2276,95 +2281,8 @@ const CreateOrderForm = ({
                                 updatedItems[index].code = e.target.value;
                                 updateOrder({
                                   items: updatedItems,
-                                  productCode: e.target.value, // For backward compatibility
                                 });
                               }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Giá (đ)"
-                              fullWidth
-                              type="number"
-                              value={item.price || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                updatedItems[index].price =
-                                  parseInt(e.target.value) || 0;
-                                updateOrder({
-                                  items: updatedItems,
-                                });
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Dài (cm)"
-                              fullWidth
-                              type="number"
-                              value={item.length || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                updatedItems[index].length =
-                                  parseInt(e.target.value) || 0;
-                                updateOrder({
-                                  items: updatedItems,
-                                  packageLength: e.target.value, // For backward compatibility
-                                });
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Rộng (cm)"
-                              fullWidth
-                              type="number"
-                              value={item.width || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                updatedItems[index].width =
-                                  parseInt(e.target.value) || 0;
-                                updateOrder({
-                                  items: updatedItems,
-                                  packageWidth: e.target.value, // For backward compatibility
-                                });
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} md={3}>
-                            <TextField
-                              label="Cao (cm)"
-                              fullWidth
-                              type="number"
-                              value={item.height || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                updatedItems[index].height =
-                                  parseInt(e.target.value) || 0;
-                                updateOrder({
-                                  items: updatedItems,
-                                  packageHeight: e.target.value, // For backward compatibility
-                                });
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12}>
-                            <TextField
-                              label="Loại sản phẩm"
-                              fullWidth
-                              value={item.category?.level1 || ""}
-                              onChange={(e) => {
-                                const updatedItems = [...newOrder.items];
-                                if (!updatedItems[index].category) {
-                                  updatedItems[index].category = { level1: "" };
-                                }
-                                updatedItems[index].category.level1 =
-                                  e.target.value;
-                                updateOrder({
-                                  items: updatedItems,
-                                });
-                              }}
-                              placeholder="VD: Áo, Quần, Giày, ..."
                             />
                           </Grid>
                         </Grid>
@@ -2675,11 +2593,10 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.weight || newOrder.packageWeight || "200"}
+                    value={newOrder.weight || null}
                     onChange={(e) =>
                       updateOrder({
                         weight: parseInt(e.target.value) || 0,
-                        packageWeight: e.target.value,
                       })
                     }
                   />
@@ -2690,11 +2607,10 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.length || newOrder.packageLength || "1"}
+                    value={newOrder.length || null}
                     onChange={(e) =>
                       updateOrder({
                         length: parseInt(e.target.value) || 0,
-                        packageLength: e.target.value,
                       })
                     }
                   />
@@ -2705,11 +2621,10 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.width || newOrder.packageWidth || "19"}
+                    value={newOrder.width || null}
                     onChange={(e) =>
                       updateOrder({
                         width: parseInt(e.target.value) || 0,
-                        packageWidth: e.target.value,
                       })
                     }
                   />
@@ -2720,11 +2635,10 @@ const CreateOrderForm = ({
                     fullWidth
                     required
                     type="number"
-                    value={newOrder.height || newOrder.packageHeight || "10"}
+                    value={newOrder.height || null}
                     onChange={(e) =>
                       updateOrder({
                         height: parseInt(e.target.value) || 0,
-                        packageHeight: e.target.value,
                       })
                     }
                   />
