@@ -80,7 +80,7 @@ export default function ScannedUsersList({ scannedUsers, onRemoveUser }) {
                       <Chip
                         size="small"
                         icon={<EventIcon style={{ fontSize: 14 }} />}
-                        label={getEventNameById(user.eventId)}
+                        label={user.eventTitle}
                         sx={{ height: 24, fontSize: "0.75rem" }}
                       />
                       <Typography variant="caption" color="text.secondary">

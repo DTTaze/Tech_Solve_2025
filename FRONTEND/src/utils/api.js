@@ -286,9 +286,120 @@ export const acceptEventApi = (event_id) => {
 export const getEventSignedApi = () => {
   return axios.get("api/events/signed");
 };
-export const CheckInUserByUserIdApi = (event_id) => {
-  return axios.post(`api/events/check_in`, { event_id });
+
+export const CheckInUserByUserIdApi = (user_id, event_id) => {
+  return axios.put("api/events/check_in", {
+    event_id: event_id,
+    user_id: user_id,
+  });
 };
+
+export const CheckOutUserByUserIdApi = (user_id, event_id) => {
+  return axios.put("api/events/check_out", {
+    event_id: event_id,
+    user_id: user_id,
+  });
+};
+
+export const createEventApi = (formEventData, images) => {
+  const formData = new FormData();
+
+  // Append all event data fields
+  Object.keys(formEventData).forEach((key) => {
+    formData.append(key, formEventData[key]);
+  });
+
+  // Append images if they exist
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+  }
+
+  return axios.post("api/events/create", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const updateEventApi = (event_id, formEventData, images) => {
+  const formData = new FormData();
+
+  // Append all event data fields
+  Object.keys(formEventData).forEach((key) => {
+    formData.append(key, formEventData[key]);
+  });
+
+  // Append images if they exist
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+  }
+
+  return axios.put(`api/events/update/${event_id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const deleteEventApi = (event_id) => {
+  return axios.delete(`api/events/delete/${event_id}`);
+};
+
+export const upLoadItemApi = (formItemData, images) => {
+  const formData = new FormData();
+
+  // Append all item data fields
+  Object.keys(formItemData).forEach((key) => {
+    formData.append(key, formItemData[key]);
+  });
+
+  // Append images if they exist
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+  }
+
+  return axios.post("api/items/upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}
+
+export const getItemByIdUserApi = (id) => {
+  return axios.get(`api/items/users/${id}`);
+}
+
+export const updateItemOfCustomerApi = (id, formItemData, images) => {
+  const formData = new FormData();
+
+  // Append all item data fields
+  Object.keys(formItemData).forEach((key) => {
+    formData.append(key, formItemData[key]);
+  });
+
+  // Append images if they exist
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+  }
+
+  return axios.put(`api/items/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}
+
+export const deleteItemOfCustomerApi = (id) => {
+  return axios.delete(`api/items/${id}`);
+}
 
 export const createShippingOrderApi = (data, token, shop_id) => {
   return axios.post("api/delivery/carrier/ghn/create-order", data, {

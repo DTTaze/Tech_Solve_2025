@@ -7,6 +7,8 @@ import {
   Grid,
   Alert,
   Snackbar,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -20,15 +22,18 @@ import {
   getUserByIDPublicApi,
   getEventUserByEventIdApi,
   CheckInUserByUserIdApi,
-} from "../../utils/api";
+  CheckOutUserByUserIdApi,
+} from "../../../utils/api";
 
 export default function CustomerQRScanner() {
   const userInfo = useOutletContext();
   const [selectedEvent, setSelectedEvent] = useState("");
   const [scanning, setScanning] = useState(false);
+  const [checkoutScanning, setCheckoutScanning] = useState(false);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [scannedUsers, setScannedUsers] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -38,6 +43,7 @@ export default function CustomerQRScanner() {
     email: "",
   });
   const [events, setEvents] = useState([]);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     injectQRScannerStyles();
@@ -51,16 +57,17 @@ export default function CustomerQRScanner() {
           const response = await getEventUserByEventIdApi(selectedEvent);
           console.log("Fetched scanned users: ", response);
           const users = response.data.map((user) => ({
-            id: user.id,
-            name: user.full_name,
-            email: user.email,
+            id: user.user_id,
+            name: user.User.full_name,
+            email: user.User.email,
             avatar:
-              user.avatar_url ||
+              user.User.avatar_url ||
               `https://mui.com/static/images/avatar/${
                 Math.floor(Math.random() * 8) + 1
               }.jpg`,
-            scannedAt: user.check_in_time || new Date().toISOString(),
+            scannedAt: user.joined_at || new Date().toISOString(),
             eventId: selectedEvent,
+            eventTitle: user.Event.title
           }));
           setScannedUsers(users);
         } catch (error) {
@@ -79,6 +86,11 @@ export default function CustomerQRScanner() {
     setSelectedEvent(event.target.value);
   };
 
+  const handleStartScan = () => {
+    setScanning(true);
+    setLoading(true);
+  };
+
   const handleStopScan = () => {
     setScanning(false);
     setLoading(false);
@@ -91,7 +103,12 @@ export default function CustomerQRScanner() {
 
       // Get user data
       const userResponse = await getUserByIDPublicApi(public_id);
+
       const userData = userResponse.data;
+      console.log(
+        "userdata.id after response in CustomerQRScanner: ",
+        userData.id
+      );
 
       // Check in user
       await CheckInUserByUserIdApi(userData.id, selectedEvent);
@@ -103,16 +120,17 @@ export default function CustomerQRScanner() {
       // Refresh scanned users list
       const updatedResponse = await getEventUserByEventIdApi(selectedEvent);
       const updatedUsers = updatedResponse.data.map((user) => ({
-        id: user.id,
-        name: user.full_name,
-        email: user.email,
+        id: user.user_id,
+        name: user.User.full_name,
+        email: user.User.email,
         avatar:
-          user.avatar_url ||
+          user.User.avatar_url ||
           `https://mui.com/static/images/avatar/${
             Math.floor(Math.random() * 8) + 1
           }.jpg`,
-        scannedAt: user.check_in_time || new Date().toISOString(),
+        scannedAt: user.joined_at || new Date().toISOString(),
         eventId: selectedEvent,
+        eventTitle: user.Event.title
       }));
       setScannedUsers(updatedUsers);
 
@@ -175,6 +193,72 @@ export default function CustomerQRScanner() {
     }
   };
 
+  const handleCheckoutStartScan = () => {
+    setCheckoutScanning(true);
+    setCheckoutLoading(true);
+  };
+
+  const handleCheckoutStopScan = () => {
+    setCheckoutScanning(false);
+    setCheckoutLoading(false);
+  };
+
+  const handleCheckoutScanResult = async (public_id) => {
+    try {
+      setCheckoutLoading(true);
+      console.log("Scanned QR code for checkout: ", public_id);
+
+      // Get user data
+      const userResponse = await getUserByIDPublicApi(public_id);
+      const userData = userResponse.data;
+      console.log(
+        "userdata.id after response in CustomerQRScanner: ",
+        userData.id
+      );
+
+      // Check out user
+      await CheckOutUserByUserIdApi(userData.id, selectedEvent);
+
+      setResult(userData.full_name);
+      setCheckoutScanning(false);
+      setCheckoutLoading(false);
+
+      // Refresh scanned users list
+      const updatedResponse = await getEventUserByEventIdApi(selectedEvent);
+      const updatedUsers = updatedResponse.data.map((user) => ({
+        id: user.user_id,
+        name: user.User.full_name,
+        email: user.User.email,
+        avatar:
+          user.User.avatar_url ||
+          `https://mui.com/static/images/avatar/${
+            Math.floor(Math.random() * 8) + 1
+          }.jpg`,
+        scannedAt: user.joined_at || new Date().toISOString(),
+        eventId: selectedEvent,
+        eventTitle: user.Event.title
+      }));
+      setScannedUsers(updatedUsers);
+
+      setSuccessMessage(
+        `Đã check out ${userData.full_name} khỏi sự kiện: ${getEventNameById(
+          selectedEvent,
+          events
+        )}`
+      );
+      setShowSuccess(true);
+    } catch (error) {
+      console.error("Error during checkout scan process:", error);
+      setError("Failed to process checkout scan");
+      setCheckoutLoading(false);
+      setCheckoutScanning(false);
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
   return (
     <Box className="customer-content-container">
       <Box className="customer-section">
@@ -183,8 +267,8 @@ export default function CustomerQRScanner() {
         </Typography>
         <Typography paragraph>
           <br />
-          Scan QR codes to add users to events. Select an event and start
-          scanning, or add users manually.
+          Scan QR codes to check in or check out users from events. Select an
+          event and start scanning, or add users manually.
         </Typography>
 
         <Grid container spacing={3}>
@@ -207,15 +291,43 @@ export default function CustomerQRScanner() {
                 onEventsLoaded={setEvents}
               />
 
-              <Typography variant="h6" gutterBottom>
-                2. Scan QR Code
+              <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+                2. Choose Action
               </Typography>
-              <QRScanner
-                scanning={scanning}
-                loading={loading}
-                onStopScan={handleStopScan}
-                onScanResult={handleScanResult}
-              />
+              <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
+                <Tab label="Check In" />
+                <Tab label="Check Out" />
+              </Tabs>
+
+              {activeTab === 0 ? (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    Check In User
+                  </Typography>
+                  <QRScanner
+                    scanning={scanning}
+                    loading={loading}
+                    onStartScan={handleStartScan}
+                    onStopScan={handleStopScan}
+                    onScanResult={handleScanResult}
+                    disabled={!selectedEvent}
+                  />
+                </>
+              ) : (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    Check Out User
+                  </Typography>
+                  <QRScanner
+                    scanning={checkoutScanning}
+                    loading={checkoutLoading}
+                    onStartScan={handleCheckoutStartScan}
+                    onStopScan={handleCheckoutStopScan}
+                    onScanResult={handleCheckoutScanResult}
+                    disabled={!selectedEvent}
+                  />
+                </>
+              )}
 
               {!selectedEvent && (
                 <Alert severity="info" sx={{ mt: 2 }}>

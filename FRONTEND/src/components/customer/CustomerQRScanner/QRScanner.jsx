@@ -6,15 +6,16 @@ import { BrowserMultiFormatReader } from "@zxing/browser";
 export default function QRScanner({
   scanning,
   loading,
+  onStartScan,
   onStopScan,
   onScanResult,
+  disabled,
 }) {
   const videoRef = useRef(null);
   const codeReader = useRef(null);
   const scanControlsRef = useRef(null);
 
-
-  const handleStartScan = async () => {
+  const startScanning = async () => {
     try {
       const videoInputDevices =
         await BrowserMultiFormatReader.listVideoInputDevices();
@@ -33,8 +34,6 @@ export default function QRScanner({
       const reader = new BrowserMultiFormatReader();
       codeReader.current = reader;
 
-      console.log("codeReader.current: ", codeReader.current)
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
@@ -52,9 +51,8 @@ export default function QRScanner({
         videoInputDevices[0].deviceId,
         videoRef.current,
         (result, err, controls) => {
-          // Lưu controls lại
           scanControlsRef.current = controls;
-      
+
           if (result) {
             onScanResult(result.getText());
             stopVideoStream();
@@ -63,7 +61,7 @@ export default function QRScanner({
               scanControlsRef.current.stop();
             }
           }
-      
+
           if (err && err.name !== "NotFoundException") {
             console.error("Error scanning QR code:", err.message);
           }
@@ -71,7 +69,7 @@ export default function QRScanner({
       );
     } catch (e) {
       console.error("Could not access camera: ", e.message);
-      onStopScan(); // Đảm bảo trạng thái được reset nếu có lỗi
+      onStopScan();
     }
   };
 
@@ -92,6 +90,11 @@ export default function QRScanner({
       stopVideoStream();
     };
   }, []);
+
+  const handleStartScan = () => {
+    onStartScan();
+    startScanning();
+  };
 
   return (
     <Box className="customer-qr-scanner-container">
@@ -144,7 +147,7 @@ export default function QRScanner({
             </Typography>
           </Box>
         )}
-        {loading && (
+        {loading && !scanning && (
           <Box
             sx={{
               position: "absolute",
@@ -176,17 +179,22 @@ export default function QRScanner({
             className="customer-button"
             startIcon={<QrCodeScannerIcon />}
             onClick={handleStartScan}
+            disabled={disabled}
           >
             Start Scanning
           </Button>
         ) : (
-          <Button variant="outlined" color="error" onClick={() => {
-            stopVideoStream();
-            onStopScan();
-            if (codeReader.current) {
-              scanControlsRef.current.stop();
-            }
-          }}>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => {
+              stopVideoStream();
+              onStopScan();
+              if (codeReader.current) {
+                scanControlsRef.current.stop();
+              }
+            }}
+          >
             Stop Scanning
           </Button>
         )}
