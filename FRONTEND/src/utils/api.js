@@ -251,6 +251,10 @@ export const createProductApi = (data) => {
   return axios.post("api/products/upload", data);
 };
 
+export const getAllAvailableProductsApi = () => {
+  return axios.get("api/products/available");
+};
+
 export const getAllProductsApi = () => {
   return axios.get("api/products");
 };

@@ -111,7 +111,7 @@ function MarketItemList({
                       handleEditItem={handleEditItem}
                       handleDeleteItem={handleDeleteItem}
                       handlePurchase={handlePurchase}
-                      getCategoryDisplayName={getCategoryDisplayName} // Pass getCategoryDisplayName
+                      getCategoryDisplayName={getCategoryDisplayName} 
                     />
                   </td>
                 </tr>

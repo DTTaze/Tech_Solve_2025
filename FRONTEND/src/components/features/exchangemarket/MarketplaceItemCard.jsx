@@ -128,7 +128,7 @@ const MarketplaceItemCard = ({
         </div>
       </div>
 
-      {/* View Details Button (Appears on Hover, only for all_items viewMode) */}
+
       {viewMode === "all_items" && (
         <button
           onClick={handleViewDetails}
@@ -144,11 +144,6 @@ const MarketplaceItemCard = ({
           viewMode !== "my_items" ? "group-hover:blur-sm" : ""
         } ${showDetailsModal ? "blur-sm" : ""}`}
       >
-        <div className="flex items-center">
-          <span className="text-xs text-gray-500">
-            {item.createdAt && format(new Date(item.createdAt), "dd/MM/yyyy")}
-          </span>
-        </div>
 
         <div className="flex gap-2 mt-2 sm:mt-0">
           {viewMode === "my_items" && (
