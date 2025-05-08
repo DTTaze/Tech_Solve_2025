@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
-import { getOwnerEventApi } from "../../utils/api";
+import { getOwnerEventApi } from "../../../utils/api";
 import dayjs from 'dayjs';
 
 export const getEventNameById = (eventId, events = []) => {

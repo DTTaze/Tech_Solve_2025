@@ -285,20 +285,68 @@ export const acceptEventApi = (event_id) => {
 
 export const getEventSignedApi = () => {
   return axios.get("api/events/signed");
-}
+};
 
 export const CheckInUserByUserIdApi = (user_id, event_id) => {
   return axios.put("api/events/check_in", {
     event_id: event_id,
-    user_id: user_id
+    user_id: user_id,
   });
 };
 
 export const CheckOutUserByUserIdApi = (user_id, event_id) => {
   return axios.put("api/events/check_out", {
     event_id: event_id,
-    user_id: user_id
+    user_id: user_id,
   });
+};
+
+export const createEventApi = (formEventData, images) => {
+  const formData = new FormData();
+
+  // Append all event data fields
+  Object.keys(formEventData).forEach((key) => {
+    formData.append(key, formEventData[key]);
+  });
+
+  // Append images if they exist
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+  }
+
+  return axios.post("api/events/create", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const updateEventApi = (event_id, formEventData, images) => {
+  const formData = new FormData();
+
+  // Append all event data fields
+  Object.keys(formEventData).forEach((key) => {
+    formData.append(key, formEventData[key]);
+  });
+
+  // Append images if they exist
+  if (images && images.length > 0) {
+    images.forEach((image, index) => {
+      formData.append("images", image);
+    });
+  }
+
+  return axios.put(`api/events/update/${event_id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const deleteEventApi = (event_id) => {
+  return axios.delete(`api/events/delete/${event_id}`);
 };
 
 export const createShippingOrderApi = (data) => {

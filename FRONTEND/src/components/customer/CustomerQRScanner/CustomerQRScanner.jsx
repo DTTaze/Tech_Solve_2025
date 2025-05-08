@@ -23,7 +23,7 @@ import {
   getEventUserByEventIdApi,
   CheckInUserByUserIdApi,
   CheckOutUserByUserIdApi,
-} from "../../utils/api";
+} from "../../../utils/api";
 
 export default function CustomerQRScanner() {
   const userInfo = useOutletContext();
