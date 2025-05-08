@@ -7,7 +7,6 @@ const Task = db.Task;
 const Role = db.Role;
 const TaskUser = db.TaskUser;
 const Item = db.Item;
-const Transaction = db.Transaction;
 const Coin = db.Coin;
 const Rank = db.Rank;
 const salt = bcrypt.genSaltSync(10);
@@ -550,56 +549,56 @@ const getTaskCompleted = async (user_id) => {
 };
 
 const getItemByIdUser = async (user_id) => {
-  try {
-    const cachedTransactionIds = await getCache(
-      `all:transaction:user:id${user_id}`
-    );
-    if (cachedTransactionIds) {
-      const transactions = [];
-      for (const transactionId of cachedTransactionIds) {
-        let transaction = await getCache(`transaction:id:${transactionId}`);
-        if (!transaction) {
-          transaction = await Transaction.findOne({
-            where: { id: transactionId },
-            attributes: ["id", "total_price", "quantity", "status"],
-            include: [
-              {
-                model: Item,
-                attributes: ["id", "name", "description", "price"],
-              },
-            ],
-          });
-          if (transaction)
-            await setCache(`transaction:id:${transactionId}`, transaction);
-        }
-        if (transaction) transactions.push(transaction);
-      }
-      return transactions;
-    }
+  // try {
+  //   const cachedTransactionIds = await getCache(
+  //     `all:transaction:user:id${user_id}`
+  //   );
+  //   if (cachedTransactionIds) {
+  //     const transactions = [];
+  //     for (const transactionId of cachedTransactionIds) {
+  //       let transaction = await getCache(`transaction:id:${transactionId}`);
+  //       if (!transaction) {
+  //         transaction = await Transaction.findOne({
+  //           where: { id: transactionId },
+  //           attributes: ["id", "total_price", "quantity", "status"],
+  //           include: [
+  //             {
+  //               model: Item,
+  //               attributes: ["id", "name", "description", "price"],
+  //             },
+  //           ],
+  //         });
+  //         if (transaction)
+  //           await setCache(`transaction:id:${transactionId}`, transaction);
+  //       }
+  //       if (transaction) transactions.push(transaction);
+  //     }
+  //     return transactions;
+  //   }
 
-    const items = await Transaction.findAll({
-      where: { buyer_id: user_id, status: ["pending", "completed"] },
-      attributes: ["id", "total_price", "quantity", "status"],
-      include: [
-        {
-          model: Item,
-          as: "item",
-          attributes: ["id", "name", "description", "price"],
-        },
-      ],
-    });
-    if (!items || items.length === 0) throw new Error("User not found");
+  //   const items = await Transaction.findAll({
+  //     where: { buyer_id: user_id, status: ["pending", "completed"] },
+  //     attributes: ["id", "total_price", "quantity", "status"],
+  //     include: [
+  //       {
+  //         model: Item,
+  //         as: "item",
+  //         attributes: ["id", "name", "description", "price"],
+  //       },
+  //     ],
+  //   });
+  //   if (!items || items.length === 0) throw new Error("User not found");
 
-    const transactionIds = items.map((item) => item.id);
-    await setCache(`all:transaction:user:id${user_id}`, transactionIds);
-    for (const item of items) {
-      await setCache(`transaction:id:${item.id}`, item);
-    }
+  //   const transactionIds = items.map((item) => item.id);
+  //   await setCache(`all:transaction:user:id${user_id}`, transactionIds);
+  //   for (const item of items) {
+  //     await setCache(`transaction:id:${item.id}`, item);
+  //   }
 
-    return items;
-  } catch (e) {
-    throw e;
-  }
+  //   return items;
+  // } catch (e) {
+  //   throw e;
+  // }
 };
 
 const addAddressById = async (user_id, newAddress) => {

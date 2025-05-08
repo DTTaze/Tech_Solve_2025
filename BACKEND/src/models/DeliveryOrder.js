@@ -18,6 +18,15 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
         primaryKey: true,
       },
+      public_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      item_snapshot: {
+        type: DataTypes.JSON,
+        allowNull: false,
+      },
       seller_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -28,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       order_code: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM(
@@ -58,44 +67,44 @@ module.exports = (sequelize, DataTypes) => {
           "lost", // Hàng thất lạc
           "damage" // Hàng hư hỏng
         ),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "pending",
       },
       to_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       to_phone: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       to_address: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       is_printed: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
+        allowNull: true,
       },
       created_date: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
       },
       cod_amount: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       weight: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       payment_type_id: {
         type: DataTypes.INTEGER, //1 ng gui, 2 ng nhan
-        allowNull: false,
+        allowNull: true,
       },
       total_amount: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
     },
     {

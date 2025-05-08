@@ -11,7 +11,6 @@ const responseFormatter = require("../middlewares/responseFormatter.js");
 const homeController = require("../controllers/homeController.js");
 const roleRoutes = require("./roleRoutes.js");
 const permissionRoutes = require("./permissionRoutes.js");
-const transactionRoutes = require("./transactionRoutes.js");
 const coinRoutes = require("./coinRoutes.js");
 const rankRoutes = require("./rankRoutes.js");
 const qrRoutes = require("./qrRoutes.js");
@@ -39,7 +38,6 @@ const initWebRoutes = (app) => {
   app.use("/api/videos", videoRoutes);
   app.use("/api/avatars", avatarRoutes);
   app.use("/api/images", imageRoutes);
-  app.use("/api/transactions", transactionRoutes);
   app.use("/api/coins", coinRoutes);
   app.use("/api/ranks", rankRoutes);
   app.use("/api/qr", qrRoutes);

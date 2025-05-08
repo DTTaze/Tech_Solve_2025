@@ -4,7 +4,7 @@ const { sequelize } = db;
 const Item = db.Item;
 const User = db.User;
 const Coin = db.Coin;
-const Transaction = db.Transaction;
+const DeliveryOrder = db.DeliveryOrder;
 const { redis } = require("../config/configRedis");
 const Redis = require("ioredis");
 const { generateCode } = require("../utils/generateCode");
@@ -16,7 +16,7 @@ const publisher = new Redis(redis);
 const worker = new Worker(
   "purchase",
   async (job) => {
-    const { user_id, item_id, quantity, name } = job.data;
+    const { user_id,item_id,name,phone,address,weight,payment_type,quantity } = job.data;
 
     return await sequelize.transaction(async (t) => {
       const cacheKeyItem = `item:${item_id}`;
@@ -112,7 +112,7 @@ const worker = new Worker(
       let uniqueCode, exists;
       do {
         uniqueCode = generateCode();
-        exists = await Transaction.findOne({
+        exists = await DeliveryOrder.findOne({
           where: { public_id: uniqueCode },
           transaction: t,
         });
@@ -126,21 +126,22 @@ const worker = new Worker(
         price: item.price,
       };
 
-      const transaction = await Transaction.create(
+      const deliveryOrder = await DeliveryOrder.create(
         {
           public_id: uniqueCode,
-          name,
-          buyer_id: user.id,
-          item_id: item.id,
           item_snapshot: itemSnapshot,
-          quantity,
-          total_price: item.price * quantity,
-          status: "completed",
+          seller_id: item.creator.id,
+          to_name: name,
+          to_phone: phone,
+          to_address: address,
+          created_date: new Date(),
+          weight: weight,
+          payment_type_id: payment_type,
         },
         { transaction: t }
       );
-
-      return transaction;
+      
+      return deliveryOrder;
     });
   },
   { connection: redis }

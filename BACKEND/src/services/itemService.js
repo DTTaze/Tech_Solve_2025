@@ -262,19 +262,13 @@ const deleteItem = async (item_id) => {
   }
 };
 
-const purchaseItem = async (user_id, item_id, data) => {
+const purchaseItem = async (user_id,item_id,name,phone,address,weight,payment_type,quantity) => {
   try {
-    let { name, quantity } = data;
     if (!user_id || !item_id || quantity <= 0) {
       throw new Error("Invalid input data");
     }
 
-    const result = await purchaseQueue.add("purchase", {
-      user_id,
-      item_id,
-      name,
-      quantity,
-    });
+    const result = await purchaseQueue.add("purchase", {user_id,item_id,name,phone,address,weight,payment_type,quantity});
 
     return { message: "Purchase request is in queue", job_id: result.id };
   } catch (error) {

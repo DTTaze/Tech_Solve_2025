@@ -8,7 +8,6 @@ const taskTypeSeeder = require("./seeder-task_type");
 const taskSeeder = require("./seeder-task");
 const itemSeeder = require("./seeder-item");
 const productSeeder = require("./seeder-product");
-const transactionSeeder = require("./seeder-transaction");
 const taskUserSeeder = require("./seeder-task_user");
 const coinsSeeder = require("./seeder-coins");
 const rankSeeder = require("./seeder-rank");
@@ -30,7 +29,6 @@ const seeders = [
   { seeder: userankSeeder },
   { model: require("../../models").Item, seeder: itemSeeder },
   { model: require("../../models").Product, seeder: productSeeder },
-  { model: require("../../models").Transaction, seeder: transactionSeeder },
   { model: require("../../models").Task, seeder: taskSeeder },
   { model: require("../../models").Type, seeder: typeSeeder },
   { model: require("../../models").TaskType, seeder: taskTypeSeeder },
