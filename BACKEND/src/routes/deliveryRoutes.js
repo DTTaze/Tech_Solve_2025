@@ -19,6 +19,10 @@ router.post(
   "/carrier/ghn/cancel/:order_code",
   deliveryOrderController.handleCancelDeliveryOrder
 );
+router.post(
+  "/carrier/ghn/order/preview",
+  deliveryOrderController.handlePreviewOrderWithoutOrderCode
+);
 router.get(
   "/carrier/ghn/orders",
   deliveryOrderController.handleGetAllDeliveryOrders
@@ -31,7 +35,7 @@ router.get(
   "/carrier/ghn/master-data/province",
   deliveryOrderController.handleGetAllProvinces
 );
-router.get(
+router.post(
   "/carrier/ghn/master-data/district",
   deliveryOrderController.handleGetAllDistrictsByProvince
 );
@@ -49,7 +53,10 @@ router.get(
   "/accounts/:id",
   deliveryAccountController.handleGetDeliveryAccountById
 );
-router.post("/accounts/create", deliveryAccountController.handleCreateDeliveryAccount);
+router.post(
+  "/accounts/create",
+  deliveryAccountController.handleCreateDeliveryAccount
+);
 router.put(
   "/accounts/:id",
   deliveryAccountController.handleUpdateDeliveryAccount

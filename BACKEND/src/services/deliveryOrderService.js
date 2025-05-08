@@ -3,6 +3,7 @@ const ghnBaseUrl = process.env.GHN_URL_DEVELOPMENT;
 const db = require("../models/index");
 const DeliveryOrder = db.DeliveryOrder;
 const { getCache, setCache, deleteCache } = require("../utils/cache");
+const { response } = require("express");
 
 const buildHeaders = (token, shop_id) => ({
   "Content-Type": "application/json",
@@ -20,7 +21,7 @@ const getAllProvinces = async (token) => {
       message: error.message,
     };
     console.error("GHN API Error (getProvince):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
@@ -28,7 +29,7 @@ const getAllDistrictsByProvince = async (token, province_id) => {
   try {
     const url = `${ghnBaseUrl}/master-data/district`;
 
-    const response = await axios.get(
+    const response = await axios.post(
       url,
       { province_id },
       { headers: buildHeaders(token) }
@@ -38,12 +39,14 @@ const getAllDistrictsByProvince = async (token, province_id) => {
     const errData = error.response?.data?.code_message_value || {
       message: error.message,
     };
+    console.log("error", error);
+
     console.error("GHN API Error (getDistrictByProvince):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
-const getWardsByDistrict = async (token) => {
+const getWardsByDistrict = async (token, district_id) => {
   try {
     const url = `${ghnBaseUrl}/master-data/ward?district_id=${district_id}`;
     const response = await axios.get(url, { headers: buildHeaders(token) });
@@ -53,25 +56,23 @@ const getWardsByDistrict = async (token) => {
       message: error.message,
     };
     console.error("GHN API Error (getWardsByDistrict):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
-const previewOrderWithoutOrderCode = async (order_code, token, shop_id) => {
+const previewOrderWithoutOrderCode = async (data, token, shop_id) => {
   try {
     const url = `${ghnBaseUrl}/v2/shipping-order/preview`;
-    const response = await axios.get(
-      url,
-      { order_code },
-      { headers: buildHeaders(token, shop_id) }
-    );
+    const response = await axios.post(url, data, {
+      headers: buildHeaders(token, shop_id),
+    });
     return response.data;
   } catch (error) {
     const errData = error.response?.data?.code_message_value || {
       message: error.message,
     };
-    console.error("GHN API Error (getOrderInfo):", errData);
-    throw new Error(errData);
+    console.error("GHN API Error (previewOrderWithoutOrderCode):", errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
@@ -89,7 +90,7 @@ const getDeliveryOrderInfo = async (order_code, token, shop_id) => {
       message: error.message,
     };
     console.error("GHN API Error (getOrderInfo):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
@@ -131,7 +132,7 @@ const createDeliveryOrder = async (shipmentData, token, shop_id, seller_id) => {
       message: error.message,
     };
     console.error("GHN API Error (createOrder):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
@@ -176,7 +177,7 @@ const updateDeliveryOrder = async (updateData, token, shop_id, seller_id) => {
       message: error.message,
     };
     console.error("GHN API Error (updateOrder):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
@@ -201,7 +202,7 @@ const cancelDeliveryOrder = async (order_code, token, shop_id, seller_id) => {
       message: error.message,
     };
     console.error("GHN API Error (cancelOrder):", errData);
-    throw new Error(errData);
+    throw new Error(JSON.stringify(errData));
   }
 };
 
@@ -246,4 +247,5 @@ module.exports = {
   getAllProvinces,
   getAllDistrictsByProvince,
   getWardsByDistrict,
+  previewOrderWithoutOrderCode,
 };
