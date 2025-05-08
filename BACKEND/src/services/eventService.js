@@ -165,12 +165,12 @@ const getEventUserById = async (id) => {
     const eventuserCache = await getCache(`eventuser:id:${id}`);
     if (eventuserCache) {
       console.log("eventuserCache",eventuserCache)
-      const users = await getUserByID(eventuserCache.user_id);
-      const events = await getEventById(eventuserCache.event_id);
+      const User = await getUserByID(eventuserCache.user_id);
+      const Event = await getEventById(eventuserCache.event_id);
       const eventuserformat = {
         ...eventuserCache,
-        users,
-        events
+        User,
+        Event
       };
       return eventuserformat;
     }
@@ -284,12 +284,11 @@ const getEventsOfCreator = async (creator_id) => {
 const getEventUserByEventId = async (event_id) => {
   try {
     const allEventUser = await getAllEventUser();
-    const users = allEventUser.map((eventUser) => {
-      if (Number(eventUser.event_id) === Number(event_id) ){
-        return eventUser.users;
-      }
-    });
-
+    console.log("allEventUser :", allEventUser);
+    const users = allEventUser
+    .filter((eventUser) => Number(eventUser.event_id) === Number(event_id))
+    .map((eventUser) => eventUser.User);
+  
     return users;
 
   }catch (error) {

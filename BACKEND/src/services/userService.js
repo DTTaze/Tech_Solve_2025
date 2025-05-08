@@ -22,6 +22,7 @@ const setUserCache = async (user) => {
   delete userData.password;
   await setCache(`user:id:${userData.id}`, userData);
   await setCache(`user:public_id:${userData.public_id}`, String(userData.id));
+
   if (userData.roles) {
     await setCache(`role:id:${userData.role_id}`, userData.roles);
   }
@@ -221,8 +222,11 @@ const getUserBycacheId = async (id) => {
   try {
     const cacheUser = await getCache(`user:id:${id}`);
     if (!cacheUser) return null;
-    const data_user = cacheUser;
 
+    const data_user = cacheUser;
+    console.log("cacheUser:", cacheUser);
+
+    // Role
     let dataRole = await getCache(`role:id:${data_user.role_id}`);
     if (!dataRole) {
       dataRole = await Role.findByPk(data_user.role_id, {
@@ -230,15 +234,19 @@ const getUserBycacheId = async (id) => {
       });
       if (dataRole) await setCache(`role:id:${data_user.role_id}`, dataRole);
     }
+    if (!dataRole) throw new Error(`Role not found for role_id ${data_user.role_id}`);
 
-    let dataCoin = await getCache(`coin:id:${data_user.coins_id}`);
+    // Coin
+    let dataCoin = await getCache(`coin:id:${data_user.coin_id}`);
     if (!dataCoin) {
-      dataCoin = await Coin.findByPk(data_user.coins_id, {
+      dataCoin = await Coin.findByPk(data_user.coin_id, {
         attributes: ["id", "amount"],
       });
-      if (dataCoin) await setCache(`coin:id:${data_user.coins_id}`, dataCoin);
+      if (dataCoin) await setCache(`coin:id:${data_user.coin_id}`, dataCoin);
     }
+    if (!dataCoin) throw new Error(`Coin not found for coin_id ${data_user.coin_id}`);
 
+    // Rank
     let dataRank = await getCache(`rank:id:${data_user.rank_id}`);
     if (!dataRank) {
       dataRank = await Rank.findByPk(data_user.rank_id, {
@@ -246,6 +254,7 @@ const getUserBycacheId = async (id) => {
       });
       if (dataRank) await setCache(`rank:id:${data_user.rank_id}`, dataRank);
     }
+    if (!dataRank) throw new Error(`Rank not found for rank_id ${data_user.rank_id}`);
 
     const user = {
       id: data_user.id,
@@ -286,7 +295,16 @@ const getUserByID = async (id) => {
     });
     if (!user) throw new Error("User not found");
     delete user.password;
-    await setUserCache(user);
+    const userFormat = {
+      ...user.toJSON(),
+      role_id: user.roles?.id || null,
+      coin_id: user.coins?.id || null,
+      rank_id: user.ranks?.id || null,
+    };
+    delete userFormat.roles;
+    delete userFormat.coins;
+    delete userFormat.ranks;
+    await setUserCache(userFormat);
     return user;
   } catch (e) {
     console.error("Error in getUserByID:", e);
