@@ -79,6 +79,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete("events", null, {});
+    return queryInterface.bulkDelete("event_users", null, {});
   },
 };
