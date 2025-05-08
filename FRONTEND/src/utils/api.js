@@ -279,12 +279,19 @@ export const getEventUserByEventIdApi = (event_id) => {
   return axios.get(`api/events/user/${event_id}`);
 };
 
+export const acceptEventApi = (event_id) => {
+  return axios.post(`api/events/accept/${event_id}`);
+}
+
+export const getEventSignedApi = () => {
+  return axios.get("api/events/signed");
+}
 export const CheckInUserByUserIdApi = (event_id) => {
   return axios.post(`api/events/check_in`, { event_id });
 };
 
 export const createShippingOrderApi = (data, token, shop_id) => {
-  return axios.post("api/delivery/ghn/create-order", data, {
+  return axios.post("api/delivery/carrier/ghn/create-order", data, {
     headers: {
       token: token,
       shop_id: shop_id,
@@ -293,33 +300,33 @@ export const createShippingOrderApi = (data, token, shop_id) => {
 };
 
 export const getShippingOrderDetailApi = (orderCode) => {
-  return axios.get(`api/delivery/ghn/detail/${orderCode}`);
+  return axios.get(`api/delivery/carrier/ghn/detail/${orderCode}`);
 };
 
 export const updateShippingOrderApi = (data) => {
-  return axios.post("api/delivery/ghn/update", data);
+  return axios.post("api/delivery/carrier/ghn/update", data);
 };
 
 export const cancelShippingOrderApi = (orderCode) => {
-  return axios.post(`api/delivery/ghn/cancel/${orderCode}`);
+  return axios.post(`api/delivery/carrier/ghn/cancel/${orderCode}`);
 };
 
-export const getShippingAccountsApi = () => {
-  return axios.get("api/users/shipping-accounts");
+export const getShippingAccountsByUserApi = () => {
+  return axios.get("api/delivery/accounts/user");
 };
 
 export const createShippingAccountApi = (data) => {
-  return axios.post("api/users/shipping-accounts", data);
+  return axios.post("api/delivery/accounts/create", data);
 };
 
-export const updateShippingAccountApi = (accountId, data) => {
-  return axios.put(`api/users/shipping-accounts/${accountId}`, data);
+export const updateShippingAccountApi = (id, data) => {
+  return axios.put(`api/delivery/accounts/${id}`, data);
 };
 
-export const deleteShippingAccountApi = (accountId) => {
-  return axios.delete(`api/users/shipping-accounts/${accountId}`);
+export const deleteShippingAccountApi = (id) => {
+  return axios.delete(`api/delivery/accounts/${id}`);
 };
 
-export const setDefaultShippingAccountApi = (accountId) => {
-  return axios.post(`api/users/shipping-accounts/${accountId}/default`);
+export const setDefaultShippingAccountApi = (id) => {
+  return axios.patch(`api/delivery/accounts/user/set-default/${id}`);
 };

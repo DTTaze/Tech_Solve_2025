@@ -163,7 +163,7 @@ function UserHeader() {
                 className="w-full p-2 text-left hover:text-[#62C370] hover:bg-white font-bold rounded-lg cursor-pointer"
                 onClick={() => navigate("/profile")}
               >
-                Xem Hồ Sơ
+                Tài khoản của tôi
               </button>
               <button
                 className="w-full p-2 text-left hover:text-[#62C370] hover:bg-white rounded-lg font-bold cursor-pointer"
@@ -244,7 +244,7 @@ function UserHeader() {
                 setMenuOpen(false);
               }}
             >
-              Xem hồ sơ
+              Tài khoản của tôi
             </button>
             <button
               className="text-2xl font-bold py-3 hover:text-[#62C370] cursor-pointer"

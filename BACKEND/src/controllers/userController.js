@@ -105,7 +105,7 @@ const handleDeleteUser = async (req, res) => {
 
 const handleGetUser = async (req, res) => {
   try {
-    let result = await userService.getUserByID(req.params.id);
+    let result = await userService.getUserByID(Number(req.params.id));
     return res.success("Get user by ID success", result);
   } catch (error) {
     return res.error(500, "Failed to get user by ID", error.message);
@@ -182,6 +182,25 @@ const handleDeleteUserByPublicId = async (req, res) => {
   }
 };
 
+const handleAddAddressById = async (req, res) => {
+  try {
+    let result = await userService.addAddressById(req.user.id,req.body.address);
+    return res.success("Add address user success", result);
+  } catch (error) {
+    return res.error(500, "Failed to Add address user", error.message);
+  }
+};
+
+const handleDeleteAddressById = async (req, res) => {
+  try {
+    const index = Number(req.body.indexOfAddress) - 1 ;
+    let result = await userService.addDeleteressById(req.user.id,index);
+    return res.success("delete address user success", result);
+  } catch (error) {
+    return res.error(500, "Failed to delete address user", error.message);
+  }
+};
+
 module.exports = {
   handleGetAllUsers,
   handleCreateUser,
@@ -198,4 +217,6 @@ module.exports = {
   handleUpdateUserByPublicId,
   handleDeleteUserByPublicId,
   handleRefreshAccessToken,
+  handleAddAddressById,
+  handleDeleteAddressById
 };

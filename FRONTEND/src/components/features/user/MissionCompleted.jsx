@@ -58,7 +58,7 @@ function MissionCompleted() {
   ];
 
   return (
-    <div className="w-full p-4 border rounded-lg shadow-md bg-white">
+    <div className="w-full p-4 rounded-lg shadow-md bg-white">
       <h2 className="text-xl font-bold">Danh sách nhiệm vụ đã hoàn thành</h2>
 
       {loading ? (

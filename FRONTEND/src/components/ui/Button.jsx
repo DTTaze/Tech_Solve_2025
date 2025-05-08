@@ -1,10 +1,12 @@
 import "../../styles/components/Button.css";
 
-export default function Button({ text, disabled = false }) {
+export default function Button({ text, disabled = false, onClick, width }) {
   return (
-    <button 
+    <button
       className="submit-button"
       disabled={disabled}
+      onClick={onClick}
+      style={{ width }}
     >
       {text}
     </button>

@@ -22,6 +22,7 @@ const setUserCache = async (user) => {
   delete userData.password;
   await setCache(`user:id:${userData.id}`, userData);
   await setCache(`user:public_id:${userData.public_id}`, String(userData.id));
+
   if (userData.roles) {
     await setCache(`role:id:${userData.role_id}`, userData.roles);
   }
@@ -44,7 +45,10 @@ const createUser = async (data) => {
       phone_number,
       address,
     } = data;
+
+    address = Array.isArray(address) ? address : [address];
     role_id = Number(role_id);
+
     if (isNaN(role_id)) throw new Error("Invalid Role ID");
 
     let roledata = await getCache(`role:id:${role_id}`);
@@ -218,8 +222,11 @@ const getUserBycacheId = async (id) => {
   try {
     const cacheUser = await getCache(`user:id:${id}`);
     if (!cacheUser) return null;
-    const data_user = cacheUser;
 
+    const data_user = cacheUser;
+    console.log("cacheUser:", cacheUser);
+
+    // Role
     let dataRole = await getCache(`role:id:${data_user.role_id}`);
     if (!dataRole) {
       dataRole = await Role.findByPk(data_user.role_id, {
@@ -227,15 +234,19 @@ const getUserBycacheId = async (id) => {
       });
       if (dataRole) await setCache(`role:id:${data_user.role_id}`, dataRole);
     }
+    if (!dataRole) throw new Error(`Role not found for role_id ${data_user.role_id}`);
 
-    let dataCoin = await getCache(`coin:id:${data_user.coins_id}`);
+    // Coin
+    let dataCoin = await getCache(`coin:id:${data_user.coin_id}`);
     if (!dataCoin) {
-      dataCoin = await Coin.findByPk(data_user.coins_id, {
+      dataCoin = await Coin.findByPk(data_user.coin_id, {
         attributes: ["id", "amount"],
       });
-      if (dataCoin) await setCache(`coin:id:${data_user.coins_id}`, dataCoin);
+      if (dataCoin) await setCache(`coin:id:${data_user.coin_id}`, dataCoin);
     }
+    if (!dataCoin) throw new Error(`Coin not found for coin_id ${data_user.coin_id}`);
 
+    // Rank
     let dataRank = await getCache(`rank:id:${data_user.rank_id}`);
     if (!dataRank) {
       dataRank = await Rank.findByPk(data_user.rank_id, {
@@ -243,6 +254,7 @@ const getUserBycacheId = async (id) => {
       });
       if (dataRank) await setCache(`rank:id:${data_user.rank_id}`, dataRank);
     }
+    if (!dataRank) throw new Error(`Rank not found for rank_id ${data_user.rank_id}`);
 
     const user = {
       id: data_user.id,
@@ -282,8 +294,17 @@ const getUserByID = async (id) => {
       ],
     });
     if (!user) throw new Error("User not found");
-
-    await setUserCache(user);
+    delete user.password;
+    const userFormat = {
+      ...user.toJSON(),
+      role_id: user.roles?.id || null,
+      coin_id: user.coins?.id || null,
+      rank_id: user.ranks?.id || null,
+    };
+    delete userFormat.roles;
+    delete userFormat.coins;
+    delete userFormat.ranks;
+    await setUserCache(userFormat);
     return user;
   } catch (e) {
     console.error("Error in getUserByID:", e);
@@ -436,41 +457,44 @@ const findOrCreateUser = async (profile) => {
   }
 };
 
-const getAllTasksById = async (id) => {
+const getAllTasksById = async (user_id) => {
   try {
-    if (!id) throw new Error("User's id cannot be null");
-    const cacheAllUserTaskId = await getCache(`all:User:taskId:${id}`);
-    if (cacheAllUserTaskId) {
-      let result = [];
-      for (const UserTaskId of cacheAllUserTaskId) {
-        let taskUser = await getCache(`taskUser:id:${UserTaskId}`);
+    if (!user_id) throw new Error("User ID is required");
+
+    const cacheKey = `all:User:taskId:${user_id}`;
+    const taskUserIds = await getCache(cacheKey);
+    const result = [];
+
+    if (Array.isArray(taskUserIds) && taskUserIds.length > 0) {
+      for (const id of taskUserIds) {
+        let taskUser = await getCache(`taskUser:id:${id}`);
         if (!taskUser) {
           taskUser = await TaskUser.findOne({
-            where: { id: UserTaskId },
+            where: { id },
             include: [{ model: Task, as: "tasks", required: true }],
           });
-          if (taskUser) await setCache(`taskUser:id:${UserTaskId}`, taskUser);
-          else throw new Error("TaskUser not found");
+          if (taskUser) await setCache(`taskUser:id:${id}`, taskUser);
         }
-        result.push(taskUser);
+        if (taskUser) result.push(taskUser);
       }
+
       return result;
     }
 
-    const TaskUsers = await TaskUser.findAll({
-      where: { user_id: id },
+    const taskUsers = await TaskUser.findAll({
+      where: { user_id },
       include: [{ model: Task, as: "tasks", required: true }],
     });
 
-    const listOfUserTaskId = TaskUsers.map((taskUser) => taskUser.id);
-    await setCache(`all:User:taskId:${id}`, listOfUserTaskId);
-    for (const taskUser of TaskUsers) {
-      await setCache(`taskUser:id:${taskUser.id}`, taskUser);
+    const ids = taskUsers.map((t) => t.id);
+    await setCache(cacheKey, ids);
+    for (const t of taskUsers) {
+      await setCache(`taskUser:id:${t.id}`, t);
     }
 
-    return TaskUsers;
-  } catch (e) {
-    throw e;
+    return taskUsers;
+  } catch (err) {
+    throw err;
   }
 };
 
@@ -578,6 +602,69 @@ const getItemByIdUser = async (user_id) => {
   }
 };
 
+const addAddressById = async (user_id, newAddress) => {
+  try {
+    if (!newAddress) throw new Error("newAddress is required");
+
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Ensure user.address is an array
+    const currentAddresses = Array.isArray(user.address) ? user.address : [];
+
+    // Check if the user already has 3 addresses
+    if (currentAddresses.length >= 3) {
+      throw new Error("Maximum of 3 addresses allowed");
+    }
+
+    const updatedAddresses = [...currentAddresses, newAddress];
+
+    // Update the address field
+    await user.update({ address: updatedAddresses });
+
+    // Delete cache
+    await deleteCache(`user:id:${user_id}`);
+
+    return user;
+  } catch (e) {
+    throw e;
+  }
+};
+
+
+const addDeleteressById = async (user_id, indexOfAddress) => {
+  try {
+    const user = await User.findByPk(user_id);
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (!Array.isArray(user.address)) {
+      throw new Error("Address field is not an array");
+    }
+
+    // If index is out of bounds
+    if (indexOfAddress < 0 || indexOfAddress >= user.address.length) {
+      throw new Error("Invalid address index");
+    }
+
+    // Remove the address at the given index
+    const updatedAddresses = user.address.filter((_, idx) => idx !== indexOfAddress);
+
+    await user.update({ address: updatedAddresses });
+
+    //delete cache user
+    await deleteCache(`user:id:${user_id}`);
+
+    return user;
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
@@ -593,4 +680,6 @@ module.exports = {
   getAllTasksById,
   getItemByIdUser,
   refreshAccessToken,
+  addAddressById,
+  addDeleteressById
 };

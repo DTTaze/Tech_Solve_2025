@@ -5,12 +5,22 @@ const router = express.Router();
 
 router.get("/", userController.handleGetAllUsers);
 router.get("/me", userController.handleGetProfile);
+router.get("/task/completed", userController.handleGetTaskCompleted);
+router.get("/tasks/all/:id", userController.handleGetAllTasksById);
+router.get("/items/:user_id", userController.handleGetItemByIdUser);
+
+router.get("/public/:public_id", userController.handleGetUserByPublicId);
+router.put("/public/:public_id", userController.handleUpdateUserByPublicId);
+router.delete("/public/:public_id", userController.handleDeleteUserByPublicId);
+
+router.patch("/add_address", userController.handleAddAddressById);
+router.patch("/delete_address", userController.handleDeleteAddressById);
 router.get(
   "/:id",
   // checkPermission("get", "user_id"),
   userController.handleGetUser
 );
-router.get("/task/completed", userController.handleGetTaskCompleted);
+
 router.put(
   "/:id",
   // checkPermission("put", "user_id"),
@@ -21,10 +31,4 @@ router.delete(
   // checkPermission("delete", "user_id"),
   userController.handleDeleteUser
 );
-router.get("/tasks/all/:id", userController.handleGetAllTasksById);
-router.get("/items/:user_id", userController.handleGetItemByIdUser);
-
-router.get("/public/:public_id", userController.handleGetUserByPublicId);
-router.put("/public/:public_id", userController.handleUpdateUserByPublicId);
-router.delete("/public/:public_id", userController.handleDeleteUserByPublicId);
 module.exports = router;

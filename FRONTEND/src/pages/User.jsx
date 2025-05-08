@@ -1,15 +1,18 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../contexts/auth.context";
 import ProfileCard from "../components/features/user/ProfileCard.jsx";
-import PersonalInfoForm from "../components/features/user/PersonalInformation.jsx";
+import PersonalInformation from "../components/features/user/PersonalInformation.jsx";
+import Address from "../components/features/user/Address.jsx";
 import MissionCompleted from "../components/features/user/MissionCompleted.jsx";
 import PurchaseOrder from "../components/features/user/PurchaseOrder.jsx";
 import ProfileCardSkeleton from "../components/features/user/ProfileCardSkeleton.jsx";
-import PersonalInfoFormSkeleton from "../components/features/user/PersonalnfomationSkeleton.jsx";
+import PersonalInfoFormSkeleton from "../components/features/user/PersonalInfomationSkeleton.jsx";
+import ChangePassword from "../components/features/user/ChangePassword.jsx";
+import DeleteAccount from "../components/features/user/DeleteAccount.jsx";
 
 function UserProfile() {
-  const { auth } = useContext(AuthContext); 
-  const [selectedTab, setSelectedTab] = useState("Thông tin cá nhân");
+  const { auth } = useContext(AuthContext);
+  const [selectedTab, setSelectedTab] = useState("Xem hồ sơ");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,14 +25,20 @@ function UserProfile() {
 
   const renderContent = () => {
     switch (selectedTab) {
-      case "Thông tin cá nhân":
-        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
-      case "Nhiệm vụ":
+      case "Xem hồ sơ":
+        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInformation />;
+      case "Địa chỉ":
+        return isLoading ? <PersonalInfoFormSkeleton /> : <Address />;
+      case "Đổi mật khẩu":
+        return <ChangePassword />;
+      case "Xóa tài khoản":
+        return <DeleteAccount />
+      case "Nhiệm vụ hoàn thành":
         return <MissionCompleted />;
-      case "Lịch sử giao dịch":
-        return <PurchaseOrder />; 
+      case "Đơn mua":
+        return <PurchaseOrder />;
       default:
-        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInfoForm />;
+        return isLoading ? <PersonalInfoFormSkeleton /> : <PersonalInformation />;
     }
   };
 

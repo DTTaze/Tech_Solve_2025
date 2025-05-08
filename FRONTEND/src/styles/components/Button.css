@@ -10,7 +10,6 @@
   font-size: 17px;
   transition: all 250ms;
   overflow: hidden;
-  width: 100%;
 }
 
 .submit-button::before {
