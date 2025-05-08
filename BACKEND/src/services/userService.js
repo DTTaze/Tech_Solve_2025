@@ -42,11 +42,8 @@ const createUser = async (data) => {
       role_id,
       email,
       password,
-      phone_number,
-      address,
     } = data;
 
-    address = Array.isArray(address) ? address : [address];
     role_id = Number(role_id);
 
     if (isNaN(role_id)) throw new Error("Invalid Role ID");
@@ -70,16 +67,8 @@ const createUser = async (data) => {
         throw new Error("Username already exists");
     }
 
-    const newCoin = await Coin.create({ amount: 0 });
-    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
-    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
-    const newRank = await Rank.create({
-      amount: 0,
-      order: newOrder,
-      user_id: null,
-    });
     const hashPassword = bcrypt.hashSync(password, salt);
-
+    
     const newUser = await User.create({
       public_id: nanoid(),
       role_id,
@@ -87,13 +76,19 @@ const createUser = async (data) => {
       password: hashPassword,
       username,
       full_name,
-      phone_number,
-      address,
-      coins_id: newCoin.id,
-      rank_id: newRank.id,
     });
-
-    await newRank.update({ user_id: newUser.id });
+    
+    const newCoin = await Coin.create({ 
+      amount: 0,
+      user_id: newUser.id,
+    });
+    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
+    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
+    const newRank = await Rank.create({
+      amount: 0,
+      order: newOrder,
+      user_id: newUser.id,
+    });
 
     const userWithIncludes = {
       ...newUser.toJSON(),
@@ -103,6 +98,8 @@ const createUser = async (data) => {
     };
     await setUserCache(userWithIncludes);
 
+    //delete password
+    delete newUser.password;
     return newUser;
   } catch (error) {
     console.error("Error in createUser:", error);
@@ -425,12 +422,16 @@ const findOrCreateUser = async (profile) => {
       where: { email: profile.emails[0].value },
     });
     if (existingUser) {
+      const userWithIncludes = {
+        ...existingUser.toJSON(),
+        roles: roledata,
+        coins: newCoin,
+        ranks: newRank,
+      };
       await setUserCache(existingUser);
       return existingUser;
     }
 
-    const newCoin = await Coin.create({ amount: 0 });
-    const newRank = await Rank.create({ order: 0 });
     const name = removeSpecialChars(profile.displayName);
     const newUser = await User.create({
       role_id: 2,
@@ -440,17 +441,30 @@ const findOrCreateUser = async (profile) => {
       username: name,
       full_name: name,
       password: null,
-      coins_id: newCoin.id,
-      rank_id: newRank.id,
     });
 
-    await newRank.update({ user_id: newUser.id });
-    await setUserCache({
+    const newCoin = await Coin.create({ 
+      amount: 0,
+      user_id: newUser.id,
+    });
+    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
+    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
+    const newRank = await Rank.create({
+      amount: 0,
+      order: newOrder,
+      user_id: newUser.id,
+    });
+
+    const userWithIncludes = {
       ...newUser.toJSON(),
-      roles: await Role.findByPk(2),
+      roles: roledata,
       coins: newCoin,
       ranks: newRank,
-    });
+    };
+    await setUserCache(userWithIncludes);
+
+    //delete password
+    delete newUser.password;
     return newUser;
   } catch (e) {
     throw e;

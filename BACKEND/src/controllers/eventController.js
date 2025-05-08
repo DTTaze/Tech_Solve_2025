@@ -26,8 +26,19 @@ const handleGetAllEvents = async (req, res) => {
 
 const handleGetEventSigned = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.params.user_id ? req.params.user_id : req.user.id;
     const events = await eventService.getEventSigned(userId);
+    return res.success("Events retrieved successfully", events);
+  } catch (error) {
+    console.error("Error retrieving events:", error);
+    return res.error(500, "Error retrieving events", error);
+  }
+};
+
+const handleGetEventSignedByUserId = async (req, res) => {
+  try {
+    const userId = req.params.user_id;
+    const events = await eventService.getEventSignedByUserId(userId);
     return res.success("Events retrieved successfully", events);
   } catch (error) {
     console.error("Error retrieving events:", error);
@@ -153,6 +164,7 @@ module.exports = {
   handleGetEventbyId,
   handleGetAllEvents,
   handleGetEventSigned,
+  handleGetEventSignedByUserId,
   handGetEventsOfCreator,
   handlegetEventUserByEventId,
   handleCreateEvent,

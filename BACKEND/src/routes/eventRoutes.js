@@ -15,10 +15,11 @@ router.get('/informations',
     eventController.handleGetAllEvents
 );
 
-router.get('/signed',
+router.get('/signed/:user_id?',
     // checkPermission('read', 'event'),
     eventController.handleGetEventSigned
 );
+
 
 router.get('/creator',
     // checkPermission('read', 'event'),
@@ -29,6 +30,7 @@ router.get('/user/:event_id',
     // checkPermission('read', 'event'),
     eventController.handlegetEventUserByEventId
 );
+
 
 router.post('/create',
 //   checkPermission('create', 'event'),
