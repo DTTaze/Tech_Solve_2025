@@ -21,7 +21,7 @@ const InputField = ({ id, label, type = "text", value, onChange, error, suffix, 
             {suffix}
           </div>
         )}
-        {!disabled && <label className="label" htmlFor={id}>{label}</label>}
+        <label className="label" htmlFor={id}>{label}</label>
       </div>
       {error && <p className="error-text">{error}</p>}
     </div>

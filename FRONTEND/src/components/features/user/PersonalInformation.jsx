@@ -123,7 +123,7 @@ function PersonalInformation() {
           <Button
             text="Chỉnh sửa hồ sơ"
             onClick={handleEdit}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            padding="15px"
           />
         )}
       </div>
@@ -152,12 +152,14 @@ function PersonalInformation() {
               text="Lưu"
               type="submit"
               className="bg-green-500 hover:bg-green-600 text-white"
+              padding="20px"
             />
             <Button
               text="Hủy"
               type="button"
               onClick={handleCancel}
               className="bg-red-500 hover:bg-red-600 text-white"
+              padding="20px"
             />
           </div>
         )}

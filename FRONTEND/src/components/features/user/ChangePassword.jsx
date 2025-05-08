@@ -121,12 +121,12 @@ function ChangePassword() {
                 confirmPassword: "",
               })
             }
-            className="bg-red-500 hover:bg-red-600 text-white"
+            padding="15px"
           />
           <Button
             text="Lưu"
             type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white"
+            padding="15px"
           />
         </div>
       </form>
