@@ -484,6 +484,24 @@ const CreateOrderForm = ({
   const [senderDistricts, setSenderDistricts] = useState([]);
   const [senderWards, setSenderWards] = useState([]);
 
+  // Add separate state variables for the fields to exclude from newOrder
+  const [fromProvinceId, setFromProvinceId] = useState(
+    newOrder.from_province_id || null
+  );
+  const [fromDistrictId, setFromDistrictId] = useState(
+    newOrder.from_district_id || null
+  );
+  const [fromWardCode, setFromWardCode] = useState(
+    newOrder.from_ward_code || ""
+  );
+  const [toProvinceId, setToProvinceId] = useState(
+    newOrder.to_province_id || null
+  );
+  const [toDistrictId, setToDistrictId] = useState(
+    newOrder.to_district_id || null
+  );
+  const [toWardCode, setToWardCode] = useState(newOrder.to_ward_code || "");
+
   // Loading states
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
@@ -542,11 +560,11 @@ const CreateOrderForm = ({
 
   // Sender province/district/ward effects
   useEffect(() => {
-    if (newOrder.from_province_id) {
+    if (fromProvinceId) {
       // In a real implementation, you would fetch districts from an API
       const fetchedDistricts = [];
 
-      if (newOrder.from_province_id === 202) {
+      if (fromProvinceId === 202) {
         // HCM
         fetchedDistricts.push(
           { id: 1442, name: "Quận 1", province_id: 202 },
@@ -554,7 +572,7 @@ const CreateOrderForm = ({
           { id: 1444, name: "Quận 3", province_id: 202 },
           { id: 1445, name: "Quận 10", province_id: 202 }
         );
-      } else if (newOrder.from_province_id === 201) {
+      } else if (fromProvinceId === 201) {
         // Hanoi
         fetchedDistricts.push(
           { id: 1447, name: "Quận Ba Đình", province_id: 201 },
@@ -570,24 +588,24 @@ const CreateOrderForm = ({
 
       setSenderDistricts(fetchedDistricts);
       // Clear ward and district selection when province changes
+      setFromDistrictId(null);
+      setFromWardCode("");
       setNewOrder({
         ...newOrder,
-        from_district_id: null,
-        from_ward_code: "",
         from_district_name: "",
         from_ward_name: "",
       });
       setSenderWards([]);
     }
-  }, [newOrder.from_province_id]);
+  }, [fromProvinceId]);
 
   useEffect(() => {
-    if (newOrder.from_district_id) {
+    if (fromDistrictId) {
       // In a real implementation, you would fetch wards from an API
       const fetchedWards = [];
 
       // Simple mock data for different districts
-      if (newOrder.from_district_id === 1444) {
+      if (fromDistrictId === 1444) {
         // Quận 3 - HCM
         fetchedWards.push(
           { code: "W01", name: "Phường 1", district_id: 1444 },
@@ -601,12 +619,12 @@ const CreateOrderForm = ({
           {
             code: "W07",
             name: "Phường A",
-            district_id: newOrder.from_district_id,
+            district_id: fromDistrictId,
           },
           {
             code: "W08",
             name: "Phường B",
-            district_id: newOrder.from_district_id,
+            district_id: fromDistrictId,
           }
         );
       }
@@ -614,22 +632,21 @@ const CreateOrderForm = ({
       setSenderWards(fetchedWards);
       // Set district name and clear ward selection
       const selectedDistrict = senderDistricts.find(
-        (d) => d.id === newOrder.from_district_id
+        (d) => d.id === fromDistrictId
       );
+      setFromWardCode("");
       setNewOrder({
         ...newOrder,
         from_district_name: selectedDistrict ? selectedDistrict.name : "",
-        from_ward_code: "",
         from_ward_name: "",
       });
     }
-  }, [newOrder.from_district_id, senderDistricts]);
+  }, [fromDistrictId, senderDistricts]);
 
+  // Set ward name when ward is selected
   useEffect(() => {
-    if (newOrder.from_ward_code) {
-      const selectedWard = senderWards.find(
-        (w) => w.code === newOrder.from_ward_code
-      );
+    if (fromWardCode) {
+      const selectedWard = senderWards.find((w) => w.code === fromWardCode);
       if (selectedWard) {
         setNewOrder({
           ...newOrder,
@@ -637,15 +654,15 @@ const CreateOrderForm = ({
         });
       }
     }
-  }, [newOrder.from_ward_code, senderWards]);
+  }, [fromWardCode, senderWards]);
 
   // Simulate district data based on selected province
   useEffect(() => {
-    if (newOrder.to_province_id) {
+    if (toProvinceId) {
       // In a real implementation, you would fetch districts from an API
       const fetchedDistricts = [];
 
-      if (newOrder.to_province_id === 202) {
+      if (toProvinceId === 202) {
         // HCM
         fetchedDistricts.push(
           { id: 1442, name: "Quận 1", province_id: 202 },
@@ -653,7 +670,7 @@ const CreateOrderForm = ({
           { id: 1444, name: "Quận 3", province_id: 202 },
           { id: 1445, name: "Quận 10", province_id: 202 }
         );
-      } else if (newOrder.to_province_id === 201) {
+      } else if (toProvinceId === 201) {
         // Hanoi
         fetchedDistricts.push(
           { id: 1447, name: "Quận Ba Đình", province_id: 201 },
@@ -669,25 +686,25 @@ const CreateOrderForm = ({
 
       setDistricts(fetchedDistricts);
       // Clear ward and district selection when province changes
+      setToDistrictId(null);
+      setToWardCode("");
       setNewOrder({
         ...newOrder,
-        to_district_id: null,
-        to_ward_code: "",
         to_district_name: "",
         to_ward_name: "",
       });
       setWards([]);
     }
-  }, [newOrder.to_province_id]);
+  }, [toProvinceId]);
 
   // Simulate ward data based on selected district
   useEffect(() => {
-    if (newOrder.to_district_id) {
+    if (toDistrictId) {
       // In a real implementation, you would fetch wards from an API
       const fetchedWards = [];
 
       // Simple mock data for different districts
-      if (newOrder.to_district_id === 1444) {
+      if (toDistrictId === 1444) {
         // Quận 3 - HCM
         fetchedWards.push(
           { code: "W01", name: "Phường 1", district_id: 1444 },
@@ -695,7 +712,7 @@ const CreateOrderForm = ({
           { code: "W03", name: "Phường 3", district_id: 1444 },
           { code: "W14", name: "Phường 14", district_id: 1444 }
         );
-      } else if (newOrder.to_district_id === 1445) {
+      } else if (toDistrictId === 1445) {
         // Quận 10 - HCM
         fetchedWards.push(
           { code: "W04", name: "Phường 4", district_id: 1445 },
@@ -708,34 +725,32 @@ const CreateOrderForm = ({
           {
             code: "W07",
             name: "Phường A",
-            district_id: newOrder.to_district_id,
+            district_id: toDistrictId,
           },
           {
             code: "W08",
             name: "Phường B",
-            district_id: newOrder.to_district_id,
+            district_id: toDistrictId,
           }
         );
       }
 
       setWards(fetchedWards);
       // Set district name and clear ward selection
-      const selectedDistrict = districts.find(
-        (d) => d.id === newOrder.to_district_id
-      );
+      const selectedDistrict = districts.find((d) => d.id === toDistrictId);
+      setToWardCode("");
       setNewOrder({
         ...newOrder,
         to_district_name: selectedDistrict ? selectedDistrict.name : "",
-        to_ward_code: "",
         to_ward_name: "",
       });
     }
-  }, [newOrder.to_district_id, districts]);
+  }, [toDistrictId, districts]);
 
   // Set ward name when ward is selected
   useEffect(() => {
-    if (newOrder.to_ward_code) {
-      const selectedWard = wards.find((w) => w.code === newOrder.to_ward_code);
+    if (toWardCode) {
+      const selectedWard = wards.find((w) => w.code === toWardCode);
       if (selectedWard) {
         setNewOrder({
           ...newOrder,
@@ -743,7 +758,7 @@ const CreateOrderForm = ({
         });
       }
     }
-  }, [newOrder.to_ward_code, wards]);
+  }, [toWardCode, wards]);
 
   const handleServicePackageChange = (event) => {
     if (isViewMode) return;
@@ -795,7 +810,6 @@ const CreateOrderForm = ({
     setNewOrder({
       ...newOrder,
       items: [...(newOrder.items || []), newItem],
-      // Also update the old properties for backward compatibility
       productName: product.name,
       productWeight: product.weight,
       productQuantity: product.quantity,
@@ -829,6 +843,38 @@ const CreateOrderForm = ({
         });
       }
     }
+
+    // Initialize location IDs and codes from newOrder if they exist
+    // and then remove them from newOrder to avoid sending them in API calls
+    if (newOrder.from_province_id) {
+      setFromProvinceId(newOrder.from_province_id);
+    }
+    if (newOrder.from_district_id) {
+      setFromDistrictId(newOrder.from_district_id);
+    }
+    if (newOrder.from_ward_code) {
+      setFromWardCode(newOrder.from_ward_code);
+    }
+    if (newOrder.to_province_id) {
+      setToProvinceId(newOrder.to_province_id);
+    }
+    if (newOrder.to_district_id) {
+      setToDistrictId(newOrder.to_district_id);
+    }
+    if (newOrder.to_ward_code) {
+      setToWardCode(newOrder.to_ward_code);
+    }
+
+    // Create a cleaned version of newOrder without location IDs and codes
+    const cleanedNewOrder = { ...newOrder };
+    delete cleanedNewOrder.from_province_id;
+    delete cleanedNewOrder.from_district_id;
+    delete cleanedNewOrder.from_ward_code;
+    delete cleanedNewOrder.to_province_id;
+    delete cleanedNewOrder.to_district_id;
+    delete cleanedNewOrder.to_ward_code;
+
+    setNewOrder(cleanedNewOrder);
   }, []);
 
   // Fetch provinces for recipient
@@ -925,7 +971,7 @@ const CreateOrderForm = ({
   // Fetch districts when province changes (recipient)
   useEffect(() => {
     const fetchDistricts = async () => {
-      if (!newOrder.to_province_id) return;
+      if (!toProvinceId) return;
 
       try {
         setLoadingDistricts(true);
@@ -951,7 +997,7 @@ const CreateOrderForm = ({
           accountsResponse.data[0];
 
         const response = await getAllDistrictsByProvinceApi(
-          newOrder.to_province_id,
+          toProvinceId,
           defaultAccount.token
         );
 
@@ -960,7 +1006,7 @@ const CreateOrderForm = ({
             response.data.map((district) => ({
               id: district.DistrictID,
               name: district.DistrictName,
-              province_id: newOrder.to_province_id,
+              province_id: toProvinceId,
             }))
           );
         } else {
@@ -968,10 +1014,10 @@ const CreateOrderForm = ({
         }
 
         // Clear district and ward selections
+        setToDistrictId(null);
+        setToWardCode("");
         setNewOrder({
           ...newOrder,
-          to_district_id: null,
-          to_ward_code: "",
           to_district_name: "",
           to_ward_name: "",
         });
@@ -985,12 +1031,12 @@ const CreateOrderForm = ({
     };
 
     fetchDistricts();
-  }, [newOrder.to_province_id]);
+  }, [toProvinceId]);
 
   // Fetch districts when province changes (sender)
   useEffect(() => {
     const fetchSenderDistricts = async () => {
-      if (!newOrder.from_province_id) return;
+      if (!fromProvinceId) return;
 
       try {
         setLoadingSenderDistricts(true);
@@ -1013,7 +1059,7 @@ const CreateOrderForm = ({
 
         // Fetch districts
         const response = await getAllDistrictsByProvinceApi(
-          newOrder.from_province_id,
+          fromProvinceId,
           defaultAccount.token
         );
 
@@ -1022,16 +1068,16 @@ const CreateOrderForm = ({
             response.data.map((district) => ({
               id: district.DistrictID,
               name: district.DistrictName,
-              province_id: newOrder.from_province_id,
+              province_id: fromProvinceId,
             }))
           );
         }
 
         // Clear district and ward selections
+        setFromDistrictId(null);
+        setFromWardCode("");
         setNewOrder({
           ...newOrder,
-          from_district_id: null,
-          from_ward_code: "",
           from_district_name: "",
           from_ward_name: "",
         });
@@ -1044,12 +1090,12 @@ const CreateOrderForm = ({
     };
 
     fetchSenderDistricts();
-  }, [newOrder.from_province_id]);
+  }, [fromProvinceId]);
 
   // Fetch wards when district changes (recipient)
   useEffect(() => {
     const fetchWards = async () => {
-      if (!newOrder.to_district_id) return;
+      if (!toDistrictId) return;
 
       try {
         setLoadingWards(true);
@@ -1075,7 +1121,7 @@ const CreateOrderForm = ({
           accountsResponse.data[0];
 
         const response = await getAllWardsByDistrictApi(
-          newOrder.to_district_id,
+          toDistrictId,
           defaultAccount.token
         );
 
@@ -1084,20 +1130,18 @@ const CreateOrderForm = ({
             response.data.map((ward) => ({
               code: ward.WardCode,
               name: ward.WardName,
-              district_id: newOrder.to_district_id,
+              district_id: toDistrictId,
             }))
           );
         } else {
           setWardError("Failed to load wards");
         }
 
-        const selectedDistrict = districts.find(
-          (d) => d.id === newOrder.to_district_id
-        );
+        const selectedDistrict = districts.find((d) => d.id === toDistrictId);
+        setToWardCode("");
         setNewOrder({
           ...newOrder,
           to_district_name: selectedDistrict ? selectedDistrict.name : "",
-          to_ward_code: "",
           to_ward_name: "",
         });
       } catch (error) {
@@ -1109,12 +1153,12 @@ const CreateOrderForm = ({
     };
 
     fetchWards();
-  }, [newOrder.to_district_id, districts]);
+  }, [toDistrictId, districts]);
 
   // Fetch wards when district changes (sender)
   useEffect(() => {
     const fetchSenderWards = async () => {
-      if (!newOrder.from_district_id) return;
+      if (!fromDistrictId) return;
 
       try {
         setLoadingSenderWards(true);
@@ -1137,7 +1181,7 @@ const CreateOrderForm = ({
 
         // Fetch wards
         const response = await getAllWardsByDistrictApi(
-          newOrder.from_district_id,
+          fromDistrictId,
           defaultAccount.token
         );
 
@@ -1146,18 +1190,18 @@ const CreateOrderForm = ({
             response.data.map((ward) => ({
               code: ward.WardCode,
               name: ward.WardName,
-              district_id: newOrder.from_district_id,
+              district_id: fromDistrictId,
             }))
           );
         }
 
         const selectedDistrict = senderDistricts.find(
-          (d) => d.id === newOrder.from_district_id
+          (d) => d.id === fromDistrictId
         );
+        setFromWardCode("");
         setNewOrder({
           ...newOrder,
           from_district_name: selectedDistrict ? selectedDistrict.name : "",
-          from_ward_code: "",
           from_ward_name: "",
         });
       } catch (error) {
@@ -1168,7 +1212,7 @@ const CreateOrderForm = ({
     };
 
     fetchSenderWards();
-  }, [newOrder.from_district_id, senderDistricts]);
+  }, [fromDistrictId, senderDistricts]);
 
   const handleUseTokenForShipping = async () => {
     try {
@@ -1357,14 +1401,14 @@ const CreateOrderForm = ({
                       disabled={isViewMode}
                     >
                       <Select
-                        value={newOrder.from_province_id || ""}
+                        value={fromProvinceId || ""}
                         onChange={(e) => {
                           const provinceId = e.target.value;
                           const selectedProvince = senderProvinces.find(
                             (p) => p.id === provinceId
                           );
+                          setFromProvinceId(provinceId);
                           updateOrder({
-                            from_province_id: provinceId,
                             from_province_name: selectedProvince
                               ? selectedProvince.name
                               : "",
@@ -1463,17 +1507,17 @@ const CreateOrderForm = ({
                       fullWidth
                       variant="outlined"
                       size="small"
-                      disabled={!newOrder.from_province_id || isViewMode}
+                      disabled={!fromProvinceId || isViewMode}
                     >
                       <Select
-                        value={newOrder.from_district_id || ""}
+                        value={fromDistrictId || ""}
                         onChange={(e) => {
                           const districtId = e.target.value;
                           const selectedDistrict = senderDistricts.find(
                             (d) => d.id === districtId
                           );
+                          setFromDistrictId(districtId);
                           updateOrder({
-                            from_district_id: districtId,
                             from_district_name: selectedDistrict
                               ? selectedDistrict.name
                               : "",
@@ -1577,17 +1621,17 @@ const CreateOrderForm = ({
                       fullWidth
                       variant="outlined"
                       size="small"
-                      disabled={!newOrder.from_district_id || isViewMode}
+                      disabled={!fromDistrictId || isViewMode}
                     >
                       <Select
-                        value={newOrder.from_ward_code || ""}
+                        value={fromWardCode || ""}
                         onChange={(e) => {
                           const wardCode = e.target.value;
                           const selectedWard = senderWards.find(
                             (w) => w.code === wardCode
                           );
+                          setFromWardCode(wardCode);
                           updateOrder({
-                            from_ward_code: wardCode,
                             from_ward_name: selectedWard
                               ? selectedWard.name
                               : "",
@@ -1789,14 +1833,14 @@ const CreateOrderForm = ({
                   ) : (
                     <FormControl fullWidth variant="outlined" size="small">
                       <Select
-                        value={newOrder.to_province_id || ""}
+                        value={toProvinceId || ""}
                         onChange={(e) => {
                           const provinceId = e.target.value;
                           const selectedProvince = provinces.find(
                             (p) => p.id === provinceId
                           );
+                          setToProvinceId(provinceId);
                           updateOrder({
-                            to_province_id: provinceId,
                             to_province_name: selectedProvince
                               ? selectedProvince.name
                               : "",
@@ -1895,17 +1939,17 @@ const CreateOrderForm = ({
                       fullWidth
                       variant="outlined"
                       size="small"
-                      disabled={!newOrder.to_province_id}
+                      disabled={!toProvinceId}
                     >
                       <Select
-                        value={newOrder.to_district_id || ""}
+                        value={toDistrictId || ""}
                         onChange={(e) => {
                           const districtId = e.target.value;
                           const selectedDistrict = districts.find(
                             (d) => d.id === districtId
                           );
+                          setToDistrictId(districtId);
                           updateOrder({
-                            to_district_id: districtId,
                             to_district_name: selectedDistrict
                               ? selectedDistrict.name
                               : "",
@@ -2008,17 +2052,17 @@ const CreateOrderForm = ({
                       fullWidth
                       variant="outlined"
                       size="small"
-                      disabled={!newOrder.to_district_id}
+                      disabled={!toDistrictId}
                     >
                       <Select
-                        value={newOrder.to_ward_code || ""}
+                        value={toWardCode || ""}
                         onChange={(e) => {
                           const wardCode = e.target.value;
                           const selectedWard = wards.find(
                             (w) => w.code === wardCode
                           );
+                          setToWardCode(wardCode);
                           updateOrder({
-                            to_ward_code: wardCode,
                             to_ward_name: selectedWard ? selectedWard.name : "",
                           });
                         }}
