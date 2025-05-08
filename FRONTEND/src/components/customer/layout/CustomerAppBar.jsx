@@ -25,6 +25,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUserApi } from "../../../utils/api";
 import { useNotification } from "../../ui/NotificationProvider";
+import { AuthContext } from "../../../contexts/auth.context";
 
 export default function CustomerAppBar({
   open,
@@ -40,6 +41,7 @@ export default function CustomerAppBar({
   const [notificationAnchor, setNotificationAnchor] = React.useState(null);
   const [loggingOut, setLoggingOut] = React.useState(false);
   const { notify } = useNotification();
+  const { auth, setAuth } = React.useContext(AuthContext);  
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -69,9 +71,13 @@ export default function CustomerAppBar({
 
       // Notify success but don't wait for the animation
       notify("success", "Đăng xuất thành công");
+      setAuth({ isAuthenticated: false, user: null });
 
       // Immediately navigate to home page
       window.location.href = "/";
+
+      
+
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
       notify("error", "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");

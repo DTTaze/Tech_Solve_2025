@@ -4,7 +4,6 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Rank extends Model {
     static associate(models) {
-        Rank.hasOne(models.User, { foreignKey: "rank_id", onDelete: "CASCADE" });
         Rank.belongsTo(models.User, { foreignKey: "user_id", as: "users" });
     }
   }

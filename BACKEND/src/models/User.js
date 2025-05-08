@@ -29,6 +29,12 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
         as: "coins",
       });
+      User.hasOne(models.Rank, {
+        foreignKey: "user_id",
+        onDelete: "CASCADE",
+        as: "ranks",
+      });
+      
       User.hasMany(models.DeliveryAccount, {
         foreignKey: "user_id",
         onDelete: "CASCADE",
@@ -42,7 +48,6 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
-      User.belongsTo(models.Rank, { foreignKey: "rank_id", as: "ranks" });
     }
   }
 

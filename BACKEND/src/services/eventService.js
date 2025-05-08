@@ -64,8 +64,9 @@ const getEventById = async (eventId) => {
         reference_id: eventId,
         reference_type: "event",
       },
-      attributes: ["url"],
+      attributes: ["id","url"],
     });
+    console.log(`images of event ${eventId} : `, uploadedImages)
 
     const imagesFormat = uploadedImages.map(image => image.url);
 

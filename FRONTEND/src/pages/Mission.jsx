@@ -845,13 +845,7 @@ function Mission() {
                 </div>
               ) : (
                 <TasksList
-                  tasks={
-                    selectedTab === "daily"
-                      ? dailyTasks
-                      : selectedTab === "other"
-                      ? otherTasks
-                      : completedTasks
-                  }
+                  tasks={getFilteredTasks()}
                   loading={loading}
                   completingTask={completingTask}
                   handleTaskCompletion={handleTaskCompletion}
