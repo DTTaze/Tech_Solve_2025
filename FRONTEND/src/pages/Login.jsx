@@ -8,9 +8,15 @@ import Button from "../components/ui/Button";
 import SocialLoginIcons from "../components/ui/SocialLoginIcons";
 import { Eye, EyeOff } from "lucide-react";
 
+const roleMap = {
+  1: "Admin",
+  2: "User",
+  3: "Customer",
+};
+
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { auth,setAuth } = useContext(AuthContext);
+  const { setAuth } = useContext(AuthContext);
   const { notify } = useNotification();
   const [identifier, setIdentifier] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,10 +28,8 @@ const LoginPage = () => {
     e.preventDefault();
 
     const newErrors = {};
-    if (!identifier.trim())
-      newErrors.identifier = "Vui lòng nhập email hoặc username.";
+    if (!identifier.trim()) newErrors.identifier = "Vui lòng nhập email hoặc username.";
     if (!password) newErrors.password = "Vui lòng nhập mật khẩu.";
-
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -34,23 +38,28 @@ const LoginPage = () => {
       const loginData = isEmail
         ? { email: identifier, password }
         : { username: identifier, password };
-      
+
       const res = await loginUserApi(loginData);
+
       if (res && res.status === 200) {
         notify("success", "Đăng nhập thành công!");
+        const user = res.data.user;
+        const roleId = user.role_id;
+        const userRole = roleMap[roleId] || "User";
+
         setAuth({
           isAuthenticated: true,
-          user: res.data.user 
+          user: { ...user, roles: { id: roleId } }, 
         });
-        if (res.data.user.role_id === 1) {
-          navigate("/admin");
-        } else if(res.data.user.role_id === 2) {
-          navigate("/");
-        } else if (res.data.user.role_id === 3) {
-          navigate("/customer");
-        } else {
-          notify("error", "Đã xảy ra lỗi, vui lòng thử lại sau");
-        }
+
+        const roleRedirectMap = {
+          Admin: "/admin",
+          User: "/", 
+          Customer: "/customer",
+        };
+
+        const redirectPath = roleRedirectMap[userRole] || "/user";
+        navigate(redirectPath);
       } else {
         notify("error", res.error || "Đăng nhập thất bại, vui lòng thử lại.");
       }
@@ -63,7 +72,7 @@ const LoginPage = () => {
         setTimeout(() => {
           setIsLoginDisabled(false);
           notify("info", "Bạn có thể thử đăng nhập lại bây giờ");
-        }, 300000); 
+        }, 300000);
       } else {
         notify("error", error.message || "Đã xảy ra lỗi, vui lòng thử lại.");
       }
@@ -100,14 +109,13 @@ const LoginPage = () => {
           }
         />
 
-        {/* Nút đăng nhập sẽ bị vô hiệu hóa khi isLoginDisabled = true */}
-        <Button 
-          text="Đăng nhập" 
+        <Button
+          text="Đăng nhập"
           disabled={isLoginDisabled}
           width="100%"
           padding="15px"
         />
-        
+
         <div className="text-right">
           <Link to="/forgot_password" className="text-blue-600 hover:underline">
             Quên mật khẩu?
