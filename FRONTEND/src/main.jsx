@@ -28,10 +28,10 @@ import CustomerRewards from "./components/customer/CustomerRewards.jsx";
 import AdminQueue from "./pages/AdminQueue.jsx";
 import ProductsManagement from "./components/admin/ProductsManagement.jsx";
 import SocketTest from "./components/SocketTest.jsx";
-import CustomerQRScanner from "./components/customer/CustomerQRScanner.jsx";
+import CustomerQRScanner from "./components/customer/CustomerQRScanner/CustomerQRScanner.jsx";
 import CustomerUsers from "./components/customer/CustomerUsers.jsx";
-import CustomerItems from "./components/customer/CustomerItems.jsx";
-import CustomerEvents from "./components/customer/CustomerEvents.jsx";
+import CustomerItems from "./components/customer/CustomerItems/index.jsx";
+import CustomerEvents from "./components/customer/CustomerEvents/CustomerEvents.jsx";
 import App from "./App.jsx";
 import "./index.css";
 
