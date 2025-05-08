@@ -57,16 +57,17 @@ export default function CustomerQRScanner() {
           const response = await getEventUserByEventIdApi(selectedEvent);
           console.log("Fetched scanned users: ", response);
           const users = response.data.map((user) => ({
-            id: user.id,
-            name: user.full_name,
-            email: user.email,
+            id: user.user_id,
+            name: user.User.full_name,
+            email: user.User.email,
             avatar:
-              user.avatar_url ||
+              user.User.avatar_url ||
               `https://mui.com/static/images/avatar/${
                 Math.floor(Math.random() * 8) + 1
               }.jpg`,
-            scannedAt: user.check_in_time || new Date().toISOString(),
+            scannedAt: user.joined_at || new Date().toISOString(),
             eventId: selectedEvent,
+            eventTitle: user.Event.title
           }));
           setScannedUsers(users);
         } catch (error) {
@@ -119,16 +120,17 @@ export default function CustomerQRScanner() {
       // Refresh scanned users list
       const updatedResponse = await getEventUserByEventIdApi(selectedEvent);
       const updatedUsers = updatedResponse.data.map((user) => ({
-        id: user.id,
-        name: user.full_name,
-        email: user.email,
+        id: user.user_id,
+        name: user.User.full_name,
+        email: user.User.email,
         avatar:
-          user.avatar_url ||
+          user.User.avatar_url ||
           `https://mui.com/static/images/avatar/${
             Math.floor(Math.random() * 8) + 1
           }.jpg`,
-        scannedAt: user.check_in_time || new Date().toISOString(),
+        scannedAt: user.joined_at || new Date().toISOString(),
         eventId: selectedEvent,
+        eventTitle: user.Event.title
       }));
       setScannedUsers(updatedUsers);
 
@@ -224,16 +226,17 @@ export default function CustomerQRScanner() {
       // Refresh scanned users list
       const updatedResponse = await getEventUserByEventIdApi(selectedEvent);
       const updatedUsers = updatedResponse.data.map((user) => ({
-        id: user.id,
-        name: user.full_name,
-        email: user.email,
+        id: user.user_id,
+        name: user.User.full_name,
+        email: user.User.email,
         avatar:
-          user.avatar_url ||
+          user.User.avatar_url ||
           `https://mui.com/static/images/avatar/${
             Math.floor(Math.random() * 8) + 1
           }.jpg`,
-        scannedAt: user.check_in_time || new Date().toISOString(),
+        scannedAt: user.joined_at || new Date().toISOString(),
         eventId: selectedEvent,
+        eventTitle: user.Event.title
       }));
       setScannedUsers(updatedUsers);
 
