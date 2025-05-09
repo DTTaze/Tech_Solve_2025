@@ -532,9 +532,9 @@ export const getReceiverInfoByUserIDAPI = (user_id) => {
 };
 
 export const updateReceiverInfoByIdAPI = (id ,data) => {
-  return axios.get(`api/users/receiver/update/${id}`, data);
+  return axios.patch(`api/users/receiver/update/${id}`, data);
 };
 
 export const deleteReceiverInfoByIdAPI = (id) => {
-  return axios.delete(`api/users/receiver/update/${id}`);
+  return axios.delete(`api/users/receiver/info/${id}`);
 };
