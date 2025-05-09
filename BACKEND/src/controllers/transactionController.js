@@ -24,9 +24,9 @@ const handleGetAllTransactions = async (req, res) => {
 
 const handleGetTransactionByUser = async (req, res) => {
   try {
-    const buyer_id = Number(req.user.id);
+    const user_id = Number(req.user.id);
     const transaction = await transactionService.getTransactionByUserId(
-      buyer_id
+      user_id
     );
     return res.success("Transaction retrieved successfully", transaction);
   } catch (error) {

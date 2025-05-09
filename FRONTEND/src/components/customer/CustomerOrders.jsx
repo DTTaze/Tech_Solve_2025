@@ -75,6 +75,7 @@ import {
   updateShippingAccountApi,
   deleteShippingAccountApi,
   setDefaultShippingAccountApi,
+  getUserTransactionHistory,
 } from "../../utils/api";
 
 const getStatusColor = (status) => {

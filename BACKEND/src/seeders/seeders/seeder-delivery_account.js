@@ -5,9 +5,8 @@ module.exports = {
     return queryInterface.bulkInsert("delivery_accounts", [
       {
         id: 1,
-        name : "delivery_accounts 1",
         user_id: 1,
-        name: "test a",
+        name: "Quoc Anh",
         carrier: "ghn",
         token: "c3f24415-29b9-11f0-9b81-222185cb68c8",
         shop_id: "196506",
@@ -17,9 +16,8 @@ module.exports = {
       },
       {
         id: 2,
-        name : "delivery_accounts 2",
         user_id: 2,
-        name: "test b",
+        name: "John Doe",
         carrier: "ghtk",
         token: "fake_token",
         shop_id: "123456",

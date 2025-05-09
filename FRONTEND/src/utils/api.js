@@ -146,8 +146,8 @@ export const submitTaskApi = (task_user_id, data) => {
   });
 };
 
-export const getUserTransactionHistory = (buyer_id) => {
-  return axios.get(`api/transactions/${buyer_id}`);
+export const getUserTransactionHistory = () => {
+  return axios.get(`api/transactions/user`);
 };
 
 export const increaseProgressCountApi = (task_user_id) => {
