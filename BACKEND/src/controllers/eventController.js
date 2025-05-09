@@ -57,6 +57,21 @@ const handGetEventsOfCreator = async (req, res) => {
   }
 };
 
+const handleDeleteEventUserById = async (req, res) => {
+  try {
+    const eventUserId = Number(req.params.event_id);
+    const result = await eventService.deleteEventUserById(eventUserId);
+    if (!event) {
+      return res.error(404, "Event user have not been delete");
+    }
+    return res.success("Event user delete successfully", event);
+  }
+  catch (error) {
+    console.error("Error delete event user:", error);
+    return res.error(500, "Error delete event user", error);
+  }
+}
+
 const handlegetEventUserByEventId = async (req, res) => {
   try {
     const eventId = Number(req.params.event_id);
@@ -172,5 +187,6 @@ module.exports = {
   handleUpdateEvent,
   handleDeleteEvent,
   handleCheckInUserByUserId,
-  handleCheckOutUserByUserId
+  handleCheckOutUserByUserId,
+  handleDeleteEventUserById
 };

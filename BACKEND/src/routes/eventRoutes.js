@@ -25,12 +25,16 @@ router.get('/creator',
     // checkPermission('read', 'event'),
     eventController.handGetEventsOfCreator
 );
+router.delete('/user/delete/:eventUser_id',
+    // checkPermission('read', 'event'),
+    eventController.handleDeleteEventUserById
+);
+
 
 router.get('/user/:event_id',
     // checkPermission('read', 'event'),
     eventController.handlegetEventUserByEventId
 );
-
 
 router.post('/create',
 //   checkPermission('create', 'event'),
