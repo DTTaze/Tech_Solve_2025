@@ -8,6 +8,7 @@ router.get(
   "/status/:status",
   transactionController.handleGetAllTransactionsByStatus
 );
+router.patch("/cancel/:id", transactionController.handleCancelTransactionById);
 router.get("/buyer", transactionController.handleGetTransactionByBuyerId);
 router.get("/seller", transactionController.handleGetTransactionBySellerId);
 router.post("/create", transactionController.handleCreateTransaction);

@@ -212,6 +212,27 @@ const getTransactionById = async (id) => {
   }
 };
 
+const cancelTransactionById = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Missing parameters");
+    }
+
+    const transaction = await Transaction.findByPk(id);
+
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+
+    transaction.status = "cancelled";
+    await transaction.save();
+
+    return transaction;
+  } catch (e) {
+    throw e;
+  }
+};
+
 const deleteTransaction = async (transaction_id) => {
   try {
     if (!transaction_id) {
@@ -270,7 +291,7 @@ const makeDecision = async (transaction_id, decision) => {
     transaction.status = decision;
     await transaction.save();
 
-    return "Status changed successfully";
+    return transaction;
   } catch (error) {
     throw error;
   }
@@ -285,4 +306,5 @@ module.exports = {
   makeDecision,
   getAllTransactionsByStatus,
   getTransactionById,
+  cancelTransactionById,
 };

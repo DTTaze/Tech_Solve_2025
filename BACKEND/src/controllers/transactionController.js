@@ -21,7 +21,6 @@ const handleGetAllTransactions = async (req, res) => {
     return res.error(500, "Failed to fetch transactions", error.message);
   }
 };
-
 const handleGetTransactionById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -34,6 +33,17 @@ const handleGetTransactionById = async (req, res) => {
     return res.success("Transaction retrieved successfully", transaction);
   } catch (error) {
     return res.error(500, "Failed to fetch transaction", error.message);
+  }
+};
+
+const handleCancelTransactionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const transaction = await transactionService.cancelTransactionById(id);
+
+    return res.success("Transaction cancelled successfully", transaction);
+  } catch (error) {
+    return res.error(500, "Failed to cancel transaction", error.message);
   }
 };
 
@@ -105,4 +115,5 @@ module.exports = {
   handleGetAllTransactionsByStatus,
   handleGetTransactionBySellerId,
   handleGetTransactionById,
+  handleCancelTransactionById,
 };
