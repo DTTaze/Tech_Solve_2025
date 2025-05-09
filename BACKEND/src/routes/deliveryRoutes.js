@@ -7,6 +7,10 @@ router.post(
   "/carrier/ghn/create-order",
   deliveryOrderController.handleCreateDeliveryOrder
 );
+router.post(
+  "/carrier/ghn/create-order-from-transaction/:transaction_id",
+  deliveryOrderController.handleCreateDeliveryOrderFromTransaction
+);
 router.get(
   "/carrier/ghn/detail/:order_code",
   deliveryOrderController.handleGetDeliveryOrderInfo

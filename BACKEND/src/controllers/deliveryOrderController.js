@@ -91,6 +91,29 @@ const handleCreateDeliveryOrder = async (req, res) => {
   }
 };
 
+const handleCreateDeliveryOrderFromTransaction = async (req, res) => {
+  try {
+    const { token, shop_id } = getHeadersFromRequest(req);
+    const transaction_id = req.params.transaction_id;
+    const seller_id = req.user.id;
+    const orderData = req.body;
+    const data = await deliveryOrderService.createDeliveryOrderFromTransaction(
+      transaction_id,
+      token,
+      shop_id,
+      seller_id,
+      orderData
+    );
+    return res.success("Create order from transaction success", data);
+  } catch (error) {
+    return res.error(
+      500,
+      "Failed to create order transaction success",
+      error.message
+    );
+  }
+};
+
 const handleGetDeliveryOrderInfo = async (req, res) => {
   try {
     const { token, shop_id } = getHeadersFromRequest(req);
@@ -201,4 +224,5 @@ module.exports = {
   handlePreviewOrderWithoutOrderCode,
   handleGetAllDeliveryOrdersByBuyer,
   handleGetAllDeliveryOrdersByStatus,
+  handleCreateDeliveryOrderFromTransaction,
 };
