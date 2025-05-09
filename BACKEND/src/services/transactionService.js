@@ -201,8 +201,22 @@ const getAllTransactions = async () => {
   }
 };
 
+const getTransactionById = async (id) => {
+  try {
+    if (!id) {
+      throw new Error("Missing parameters");
+    }
+    return await Transaction.findByPk(id);
+  } catch (e) {
+    throw e;
+  }
+};
+
 const deleteTransaction = async (transaction_id) => {
   try {
+    if (!transaction_id) {
+      throw new Error("Missing parameters");
+    }
     const transaction = await Transaction.destroy({
       where: { id: transaction_id },
     });
@@ -270,4 +284,5 @@ module.exports = {
   getAllTransactions,
   makeDecision,
   getAllTransactionsByStatus,
+  getTransactionById,
 };

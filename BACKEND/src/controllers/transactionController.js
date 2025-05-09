@@ -22,6 +22,21 @@ const handleGetAllTransactions = async (req, res) => {
   }
 };
 
+const handleGetTransactionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const transaction = await transactionService.getTransactionById(id);
+
+    if (!transaction) {
+      return res.error(404, "Transaction not found");
+    }
+
+    return res.success("Transaction retrieved successfully", transaction);
+  } catch (error) {
+    return res.error(500, "Failed to fetch transaction", error.message);
+  }
+};
+
 const handleGetTransactionByBuyerId = async (req, res) => {
   try {
     const user_id = Number(req.user.id);
@@ -89,4 +104,5 @@ module.exports = {
   handleTransactionMakeDicision,
   handleGetAllTransactionsByStatus,
   handleGetTransactionBySellerId,
+  handleGetTransactionById,
 };

@@ -4,13 +4,18 @@ const transactionController = require("../controllers/transactionController");
 const router = express.Router();
 
 router.get("/", transactionController.handleGetAllTransactions);
-router.post("/create", transactionController.handleCreateTransaction);
+router.get(
+  "/status/:status",
+  transactionController.handleGetAllTransactionsByStatus
+);
 router.get("/buyer", transactionController.handleGetTransactionByBuyerId);
 router.get("/seller", transactionController.handleGetTransactionBySellerId);
-router.delete("/:id", transactionController.handleDeleteTransaction);
+router.post("/create", transactionController.handleCreateTransaction);
 router.patch(
-  "/:id/:decision",
+  "/decision/:id/:decision",
   transactionController.handleTransactionMakeDicision
 );
-router.get("/:status", transactionController.handleGetAllTransactionsByStatus);
+router.delete("/:id", transactionController.handleDeleteTransaction);
+router.get("/:id", transactionController.handleGetTransactionById);
+
 module.exports = router;
