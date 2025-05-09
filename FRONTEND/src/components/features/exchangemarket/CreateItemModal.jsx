@@ -100,7 +100,6 @@ export default function CreateItemModal({ isOpen, item, onSubmit, onCancel }) {
         price: Number(formData.price),
         stock: Number(formData.stock),
       };
-      console.log(formData);
       onSubmit(formattedData, isEditing);
     }
   };

@@ -11,6 +11,7 @@ function MarketItemList({
   getCategoryDisplayName,
   statusColors,
   statusConfig,
+  fetchItems, 
 }) {
   return (
     <div
@@ -103,7 +104,7 @@ function MarketItemList({
                     {item.createdAt &&
                       new Date(item.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 Diorpy-4 whitespace-nowrap text-right text-sm font-medium">
                     <ItemActions
                       marketView={marketView}
                       marketListView={marketListView}
@@ -111,7 +112,7 @@ function MarketItemList({
                       handleEditItem={handleEditItem}
                       handleDeleteItem={handleDeleteItem}
                       handlePurchase={handlePurchase}
-                      getCategoryDisplayName={getCategoryDisplayName} 
+                      getCategoryDisplayName={getCategoryDisplayName}
                     />
                   </td>
                 </tr>
@@ -129,7 +130,7 @@ function MarketItemList({
             onPurchase={handlePurchase}
             showDetailedStatus={marketView === "my_items"}
             viewMode={marketView}
-            fetchItems={() => console.log("Refreshing items")}
+            fetchItems={fetchItems}
           />
         ))
       )}

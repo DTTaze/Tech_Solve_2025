@@ -63,6 +63,14 @@ function UserItemsTab({ fetchItems }) {
         onSubmit={handleSubmitItem}
         onCancel={handleCancelForm}
       />
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleAddItem}
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium"
+        >
+          Thêm sản phẩm
+        </button>
+      </div>
       <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
         <MarketSearchBar
           marketSearchText={marketSearchText}
@@ -97,6 +105,7 @@ function UserItemsTab({ fetchItems }) {
           getCategoryDisplayName={getCategoryDisplayName}
           statusColors={statusColors}
           statusConfig={statusConfig}
+          fetchItems={fetchItems}
         />
       )}
     </div>

@@ -74,6 +74,7 @@ function RedeemTab({ fetchItems }) {
           getCategoryDisplayName={getCategoryDisplayName}
           statusColors={statusColors}
           statusConfig={statusConfig}
+          fetchItems={fetchItems} // Pass fetchItems
         />
       )}
     </div>

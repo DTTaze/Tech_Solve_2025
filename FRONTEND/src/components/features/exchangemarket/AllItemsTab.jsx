@@ -1,8 +1,4 @@
 import { useMemo, useContext, useEffect } from "react";
-import MarketSearchBar from "./MarketSearchBar";
-import MarketFilterButtons from "./MarketFilterButtons";
-import MarketItemList from "./MarketItemList";
-import MarketEmptyState from "./MarketEmptyState";
 import {
   MarketplaceContext,
   marketplaceCategories,
@@ -10,6 +6,10 @@ import {
   statusConfig,
   getCategoryDisplayName,
 } from "../../../pages/ExchangeMarket";
+import MarketSearchBar from "./MarketSearchBar";
+import MarketFilterButtons from "./MarketFilterButtons";
+import MarketItemList from "./MarketItemList";
+import MarketEmptyState from "./MarketEmptyState";
 
 function AllItemsTab({ fetchItems }) {
   const {
@@ -59,12 +59,14 @@ function AllItemsTab({ fetchItems }) {
           setMarketCategory={setMarketCategory}
           filteredMarketItems={filteredMarketItems}
           marketplaceCategories={marketplaceCategories}
-          userItemStatuses={[]}
           statusColors={statusColors}
         />
       </div>
       {filteredMarketItems.length === 0 ? (
-        <MarketEmptyState marketView="all_items" />
+        <MarketEmptyState
+          marketView="all_items"
+          marketCategory={marketCategory}
+        />
       ) : (
         <MarketItemList
           marketListView={marketListView}
@@ -74,6 +76,7 @@ function AllItemsTab({ fetchItems }) {
           getCategoryDisplayName={getCategoryDisplayName}
           statusColors={statusColors}
           statusConfig={statusConfig}
+          fetchItems={fetchItems}
         />
       )}
     </div>

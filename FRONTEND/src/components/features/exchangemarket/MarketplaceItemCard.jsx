@@ -3,6 +3,7 @@ import { CheckCircle, EyeOff, Clock, FileWarning, ClipboardEdit, Eye } from "luc
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
+import DetailsModal from "./DetailsModal";
 import { AuthContext } from "../../../contexts/auth.context";
 
 export const statusConfig = {
@@ -40,15 +41,16 @@ const MarketplaceItemCard = ({
   onEdit,
   onDelete,
   onPurchase,
-  viewMode = "all-items",
+  viewMode = "all_items", // Updated default to match AllItemsTab
   fetchItems,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const { auth } = useContext(AuthContext);
 
   const handleEditClick = () => {
-    onEdit(item);
+    setShowDetailsModal(true);
   };
 
   const handleDeleteClick = () => {
@@ -58,14 +60,19 @@ const MarketplaceItemCard = ({
   const confirmDelete = () => {
     onDelete(item.id);
     setShowDeleteModal(false);
+    if (fetchItems) fetchItems();
   };
 
   const cancelDelete = () => {
     setShowDeleteModal(false);
   };
 
-  const handlePurchaseClick = () => {
-    setShowPurchaseModal(true);
+  const handleDetailsClick = () => {
+    if (viewMode === "redeem") {
+      setShowPurchaseModal(true);
+    } else {
+      setShowDetailsModal(true);
+    }
   };
 
   return (
@@ -77,8 +84,8 @@ const MarketplaceItemCard = ({
       {/* Item Image */}
       <div
         className={`relative mb-3 h-48 w-full overflow-hidden rounded-md transition-all duration-200 ${
-          viewMode === "all-items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
-        } ${showPurchaseModal ? "blur-sm" : ""}`}
+          viewMode === "all_items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
+        } ${showPurchaseModal || showDetailsModal ? "blur-sm" : ""}`}
       >
         <img
           src={item.image || "/placeholder.svg"}
@@ -90,8 +97,8 @@ const MarketplaceItemCard = ({
       {/* Item Details */}
       <div
         className={`mb-4 transition-all duration-200 ${
-          viewMode === "all-items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
-        } ${showPurchaseModal ? "blur-sm" : ""}`}
+          viewMode === "all_items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
+        } ${showPurchaseModal || showDetailsModal ? "blur-sm" : ""}`}
       >
         <h3 className="text-lg font-semibold">{item.name}</h3>
         <p className="text-sm text-gray-600">
@@ -111,23 +118,24 @@ const MarketplaceItemCard = ({
       </div>
 
       {/* Action Button */}
-      {(viewMode === "all-items" || viewMode === "redeem") && (
+      {(viewMode === "all_items" || viewMode === "redeem") && (
         <button
-          onClick={handlePurchaseClick}
+          onClick={handleDetailsClick}
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center rounded-md gap-1 border border-gray-300 p-3 text-sm bg-white hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
         >
           <Eye size={16} />
-          Xem chi tiết & Mua
+          {viewMode === "redeem" ? "Mua" : "Xem chi tiết"}
         </button>
       )}
 
+      {/* Edit/Delete Buttons */}
       <div
         className={`mt-2 flex flex-wrap justify-between items-center transition-all duration-200 ${
-          viewMode !== "redeem" ? "group-hover:blur-sm" : ""
-        } ${showPurchaseModal ? "blur-sm" : ""}`}
+          viewMode === "all_items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
+        } ${showPurchaseModal || showDetailsModal ? "blur-sm" : ""}`}
       >
         <div className="flex gap-2 mt-2 sm:mt-0">
-          {viewMode === "my-items" && (
+          {viewMode === "my_items" && (
             <>
               <button
                 onClick={handleEditClick}
@@ -165,9 +173,26 @@ const MarketplaceItemCard = ({
           item={item}
           userCoins={auth.user?.coins?.amount || 0}
           onConfirm={(quantity, shippingInfo) => {
-            onPurchase(item, quantity, shippingInfo);
+            onPurchase(item);
             if (fetchItems) fetchItems();
           }}
+        />
+      )}
+
+      {/* Details Modal */}
+      {showDetailsModal && (
+        <DetailsModal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          item={item}
+          getCategoryDisplayName={getCategoryDisplayName}
+          isEditMode={viewMode === "my_items"}
+          onEdit={onEdit}
+          onPurchase={() => {
+            setShowDetailsModal(false);
+            setShowPurchaseModal(true);
+          }}
+          fetchItems={fetchItems}
         />
       )}
     </div>

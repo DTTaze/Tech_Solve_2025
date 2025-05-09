@@ -253,7 +253,6 @@ export default function ExchangeMarket() {
           setIsModalOpen(false);
           alert(`Giao dịch ${quantity} ${selectedItem.name} đã được khởi tạo thành công!`);
           await fetchRedeemItems();
-          // Reset states
           setSelectedItem(null);
         } else {
           throw new Error("Không nhận được mã giao dịch");
@@ -277,7 +276,7 @@ export default function ExchangeMarket() {
     setShowCreateModal(true);
   };
 
-  const handleDeleteItem = (itemId) => {
+  const  handleDeleteItem = (itemId) => {
     setMyItems((prev) => prev.filter((item) => item.id !== itemId));
     alert("Sản phẩm đã được xóa thành công!");
   };
