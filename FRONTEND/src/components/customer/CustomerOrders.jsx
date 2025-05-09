@@ -36,6 +36,8 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  InputAdornment,
+  Tooltip,
 } from "@mui/material";
 import { useOutletContext } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
@@ -47,6 +49,9 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import SearchIcon from "@mui/icons-material/Search";
 
 // Import extracted components
 import OrdersList from "./orders/OrdersList";
@@ -75,7 +80,7 @@ import {
   updateShippingAccountApi,
   deleteShippingAccountApi,
   setDefaultShippingAccountApi,
-  getUserTransactionHistory,
+  getSellerTransactionHistory,
 } from "../../utils/api";
 
 const getStatusColor = (status) => {
@@ -125,10 +130,125 @@ function a11yProps(index) {
   };
 }
 
+// Add this TransactionOrdersList component
+function TransactionOrdersList({
+  transactions,
+  handleCreateOrderFromTransaction,
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter transactions by search term
+  const filteredTransactions = transactions.filter(
+    (transaction) =>
+      transaction.public_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.item_snapshot?.name
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      transaction.buyer?.username
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <>
+      <Box sx={{ mb: 2, display: "flex", alignItems: "center" }}>
+        <TextField
+          placeholder="Search purchase requests..."
+          size="small"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{ mr: 2, minWidth: 250 }}
+        />
+      </Box>
+
+      {filteredTransactions.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1" color="text.secondary">
+            No pending purchase requests found.
+          </Typography>
+        </Paper>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Transaction ID</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Buyer</TableCell>
+                <TableCell>Product</TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Total Price</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredTransactions.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>{transaction.public_id}</TableCell>
+                  <TableCell>
+                    {new Date(transaction.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {transaction.buyer
+                      ? transaction.buyer.full_name ||
+                        transaction.buyer.username
+                      : "Unknown"}
+                  </TableCell>
+                  <TableCell>
+                    {transaction.item_snapshot?.name || "Unknown Product"}
+                  </TableCell>
+                  <TableCell>{transaction.quantity}</TableCell>
+                  <TableCell>
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(transaction.total_price)}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={transaction.status}
+                      color={
+                        transaction.status === "pending" ? "warning" : "success"
+                      }
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title="Create Order">
+                      <IconButton
+                        onClick={() =>
+                          handleCreateOrderFromTransaction(transaction)
+                        }
+                        color="primary"
+                      >
+                        <ShoppingCartIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </>
+  );
+}
+
 export default function CustomerOrders() {
   const userInfo = useOutletContext();
   const [orders, setOrders] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -219,6 +339,7 @@ export default function CustomerOrders() {
   useEffect(() => {
     fetchShippingAccounts();
     fetchOrders();
+    fetchTransactions();
   }, []);
 
   const fetchShippingAccounts = async () => {
@@ -332,6 +453,28 @@ export default function CustomerOrders() {
       console.error("Error fetching orders:", error);
       setErrorMessage("Failed to load orders. Please try again.");
       setIsLoadingOrders(false);
+    }
+  };
+
+  // Function to fetch transactions
+  const fetchTransactions = async () => {
+    try {
+      setIsLoadingTransactions(true);
+      setErrorMessage("");
+
+      const response = await getSellerTransactionHistory();
+      if (response && response.data) {
+        // Filter only pending transactions
+        const pendingTransactions = response.data.filter(
+          (transaction) => transaction.status === "pending"
+        );
+        setTransactions(pendingTransactions);
+      }
+      setIsLoadingTransactions(false);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      setErrorMessage("Failed to load purchase requests. Please try again.");
+      setIsLoadingTransactions(false);
     }
   };
 
@@ -884,6 +1027,9 @@ export default function CustomerOrders() {
   };
 
   // Filter orders by status for each tab
+  const pendingTransactions = transactions.filter(
+    (transaction) => transaction.status === "pending"
+  );
   const pendingOrders = orders.filter(
     (order) => order.status === "Pending Confirmation"
   );
@@ -1027,6 +1173,38 @@ export default function CustomerOrders() {
     }
   };
 
+  // Function to handle creating order from transaction
+  const handleCreateOrderFromTransaction = (transaction) => {
+    // Create a new order based on the transaction data
+    setIsCreatingBasedOn(false);
+
+    // Create a prepopulated order form based on transaction data
+    const newOrderFromTransaction = {
+      ...initialOrderPayload,
+      from_phone: userInfo?.phone || "",
+      from_address: userInfo?.address || "",
+      to_name:
+        transaction.buyer?.full_name || transaction.buyer?.username || "",
+      to_phone: transaction.buyer?.phone || "",
+      to_address: transaction.buyer?.address || "",
+      productName: transaction.item_snapshot?.name || "",
+      productQuantity: transaction.quantity || 1,
+      productCode: transaction.item_snapshot?.public_id || "",
+      length: 10, // Default value
+      width: 10, // Default value
+      height: 10, // Default value
+      weight: 200, // Default value
+      packageVolumeWeight: "76",
+      codAmount: transaction.total_price || 0,
+      totalValue: transaction.total_price || 0,
+      notes: `Order created from transaction ${transaction.public_id}`,
+      // Add other default values as needed
+    };
+
+    setNewOrder(newOrderFromTransaction);
+    setCreateDialogOpen(true);
+  };
+
   return (
     <Box>
       {confirmAlertOpen && (
@@ -1107,7 +1285,7 @@ export default function CustomerOrders() {
         </Alert>
       )}
 
-      {isLoadingOrders ? (
+      {isLoadingOrders && isLoadingTransactions ? (
         <Box
           sx={{
             display: "flex",
@@ -1118,7 +1296,7 @@ export default function CustomerOrders() {
         >
           <CircularProgress color="success" />
         </Box>
-      ) : orders.length === 0 ? (
+      ) : orders.length === 0 && transactions.length === 0 ? (
         <EmptyOrderState
           hasLinkedShippingAccounts={hasLinkedShippingAccounts()}
           handleOpenCreateDialog={() => setCreateDialogOpen(true)}
@@ -1144,25 +1322,44 @@ export default function CustomerOrders() {
               }}
             >
               <Tab
-                label={`Pending (${pendingOrders.length})`}
+                label={`Pending Requests (${pendingTransactions.length})`}
                 {...a11yProps(0)}
               />
               <Tab
-                label={`In Progress (${confirmedOrders.length})`}
+                label={`Pending Orders (${pendingOrders.length})`}
                 {...a11yProps(1)}
               />
               <Tab
-                label={`Completed (${completedOrders.length})`}
+                label={`In Progress (${confirmedOrders.length})`}
                 {...a11yProps(2)}
               />
               <Tab
-                label={`Cancelled (${cancelledOrders.length})`}
+                label={`Completed (${completedOrders.length})`}
                 {...a11yProps(3)}
+              />
+              <Tab
+                label={`Cancelled (${cancelledOrders.length})`}
+                {...a11yProps(4)}
               />
             </Tabs>
           </Box>
 
           <TabPanel value={tabValue} index={0}>
+            {isLoadingTransactions ? (
+              <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+                <CircularProgress color="success" />
+              </Box>
+            ) : (
+              <TransactionOrdersList
+                transactions={pendingTransactions}
+                handleCreateOrderFromTransaction={
+                  handleCreateOrderFromTransaction
+                }
+              />
+            )}
+          </TabPanel>
+
+          <TabPanel value={tabValue} index={1}>
             <OrdersList
               orders={pendingOrders}
               handleViewDetails={handleViewDetails}
@@ -1176,7 +1373,7 @@ export default function CustomerOrders() {
             />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={1}>
+          <TabPanel value={tabValue} index={2}>
             <OrdersList
               orders={confirmedOrders}
               handleViewDetails={handleViewDetails}
@@ -1190,7 +1387,7 @@ export default function CustomerOrders() {
             />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={2}>
+          <TabPanel value={tabValue} index={3}>
             <OrdersList
               orders={completedOrders}
               handleViewDetails={handleViewDetails}
@@ -1203,7 +1400,7 @@ export default function CustomerOrders() {
             />
           </TabPanel>
 
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={4}>
             <OrdersList
               orders={cancelledOrders}
               handleViewDetails={handleViewDetails}
