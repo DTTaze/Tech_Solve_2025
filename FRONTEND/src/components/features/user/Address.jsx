@@ -173,8 +173,8 @@ function Address() {
         break;
       case "specificAddress":
         if (!value) error = "Địa chỉ cụ thể không được để trống";
-        else if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
-          error = "Địa chỉ cụ thể không chứa kí tự đặc biệt";
+        else if (!/^[a-zA-ZÀ-ỹ0-9\s,.\/-]+$/.test(value))
+          error = "Địa chỉ cụ thể không chứa ký tự đặc biệt không hợp lệ";
         break;
       default:
         break;
