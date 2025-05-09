@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
         as: "creator",
         onDelete: "CASCADE",
       });
+      Item.hasMany(models.Transaction, {
+        foreignKey: "item_id",
+        as: "item",
+        onDelete: "CASCADE",
+      });
     }
   }
 

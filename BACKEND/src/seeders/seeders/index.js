@@ -30,7 +30,7 @@ const seeders = [
   { seeder: userankSeeder },
   { model: require("../../models").Item, seeder: itemSeeder },
   { model: require("../../models").Product, seeder: productSeeder },
-  { model: require("../../models").Transaction, seeder: transactionSeeder },
+  // { model: require("../../models").Transaction, seeder: transactionSeeder },
   { model: require("../../models").Task, seeder: taskSeeder },
   { model: require("../../models").Type, seeder: typeSeeder },
   { model: require("../../models").TaskType, seeder: taskTypeSeeder },

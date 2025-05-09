@@ -9,6 +9,21 @@ module.exports = (sequelize, DataTypes) => {
         as: "buyer",
         onDelete: "CASCADE",
       });
+      Transaction.belongsTo(models.User, {
+        foreignKey: "seller_id",
+        as: "seller",
+        onDelete: "CASCADE",
+      });
+      Transaction.belongsTo(models.ReceiverAccount, {
+        foreignKey: "receiver_account_id",
+        as: "receiver_account",
+        onDelete: "CASCADE",
+      });
+      Transaction.belongsTo(models.Item, {
+        foreignKey: "item_id",
+        as: "item",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -24,13 +39,41 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      name: {
-        type: DataTypes.STRING,
+      receiver_account_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: "receiver_accounts",
+          key: "id",
+        },
       },
       buyer_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
+        },
+      },
+      seller_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "users",
+          key: "id",
+        },
+      },
+      item_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "items",
+          key: "id",
+        },
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       item_snapshot: {
         type: DataTypes.JSON,
@@ -52,7 +95,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       status: {
-        type: DataTypes.ENUM("completed", "failed", "pending"),
+        type: DataTypes.ENUM("accepted", "rejected", "pending"),
         allowNull: false,
         defaultValue: "pending",
       },

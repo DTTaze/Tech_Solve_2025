@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "buyer_id",
         onDelete: "CASCADE",
       });
+      User.hasMany(models.Transaction, {
+        foreignKey: "seller_id",
+        onDelete: "CASCADE",
+      });
       User.hasMany(models.Event, {
         foreignKey: "creator_id",
         onDelete: "CASCADE",
@@ -34,7 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
         as: "ranks",
       });
-
       User.hasMany(models.DeliveryAccount, {
         foreignKey: "user_id",
         onDelete: "CASCADE",

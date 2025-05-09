@@ -22,11 +22,12 @@ const handleGetAllTransactions = async (req, res) => {
   }
 };
 
-const handleGetTransactionByUserId = async (req, res) => {
+const handleGetTransactionByUser = async (req, res) => {
   try {
-    const transaction_id = Number(req.params.user_id);
-    const transaction =
-      await transactionService.getTransactionByUserId(transaction_id);
+    const buyer_id = Number(req.user.id);
+    const transaction = await transactionService.getTransactionByUserId(
+      buyer_id
+    );
     return res.success("Transaction retrieved successfully", transaction);
   } catch (error) {
     return res.error(500, "Failed to fetch transaction", error.message);
@@ -42,9 +43,41 @@ const handleDeleteTransaction = async (req, res) => {
     return res.error(500, "Failed to delete transaction", error.message);
   }
 };
+
+const handleTransactionMakeDicision = async (req, res) => {
+  try {
+    const transaction_id = req.params.id;
+    const decision = req.params.decision;
+
+    const message = await transactionService.makeDecision(
+      transaction_id,
+      decision
+    );
+    return res.success("Get transaction by status success", message);
+  } catch (error) {
+    return res.error(500, "Failed to get transaction by status", error.message);
+  }
+};
+
+const handleGetTransactionByStatus = async (req, res) => {
+  try {
+    const transaction_id = req.params.id;
+    const status = req.params.status;
+
+    const message = await transactionService.getTransactionByStatus(
+      transaction_id,
+      status
+    );
+    return res.success("Get transaction by status success", message);
+  } catch (error) {
+    return res.error(500, "Failed to get transaction by status", error.message);
+  }
+};
 module.exports = {
   handleCreateTransaction,
   handleDeleteTransaction,
-  handleGetTransactionByUserId,
+  handleGetTransactionByUser,
   handleGetAllTransactions,
+  handleTransactionMakeDicision,
+  handleGetTransactionByStatus,
 };

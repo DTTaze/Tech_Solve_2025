@@ -65,24 +65,34 @@ const createTransaction = async (transactionData) => {
 
 const getTransactionByUserId = async (buyer_id) => {
   try {
-    const listBuyerTransactioncacheId = await redisClient.get(`buyer:transaction:id:${buyer_id}`);
+    const listBuyerTransactioncacheId = await redisClient.get(
+      `buyer:transaction:id:${buyer_id}`
+    );
     if (listBuyerTransactioncacheId) {
       console.log("listBuyerTransactioncacheId", listBuyerTransactioncacheId);
       const listTransactionId = JSON.parse(listBuyerTransactioncacheId);
       let result = [];
       for (const transactionId of listTransactionId) {
-        const transactioncache = await redisClient.get(`transaction:id:${transactionId}`);
+        const transactioncache = await redisClient.get(
+          `transaction:id:${transactionId}`
+        );
         if (transactioncache) {
           const transactionData = JSON.parse(transactioncache);
           result.push(transactionData);
-        }else {
-          const transaction = await Transaction.findOne({where: { id: transactionId },});
+        } else {
+          const transaction = await Transaction.findOne({
+            where: { id: transactionId },
+          });
           if (transaction) {
             result.push(transaction);
             // Add transaction to Redis
-            await redisClient.set(`transaction:id:${transaction.id}`, JSON.stringify(transaction), 'EX', 3600);
-          }
-          else {
+            await redisClient.set(
+              `transaction:id:${transaction.id}`,
+              JSON.stringify(transaction),
+              "EX",
+              3600
+            );
+          } else {
             throw new Error("Transaction not found.");
           }
         }
@@ -146,9 +156,55 @@ const deleteTransaction = async (transaction_id) => {
   }
 };
 
+const getTransactionByStatus = async (transaction_id, status) => {
+  try {
+    if (!transaction_id || !status) {
+      throw new Error("Missing parameters");
+    }
+
+    const transaction = await Transaction.findOne({
+      where: {
+        id: transaction_id,
+        status: status,
+      },
+    });
+
+    if (!transaction) {
+      throw new Error("Transaction not found with the specified status");
+    }
+
+    return transaction;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const makeDecision = async (transaction_id, decision) => {
+  try {
+    if (!transaction_id || !decision) {
+      throw new Error("Missing parameters");
+    }
+
+    const transaction = await Transaction.findByPk(transaction_id);
+
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+
+    transaction.status = decision;
+    await transaction.save();
+
+    return "Status changed successfully";
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createTransaction,
   getTransactionByUserId,
   deleteTransaction,
   getAllTransactions,
+  makeDecision,
+  getTransactionByStatus,
 };

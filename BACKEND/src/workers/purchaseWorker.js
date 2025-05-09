@@ -16,7 +16,7 @@ const publisher = new Redis(redis);
 const worker = new Worker(
   "purchase",
   async (job) => {
-    const { user_id, item_id, quantity, name } = job.data;
+    const { receiver_account_id, user_id, item_id, quantity, name } = job.data;
 
     return await sequelize.transaction(async (t) => {
       const cacheKeyItem = `item:${item_id}`;
@@ -129,13 +129,14 @@ const worker = new Worker(
       const transaction = await Transaction.create(
         {
           public_id: uniqueCode,
-          name,
+          receiver_account_id,
           buyer_id: user.id,
           item_id: item.id,
+          name,
           item_snapshot: itemSnapshot,
-          quantity,
           total_price: item.price * quantity,
-          status: "completed",
+          quantity,
+          status: "pending",
         },
         { transaction: t }
       );

@@ -289,12 +289,15 @@ const deleteItem = async (item_id) => {
 
 const purchaseItem = async (user_id, item_id, data) => {
   try {
-    let { name, quantity } = data;
+    let { name, quantity, receiver_account_id } = data;
     if (!user_id || !item_id || quantity <= 0) {
       throw new Error("Invalid input data");
     }
-
+    if (!receiver_account_id) {
+      throw new Error("Missing receiver information");
+    }
     const result = await purchaseQueue.add("purchase", {
+      receiver_account_id,
       user_id,
       item_id,
       name,

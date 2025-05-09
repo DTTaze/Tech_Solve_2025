@@ -51,18 +51,19 @@ const router = createBrowserRouter([
       },
       {
         path: "missions",
-        element:
-        <ProtectedRoute requiredRole="User">
-           <MissionPage />
-        </ProtectedRoute>
-        ,
+        element: (
+          <ProtectedRoute>
+            <MissionPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "market",
-        element: 
-        <ProtectedRoute requiredRole="User">
-          <MarketPage />
-        </ProtectedRoute>
+        element: (
+          <ProtectedRoute>
+            <MarketPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "forgot_password",
@@ -70,10 +71,11 @@ const router = createBrowserRouter([
       },
       {
         path: "user",
-        element:
-        <ProtectedRoute>
-          <User />
-        </ProtectedRoute>,
+        element: (
+          <ProtectedRoute>
+            <User />,
+          </ProtectedRoute>
+        ),
         children: [
           { index: true, element: <PersonalInformation /> },
           { path: "account", element: <PersonalInformation /> },
