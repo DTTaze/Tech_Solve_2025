@@ -38,6 +38,52 @@ export default function CustomerUsers() {
     eventId: null,
     eventUser: null,
   });
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const fetchEventUsers = async (eventId) => {
+    try {
+      const usersResponse = await getEventUserByEventIdApi(eventId);
+      return usersResponse.data;
+    } catch (error) {
+      console.error(`Error fetching users for event ${eventId}:`, error);
+      return []; // Return empty array if there's an error
+    }
+  };
+
+  const fetchUserData = async (eventUser) => {
+    try {
+      const userData = eventUser.User;
+      const avatarResponse = await getUserAvatarByIdApi(eventUser.user_id);
+      const avatarData = avatarResponse.data;
+
+      return {
+        id: eventUser.user_id,
+        full_name: userData.full_name,
+        email: userData.email,
+        avatar: avatarData?.avatar_url || "/placeholder-avatar.jpg",
+        coins: userData.coins || 0,
+        events: [
+          {
+            id: eventUser.event_id,
+            title: eventUser.Event.title,
+            status: eventUser.Event.status,
+            completion_rate: !eventUser.joined_at
+              ? 0
+              : eventUser.completed_at
+              ? 100
+              : 50,
+            eventUser: eventUser,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error(
+        `Error fetching user data for user ${eventUser.user_id}:`,
+        error
+      );
+      return null;
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,52 +99,21 @@ export default function CustomerUsers() {
         // Fetch users for each event
         const allUsers = new Map(); // Use Map to avoid duplicates
         for (const event of eventsData) {
-          const usersResponse = await getEventUserByEventIdApi(event.id);
-          const eventUsers = usersResponse.data;
+          const eventUsers = await fetchEventUsers(event.id);
 
           for (const eventUser of eventUsers) {
             if (!allUsers.has(eventUser.user_id)) {
-              // Fetch user details and avatar
-              const userData = eventUser.User;
-              const avatarResponse = await getUserAvatarByIdApi(
-                eventUser.user_id
-              );
-              const avatarData = avatarResponse.data;
-
-              allUsers.set(eventUser.user_id, {
-                id: eventUser.user_id,
-                full_name: userData.full_name,
-                email: userData.email,
-                avatar: avatarData?.avatar_url || "/placeholder-avatar.jpg",
-                coins: userData.coins || 0,
-                events: [
-                  {
-                    id: eventUser.event_id,
-                    title: eventUser.Event.title,
-                    status: eventUser.Event.status,
-                    completion_rate: !eventUser.joined_at
-                      ? 0
-                      : eventUser.completed_at
-                      ? 100
-                      : 50,
-                    eventUser: eventUser,
-                  },
-                ],
-              });
+              const userData = await fetchUserData(eventUser);
+              if (userData) {
+                allUsers.set(eventUser.user_id, userData);
+              }
             } else {
               // Add event to existing user
               const existingUser = allUsers.get(eventUser.user_id);
-              existingUser.events.push({
-                id: eventUser.event_id,
-                title: eventUser.Event.title,
-                status: eventUser.Event.status,
-                completion_rate: !eventUser.joined_at
-                  ? 0
-                  : eventUser.completed_at
-                  ? 100
-                  : 50,
-                eventUser: eventUser,
-              });
+              const userData = await fetchUserData(eventUser);
+              if (userData) {
+                existingUser.events.push(userData.events[0]);
+              }
             }
           }
         }
@@ -114,7 +129,7 @@ export default function CustomerUsers() {
     if (userInfo?.id) {
       fetchData();
     }
-  }, [userInfo]);
+  }, [userInfo, refreshTrigger]);
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({
@@ -154,27 +169,16 @@ export default function CustomerUsers() {
     try {
       await deleteEventUserByIdApi(deleteDialog.eventUser.id);
 
-      // Update the users list by removing the deleted event
-      setUsers((prevUsers) =>
-        prevUsers.map((user) => {
-          if (user.id === deleteDialog.user.id) {
-            return {
-              ...user,
-              events: user.events.filter(
-                (event) => event.id !== deleteDialog.eventId
-              ),
-            };
-          }
-          return user;
-        })
-      );
-
+      // Close dialog first
       setDeleteDialog({
         open: false,
         user: null,
         eventId: null,
         eventUser: null,
       });
+
+      // Trigger refresh to fetch updated data
+      setRefreshTrigger((prev) => prev + 1);
     } catch (error) {
       setError(error.message || "Failed to remove user from event");
     }
