@@ -58,7 +58,7 @@ const router = createBrowserRouter([
           <MissionPage />
       },
       {
-        path: "exchange-market",
+        path: "exchange-market/*",
         element: <ExchangeMarket />,
         children: [
           { path: "redeem", element: <RedeemTab /> },
