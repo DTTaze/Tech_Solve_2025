@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
 import { getAllProvincesApi, getAllDistrictsByProvinceApi, getAllWardsByDistrictApi } from "../../../utils/api.js";
+import { Input } from "@mui/material";
 
 function Address() {
   const [addresses, setAddresses] = useState([]);
@@ -9,21 +10,22 @@ function Address() {
   const [newAddress, setNewAddress] = useState({
     fullName: "",
     phoneNumber: "",
-    province: "", // Stores ProvinceID as integer
-    district: "", // Stores DistrictID as integer
+    province: "",
+    district: "",
     ward: "",
+    specificAddress: "",
     type: "home",
+    isDefault: false, 
   });
   const [defaultAddressId, setDefaultAddressId] = useState(null);
   const [errors, setErrors] = useState({});
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
-  const [token] = useState("c3f24415-29b9-11f0-9b81-222185cb68c8"); // Replace with actual token or auth mechanism
+  const [token] = useState("c3f24415-29b9-11f0-9b81-222185cb68c8"); 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Fetch provinces on component mount
   useEffect(() => {
     const fetchProvinces = async () => {
       setIsLoading(true);
@@ -45,7 +47,6 @@ function Address() {
     fetchProvinces();
   }, [token]);
 
-  // Fetch districts when province changes
   useEffect(() => {
     const fetchDistricts = async () => {
       if (newAddress.province && Number.isInteger(newAddress.province)) {
@@ -74,7 +75,6 @@ function Address() {
     fetchDistricts();
   }, [newAddress.province, token]);
 
-  // Fetch wards when district changes
   useEffect(() => {
     const fetchWards = async () => {
       if (newAddress.district && Number.isInteger(newAddress.district)) {
@@ -101,7 +101,6 @@ function Address() {
     fetchWards();
   }, [newAddress.district, token]);
 
-  // Mock addresses for initial display
   useEffect(() => {
     const mockAddresses = [
       {
@@ -145,6 +144,11 @@ function Address() {
       case "ward":
         if (!value) error = "Vui lòng chọn Phường/Xã";
         break;
+      case "specificAddress":
+        if(!value) error = "Địa chỉ cụ thể không được để trống";
+        else if(!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
+          error = "Địa chỉ cụ thể không chứa kí tự đặc biệt";
+        break;
       default:
         break;
     }
@@ -153,7 +157,6 @@ function Address() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // Convert province and district values to integers
     const parsedValue =
       name === "province" || name === "district" ? parseInt(value, 10) || "" : value;
     setNewAddress((prev) => ({ ...prev, [name]: parsedValue }));
@@ -166,9 +169,13 @@ function Address() {
     setNewAddress((prev) => ({ ...prev, type: e.target.value }));
   };
 
+  const handleDefaultChange = (e) => {
+    setNewAddress((prev) => ({ ...prev, isDefault: e.target.checked }));
+  };
+
   const handleAddAddress = () => {
     const newErrors = {};
-    ["fullName", "phoneNumber", "province", "district", "ward"].forEach((field) => {
+    ["fullName", "phoneNumber", "province", "district", "ward", "specificAddress"].forEach((field) => {
       const error = validateField(field, newAddress[field]);
       if (error) newErrors[field] = error;
     });
@@ -178,7 +185,6 @@ function Address() {
       return;
     }
 
-    // Construct full address string
     const provinceName = provinces.find((p) => p.ProvinceID === newAddress.province)?.ProvinceName || "";
     const districtName = districts.find((d) => d.DistrictID === newAddress.district)?.DistrictName || "";
     const wardName = wards.find((w) => w.WardCode === newAddress.ward)?.WardName || "";
@@ -194,7 +200,10 @@ function Address() {
     };
 
     setAddresses([...addresses, newAddressEntry]);
-    setNewAddress({ fullName: "", phoneNumber: "", province: "", district: "", ward: "", type: "home" });
+    if (newAddress.isDefault) {
+      setDefaultAddressId(newAddressEntry.id);
+    }
+    setNewAddress({ fullName: "", phoneNumber: "", province: "", district: "", ward: "", specificAddress: "", type: "home", isDefault: false });
     setErrors({});
     setIsModalOpen(false);
   };
@@ -245,26 +254,27 @@ function Address() {
                 <p className="text-sm text-green-600 font-semibold">Mặc định</p>
               )}
             </div>
-            <div className="flex space-x-2">
-              <Button
-                text="Cập nhật"
-                onClick={() => handleUpdateAddress(addr.id)}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm"
-                padding="10px"
-              />
-              <Button
-                text="Xóa"
-                onClick={() => handleDeleteAddress(addr.id)}
-                padding="10px"
-              />
-              {defaultAddressId !== addr.id && (
-                <Button
-                  text="Thiết lập mặc định"
+            <div className="flex flex-col space-x-2">
+              <div>
+                <button
+                  onClick={() => handleUpdateAddress(addr.id)}
+                  className="text-blue-500 text-sm font-medium py-4 px-4 rounded-md cursor-pointer"
+                >
+                  Cập nhật
+                </button>
+                <button
+                  onClick={() => handleDeleteAddress(addr.id)}
+                  className="text-blue-500 text-sm font-medium py-2 px-4 rounded-md cursor-pointer"
+                >
+                  Xóa
+                </button>
+              </div>
+              {(defaultAddressId !== addr.id && <button
                   onClick={() => handleSetDefault(addr.id)}
-                  className="bg-gray-500 hover:bg-gray-600 text-white text-sm"
-                  padding="10px"
-                />
-              )}
+                  className="bg-gray-300 text-sm font-medium py-2 px-4 rounded-md cursor-pointer"
+                >
+                  Thiết lập mặc định
+                </button>)}
             </div>
           </div>
         ))}
@@ -272,7 +282,7 @@ function Address() {
 
       {/* Modal for Adding New Address */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg">
             <h4 className="font-semibold text-lg mb-4">Thêm địa chỉ mới</h4>
             {isLoading && <p className="text-gray-500">Đang tải...</p>}
@@ -361,32 +371,51 @@ function Address() {
               </select>
               {errors.ward && <p className="text-red-500 text-sm">{errors.ward}</p>}
             </div>
+            <InputField
+              id="specificAddress"
+              label="Địa chỉ cụ thể"
+              name="specificAddress"
+              value={newAddress.specificAddress}
+              onChange={handleInputChange}
+              error={errors.specificAddress}
+            />
+            {/* Thêm phần chọn loại địa chỉ và checkbox */}
             <div className="mb-4">
-              <p className="text-sm font-semibold mb-2">Loại địa chỉ</p>
+              <label className="text-sm font-semibold mb-2 block mt-2">Loại địa chỉ</label>
               <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="type"
-                    value="home"
-                    checked={newAddress.type === "home"}
-                    onChange={handleTypeChange}
-                    className="mr-2"
-                  />
+                <button
+                  type="button"
+                  value="home"
+                  onClick={handleTypeChange}
+                  className={`py-2 px-4 border rounded-md font-medium ${
+                    newAddress.type === "home" ? "border-emerald-800" : "border-gray-300"
+                  }`}
+                >
                   Nhà riêng
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="type"
-                    value="office"
-                    checked={newAddress.type === "office"}
-                    onChange={handleTypeChange}
-                    className="mr-2"
-                  />
+                </button>
+                <button
+                  type="button"
+                  value="office"
+                  onClick={handleTypeChange}
+                  className={`py-2 px-4 border rounded-md font-medium ${
+                    newAddress.type === "office" ? "border-emerald-800" : "border-gray-300"
+                  }`}
+                >
                   Văn phòng
-                </label>
+                </button>
               </div>
+            </div>
+            <div className="mb-4 flex items-center">
+              <input
+                type="checkbox"
+                id="isDefault"
+                checked={newAddress.isDefault}
+                onChange={handleDefaultChange}
+                className="mr-2 h-5 w-5"
+              />
+              <label htmlFor="isDefault" className="text-sm">
+                Đặt làm địa chỉ mặc định
+              </label>
             </div>
             <div className="flex justify-end space-x-2">
               <Button
