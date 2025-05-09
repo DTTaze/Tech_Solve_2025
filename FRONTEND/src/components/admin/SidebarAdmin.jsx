@@ -22,10 +22,9 @@ import SecurityIcon from "@mui/icons-material/Security";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import RedeemIcon from "@mui/icons-material/Redeem";
-import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import EventIcon from "@mui/icons-material/Event";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import MenuIcon from "@mui/icons-material/Menu";
 
 export default function TemporaryDrawer({ userInfo }) {
@@ -74,11 +73,6 @@ export default function TemporaryDrawer({ userInfo }) {
           icon: <ShoppingCartIcon />,
           path: "/admin/content/products",
         },
-        // {
-        //   text: "Bài đăng",
-        //   icon: <VideoLibraryIcon />,
-        //   path: "/admin/content/posts",
-        // },
         {
           text: "Sự kiện",
           icon: <EventIcon />,
@@ -87,7 +81,7 @@ export default function TemporaryDrawer({ userInfo }) {
       ],
     },
     {
-      label: "Quản lý giao dịch và xu thưởng",
+      label: "Quản lý giao dịch",
       items: [
         {
           text: "Giao dịch",
@@ -95,15 +89,10 @@ export default function TemporaryDrawer({ userInfo }) {
           path: "/admin/transactions",
         },
         {
-          text: "Giao dịch",
-          icon: <CurrencyExchangeIcon />,
-          path: "/admin/transactions",
+          text: "Vận chuyển",
+          icon: <LocalShippingIcon />,
+          path: "/admin/orders",
         },
-        // {
-        //   text: "Xu thưởng",
-        //   icon: <MonetizationOnIcon />,
-        //   path: "/admin/rewards",
-        // },
       ],
     },
     {

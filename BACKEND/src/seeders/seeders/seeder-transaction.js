@@ -108,6 +108,27 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        id: 6,
+        public_id: "GD-06",
+        receiver_information_id: 2,
+        buyer_id: 2,
+        seller_id: 1,
+        item_id: 6,
+        name: "Transaction 6",
+        item_snapshot: JSON.stringify({
+          public_id: "ITEM-06",
+          creator: { id: 1, full_name: "Seller Two", username: "seller2" },
+          name: "Eco Pen",
+          description: "Biodegradable pen made from recycled materials",
+          price: 1800,
+        }),
+        total_price: 1800,
+        quantity: 1,
+        status: "cancelled",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 

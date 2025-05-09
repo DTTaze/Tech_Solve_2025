@@ -434,12 +434,16 @@ export const getShippingOrderDetailApi = (order_code) => {
   return axios.get(`api/delivery/carrier/ghn/detail/${order_code}`);
 };
 
-export const getAllShippingOrdersBySeller = () => {
+export const getAllShippingOrdersBySellerApi = () => {
   return axios.get("api/delivery/carrier/ghn/orders/seller");
 };
 
-export const getAllShippingOrdersByBuyer = () => {
+export const getAllShippingOrdersByBuyerApi = () => {
   return axios.get("api/delivery/carrier/ghn/orders/buyer");
+};
+
+export const getAllShippingOrdersApi = () => {
+  return axios.get("api/delivery/carrier/ghn/orders");
 };
 
 export const updateShippingOrderApi = (data, token, shop_id) => {
@@ -514,7 +518,7 @@ export const getReceiverInfoByIdAPI = (id) => {
   return axios.get(`api/users/receiver/info/${id}`);
 };
 
-export const updateReceiverInfoByIdAPI = (id ,data) => {
+export const updateReceiverInfoByIdAPI = (id, data) => {
   return axios.get(`api/users/receiver/update/${id}`, data);
 };
 

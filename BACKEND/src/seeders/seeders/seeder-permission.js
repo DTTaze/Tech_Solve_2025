@@ -108,6 +108,41 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        id: 16,
+        action: "get",
+        subject: "task_id",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 17,
+        action: "delete",
+        subject: "task_id",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 18,
+        action: "post",
+        subject: "transaction",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 19,
+        action: "put",
+        subject: "transaction_id",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 20,
+        action: "delete",
+        subject: "transaction_id",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 

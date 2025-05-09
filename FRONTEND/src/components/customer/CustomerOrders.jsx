@@ -74,7 +74,7 @@ import {
   getShippingOrderDetailApi,
   updateShippingOrderApi,
   cancelShippingOrderApi,
-  getAllShippingOrdersBySeller,
+  getAllShippingOrdersBySellerApi,
   getShippingAccountsByUserApi,
   createShippingAccountApi,
   updateShippingAccountApi,
@@ -366,7 +366,7 @@ export default function CustomerOrders() {
       setIsLoadingOrders(true);
       setErrorMessage("");
 
-      const response = await getAllShippingOrdersBySeller();
+      const response = await getAllShippingOrdersBySellerApi();
       console.log("Orders from API:", response.data);
       if (response && response.data) {
         // Map the API response to the format our component expects
