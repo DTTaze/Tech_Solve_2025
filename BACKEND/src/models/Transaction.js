@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
         as: "seller",
         onDelete: "CASCADE",
       });
-      Transaction.belongsTo(models.ReceiverAccount, {
-        foreignKey: "receiver_account_id",
-        as: "receiver_account",
+      Transaction.belongsTo(models.ReceiverInformation, {
+        foreignKey: "receiver_information_id",
+        as: "receiver_information",
         onDelete: "CASCADE",
       });
       Transaction.belongsTo(models.Item, {
@@ -39,11 +39,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      receiver_account_id: {
+      receiver_information_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "receiver_accounts",
+          model: "receiver_informations",
           key: "id",
         },
       },

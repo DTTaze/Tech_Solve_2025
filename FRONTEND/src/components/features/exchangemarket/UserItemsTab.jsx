@@ -1,20 +1,19 @@
-import { useMemo, useContext } from "react";
-import MarketViewNavigation from "./MarketViewNavigation";
-import CreateItemModal from "./CreateItemModal";
-import MarketSearchBar from "./MarketSearchBar";
-import MarketFilterButtons from "./MarketFilterButtons";
-import MarketItemList from "./MarketItemList";
-import MarketEmptyState from "./MarketEmptyState";
+import { useMemo, useContext, useEffect } from "react";
 import {
   MarketplaceContext,
   marketplaceCategories,
   statusColors,
   statusConfig,
   getCategoryDisplayName,
-  userItemStatuses, // Thêm import này
-} from "./ItemCatalog";
+  userItemStatuses,
+} from "../../../pages/ExchangeMarket";
+import MarketSearchBar from "./MarketSearchBar";
+import MarketFilterButtons from "./MarketFilterButtons";
+import MarketItemList from "./MarketItemList";
+import MarketEmptyState from "./MarketEmptyState";
+import CreateItemModal from "./CreateItemModal";
 
-function UserItemsTab() {
+function UserItemsTab({ fetchItems }) {
   const {
     myItems,
     marketSearchText,
@@ -34,6 +33,10 @@ function UserItemsTab() {
     handleSubmitItem,
     handleCancelForm,
   } = useContext(MarketplaceContext);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   const filteredMarketItems = useMemo(() => {
     if (!myItems?.length) return [];

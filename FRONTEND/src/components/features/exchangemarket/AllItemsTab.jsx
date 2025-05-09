@@ -1,11 +1,17 @@
-import { useMemo, useContext } from "react";
+import { useMemo, useContext, useEffect } from "react";
 import MarketSearchBar from "./MarketSearchBar";
 import MarketFilterButtons from "./MarketFilterButtons";
 import MarketItemList from "./MarketItemList";
 import MarketEmptyState from "./MarketEmptyState";
-import { MarketplaceContext, marketplaceCategories, statusColors, statusConfig, getCategoryDisplayName } from "./ItemCatalog";
+import {
+  MarketplaceContext,
+  marketplaceCategories,
+  statusColors,
+  statusConfig,
+  getCategoryDisplayName,
+} from "../../../pages/ExchangeMarket";
 
-function AllItemsTab() {
+function AllItemsTab({ fetchItems }) {
   const {
     allItems,
     marketSearchText,
@@ -16,6 +22,10 @@ function AllItemsTab() {
     setMarketCategory,
     handlePurchase,
   } = useContext(MarketplaceContext);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   const filteredMarketItems = useMemo(() => {
     if (!allItems?.length) return [];
