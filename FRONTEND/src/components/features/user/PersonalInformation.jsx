@@ -46,9 +46,6 @@ function PersonalInformation() {
         else if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
           error = "Họ và tên không được chứa ký tự đặc biệt";
         break;
-      case "address":
-        if (!value) error = "Địa chỉ không được để trống";
-        break;
       case "phone_number":
         if (!value) error = "Số điện thoại không được để trống";
         else if (!/^\d{10}$/.test(value))
@@ -111,7 +108,6 @@ function PersonalInformation() {
     { id: "username", label: "Tên người dùng" },
     { id: "email", label: "Email" },
     { id: "full_name", label: "Họ và Tên" },
-    { id: "address", label: "Địa chỉ" },
     { id: "phone_number", label: "Số điện thoại" },
   ];
 
@@ -130,7 +126,7 @@ function PersonalInformation() {
       <hr className="my-2 border-gray-300" />
 
       <form className="space-y-4" onSubmit={handleUpdate}>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {inputFields.map(({ id, label }) => (
             <div key={id} >
               <InputField
@@ -147,19 +143,19 @@ function PersonalInformation() {
         </div>
 
         {isEditing && (
-          <div className="flex space-x-2">
+          <div className="flex justify-end space-x-2">
             <Button
               text="Lưu"
               type="submit"
               className="bg-green-500 hover:bg-green-600 text-white"
-              padding="20px"
+              padding="15px"
             />
             <Button
               text="Hủy"
               type="button"
               onClick={handleCancel}
               className="bg-red-500 hover:bg-red-600 text-white"
-              padding="20px"
+              padding="15px"
             />
           </div>
         )}
