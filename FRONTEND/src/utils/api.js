@@ -497,3 +497,19 @@ export const getAllWardsByDistrictApi = (district_id, token) => {
     }
   );
 };
+
+export const createReceiverInfoAPI = (data) => {
+  return axios.post("api/users/receiver/create", data);
+};
+
+export const getReceiverInfoByIdAPI = (id) => {
+  return axios.get(`api/users/receiver/info/${id}`);
+};
+
+export const updateReceiverInfoByIdAPI = (id ,data) => {
+  return axios.get(`api/users/receiver/update/${id}`, data);
+};
+
+export const deleteReceiverInfoByIdAPI = (id) => {
+  return axios.get(`api/users/receiver/update/${id}`);
+};

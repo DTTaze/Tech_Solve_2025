@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
 import { getAllProvincesApi, getAllDistrictsByProvinceApi, getAllWardsByDistrictApi } from "../../../utils/api.js";
-import { Input } from "@mui/material";
-
+import { createReceiverInfoAPI, getReceiverInfoByIdAPI, updateReceiverInfoByIdAPI, deleteReceiverInfoByIdAPI } from "../../../utils/api.js";
+import { AuthContext } from "../../../contexts/auth.context.jsx";
 function Address() {
+  const {auth} = useContext(AuthContext);
   const [addresses, setAddresses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
   const [newAddress, setNewAddress] = useState({
     fullName: "",
     phoneNumber: "",
@@ -15,17 +17,40 @@ function Address() {
     ward: "",
     specificAddress: "",
     type: "home",
-    isDefault: false, 
+    isDefault: false,
   });
   const [defaultAddressId, setDefaultAddressId] = useState(null);
   const [errors, setErrors] = useState({});
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
-  const [token] = useState("c3f24415-29b9-11f0-9b81-222185cb68c8"); 
+  const [token] = useState("c3f24415-29b9-11f0-9b81-222185cb68c8");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        const response = await getReceiverInfoByIdAPI(auth.user.id);
+        if (response.data) {
+          setAddresses([response.data]);
+          if (response.data.is_default) {
+            setDefaultAddressId(response.data.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+        setErrorMessage("Error fetching addresses. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
+
+  // Fetch provinces
   useEffect(() => {
     const fetchProvinces = async () => {
       setIsLoading(true);
@@ -47,6 +72,7 @@ function Address() {
     fetchProvinces();
   }, [token]);
 
+  // Fetch districts
   useEffect(() => {
     const fetchDistricts = async () => {
       if (newAddress.province && Number.isInteger(newAddress.province)) {
@@ -75,6 +101,7 @@ function Address() {
     fetchDistricts();
   }, [newAddress.province, token]);
 
+  // Fetch wards
   useEffect(() => {
     const fetchWards = async () => {
       if (newAddress.district && Number.isInteger(newAddress.district)) {
@@ -101,27 +128,6 @@ function Address() {
     fetchWards();
   }, [newAddress.district, token]);
 
-  useEffect(() => {
-    const mockAddresses = [
-      {
-        id: 1,
-        fullName: "Nguyễn Văn A",
-        phoneNumber: "0123456789",
-        address: "Phường Bến Nghé, Quận 1, Hồ Chí Minh",
-        type: "home",
-      },
-      {
-        id: 2,
-        fullName: "Trần Thị B",
-        phoneNumber: "0987654321",
-        address: "Phường Thanh Xuân Bắc, Quận Thanh Xuân, Hà Nội",
-        type: "office",
-      },
-    ];
-    setAddresses(mockAddresses);
-    setDefaultAddressId(1);
-  }, []);
-
   const validateField = (name, value) => {
     let error = "";
     switch (name) {
@@ -145,8 +151,8 @@ function Address() {
         if (!value) error = "Vui lòng chọn Phường/Xã";
         break;
       case "specificAddress":
-        if(!value) error = "Địa chỉ cụ thể không được để trống";
-        else if(!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
+        if (!value) error = "Địa chỉ cụ thể không được để trống";
+        else if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
           error = "Địa chỉ cụ thể không chứa kí tự đặc biệt";
         break;
       default:
@@ -173,7 +179,7 @@ function Address() {
     setNewAddress((prev) => ({ ...prev, isDefault: e.target.checked }));
   };
 
-  const handleAddAddress = () => {
+  const handleAddOrUpdateAddress = async () => {
     const newErrors = {};
     ["fullName", "phoneNumber", "province", "district", "ward", "specificAddress"].forEach((field) => {
       const error = validateField(field, newAddress[field]);
@@ -189,55 +195,153 @@ function Address() {
     const districtName = districts.find((d) => d.DistrictID === newAddress.district)?.DistrictName || "";
     const wardName = wards.find((w) => w.WardCode === newAddress.ward)?.WardName || "";
 
-    const fullAddress = `${wardName}, ${districtName}, ${provinceName}`;
-
-    const newAddressEntry = {
-      id: addresses.length + 1,
-      fullName: newAddress.fullName,
-      phoneNumber: newAddress.phoneNumber,
-      address: fullAddress,
-      type: newAddress.type,
+    const addressData = {
+      user_id: auth.user.id, 
+      to_name: newAddress.fullName,
+      to_phone: newAddress.phoneNumber,
+      to_address: newAddress.specificAddress,
+      to_ward_name: wardName,
+      to_district_name: districtName,
+      to_province_name: provinceName,
+      account_type: newAddress.type,
+      is_default: newAddress.isDefault,
     };
 
-    setAddresses([...addresses, newAddressEntry]);
-    if (newAddress.isDefault) {
-      setDefaultAddressId(newAddressEntry.id);
+    setIsLoading(true);
+    try {
+      if (editingAddressId) {
+        const response = await updateReceiverInfoByIdAPI(editingAddressId, addressData);
+        if (response.data) {
+          setAddresses(addresses.map(addr => 
+            addr.id === editingAddressId ? { ...response.data, id: editingAddressId } : addr
+          ));
+          if (response.data.is_default) {
+            setDefaultAddressId(editingAddressId);
+          }
+        }
+      } else {
+        const response = await createReceiverInfoAPI(addressData);
+        if (response.data) {
+          setAddresses([...addresses, { ...response.data, id: response.data.id }]);
+          if (newAddress.isDefault) {
+            setDefaultAddressId(response.data.id);
+          }
+        }
+      }
+      setNewAddress({
+        fullName: "",
+        phoneNumber: "",
+        province: "",
+        district: "",
+        ward: "",
+        specificAddress: "",
+        type: "home",
+        isDefault: false,
+      });
+      setErrors({});
+      setIsModalOpen(false);
+      setEditingAddressId(null);
+    } catch (error) {
+      console.error("Error saving address:", error);
+      setErrorMessage("Error saving address. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    setNewAddress({ fullName: "", phoneNumber: "", province: "", district: "", ward: "", specificAddress: "", type: "home", isDefault: false });
-    setErrors({});
-    setIsModalOpen(false);
   };
 
-  const handleUpdateAddress = (id) => {
-    alert(`Cập nhật địa chỉ ID: ${id} (Chưa triển khai)`);
-  };
+  const handleUpdateAddress = async (id) => {
+    try {
+      const response = await getReceiverInfoByIdAPI(id);
+      if (response.data) {
+        const address = response.data;
+        // Find matching province, district, and ward IDs
+        const province = provinces.find(p => p.ProvinceName === address.to_province_name);
+        const district = districts.find(d => d.DistrictName === address.to_district_name);
+        const ward = wards.find(w => w.WardName === address.to_ward_name);
 
-  const handleDeleteAddress = (id) => {
-    setAddresses(addresses.filter((addr) => addr.id !== id));
-    if (defaultAddressId === id) {
-      setDefaultAddressId(addresses[0]?.id || null);
+        setNewAddress({
+          fullName: address.to_name,
+          phoneNumber: address.to_phone,
+          province: province?.ProvinceID || "",
+          district: district?.DistrictID || "",
+          ward: ward?.WardCode || "",
+          specificAddress: address.to_address,
+          type: address.account_type,
+          isDefault: address.is_default,
+        });
+        setEditingAddressId(id);
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      setErrorMessage("Error fetching address. Please try again.");
     }
   };
 
-  const handleSetDefault = (id) => {
-    setDefaultAddressId(id);
+  const handleDeleteAddress = async (id) => {
+    setIsLoading(true);
+    try {
+      await deleteReceiverInfoByIdAPI(id);
+      setAddresses(addresses.filter((addr) => addr.id !== id));
+      if (defaultAddressId === id) {
+        setDefaultAddressId(addresses[0]?.id || null);
+      }
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      setErrorMessage("Error deleting address. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSetDefault = async (id) => {
+    setIsLoading(true);
+    try {
+      const address = addresses.find(addr => addr.id === id);
+      const updatedData = { ...address, is_default: true };
+      const response = await updateReceiverInfoByIdAPI(id, updatedData);
+      if (response.data) {
+        setAddresses(addresses.map(addr => 
+          addr.id === id ? { ...addr, is_default: true } : { ...addr, is_default: false }
+        ));
+        setDefaultAddressId(id);
+      }
+    } catch (error) {
+      console.error("Error setting default address:", error);
+      setErrorMessage("Error setting default address. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
-      {/* Header Section */}
       <div className="flex justify-between items-center">
         <h4 className="font-semibold text-lg">Địa chỉ của tôi</h4>
         <Button
           text="Thêm địa chỉ mới"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setEditingAddressId(null);
+            setNewAddress({
+              fullName: "",
+              phoneNumber: "",
+              province: "",
+              district: "",
+              ward: "",
+              specificAddress: "",
+              type: "home",
+              isDefault: false,
+            });
+            setIsModalOpen(true);
+          }}
           padding="15px"
         />
       </div>
       <hr className="my-2 border-gray-300" />
 
-      {/* Address List */}
       <div className="space-y-4">
+        {isLoading && <p className="text-gray-500">Đang tải...</p>}
+        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
         {addresses.map((addr) => (
           <div
             key={addr.id}
@@ -246,10 +350,10 @@ function Address() {
             }`}
           >
             <div>
-              <p className="font-semibold">{addr.fullName}</p>
-              <p className="text-gray-600">{addr.phoneNumber}</p>
-              <p className="text-gray-600">{addr.address}</p>
-              <p className="text-sm text-gray-500">{addr.type === "home" ? "Nhà riêng" : "Văn phòng"}</p>
+              <p className="font-semibold">{addr.to_name}</p>
+              <p className="text-gray-600">{addr.to_phone}</p>
+              <p className="text-gray-600">{`${addr.to_ward_name}, ${addr.to_district_name}, ${addr.to_province_name}`}</p>
+              <p className="text-sm text-gray-500">{addr.account_type === "home" ? "Nhà riêng" : "Văn phòng"}</p>
               {defaultAddressId === addr.id && (
                 <p className="text-sm text-green-600 font-semibold">Mặc định</p>
               )}
@@ -269,22 +373,25 @@ function Address() {
                   Xóa
                 </button>
               </div>
-              {(defaultAddressId !== addr.id && <button
+              {defaultAddressId !== addr.id && (
+                <button
                   onClick={() => handleSetDefault(addr.id)}
                   className="bg-gray-300 text-sm font-medium py-2 px-4 rounded-md cursor-pointer"
                 >
                   Thiết lập mặc định
-                </button>)}
+                </button>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Modal for Adding New Address */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg">
-            <h4 className="font-semibold text-lg mb-4">Thêm địa chỉ mới</h4>
+            <h4 className="font-semibold text-lg mb-4">
+              {editingAddressId ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
+            </h4>
             {isLoading && <p className="text-gray-500">Đang tải...</p>}
             {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -379,7 +486,6 @@ function Address() {
               onChange={handleInputChange}
               error={errors.specificAddress}
             />
-            {/* Thêm phần chọn loại địa chỉ và checkbox */}
             <div className="mb-4">
               <label className="text-sm font-semibold mb-2 block mt-2">Loại địa chỉ</label>
               <div className="flex space-x-4">
@@ -420,12 +526,15 @@ function Address() {
             <div className="flex justify-end space-x-2">
               <Button
                 text="Trở lại"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingAddressId(null);
+                }}
                 padding="15px"
               />
               <Button
-                text="Hoàn thành"
-                onClick={handleAddAddress}
+                text={editingAddressId ? "Cập nhật" : "Hoàn thành"}
+                onClick={handleAddOrUpdateAddress}
                 padding="15px"
                 disabled={isLoading}
               />
