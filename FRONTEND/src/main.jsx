@@ -58,7 +58,7 @@ const router = createBrowserRouter([
           <MissionPage />
       },
       {
-        path: "exchange-market",
+        path: "exchange-market/*",
         element: <ExchangeMarket />,
         children: [
           { path: "redeem", element: <RedeemTab /> },
@@ -131,7 +131,7 @@ const router = createBrowserRouter([
           { index: true, element: <CustomerDashboard /> },
           { path: "profile", element: <CustomerProfile /> },
           { path: "orders", element: <CustomerOrders /> },
-          { path: "rewards", element: <CustomerRewards /> },
+          // { path: "rewards", element: <CustomerRewards /> },
           { path: "scanner", element: <CustomerQRScanner /> },
           { path: "users", element: <CustomerUsers /> },
           { path: "items", element: <CustomerItems /> },

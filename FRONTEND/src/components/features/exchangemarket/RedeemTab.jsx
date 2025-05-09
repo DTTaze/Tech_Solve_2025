@@ -1,60 +1,75 @@
-import { useMemo } from "react";
-import SearchFilterBar from "./SearchFilterBar";
+import { useMemo, useContext, useEffect } from "react";
+import MarketSearchBar from "./MarketSearchBar";
+import MarketFilterButtons from "./MarketFilterButtons";
 import MarketItemList from "./MarketItemList";
 import MarketEmptyState from "./MarketEmptyState";
-import { statusColors, statusConfig, getCategoryDisplayName } from "./ItemCatalog";
+import {
+  MarketplaceContext,
+  marketplaceCategories,
+  statusColors,
+  statusConfig,
+  getCategoryDisplayName,
+} from "../../../pages/ExchangeMarket";
 
-function RedeemTab({ 
-  items, 
-  searchQuery, 
-  setSearchQuery, 
-  sortOption, 
-  setSortOption, 
-  isFilterOpen, 
-  setIsFilterOpen, 
-  handlePurchase 
-}) {
-  const filteredItems = useMemo(() => {
+function RedeemTab({ fetchItems }) {
+  const {
+    items,
+    marketSearchText,
+    setMarketSearchText,
+    marketListView,
+    setMarketListView,
+    marketCategory,
+    setMarketCategory,
+    handlePurchase,
+  } = useContext(MarketplaceContext);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  const filteredMarketItems = useMemo(() => {
     if (!items?.length) return [];
-    return items.filter((item) => {
-      if (!searchQuery) return true;
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        item.name.toLowerCase().includes(searchLower) ||
-        item.description.toLowerCase().includes(searchLower)
+    let filtered = [...items];
+    if (marketCategory !== "all") {
+      filtered = filtered.filter((item) => item.category === marketCategory);
+    }
+    if (marketSearchText) {
+      const searchLower = marketSearchText.toLowerCase();
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchLower) ||
+          item.description.toLowerCase().includes(searchLower)
       );
-    });
-  }, [items, searchQuery]);
-
-  const sortedItems = useMemo(() => {
-    return [...filteredItems].sort((a, b) => {
-      switch (sortOption) {
-        case "price-ascetrically": return a.price - b.price;
-        case "price-descending": return b.price - a.price;
-        case "name-ascending": return a.name.localeCompare(b.name);
-        case "name-descending": return b.name.localeCompare(a.name);
-        default: return 0;
-      }
-    });
-  }, [filteredItems, sortOption]);
+    }
+    return filtered;
+  }, [items, marketCategory, marketSearchText]);
 
   return (
     <div className="space-y-6">
-      <SearchFilterBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        sortOption={sortOption}
-        setSortOption={setSortOption}
-        isFilterOpen={isFilterOpen}
-        setIsFilterOpen={setIsFilterOpen}
-      />
-      {sortedItems.length === 0 ? (
+      <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+        <MarketSearchBar
+          marketSearchText={marketSearchText}
+          setMarketSearchText={setMarketSearchText}
+          marketListView={marketListView}
+          setMarketListView={setMarketListView}
+        />
+        <MarketFilterButtons
+          marketView="redeem"
+          marketCategory={marketCategory}
+          setMarketCategory={setMarketCategory}
+          filteredMarketItems={filteredMarketItems}
+          marketplaceCategories={marketplaceCategories}
+          userItemStatuses={[]}
+          statusColors={statusColors}
+        />
+      </div>
+      {filteredMarketItems.length === 0 ? (
         <MarketEmptyState marketView="redeem" />
       ) : (
         <MarketItemList
-          marketListView="grid"
+          marketListView={marketListView}
           marketView="redeem"
-          filteredMarketItems={sortedItems}
+          filteredMarketItems={filteredMarketItems}
           handlePurchase={handlePurchase}
           getCategoryDisplayName={getCategoryDisplayName}
           statusColors={statusColors}

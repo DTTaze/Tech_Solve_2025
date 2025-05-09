@@ -59,11 +59,11 @@ const menuItems = [
     icon: <ShoppingCartIcon />,
     path: "/customer/orders",
   },
-  {
-    text: "Rewards",
-    icon: <CardGiftcardIcon />,
-    path: "/customer/rewards",
-  },
+  // {
+  //   text: "Rewards",
+  //   icon: <CardGiftcardIcon />,
+  //   path: "/customer/rewards",
+  // },
 ];
 
 // Helper to always get a number from coins
