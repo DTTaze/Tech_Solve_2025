@@ -44,7 +44,7 @@ const CustomerEvents = () => {
       setError(null);
       const response = await getOwnerEventApi();
 
-      console.log("events response: ", response)
+      console.log("events response: ", response);
       if (response.data) {
         setEvents(response.data);
       }
