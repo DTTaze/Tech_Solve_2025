@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
-import ItemCatalog from "../components/features/exchangemarket/ItemCatalog";
-import ItemCatalogSkeleton from "../components/features/exchangemarket/ItemCatalogSkeleton";
+import { useEffect, useState, useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { getUserApi } from "../utils/api";
+import { AuthContext } from "../contexts/auth.context";
+import ItemCatalogSkeleton from "../components/features/exchangemarket/ItemCatalogSkeleton";
+import CatalogHeader from "../components/features/exchangemarket/CatalogHeader";
+import ItemCatalog from "../components/features/exchangemarket/ItemCatalog";
+import MarketNavigation from "../components/features/exchangemarket/MarketViewNavigation";
 
 export default function ExchangeMarket() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     async function initialize() {
@@ -53,7 +58,14 @@ export default function ExchangeMarket() {
 
   return (
     <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
-      <ItemCatalog />
+      <CatalogHeader userCoins={auth.user?.coins?.amount || 0} />
+      <MarketNavigation />
+      <Routes>
+        <Route path="redeem" element={<ItemCatalog view="redeem" />} />
+        <Route path="my-items" element={<ItemCatalog view="my_items" />} />
+        <Route path="all-items" element={<ItemCatalog view="all_items" />} />
+        <Route path="/" element={<Navigate to="redeem" replace />} />
+      </Routes>
     </main>
   );
 }
