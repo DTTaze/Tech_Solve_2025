@@ -10,6 +10,10 @@ router.post(
   // checkPermission("create", "role"),
   roleController.handleCreateRole
 );
+router.get(
+  "/all-rolepermission",
+  rolePermissionController.handleGetAllRolePermissions
+);
 router.get("/", roleController.handleGetAllRoles);
 router.get("/:id", roleController.handleGetRole);
 router.put(

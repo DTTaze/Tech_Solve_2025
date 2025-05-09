@@ -35,6 +35,15 @@ const handleGetAllPermissionsByRole = async (req, res) => {
   }
 };
 
+const handleGetAllRolePermissions = async (req, res) => {
+  try {
+    const result = await rolePermissionService.getAllRolePermissions();
+    return res.success("Role permission retrieved successfully", result);
+  } catch (error) {
+    return res.error(500, "Failed to get all role permission", error.message);
+  }
+};
+
 const handleUpdatePermissionByRole = async (req, res) => {
   try {
     const result = await rolePermissionService.updatePermissionByRole(
@@ -70,4 +79,5 @@ module.exports = {
   handleGetAllPermissionsByRole,
   handleUpdatePermissionByRole,
   handleRemovePermissionFromRole,
+  handleGetAllRolePermissions,
 };

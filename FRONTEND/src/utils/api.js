@@ -53,7 +53,7 @@ export const getAllPermissionsApi = () => {
 };
 
 export const getAllRolesPermissionsApi = () => {
-  return axios.get("api/permissions");
+  return axios.get("api/roles/all-rolepermission");
 };
 
 export const getAllVideosApi = () => {

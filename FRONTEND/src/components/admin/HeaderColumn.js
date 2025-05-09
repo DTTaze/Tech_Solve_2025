@@ -238,9 +238,19 @@ export const permissionColumns = [
 ];
 export const rolesPermissionsColumns = [
   { field: "id", headerName: "ID", width: 100 },
-  { field: "action", headerName: "Action", width: 150 },
-  { field: "subject", headerName: "Subject", width: 150 },
-  { field: "description", headerName: "Description", width: 250 },
+
+  {
+    field: "role",
+    headerName: "Name",
+    width: 250,
+    valueGetter: (params) => params?.name || "Unknown",
+  },
+  {
+    field: "permission",
+    headerName: "Subject",
+    width: 150,
+    valueGetter: (params) => params?.subject || "Unknown",
+  },
   {
     field: "updated_at",
     headerName: "Ngày cập nhật",

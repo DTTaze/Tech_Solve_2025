@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       account_type: {
-        type: DataTypes.ENUM("home", "office", "others"),
+        type: DataTypes.ENUM("home", "office"),
         allowNull: false,
         defaultValue: "home",
       },

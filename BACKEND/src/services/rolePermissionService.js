@@ -21,7 +21,26 @@ const assignPermissionToRole = async (role_id, permission_id) => {
     throw e;
   }
 };
-
+const getAllRolePermissions = async () => {
+  try {
+    return await RolePermission.findAll({
+      include: [
+        {
+          model: Role,
+          as: "role",
+          attributes: ["id", "name"],
+        },
+        {
+          model: Permission,
+          as: "permission",
+          attributes: ["id", "action", "subject"],
+        },
+      ],
+    });
+  } catch (e) {
+    throw e;
+  }
+};
 const getPermissionByIdByRole = async (role_id, perm_id) => {
   try {
     const rolePermission = await RolePermission.findOne({
@@ -97,4 +116,5 @@ module.exports = {
   getPermissionsByRole,
   updatePermissionByRole,
   removePermissionFromRole,
+  getAllRolePermissions,
 };
