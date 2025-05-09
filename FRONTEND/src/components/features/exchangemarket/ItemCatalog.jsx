@@ -21,7 +21,7 @@ import MarketEmptyState from "./MarketEmptyState";
 import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 import { AuthContext } from "../../../contexts/auth.context";
 
-// Danh sách danh mục chợ trao đổi
+
 const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
   { key: "recycled", name: "Đồ tái chế" },
@@ -31,7 +31,6 @@ const marketplaceCategories = [
   { key: "other", name: "Khác" },
 ];
 
-// Màu sắc cho trạng thái sản phẩm
 const statusColors = {
   displaying: "bg-emerald-100 text-emerald-700",
   pending: "bg-amber-100 text-amber-700",
@@ -42,7 +41,6 @@ const statusColors = {
   public: "bg-emerald-100 text-emerald-700",
 };
 
-// Trạng thái sản phẩm của người dùng
 const userItemStatuses = [
   { key: "all", name: "Tất cả", icon: Filter },
   { key: "public", name: "Đang hiển thị", icon: CheckCircle },
@@ -52,7 +50,6 @@ const userItemStatuses = [
   { key: "draft", name: "Tin nháp", icon: ClipboardEdit },
 ];
 
-// Cấu hình trạng thái hiển thị
 const statusConfig = {
   public: { name: "Đang hiển thị", color: "emerald" },
   pending: { name: "Chờ duyệt", color: "amber" },
@@ -61,7 +58,6 @@ const statusConfig = {
   draft: { name: "Tin nháp", color: "slate" },
 };
 
-// Hàm lấy tên danh mục hiển thị
 const getCategoryDisplayName = (key) => {
   const categories = {
     handicraft: "Đồ thủ công",
@@ -92,7 +88,6 @@ function ItemCatalog({ items: propItems }) {
   const [marketStatusFilter, setMarketStatusFilter] = useState("all");
   const [marketSearchText, setMarketSearchText] = useState("");
 
-  // Hàm lấy danh sách sản phẩm cho tab đổi quà
   const fetchRedeemItems = useCallback(async () => {
     if (activeTab !== "redeem") return;
     try {
@@ -121,7 +116,6 @@ function ItemCatalog({ items: propItems }) {
     }
   }, [activeTab]);
 
-  // Hàm lấy danh sách sản phẩm của người dùng
   const fetchMyItems = useCallback(async () => {
     if (!auth.user?.id || marketView !== "my_items") return;
     try {
@@ -150,7 +144,6 @@ function ItemCatalog({ items: propItems }) {
     }
   }, [auth.user?.id, marketView]);
 
-  // Hàm lấy tất cả sản phẩm có sẵn
   const fetchAllItems = useCallback(async () => {
     if (marketView === "my_items") return;
     try {
@@ -179,7 +172,6 @@ function ItemCatalog({ items: propItems }) {
     }
   }, [marketView]);
 
-  // Gọi API khi cần thiết
   useEffect(() => {
     if (activeTab === "market") {
       fetchMyItems();
@@ -189,7 +181,6 @@ function ItemCatalog({ items: propItems }) {
     }
   }, [activeTab, fetchMyItems, fetchAllItems, fetchRedeemItems]);
 
-  // Xử lý mua hàng
   const handlePurchase = useCallback(
     (item) => {
       const userCoins = auth.user?.coins?.amount || 0;
@@ -207,7 +198,6 @@ function ItemCatalog({ items: propItems }) {
     [auth.user?.coins?.amount]
   );
 
-  // Xác nhận mua hàng
   const confirmPurchase = useCallback(
     async (quantity) => {
       if (!selectedItem || !auth.user) return;
@@ -236,7 +226,6 @@ function ItemCatalog({ items: propItems }) {
     [selectedItem, auth.user]
   );
 
-  // Lọc sản phẩm cho tab đổi quà
   const filteredItems = useMemo(() => {
     if (!items?.length) return [];
     return items.filter((item) => {
@@ -249,7 +238,6 @@ function ItemCatalog({ items: propItems }) {
     });
   }, [items, searchQuery]);
 
-  // Sắp xếp sản phẩm
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a, b) => {
       switch (sortOption) {
@@ -267,25 +255,21 @@ function ItemCatalog({ items: propItems }) {
     });
   }, [filteredItems, sortOption]);
 
-  // Thêm sản phẩm mới
   const handleAddItem = () => {
     setItemToEdit(null);
     setShowCreateModal(true);
   };
 
-  // Chỉnh sửa sản phẩm
   const handleEditItem = (item) => {
     setItemToEdit(item);
     setShowCreateModal(true);
   };
 
-  // Xóa sản phẩm
   const handleDeleteItem = (itemId) => {
     setMyItems((prev) => prev.filter((item) => item.id !== itemId));
     alert("Sản phẩm đã được xóa thành công!");
   };
 
-  // Xử lý submit form sản phẩm
   const handleSubmitItem = async (formData, isEditing) => {
     try {
       const { images, ...productData } = formData;
@@ -361,13 +345,11 @@ function ItemCatalog({ items: propItems }) {
     }
   };
 
-  // Hủy form sản phẩm
   const handleCancelForm = () => {
     setShowCreateModal(false);
     setItemToEdit(null);
   };
 
-  // Lọc sản phẩm cho chợ trao đổi
   const filteredMarketItems = useMemo(() => {
     const sourceItems = marketView === "my_items" ? myItems : allItems;
     if (!sourceItems?.length) return [];

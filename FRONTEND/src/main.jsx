@@ -3,8 +3,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { StrictMode } from "react";
 import { AuthProvider } from "./contexts/auth.context.jsx";
 import { NotificationProvider } from "./components/ui/NotificationProvider";
-import LoginPage from "./pages/Login.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
+import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Homepage from "./pages/Homepage.jsx";
@@ -33,7 +33,6 @@ import CustomerOrders from "./components/customer/CustomerOrders.jsx";
 import CustomerRewards from "./components/customer/CustomerRewards.jsx";
 import AdminQueue from "./pages/AdminQueue.jsx";
 import ProductsManagement from "./components/admin/ProductsManagement.jsx";
-import SocketTest from "./components/SocketTest.jsx";
 import CustomerQRScanner from "./components/customer/CustomerQRScanner/CustomerQRScanner.jsx";
 import CustomerUsers from "./components/customer/CustomerUsers.jsx";
 import CustomerItems from "./components/customer/CustomerItems/index.jsx";
@@ -52,11 +51,18 @@ const router = createBrowserRouter([
       },
       {
         path: "missions",
-        element: <MissionPage />,
+        element:
+        <ProtectedRoute requiredRole="User">
+           <MissionPage />
+        </ProtectedRoute>
+        ,
       },
       {
         path: "market",
-        element: <MarketPage />,
+        element: 
+        <ProtectedRoute requiredRole="User">
+          <MarketPage />
+        </ProtectedRoute>
       },
       {
         path: "forgot_password",
@@ -64,7 +70,10 @@ const router = createBrowserRouter([
       },
       {
         path: "user",
-        element: <User />,
+        element:
+        <ProtectedRoute>
+          <User />
+        </ProtectedRoute>,
         children: [
           { index: true, element: <PersonalInformation /> },
           { path: "account", element: <PersonalInformation /> },
