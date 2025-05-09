@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useContext } from "react";
+import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import {
   purchaseItemApi,
   createProductApi,
@@ -7,22 +7,14 @@ import {
   getAllAvailableProductsApi,
   getAllItemsApi,
 } from "../../../utils/api";
-import CatalogHeader from "./CatalogHeader";
-import TabsNavigation from "./TabsNavigation";
-import SearchFilterBar from "./SearchFilterBar";
 import RedeemTab from "./RedeemTab";
-import MarketViewNavigation from "./MarketViewNavigation";
-import CreateItemModal from "./CreateItemModal";
+import UserItemsTab from "./UserItemsTab";
+import AllItemsTab from "./AllItemsTab";
 import PurchaseModal from "./PurchaseModal";
-import MarketSearchBar from "./MarketSearchBar";
-import MarketFilterButtons from "./MarketFilterButtons";
-import MarketItemList from "./MarketItemList";
-import MarketEmptyState from "./MarketEmptyState";
-import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 import { AuthContext } from "../../../contexts/auth.context";
+import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 
-
-const marketplaceCategories = [
+export const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
   { key: "recycled", name: "Đồ tái chế" },
   { key: "handicraft", name: "Đồ thủ công" },
@@ -31,7 +23,7 @@ const marketplaceCategories = [
   { key: "other", name: "Khác" },
 ];
 
-const statusColors = {
+export const statusColors = {
   displaying: "bg-emerald-100 text-emerald-700",
   pending: "bg-amber-100 text-amber-700",
   rejected: "bg-red-100 text-red-700",
@@ -41,7 +33,7 @@ const statusColors = {
   public: "bg-emerald-100 text-emerald-700",
 };
 
-const userItemStatuses = [
+export const userItemStatuses = [
   { key: "all", name: "Tất cả", icon: Filter },
   { key: "public", name: "Đang hiển thị", icon: CheckCircle },
   { key: "pending", name: "Chờ duyệt", icon: Clock },
@@ -50,7 +42,7 @@ const userItemStatuses = [
   { key: "draft", name: "Tin nháp", icon: ClipboardEdit },
 ];
 
-const statusConfig = {
+export const statusConfig = {
   public: { name: "Đang hiển thị", color: "emerald" },
   pending: { name: "Chờ duyệt", color: "amber" },
   rejected: { name: "Bị từ chối", color: "red" },
@@ -58,7 +50,7 @@ const statusConfig = {
   draft: { name: "Tin nháp", color: "slate" },
 };
 
-const getCategoryDisplayName = (key) => {
+export const getCategoryDisplayName = (key) => {
   const categories = {
     handicraft: "Đồ thủ công",
     recycled: "Đồ tái chế",
@@ -69,11 +61,12 @@ const getCategoryDisplayName = (key) => {
   return categories[key] || "Không xác định";
 };
 
-function ItemCatalog({ items: propItems }) {
+export const MarketplaceContext = createContext();
+
+function ItemCatalog({ items: propItems, view }) {
   const { auth } = useContext(AuthContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("redeem");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -82,14 +75,13 @@ function ItemCatalog({ items: propItems }) {
   const [myItems, setMyItems] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
-  const [marketView, setMarketView] = useState("my_items");
   const [marketListView, setMarketListView] = useState("grid");
   const [marketCategory, setMarketCategory] = useState("all");
   const [marketStatusFilter, setMarketStatusFilter] = useState("all");
   const [marketSearchText, setMarketSearchText] = useState("");
 
   const fetchRedeemItems = useCallback(async () => {
-    if (activeTab !== "redeem") return;
+    if (view !== "redeem") return;
     try {
       const itemsResponse = await getAllItemsApi();
       if (itemsResponse?.data) {
@@ -114,10 +106,10 @@ function ItemCatalog({ items: propItems }) {
       console.error("Lỗi khi lấy sản phẩm cho tab đổi quà:", error);
       alert("Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà, vui lòng thử lại sau!");
     }
-  }, [activeTab]);
+  }, [view]);
 
   const fetchMyItems = useCallback(async () => {
-    if (!auth.user?.id || marketView !== "my_items") return;
+    if (!auth.user?.id || view !== "my_items") return;
     try {
       const productResponse = await getProductByIdUser(auth.user.id);
       if (productResponse?.data) {
@@ -142,10 +134,10 @@ function ItemCatalog({ items: propItems }) {
       console.error("Lỗi khi lấy sản phẩm của người dùng:", error);
       alert("Có lỗi xảy ra khi tải danh sách sản phẩm của bạn, vui lòng thử lại sau!");
     }
-  }, [auth.user?.id, marketView]);
+  }, [auth.user?.id, view]);
 
   const fetchAllItems = useCallback(async () => {
-    if (marketView === "my_items") return;
+    if (view !== "all_items") return;
     try {
       const allProductsResponse = await getAllAvailableProductsApi();
       if (allProductsResponse?.data) {
@@ -170,16 +162,17 @@ function ItemCatalog({ items: propItems }) {
       console.error("Lỗi khi lấy tất cả sản phẩm:", error);
       alert("Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi, vui lòng thử lại sau!");
     }
-  }, [marketView]);
+  }, [view]);
 
   useEffect(() => {
-    if (activeTab === "market") {
-      fetchMyItems();
-      fetchAllItems();
-    } else {
+    if (view === "redeem") {
       fetchRedeemItems();
+    } else if (view === "my_items") {
+      fetchMyItems();
+    } else if (view === "all_items") {
+      fetchAllItems();
     }
-  }, [activeTab, fetchMyItems, fetchAllItems, fetchRedeemItems]);
+  }, [view, fetchRedeemItems, fetchMyItems, fetchAllItems]);
 
   const handlePurchase = useCallback(
     (item) => {
@@ -225,35 +218,6 @@ function ItemCatalog({ items: propItems }) {
     },
     [selectedItem, auth.user]
   );
-
-  const filteredItems = useMemo(() => {
-    if (!items?.length) return [];
-    return items.filter((item) => {
-      if (!searchQuery) return true;
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        item.name.toLowerCase().includes(searchLower) ||
-        item.description.toLowerCase().includes(searchLower)
-      );
-    });
-  }, [items, searchQuery]);
-
-  const sortedItems = useMemo(() => {
-    return [...filteredItems].sort((a, b) => {
-      switch (sortOption) {
-        case "price-asc":
-          return a.price - b.price;
-        case "price-desc":
-          return b.price - a.price;
-        case "name-asc":
-          return a.name.localeCompare(b.name);
-        case "name-desc":
-          return b.name.localeCompare(a.name);
-        default:
-          return 0;
-      }
-    });
-  }, [filteredItems, sortOption]);
 
   const handleAddItem = () => {
     setItemToEdit(null);
@@ -350,112 +314,53 @@ function ItemCatalog({ items: propItems }) {
     setItemToEdit(null);
   };
 
-  const filteredMarketItems = useMemo(() => {
-    const sourceItems = marketView === "my_items" ? myItems : allItems;
-    if (!sourceItems?.length) return [];
-    let filtered = [...sourceItems];
-    if (marketView === "my_items") {
-      if (marketStatusFilter !== "all") {
-        filtered = filtered.filter((item) => item.postStatus === marketStatusFilter);
-      }
-    } else {
-      filtered = filtered.filter((item) => item.postStatus === "public");
-      if (marketCategory !== "all") {
-        filtered = filtered.filter((item) => item.category === marketCategory);
-      }
-    }
-    if (marketSearchText) {
-      const searchLower = marketSearchText.toLowerCase();
-      filtered = filtered.filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchLower) ||
-          item.description.toLowerCase().includes(searchLower)
-      );
-    }
-    return filtered;
-  }, [allItems, myItems, marketView, marketCategory, marketStatusFilter, marketSearchText]);
+  const contextValue = {
+    items,
+    myItems,
+    allItems,
+    searchQuery,
+    setSearchQuery,
+    sortOption,
+    setSortOption,
+    isFilterOpen,
+    setIsFilterOpen,
+    marketListView,
+    setMarketListView,
+    marketCategory,
+    setMarketCategory,
+    marketStatusFilter,
+    setMarketStatusFilter,
+    marketSearchText,
+    setMarketSearchText,
+    showCreateModal,
+    setShowCreateModal,
+    itemToEdit,
+    setItemToEdit,
+    handlePurchase,
+    handleAddItem,
+    handleEditItem,
+    handleDeleteItem,
+    handleSubmitItem,
+    handleCancelForm,
+  };
 
   return (
-    <div className="flex flex-col">
-      <CatalogHeader userCoins={auth.user?.coins?.amount || 0} />
-      <TabsNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-      {activeTab === "redeem" && (
-        <>
-          <SearchFilterBar
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-            isFilterOpen={isFilterOpen}
-            setIsFilterOpen={setIsFilterOpen}
+    <MarketplaceContext.Provider value={contextValue}>
+      <div className="flex flex-col">
+        {view === "redeem" && <RedeemTab />}
+        {view === "my_items" && <UserItemsTab />}
+        {view === "all_items" && <AllItemsTab />}
+        {selectedItem && (
+          <PurchaseModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            item={selectedItem}
+            userCoins={auth.user?.coins?.amount || 0}
+            onConfirm={confirmPurchase}
           />
-          <RedeemTab sortedItems={sortedItems} handlePurchase={handlePurchase} />
-        </>
-      )}
-      {activeTab === "market" && (
-        <div className="space-y-6">
-          <MarketViewNavigation
-            marketView={marketView}
-            setMarketView={setMarketView}
-            showCreateForm={showCreateModal}
-            handleAddItem={handleAddItem}
-          />
-          <CreateItemModal
-            isOpen={showCreateModal}
-            item={itemToEdit}
-            onSubmit={handleSubmitItem}
-            onCancel={handleCancelForm}
-          />
-          <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
-            <MarketSearchBar
-              marketSearchText={marketSearchText}
-              setMarketSearchText={setMarketSearchText}
-              marketListView={marketListView}
-              setMarketListView={setMarketListView}
-            />
-            <MarketFilterButtons
-              marketView={marketView}
-              marketCategory={marketCategory}
-              setMarketCategory={setMarketCategory}
-              marketStatusFilter={marketStatusFilter}
-              setMarketStatusFilter={setMarketStatusFilter}
-              filteredMarketItems={filteredMarketItems}
-              marketplaceCategories={marketplaceCategories}
-              userItemStatuses={userItemStatuses}
-              statusColors={statusColors}
-            />
-          </div>
-          {filteredMarketItems.length === 0 ? (
-            <MarketEmptyState
-              marketView={marketView}
-              marketStatusFilter={marketStatusFilter}
-              handleAddItem={handleAddItem}
-            />
-          ) : (
-            <MarketItemList
-              marketListView={marketListView}
-              marketView={marketView}
-              filteredMarketItems={filteredMarketItems}
-              handleEditItem={handleEditItem}
-              handleDeleteItem={handleDeleteItem}
-              handlePurchase={handlePurchase}
-              getCategoryDisplayName={getCategoryDisplayName}
-              statusColors={statusColors}
-              statusConfig={statusConfig}
-            />
-          )}
-        </div>
-      )}
-      {selectedItem && (
-        <PurchaseModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          item={selectedItem}
-          userCoins={auth.user?.coins?.amount || 0}
-          onConfirm={confirmPurchase}
-        />
-      )}
-    </div>
+        )}
+      </div>
+    </MarketplaceContext.Provider>
   );
 }
 

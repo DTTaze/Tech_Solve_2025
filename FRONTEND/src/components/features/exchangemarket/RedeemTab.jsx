@@ -1,19 +1,65 @@
-import ItemCard from "./ItemCard";
+import { useMemo } from "react";
+import SearchFilterBar from "./SearchFilterBar";
+import MarketItemList from "./MarketItemList";
+import MarketEmptyState from "./MarketEmptyState";
+import { statusColors, statusConfig, getCategoryDisplayName } from "./ItemCatalog";
 
-function RedeemTab({ sortedItems, handlePurchase }) {
+function RedeemTab({ 
+  items, 
+  searchQuery, 
+  setSearchQuery, 
+  sortOption, 
+  setSortOption, 
+  isFilterOpen, 
+  setIsFilterOpen, 
+  handlePurchase 
+}) {
+  const filteredItems = useMemo(() => {
+    if (!items?.length) return [];
+    return items.filter((item) => {
+      if (!searchQuery) return true;
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        item.name.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [items, searchQuery]);
+
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      switch (sortOption) {
+        case "price-ascetrically": return a.price - b.price;
+        case "price-descending": return b.price - a.price;
+        case "name-ascending": return a.name.localeCompare(b.name);
+        case "name-descending": return b.name.localeCompare(a.name);
+        default: return 0;
+      }
+    });
+  }, [filteredItems, sortOption]);
+
   return (
-    <div>
+    <div className="space-y-6">
+      <SearchFilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        isFilterOpen={isFilterOpen}
+        setIsFilterOpen={setIsFilterOpen}
+      />
       {sortedItems.length === 0 ? (
-        <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-          <img src="/placeholder.svg" alt="No items" className="w-20 h-20 mx-auto mb-4 opacity-50" />
-          <p className="text-gray-500">Không tìm thấy vật phẩm phù hợp</p>
-        </div>
+        <MarketEmptyState marketView="redeem" />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {sortedItems.map((item) => (
-            <ItemCard key={item.id} item={item} onPurchase={handlePurchase} />
-          ))}
-        </div>
+        <MarketItemList
+          marketListView="grid"
+          marketView="redeem"
+          filteredMarketItems={sortedItems}
+          handlePurchase={handlePurchase}
+          getCategoryDisplayName={getCategoryDisplayName}
+          statusColors={statusColors}
+          statusConfig={statusConfig}
+        />
       )}
     </div>
   );
