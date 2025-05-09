@@ -145,7 +145,7 @@ const getAllEvents = async () => {
 
 const getEventUserById = async (id) => {
   try{
-    if (!id) throw new error (`eventuser id is required`);
+    if (!id) throw new Error (`eventuser id is required`);
     const eventuserCache = await getCache(`eventuser:id:${id}`);
     if (eventuserCache) {
       console.log("eventuserCache",eventuserCache)
@@ -174,7 +174,7 @@ const getEventUserById = async (id) => {
     )
 
     if (!eventuser){
-      throw new error (`eventuser id ${id} doesn't exit`);
+      throw new Error (`eventuser id ${id} doesn't exit`);
     }
 
     //Cache eventuser
@@ -608,22 +608,19 @@ const checkOutUserByUserId = async (event_id, user_id) => {
   }
 };
 
-const deleteEventUserById = async (event_id) => {
+const deleteEventUserById = async (eventUserId) => {
   try {
-    // Attempt to delete the event user
     const result = await EventUser.destroy({
       where: {
-        event_id: event_id,
+        id: eventUserId,
       },
     });
 
-    // Check if any rows were deleted
     if (result === 0) {
-      throw new error(`No event user found with the given event_id : ${event_id}`)
+      throw new Error(`No event user found with the given event UserId : ${eventUserId}`)
     } 
 
-    //delete cache
-    await deleteCache(`eventuser:id:${event_id}`);
+    await deleteCache(`eventuser:id:${eventUserId}`);
 
     return result;
   } catch (error) {

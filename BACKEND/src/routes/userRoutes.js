@@ -35,6 +35,7 @@ router.delete(
 
 router.post("/receiver/create", receiverController.handleCreateReceiverInfo);
 router.get("/receiver/info/:id", receiverController.handleGetReceiverInfoById);
+router.get("/receiver/info/user/:user_id", receiverController.handleGetReceiverInfoByUserId);
 router.patch("/receiver/update/:id", receiverController.handleUpdateReceiverInfoById);
 router.delete("/receiver/info/:id", receiverController.handleDeleteReceiverInfoById);
 module.exports = router;
