@@ -21,7 +21,6 @@ export default function UserForm({
     full_name: "",
     username: "",
     email: "",
-    address: "",
     phone_number: "",
     coins: "",
   });
@@ -35,7 +34,6 @@ export default function UserForm({
         full_name: initialData?.full_name || "",
         username: initialData?.username || "",
         email: initialData?.email || "",
-        address: initialData?.address || "",
         phone_number: initialData?.phone_number || "",
         coins: initialData?.coins?.amount || "",
       });
@@ -47,7 +45,6 @@ export default function UserForm({
         full_name: "",
         username: "",
         email: "",
-        address: "",
         phone_number: "",
         coins: "",
       });
@@ -112,14 +109,6 @@ export default function UserForm({
               required
             />
           )}
-          <TextField
-            margin="dense"
-            label="Địa chỉ"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            fullWidth
-          />
           <TextField
             margin="dense"
             label="Số điện thoại"

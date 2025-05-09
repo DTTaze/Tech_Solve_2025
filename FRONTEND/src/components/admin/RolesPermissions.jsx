@@ -206,57 +206,56 @@ function PermissionsManagement() {
   );
 }
 
-// Roles-Permissions Management
-// function RolesPermissionsManagement() {
-//   const [rolesPermissions, setRolesPermissions] = useState([]);
-//   const [loading, setLoading] = useState(false);
+function RolesPermissionsManagement() {
+  const [rolesPermissions, setRolesPermissions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-//   useEffect(() => {
-//     const fetchRolesPermissions = async () => {
-//       setLoading(true);
-//       try {
-//         const res = await getAllRolesPermissionsApi();
-//         res.success ? setRolesPermissions(res.data) : console.log(res.error);
-//       } catch (e) {
-//         console.log(e);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchRolesPermissions();
-//   }, []);
+  useEffect(() => {
+    const fetchRolesPermissions = async () => {
+      setLoading(true);
+      try {
+        const res = await getAllRolesPermissionsApi();
+        res.success ? setRolesPermissions(res.data) : console.log(res.error);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRolesPermissions();
+  }, []);
 
-//   const handleAdd = () => {
-//     console.log("Add Roles-Permissions mapping");
-//   };
+  const handleAdd = () => {
+    console.log("Add Roles-Permissions mapping");
+  };
 
-//   const handleEdit = (data) => {
-//     console.log("Edit Roles-Permissions mapping", data);
-//   };
+  const handleEdit = (data) => {
+    console.log("Edit Roles-Permissions mapping", data);
+  };
 
-//   const handleDelete = (data) => {
-//     console.log("Delete Roles-Permissions mapping", data);
-//   };
+  const handleDelete = (data) => {
+    console.log("Delete Roles-Permissions mapping", data);
+  };
 
-//   return (
-//     <DataTable
-//       title="Roles - Permissions"
-//       columns={rolesPermissionsColumns}
-//       rows={rolesPermissions}
-//       onAdd={handleAdd}
-//       onEdit={handleEdit}
-//       onDelete={handleDelete}
-//       loading={loading}
-//     />
-//   );
-// }
+  return (
+    <DataTable
+      title="Roles - Permissions"
+      columns={rolesPermissionsColumns}
+      rows={rolesPermissions}
+      onAdd={handleAdd}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+      loading={loading}
+    />
+  );
+}
 
 // Main Component
 export default function RolesPermissions() {
   const tabs = [
     { label: "Roles", content: <RolesManagement /> },
     { label: "Permissions", content: <PermissionsManagement /> },
-    // { label: "Roles - Permissions", content: <RolesPermissionsManagement /> },
+    { label: "Roles - Permissions", content: <RolesPermissionsManagement /> },
   ];
 
   return (
