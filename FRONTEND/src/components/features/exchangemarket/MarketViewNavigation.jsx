@@ -4,6 +4,18 @@ function MarketViewNavigation() {
   return (
     <nav className="flex space-x-4 mb-6">
       <NavLink
+        to="/exchange-market/all-items"
+        className={({ isActive }) =>
+          `px-4 py-2 rounded-lg transition-colors ${
+            isActive
+              ? "bg-blue-500 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`
+        }
+      >
+        Chợ trao đổi
+      </NavLink>
+      <NavLink
         to="/exchange-market/redeem"
         className={({ isActive }) =>
           `px-4 py-2 rounded-lg transition-colors ${
@@ -25,19 +37,7 @@ function MarketViewNavigation() {
           }`
         }
       >
-        Sản phẩm của tôi
-      </NavLink>
-      <NavLink
-        to="/exchange-market/all-items"
-        className={({ isActive }) =>
-          `px-4 py-2 rounded-lg transition-colors ${
-            isActive
-              ? "bg-blue-500 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`
-        }
-      >
-        Tất cả sản phẩm
+        Quản lý sản phẩm
       </NavLink>
     </nav>
   );

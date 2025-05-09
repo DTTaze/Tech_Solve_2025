@@ -70,7 +70,7 @@ export default function PurchaseModal({
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2 }}
             ref={modalRef}
-            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
           >
             {/* Header */}
             <div className="bg-emerald-600 py-4 px-6 text-white relative">

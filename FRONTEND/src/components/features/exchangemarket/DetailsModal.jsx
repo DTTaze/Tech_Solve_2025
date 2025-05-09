@@ -4,9 +4,11 @@ const DetailsModal = ({ isOpen, onClose, item, getCategoryDisplayName }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-11/12 max-w-md mx-auto">
-        <h2 className="text-xl font-semibold mb-4 text-left">Chi tiết sản phẩm</h2>
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-11/12 max-w-md mx-auto shadow-2xl transform transition-all">
+        <h2 className="text-xl font-semibold mb-4 text-left">
+          Chi tiết sản phẩm
+        </h2>
 
         <div className="flex flex-col gap-4">
           <img
@@ -18,7 +20,9 @@ const DetailsModal = ({ isOpen, onClose, item, getCategoryDisplayName }) => {
           <h3 className="text-lg font-bold text-left">{item.name}</h3>
 
           <div className="flex justify-between items-center">
-            <span className="text-indigo-600 font-semibold">{item.price} điểm</span>
+            <span className="text-indigo-600 font-semibold">
+              {item.price} điểm
+            </span>
             <div className="text-xs border px-2 py-1 rounded text-indigo-600">
               {getCategoryDisplayName(item.category)}
             </div>
