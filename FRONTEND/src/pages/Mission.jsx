@@ -4,6 +4,7 @@ import Ranking from "../components/features/missions/ChartRank.jsx";
 import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
 import QrTaskSubmissionModal from "../components/features/missions/QrTaskSubmissionModal.jsx";
 import EventBanner from "../components/features/missions/EventBanner.jsx";
+import EventList from "../components/customer/events/EventList.jsx";
 import {
   getAllTasksApi,
   receiveCoinApi,
@@ -701,6 +702,11 @@ function Mission() {
 
         {/* Event Banner */}
         <EventBanner userInfo={userInfo} />
+
+        {/* Event List - Full Width */}
+        <div className="mb-6">
+          <EventList />
+        </div>
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-8">
