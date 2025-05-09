@@ -623,7 +623,7 @@ const deleteEventUserById = async (eventUserId) => {
     } 
 
     await deleteCache(`eventuser:id:${eventUserId}`);
-
+    await deleteCache("eventuser:all");
     return result;
   } catch (error) {
     console.error("Error deleting event user:", error);

@@ -48,7 +48,9 @@ const createReceiverInfo = async (data) => {
       is_default,
     });
 
-    setCache(`${KEY_PREFIX}${newReceiverInfo.id}`, newReceiverInfo);
+    await setCache(`${KEY_PREFIX}${newReceiverInfo.id}`, newReceiverInfo);
+    await deleteCache("receiverInfo:all");
+
     return newReceiverInfo;
   } catch (error) {
     console.error("Error create Receiver Info:", error.message);
@@ -168,7 +170,8 @@ const updateReceiverInfoById = async (id, data) => {
     const updated = await ReceiverInformation.findByPk(id);
 
     // delete cache
-    delete(`${KEY_PREFIX}${id}`);
+    await deleteCache(`${KEY_PREFIX}${id}`);
+    await deleteCache("receiverInfo:all")
     return updated;
   } catch (error) {
     console.error("Error update Receiver Info:", error.message);
@@ -185,7 +188,8 @@ const deleteReceiverInfoById = async (id) => {
     });
 
     if (deletedCount > 0) {
-      deleteCache(`${KEY_PREFIX}${id}`);
+      await deleteCache(`${KEY_PREFIX}${id}`);
+      await deleteCache("receiverInfo:all")
       return true;
     }
 
