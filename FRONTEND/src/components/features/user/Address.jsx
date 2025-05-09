@@ -1,11 +1,20 @@
 import { useState, useEffect, useContext } from "react";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
-import { getAllProvincesApi, getAllDistrictsByProvinceApi, getAllWardsByDistrictApi } from "../../../utils/api.js";
-import { createReceiverInfoAPI, getReceiverInfoByIdAPI, updateReceiverInfoByIdAPI, deleteReceiverInfoByIdAPI } from "../../../utils/api.js";
+import {
+  getAllProvincesApi,
+  getAllDistrictsByProvinceApi,
+  getAllWardsByDistrictApi,
+} from "../../../utils/api.js";
+import {
+  createReceiverInfoAPI,
+  getReceiverInfoByIdAPI,
+  updateReceiverInfoByIdAPI,
+  deleteReceiverInfoByIdAPI,
+} from "../../../utils/api.js";
 import { AuthContext } from "../../../contexts/auth.context.jsx";
 function Address() {
-  const {auth} = useContext(AuthContext);
+  const { auth } = useContext(AuthContext);
   const [addresses, setAddresses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
@@ -64,7 +73,9 @@ function Address() {
         }
       } catch (error) {
         console.error("Error fetching provinces:", error);
-        setErrorMessage("Error fetching provinces. Please check your connection.");
+        setErrorMessage(
+          "Error fetching provinces. Please check your connection."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -78,7 +89,10 @@ function Address() {
       if (newAddress.province && Number.isInteger(newAddress.province)) {
         setIsLoading(true);
         try {
-          const response = await getAllDistrictsByProvinceApi(newAddress.province, token);
+          const response = await getAllDistrictsByProvinceApi(
+            newAddress.province,
+            token
+          );
           if (response.code === 200) {
             setDistricts(response.data);
             setWards([]);
@@ -88,7 +102,9 @@ function Address() {
           }
         } catch (error) {
           console.error("Error fetching districts:", error);
-          setErrorMessage("Error fetching districts. Please check your connection.");
+          setErrorMessage(
+            "Error fetching districts. Please check your connection."
+          );
         } finally {
           setIsLoading(false);
         }
@@ -107,7 +123,10 @@ function Address() {
       if (newAddress.district && Number.isInteger(newAddress.district)) {
         setIsLoading(true);
         try {
-          const response = await getAllWardsByDistrictApi(newAddress.district, token);
+          const response = await getAllWardsByDistrictApi(
+            newAddress.district,
+            token
+          );
           if (response.code === 200) {
             setWards(response.data);
             setNewAddress((prev) => ({ ...prev, ward: "" }));
@@ -116,7 +135,9 @@ function Address() {
           }
         } catch (error) {
           console.error("Error fetching wards:", error);
-          setErrorMessage("Error fetching wards. Please check your connection.");
+          setErrorMessage(
+            "Error fetching wards. Please check your connection."
+          );
         } finally {
           setIsLoading(false);
         }
@@ -152,8 +173,8 @@ function Address() {
         break;
       case "specificAddress":
         if (!value) error = "Địa chỉ cụ thể không được để trống";
-        else if (!/^[a-zA-ZÀ-ỹà-ỹ\s]+$/.test(value))
-          error = "Địa chỉ cụ thể không chứa kí tự đặc biệt";
+        else if (!/^[a-zA-ZÀ-ỹ0-9\s,.\/-]+$/.test(value))
+          error = "Địa chỉ cụ thể không chứa ký tự đặc biệt không hợp lệ";
         break;
       default:
         break;
@@ -164,7 +185,9 @@ function Address() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const parsedValue =
-      name === "province" || name === "district" ? parseInt(value, 10) || "" : value;
+      name === "province" || name === "district"
+        ? parseInt(value, 10) || ""
+        : value;
     setNewAddress((prev) => ({ ...prev, [name]: parsedValue }));
 
     const error = validateField(name, parsedValue);
@@ -181,7 +204,14 @@ function Address() {
 
   const handleAddOrUpdateAddress = async () => {
     const newErrors = {};
-    ["fullName", "phoneNumber", "province", "district", "ward", "specificAddress"].forEach((field) => {
+    [
+      "fullName",
+      "phoneNumber",
+      "province",
+      "district",
+      "ward",
+      "specificAddress",
+    ].forEach((field) => {
       const error = validateField(field, newAddress[field]);
       if (error) newErrors[field] = error;
     });
@@ -191,12 +221,17 @@ function Address() {
       return;
     }
 
-    const provinceName = provinces.find((p) => p.ProvinceID === newAddress.province)?.ProvinceName || "";
-    const districtName = districts.find((d) => d.DistrictID === newAddress.district)?.DistrictName || "";
-    const wardName = wards.find((w) => w.WardCode === newAddress.ward)?.WardName || "";
+    const provinceName =
+      provinces.find((p) => p.ProvinceID === newAddress.province)
+        ?.ProvinceName || "";
+    const districtName =
+      districts.find((d) => d.DistrictID === newAddress.district)
+        ?.DistrictName || "";
+    const wardName =
+      wards.find((w) => w.WardCode === newAddress.ward)?.WardName || "";
 
     const addressData = {
-      user_id: auth.user.id, 
+      user_id: auth.user.id,
       to_name: newAddress.fullName,
       to_phone: newAddress.phoneNumber,
       to_address: newAddress.specificAddress,
@@ -210,11 +245,18 @@ function Address() {
     setIsLoading(true);
     try {
       if (editingAddressId) {
-        const response = await updateReceiverInfoByIdAPI(editingAddressId, addressData);
+        const response = await updateReceiverInfoByIdAPI(
+          editingAddressId,
+          addressData
+        );
         if (response.data) {
-          setAddresses(addresses.map(addr => 
-            addr.id === editingAddressId ? { ...response.data, id: editingAddressId } : addr
-          ));
+          setAddresses(
+            addresses.map((addr) =>
+              addr.id === editingAddressId
+                ? { ...response.data, id: editingAddressId }
+                : addr
+            )
+          );
           if (response.data.is_default) {
             setDefaultAddressId(editingAddressId);
           }
@@ -222,7 +264,10 @@ function Address() {
       } else {
         const response = await createReceiverInfoAPI(addressData);
         if (response.data) {
-          setAddresses([...addresses, { ...response.data, id: response.data.id }]);
+          setAddresses([
+            ...addresses,
+            { ...response.data, id: response.data.id },
+          ]);
           if (newAddress.isDefault) {
             setDefaultAddressId(response.data.id);
           }
@@ -255,9 +300,13 @@ function Address() {
       if (response.data) {
         const address = response.data;
         // Find matching province, district, and ward IDs
-        const province = provinces.find(p => p.ProvinceName === address.to_province_name);
-        const district = districts.find(d => d.DistrictName === address.to_district_name);
-        const ward = wards.find(w => w.WardName === address.to_ward_name);
+        const province = provinces.find(
+          (p) => p.ProvinceName === address.to_province_name
+        );
+        const district = districts.find(
+          (d) => d.DistrictName === address.to_district_name
+        );
+        const ward = wards.find((w) => w.WardName === address.to_ward_name);
 
         setNewAddress({
           fullName: address.to_name,
@@ -297,13 +346,17 @@ function Address() {
   const handleSetDefault = async (id) => {
     setIsLoading(true);
     try {
-      const address = addresses.find(addr => addr.id === id);
+      const address = addresses.find((addr) => addr.id === id);
       const updatedData = { ...address, is_default: true };
       const response = await updateReceiverInfoByIdAPI(id, updatedData);
       if (response.data) {
-        setAddresses(addresses.map(addr => 
-          addr.id === id ? { ...addr, is_default: true } : { ...addr, is_default: false }
-        ));
+        setAddresses(
+          addresses.map((addr) =>
+            addr.id === id
+              ? { ...addr, is_default: true }
+              : { ...addr, is_default: false }
+          )
+        );
         setDefaultAddressId(id);
       }
     } catch (error) {
@@ -353,7 +406,9 @@ function Address() {
               <p className="font-semibold">{addr.to_name}</p>
               <p className="text-gray-600">{addr.to_phone}</p>
               <p className="text-gray-600">{`${addr.to_ward_name}, ${addr.to_district_name}, ${addr.to_province_name}`}</p>
-              <p className="text-sm text-gray-500">{addr.account_type === "home" ? "Nhà riêng" : "Văn phòng"}</p>
+              <p className="text-sm text-gray-500">
+                {addr.account_type === "home" ? "Nhà riêng" : "Văn phòng"}
+              </p>
               {defaultAddressId === addr.id && (
                 <p className="text-sm text-green-600 font-semibold">Mặc định</p>
               )}
@@ -387,13 +442,15 @@ function Address() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl transform transition-all">
             <h4 className="font-semibold text-lg mb-4">
               {editingAddressId ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
             </h4>
             {isLoading && <p className="text-gray-500">Đang tải...</p>}
-            {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+            {errorMessage && (
+              <p className="text-red-500 mb-4">{errorMessage}</p>
+            )}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <InputField
                 id="fullName"
@@ -413,7 +470,10 @@ function Address() {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="province" className="text-sm font-semibold mb-2 block">
+              <label
+                htmlFor="province"
+                className="text-sm font-semibold mb-2 block"
+              >
                 Tỉnh/Thành phố
               </label>
               <select
@@ -429,15 +489,23 @@ function Address() {
                   .filter((province) => province.Status === 1)
                   .sort((a, b) => a.ProvinceName.localeCompare(b.ProvinceName))
                   .map((province) => (
-                    <option key={province.ProvinceID} value={province.ProvinceID}>
+                    <option
+                      key={province.ProvinceID}
+                      value={province.ProvinceID}
+                    >
                       {province.ProvinceName}
                     </option>
                   ))}
               </select>
-              {errors.province && <p className="text-red-500 text-sm">{errors.province}</p>}
+              {errors.province && (
+                <p className="text-red-500 text-sm">{errors.province}</p>
+              )}
             </div>
             <div className="mb-4">
-              <label htmlFor="district" className="text-sm font-semibold mb-2 block">
+              <label
+                htmlFor="district"
+                className="text-sm font-semibold mb-2 block"
+              >
                 Quận/Huyện
               </label>
               <select
@@ -455,10 +523,15 @@ function Address() {
                   </option>
                 ))}
               </select>
-              {errors.district && <p className="text-red-500 text-sm">{errors.district}</p>}
+              {errors.district && (
+                <p className="text-red-500 text-sm">{errors.district}</p>
+              )}
             </div>
             <div className="mb-4">
-              <label htmlFor="ward" className="text-sm font-semibold mb-2 block">
+              <label
+                htmlFor="ward"
+                className="text-sm font-semibold mb-2 block"
+              >
                 Phường/Xã
               </label>
               <select
@@ -476,7 +549,9 @@ function Address() {
                   </option>
                 ))}
               </select>
-              {errors.ward && <p className="text-red-500 text-sm">{errors.ward}</p>}
+              {errors.ward && (
+                <p className="text-red-500 text-sm">{errors.ward}</p>
+              )}
             </div>
             <InputField
               id="specificAddress"
@@ -487,14 +562,18 @@ function Address() {
               error={errors.specificAddress}
             />
             <div className="mb-4">
-              <label className="text-sm font-semibold mb-2 block mt-2">Loại địa chỉ</label>
+              <label className="text-sm font-semibold mb-2 block mt-2">
+                Loại địa chỉ
+              </label>
               <div className="flex space-x-4">
                 <button
                   type="button"
                   value="home"
                   onClick={handleTypeChange}
                   className={`py-2 px-4 border rounded-md font-medium ${
-                    newAddress.type === "home" ? "border-emerald-800" : "border-gray-300"
+                    newAddress.type === "home"
+                      ? "border-emerald-800"
+                      : "border-gray-300"
                   }`}
                 >
                   Nhà riêng
@@ -504,7 +583,9 @@ function Address() {
                   value="office"
                   onClick={handleTypeChange}
                   className={`py-2 px-4 border rounded-md font-medium ${
-                    newAddress.type === "office" ? "border-emerald-800" : "border-gray-300"
+                    newAddress.type === "office"
+                      ? "border-emerald-800"
+                      : "border-gray-300"
                   }`}
                 >
                   Văn phòng

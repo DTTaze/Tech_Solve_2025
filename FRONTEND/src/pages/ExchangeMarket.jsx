@@ -1,6 +1,20 @@
-import { useEffect, useState, useCallback, createContext, useContext } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  createContext,
+  useContext,
+} from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { getUserApi, purchaseItemApi, createProductApi, updateProductApi, getProductByIdUser, getAllAvailableProductsApi, getAllItemsApi } from "../utils/api";
+import {
+  getUserApi,
+  purchaseItemApi,
+  createProductApi,
+  updateProductApi,
+  getProductByIdUser,
+  getAllAvailableProductsApi,
+  getAllItemsApi,
+} from "../utils/api";
 import { AuthContext } from "../contexts/auth.context";
 import ItemCatalogSkeleton from "../components/features/exchangemarket/ItemCatalogSkeleton";
 import CatalogHeader from "../components/features/exchangemarket/CatalogHeader";
@@ -9,7 +23,14 @@ import RedeemTab from "../components/features/exchangemarket/RedeemTab";
 import UserItemsTab from "../components/features/exchangemarket/UserItemsTab";
 import AllItemsTab from "../components/features/exchangemarket/AllItemsTab";
 import PurchaseModal from "../components/features/exchangemarket/PurchaseModal";
-import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
+import {
+  Filter,
+  CheckCircle,
+  Clock,
+  FileWarning,
+  EyeOff,
+  ClipboardEdit,
+} from "lucide-react";
 
 export const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
@@ -119,7 +140,9 @@ export default function ExchangeMarket() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy sản phẩm cho tab đổi quà:", error);
-      alert("Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà, vui lòng thử lại sau!");
+      alert(
+        "Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà, vui lòng thử lại sau!"
+      );
     }
   }, []);
 
@@ -147,7 +170,9 @@ export default function ExchangeMarket() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy sản phẩm của người dùng:", error);
-      alert("Có lỗi xảy ra khi tải danh sách sản phẩm của bạn, vui lòng thử lại sau!");
+      alert(
+        "Có lỗi xảy ra khi tải danh sách sản phẩm của bạn, vui lòng thử lại sau!"
+      );
     }
   }, [auth.user?.id]);
 
@@ -174,7 +199,9 @@ export default function ExchangeMarket() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy tất cả sản phẩm:", error);
-      alert("Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi, vui lòng thử lại sau!");
+      alert(
+        "Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi, vui lòng thử lại sau!"
+      );
     }
   }, []);
 
@@ -263,7 +290,11 @@ export default function ExchangeMarket() {
       }
 
       if (isEditing) {
-        const response = await updateProductApi(itemToEdit.id, productData, images || []);
+        const response = await updateProductApi(
+          itemToEdit.id,
+          productData,
+          images || []
+        );
         if (response) {
           setMyItems((prev) =>
             prev.map((item) =>
@@ -286,7 +317,11 @@ export default function ExchangeMarket() {
           alert("Cập nhật sản phẩm thất bại, vui lòng thử lại!");
         }
       } else {
-        const response = await createProductApi(productData, auth.user?.id, images || []);
+        const response = await createProductApi(
+          productData,
+          auth.user?.id,
+          images || []
+        );
         if (response) {
           const newItem = {
             id: response.data.id,
@@ -376,28 +411,39 @@ export default function ExchangeMarket() {
   }
 
   return (
-    <MarketplaceContext.Provider value={contextValue}>
-      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
-        <CatalogHeader userCoins={auth.user?.coins?.amount || 0} />
-        <MarketViewNavigation />
-        <div className="flex flex-col">
-          <Routes>
-            <Route path="redeem" element={<RedeemTab fetchItems={fetchRedeemItems} />} />
-            <Route path="my-items" element={<UserItemsTab fetchItems={fetchMyItems} />} />
-            <Route path="all-items" element={<AllItemsTab fetchItems={fetchAllItems} />} />
-            <Route path="/" element={<Navigate to="redeem" replace />} />
-          </Routes>
-          {selectedItem && (
-            <PurchaseModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              item={selectedItem}
-              userCoins={auth.user?.coins?.amount || 0}
-              onConfirm={confirmPurchase}
-            />
-          )}
-        </div>
-      </main>
-    </MarketplaceContext.Provider>
+    <div className="min-h-screen bg-gray-50">
+      <MarketplaceContext.Provider value={contextValue}>
+        <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
+          <CatalogHeader userCoins={auth.user?.coins?.amount || 0} />
+          <MarketViewNavigation />
+          <div className="flex flex-col bg-white rounded-lg shadow-sm p-4">
+            <Routes>
+              <Route
+                path="redeem"
+                element={<RedeemTab fetchItems={fetchRedeemItems} />}
+              />
+              <Route
+                path="my-items"
+                element={<UserItemsTab fetchItems={fetchMyItems} />}
+              />
+              <Route
+                path="all-items"
+                element={<AllItemsTab fetchItems={fetchAllItems} />}
+              />
+              <Route path="/" element={<Navigate to="redeem" replace />} />
+            </Routes>
+            {selectedItem && (
+              <PurchaseModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                item={selectedItem}
+                userCoins={auth.user?.coins?.amount || 0}
+                onConfirm={confirmPurchase}
+              />
+            )}
+          </div>
+        </main>
+      </MarketplaceContext.Provider>
+    </div>
   );
 }

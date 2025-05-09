@@ -108,9 +108,12 @@ export default function CreateItemModal({ isOpen, item, onSubmit, onCancel }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center ">
-      <div className="absolute inset-0 backdrop-blur-sm bg-opacity-30" onClick={onCancel}></div>
-      <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 z-10 mx-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        className="absolute inset-0 backdrop-blur-sm bg-black/30"
+        onClick={onCancel}
+      ></div>
+      <div className="relative bg-white rounded-lg shadow-2xl max-w-2xl w-full p-6 z-10 mx-4 transform transition-all">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-800">
             {isEditing ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
@@ -167,7 +170,9 @@ export default function CreateItemModal({ isOpen, item, onSubmit, onCancel }) {
                 >
                   Chọn ảnh
                 </label>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG lên tới 5MB</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  PNG, JPG lên tới 5MB
+                </p>
               </div>
             </div>
           </div>

@@ -25,7 +25,7 @@ function MarketViewNavigation() {
           }`
         }
       >
-        Sản phẩm của tôi
+        Quản lý sản phẩm
       </NavLink>
       <NavLink
         to="/exchange-market/all-items"
@@ -37,7 +37,7 @@ function MarketViewNavigation() {
           }`
         }
       >
-        Tất cả sản phẩm
+        Chợ trao đổi
       </NavLink>
     </nav>
   );
