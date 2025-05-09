@@ -63,7 +63,7 @@ const createTransaction = async (transactionData) => {
   }
 };
 
-const getTransactionByUserId = async (buyer_id) => {
+const getTransactionByBuyerId = async (buyer_id) => {
   try {
     const listBuyerTransactioncacheId = await redisClient.get(
       `buyer:transaction:id:${buyer_id}`
@@ -85,7 +85,6 @@ const getTransactionByUserId = async (buyer_id) => {
           });
           if (transaction) {
             result.push(transaction);
-            // Add transaction to Redis
             await redisClient.set(
               `transaction:id:${transaction.id}`,
               JSON.stringify(transaction),
@@ -112,13 +111,73 @@ const getTransactionByUserId = async (buyer_id) => {
     if (!transaction) {
       throw new Error("Transaction not found.");
     }
-    // Add transaction to Redis
     const transactionIds = transaction.map((item) => item.id);
     await redisClient.set(
       `buyer:transaction:id:${buyer_id}`,
       JSON.stringify(transactionIds),
       "EX",
-      3600 // Set expiration time to 1 hour
+      3600
+    );
+    return transaction;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getTransactionBySellerId = async (seller_id) => {
+  try {
+    const listSellerTransactionCacheId = await redisClient.get(
+      `seller:transaction:id:${seller_id}`
+    );
+    if (listSellerTransactionCacheId) {
+      console.log("listSellerTransactionCacheId", listSellerTransactionCacheId);
+      const listTransactionId = JSON.parse(listSellerTransactionCacheId);
+      let result = [];
+      for (const transactionId of listTransactionId) {
+        const transactionCache = await redisClient.get(
+          `transaction:id:${transactionId}`
+        );
+        if (transactionCache) {
+          const transactionData = JSON.parse(transactionCache);
+          result.push(transactionData);
+        } else {
+          const transaction = await Transaction.findOne({
+            where: { id: transactionId },
+          });
+          if (transaction) {
+            result.push(transaction);
+            await redisClient.set(
+              `transaction:id:${transaction.id}`,
+              JSON.stringify(transaction),
+              "EX",
+              3600
+            );
+          } else {
+            throw new Error("Transaction not found.");
+          }
+        }
+      }
+      return result;
+    }
+    const transaction = await Transaction.findAll({
+      where: { seller_id: seller_id },
+      include: [
+        {
+          model: User,
+          as: "seller",
+          attributes: ["id", "full_name", "username"],
+        },
+      ],
+    });
+    if (!transaction || transaction.length === 0) {
+      throw new Error("Transaction not found.");
+    }
+    const transactionIds = transaction.map((item) => item.id);
+    await redisClient.set(
+      `seller:transaction:id:${seller_id}`,
+      JSON.stringify(transactionIds),
+      "EX",
+      3600
     );
     return transaction;
   } catch (error) {
@@ -202,7 +261,8 @@ const makeDecision = async (transaction_id, decision) => {
 
 module.exports = {
   createTransaction,
-  getTransactionByUserId,
+  getTransactionByBuyerId,
+  getTransactionBySellerId,
   deleteTransaction,
   getAllTransactions,
   makeDecision,

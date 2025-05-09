@@ -146,9 +146,17 @@ export const submitTaskApi = (task_user_id, data) => {
   });
 };
 
-export const getUserTransactionHistory = () => {
-  return axios.get(`api/transactions/user`);
+export const getBuyerTransactionHistory = () => {
+  return axios.get(`api/transactions/buyer`);
 };
+
+export const getSellerTransactionHistory = () => {
+  return axios.get(`api/transactions/seller`);
+};
+
+// export const getBuyerTransactionHistory = () => {
+//   return axios.get(`api/transactions/user`);
+// };
 
 export const increaseProgressCountApi = (task_user_id) => {
   return axios.post(`api/tasks/progress/increase/${task_user_id}`);
@@ -419,7 +427,11 @@ export const getShippingOrderDetailApi = (order_code) => {
 };
 
 export const getAllShippingOrdersBySeller = () => {
-  return axios.get("api/delivery/carrier/ghn/orders/user");
+  return axios.get("api/delivery/carrier/ghn/orders/seller");
+};
+
+export const getAllShippingOrdersByBuyer = () => {
+  return axios.get("api/delivery/carrier/ghn/orders/buyer");
 };
 
 export const updateShippingOrderApi = (data, token, shop_id) => {

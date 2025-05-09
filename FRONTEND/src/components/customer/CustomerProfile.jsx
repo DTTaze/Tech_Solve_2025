@@ -51,7 +51,7 @@ import {
   getUserApi,
   updateUserApi,
   uploadUserAvatarApi,
-  getUserTransactionHistory,
+  getBuyerTransactionHistory,
   getQRApi,
   logoutUserApi,
 } from "../../utils/api";
@@ -112,7 +112,7 @@ export default function CustomerProfile() {
       const fetchTransactions = async () => {
         setLoadingTransactions(true);
         try {
-          const response = await getUserTransactionHistory(userInfo.id);
+          const response = await getBuyerTransactionHistory(userInfo.id);
           if (response?.data) {
             setTransactions(response.data);
           }
