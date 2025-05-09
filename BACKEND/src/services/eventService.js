@@ -608,6 +608,31 @@ const checkOutUserByUserId = async (event_id, user_id) => {
   }
 };
 
+const deleteEventUserById = async (event_id) => {
+  try {
+    // Attempt to delete the event user
+    const result = await EventUser.destroy({
+      where: {
+        event_id: event_id,
+      },
+    });
+
+    // Check if any rows were deleted
+    if (result === 0) {
+      throw new error(`No event user found with the given event_id : ${event_id}`)
+    } 
+
+    //delete cache
+    await deleteCache(`eventuser:id:${event_id}`);
+
+    return result;
+  } catch (error) {
+    console.error("Error deleting event user:", error);
+    throw error;
+  }
+};
+
+
 module.exports = {
   getEventById,
   getAllEvents,
@@ -619,5 +644,6 @@ module.exports = {
   updateEvent,
   deleteEvent,
   checkInUserByUserId,
-  checkOutUserByUserId
+  checkOutUserByUserId,
+  deleteEventUserById
 };
