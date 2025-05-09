@@ -25,6 +25,20 @@ const handleGetReceiverInfoById = async (req, res) => {
   }
 };
 
+const handleGetReceiverInfoByUserId = async (req, res) => {
+  try {
+    const id = req.params.user_id;
+    if (!id) return res.error(400, "Missing receiver ID");
+
+    const result = await ReceiverInformationService.getReceiverInfoByUserId(Number(id));
+
+    return res.success("Receiver informations fetched successfully", result);
+  } catch (error) {
+    console.error("Error get Receiver information:", error);
+    return res.error(500, "Error get Receiver information", error.message || error);
+  }
+}
+
 const handleUpdateReceiverInfoById = async (req, res) => {
   try {
     const id = req.params.id || req.body.id;
@@ -60,6 +74,7 @@ const handleDeleteReceiverInfoById = async (req, res) => {
 module.exports = {
   handleCreateReceiverInfo,
   handleGetReceiverInfoById,
+  handleGetReceiverInfoByUserId,
   handleUpdateReceiverInfoById,
   handleDeleteReceiverInfoById
 };

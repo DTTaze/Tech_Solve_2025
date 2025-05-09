@@ -69,7 +69,7 @@ const getReceiverInfoById = async (id) => {
     receiverInfo = await ReceiverInformation.findByPk(id);
     if (receiverInfo) {
       setCache(cacheKey, receiverInfo);
-    }
+    }else throw new error(`ReceiverInformation ${id} not found`);
 
     return receiverInfo;
   } catch (error) {
@@ -77,6 +77,46 @@ const getReceiverInfoById = async (id) => {
     throw error;
   }
 };
+
+const getAllReceiverInfo = async () => {
+  try {
+    const cachedReceiverIds = await getCache(`receiverInfo:all`);
+    if (cachedReceiverIds) {
+      console.log("cachedReceiverIds", cachedReceiverIds);
+      const receivers = [];
+      for (const receiverId of cachedReceiverIds) {
+        const receiver = await getReceiverInfoById(receiverId);
+        if (receiver) {
+          receivers.push(receiver);
+        }
+      }
+      return receivers;
+    }
+
+    const receiverRecords = await ReceiverInformation.findAll();
+    const receiverList = [];
+    const receiverIds = [];
+
+    for (const receiver of receiverRecords) {
+      const receiverData = receiver.toJSON();
+      receiverIds.push(receiverData.id);
+
+      // Optionally, cache each individual receiver
+      const cacheKey = `${KEY_PREFIX}${receiverData.id}`;
+      await setCache(cacheKey, receiverData);
+    }
+
+    // Cache the list of all receiver IDs
+    await setCache(`receiverInfo:all`, receiverIds);
+
+    return receiverRecords;
+  } catch (error) {
+    console.error("Error retrieving receiver info:", error);
+    throw error;
+  }
+};
+
+const getReceiverInfoByUserId = {}
 
 // UPDATE
 const updateReceiverInfoById = async (id, data) => {
@@ -146,6 +186,7 @@ const deleteReceiverInfoById = async (id) => {
 module.exports = {
   createReceiverInfo,
   getReceiverInfoById,
+  getReceiverInfoByUserId,
   updateReceiverInfoById,
   deleteReceiverInfoById,
 };

@@ -30,7 +30,6 @@ router.delete('/user/delete/:eventUser_id',
     eventController.handleDeleteEventUserById
 );
 
-
 router.get('/user/:event_id',
     // checkPermission('read', 'event'),
     eventController.handlegetEventUserByEventId
