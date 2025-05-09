@@ -99,11 +99,11 @@ export default function TemporaryDrawer({ userInfo }) {
           icon: <CurrencyExchangeIcon />,
           path: "/admin/transactions",
         },
-        {
-          text: "Xu thưởng",
-          icon: <MonetizationOnIcon />,
-          path: "/admin/rewards",
-        },
+        // {
+        //   text: "Xu thưởng",
+        //   icon: <MonetizationOnIcon />,
+        //   path: "/admin/rewards",
+        // },
       ],
     },
     {

@@ -6,7 +6,7 @@ module.exports = {
       {
         id: 1,
         public_id: "GD-01",
-        receiver_account_id: 1,
+        receiver_information_id: 1,
         buyer_id: 1,
         seller_id: 2,
         item_id: 1,
@@ -27,7 +27,7 @@ module.exports = {
       {
         id: 2,
         public_id: "GD-02",
-        receiver_account_id: 2,
+        receiver_information_id: 2,
         buyer_id: 2,
         seller_id: 1,
         item_id: 2,
@@ -48,7 +48,7 @@ module.exports = {
       {
         id: 3,
         public_id: "GD-03",
-        receiver_account_id: 1,
+        receiver_information_id: 1,
         buyer_id: 2,
         seller_id: 3,
         item_id: 3,
@@ -69,7 +69,7 @@ module.exports = {
       {
         id: 4,
         public_id: "GD-04",
-        receiver_account_id: 2,
+        receiver_information_id: 2,
         buyer_id: 3,
         seller_id: 2,
         item_id: 4,
@@ -90,7 +90,7 @@ module.exports = {
       {
         id: 5,
         public_id: "GD-05",
-        receiver_account_id: 1,
+        receiver_information_id: 1,
         buyer_id: 1,
         seller_id: 3,
         item_id: 5,
