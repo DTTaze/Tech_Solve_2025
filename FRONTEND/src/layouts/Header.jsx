@@ -93,7 +93,7 @@ function UserHeader() {
   const pages = [
     { key: "", label: "Trang chủ" },
     { key: "missions", label: "Nhiệm vụ" },
-    { key: "market", label: "Trao đổi" },
+    { key: "exchange-market", label: "Trao đổi" },
   ];
 
   const avatarUrl =

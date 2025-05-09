@@ -10,7 +10,9 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import MissionPage from "./pages/Mission.jsx";
 import ExchangeMarket from "./pages/ExchangeMarket.jsx";
-import ItemCatalog from "./components/features/exchangemarket/ItemCatalog.jsx";
+import RedeemTab from "./components/features/exchangemarket/RedeemTab.jsx";
+import UserItemsTab from "./components/features/exchangemarket/UserItemsTab.jsx";
+import AllItemsTab from "./components/features/exchangemarket/AllItemsTab.jsx";
 import User from "./pages/User.jsx";
 import PersonalInformation from "./components/features/user/PersonalInformation.jsx";
 import Address from "./components/features/user/Address.jsx";
@@ -59,9 +61,9 @@ const router = createBrowserRouter([
         path: "exchange-market",
         element: <ExchangeMarket />,
         children: [
-          { path: "redeem", element: <ItemCatalog view="redeem" /> },
-          { path: "my-items", element: <ItemCatalog view="my_items" /> },
-          { path: "all-items", element: <ItemCatalog view="all_items" /> },
+          { path: "redeem", element: <RedeemTab /> },
+          { path: "my-items", element: <UserItemsTab /> },
+          { path: "all-items", element: <AllItemsTab /> },
           { index: true, element: <Navigate to="redeem" replace /> },
         ],
       },

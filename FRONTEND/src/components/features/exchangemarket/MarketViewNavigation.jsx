@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 
-function MarketNavigation() {
+function MarketViewNavigation() {
   return (
     <nav className="flex space-x-4 mb-6">
       <NavLink
@@ -43,4 +43,4 @@ function MarketNavigation() {
   );
 }
 
-export default MarketNavigation;
+export default MarketViewNavigation;
