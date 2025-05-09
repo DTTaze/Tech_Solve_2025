@@ -4,7 +4,7 @@ import Ranking from "../components/features/missions/ChartRank.jsx";
 import TaskSubmissionModal from "../components/features/missions/TaskSubmissionModal.jsx";
 import QrTaskSubmissionModal from "../components/features/missions/QrTaskSubmissionModal.jsx";
 import EventBanner from "../components/features/missions/EventBanner.jsx";
-import EventList from "../components/customer/events/EventList.jsx";
+import EventList from "../components/features/missions/EventList.jsx";
 import {
   getAllTasksApi,
   receiveCoinApi,
@@ -705,7 +705,7 @@ function Mission() {
 
         {/* Event List - Full Width */}
         <div className="mb-6">
-          <EventList />
+          <EventList userInfo={userInfo} />
         </div>
 
         {/* Main Content */}

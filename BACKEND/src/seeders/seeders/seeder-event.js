@@ -11,6 +11,7 @@ module.exports = {
         description: "Description for Event 1",
         location: "Location for Event 1",
         capacity: 100,
+        coins: 4500,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
         start_time: Sequelize.literal("CURDATE() - INTERVAL 5 DAY"),
         end_time: Sequelize.literal(
@@ -27,8 +28,8 @@ module.exports = {
         description: "Description for Event 2",
         location: "Location for Event 2",
         capacity: 100,
+        coins: 6000,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 8 DAY"),
-
         start_time: Sequelize.literal("CURDATE() + INTERVAL 5 DAY"),
         end_time: Sequelize.literal(
           "CURDATE() + INTERVAL 5 DAY + INTERVAL 5 HOUR"
@@ -44,6 +45,7 @@ module.exports = {
         description: "Description for Event 3",
         location: "Location for Event 3",
         capacity: 100,
+        coins: 1000,
         end_sign: Sequelize.literal("CURDATE() + INTERVAL 15 DAY"),
         start_time: Sequelize.literal("CURDATE() + INTERVAL 20 DAY"),
         end_time: Sequelize.literal(
@@ -60,6 +62,7 @@ module.exports = {
         description: "Description for Event 4",
         location: "Location for Event 4",
         capacity: 100,
+        coins: 3000,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 15 DAY"),
         start_time: Sequelize.literal("CURDATE() - INTERVAL 7 DAY"),
         end_time: Sequelize.literal(
@@ -76,6 +79,7 @@ module.exports = {
         description: "Description for Event 5",
         location: "Location for Event 5",
         capacity: 100,
+        coins: 4000,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
         start_time: Sequelize.literal("CURDATE() + INTERVAL 16 HOUR"),
         end_time: Sequelize.literal("CURDATE() + INTERVAL 21 HOUR"),
@@ -90,6 +94,7 @@ module.exports = {
         description: "Description for Event 6",
         location: "Location for Event 6",
         capacity: 100,
+        coins: 10000,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 13 DAY"),
         start_time: Sequelize.literal("CURDATE() + INTERVAL 16 HOUR"),
         end_time: Sequelize.literal("CURDATE() + INTERVAL 21 HOUR"),
@@ -104,6 +109,7 @@ module.exports = {
         description: "Description for Event 7",
         location: "Location for Event 7",
         capacity: 100,
+        coins: 4000,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 10 DAY"),
         start_time: Sequelize.literal("CURDATE() - INTERVAL 4 DAY"),
         end_time: Sequelize.literal(
@@ -120,6 +126,7 @@ module.exports = {
         description: "Description for Event 8",
         location: "Location for Event 8",
         capacity: 100,
+        coins: 7000,
         end_sign: Sequelize.literal("CURDATE() - INTERVAL 15 DAY"),
         start_time: Sequelize.literal("CURDATE() + INTERVAL 16 HOUR"),
         end_time: Sequelize.literal("CURDATE() + INTERVAL 21 HOUR"),

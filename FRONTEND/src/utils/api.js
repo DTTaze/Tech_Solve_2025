@@ -299,6 +299,14 @@ export const getEventSignedApi = () => {
   return axios.get("api/events/signed");
 };
 
+export const getEventSignedByUserIdApi = (user_id) => {
+  return axios.get(`api/events/signed/${user_id}`);
+};
+
+export const deleteEventUserByIdApi = (eventUser_id) => {
+  return axios.delete(`api/events/user/delete/${eventUser_id}`);
+};
+
 export const CheckInUserByUserIdApi = (user_id, event_id) => {
   return axios.put("api/events/check_in", {
     event_id: event_id,

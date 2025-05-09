@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import { Routes, Route, Outlet } from "react-router-dom";
-import CustomerDashboard from "../components/customer/CustomerDashboard";
-import CustomerProfile from "../components/customer/CustomerProfile";
-import CustomerOrders from "../components/customer/CustomerOrders";
-import CustomerRewards from "../components/customer/CustomerRewards";
 import CustomerDrawer from "../components/customer/layout/CustomerDrawer";
 import CustomerAppBar from "../components/customer/layout/CustomerAppBar";
 import "../styles/pages/customer.css";
