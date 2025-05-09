@@ -2,9 +2,9 @@ const axios = require("axios");
 const ghnBaseUrl = process.env.GHN_URL_DEVELOPMENT;
 const db = require("../models/index");
 const DeliveryOrder = db.DeliveryOrder;
+const Transaction = db.Transaction;
+const ReceiverInformation = db.ReceiverInformation;
 const { getCache, setCache, deleteCache } = require("../utils/cache");
-const { response } = require("express");
-const { where } = require("sequelize");
 
 const buildHeaders = (token, shop_id) => ({
   "Content-Type": "application/json",
@@ -113,7 +113,102 @@ const createDeliveryOrder = async (shipmentData, token, shop_id, seller_id) => {
     );
 
     await DeliveryOrder.create({
-      seller_id,
+      seller_id: seller_id,
+      order_code: data.order_code,
+      status: orderInfo.data.status,
+      to_name: shipmentData.to_name,
+      to_phone: shipmentData.to_phone,
+      to_address: shipmentData.to_address,
+      is_printed: false,
+      created_date: orderInfo.data.created_date,
+      cod_amount: cod_amount,
+      weight: shipmentData.weight,
+      payment_type_id: shipmentData.payment_type_id,
+      total_amount: total_amount,
+    });
+    await deleteCache(`delivery:orders:seller:${seller_id}`);
+    return response.data;
+  } catch (error) {
+    const errData = error.response?.data?.code_message_value || {
+      message: error.message,
+    };
+    console.error("GHN API Error (copyOrder):", errData);
+    throw new Error(JSON.stringify(errData));
+  }
+};
+
+const createDeliveryOrderFromTransaction = async (
+  transaction_id,
+  token,
+  shop_id,
+  seller_id,
+  orderData
+) => {
+  try {
+    const { payment_type_id, required_note, weight } = orderData;
+    if (
+      !transaction_id ||
+      !seller_id ||
+      !payment_type_id ||
+      !required_note ||
+      !weight
+    ) {
+      throw new Error("Missing parameters");
+    }
+    if (weight <= 0) {
+      throw new Error("Weight must be positive");
+    }
+    const transaction = await Transaction.findByPk(transaction_id, {
+      include: [
+        {
+          model: ReceiverInformation,
+          as: "receiver_information",
+        },
+      ],
+    });
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+    if (transaction.status !== "accepted") {
+      throw new Error("Transaction was not accepted");
+    }
+    if (!transaction.receiver_information) {
+      throw new Error("Receiver information not found");
+    }
+    const tempShipmentData = {
+      to_name: transaction.receiver_information.to_name,
+      to_phone: transaction.receiver_information.to_phone,
+      to_address: transaction.receiver_information.to_address,
+      to_ward_name: transaction.receiver_information.to_ward_name,
+      to_district_name: transaction.receiver_information.to_district_name,
+      to_province_name: transaction.receiver_information.to_province_name,
+      service_type_id: 2,
+      payment_type_id: payment_type_id,
+      required_note: required_note,
+      weight: weight,
+    };
+    const shipmentData = {
+      ...orderData,
+      ...tempShipmentData,
+    };
+    const url = `${ghnBaseUrl}/v2/shipping-order/create`;
+    const response = await axios.post(url, shipmentData, {
+      headers: buildHeaders(token, shop_id),
+    });
+
+    const data = response.data.data;
+    const total_fee = Number(data.total_fee) || 0;
+    const cod_amount = Number(shipmentData.cod_amount) || 0;
+    const total_amount = total_fee + cod_amount;
+    const orderInfo = await getDeliveryOrderInfo(
+      data.order_code,
+      token,
+      shop_id
+    );
+
+    await DeliveryOrder.create({
+      seller_id: transaction.seller_id,
+      buyer_id: transaction.buyer_id,
       order_code: data.order_code,
       status: orderInfo.data.status,
       to_name: shipmentData.to_name,
@@ -290,4 +385,5 @@ module.exports = {
   previewOrderWithoutOrderCode,
   getDeliveryOrdersByBuyer,
   getAllDeliveryOrdersByStatus,
+  createDeliveryOrderFromTransaction,
 };
