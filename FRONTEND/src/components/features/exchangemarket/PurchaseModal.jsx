@@ -1,6 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Coins, X, ShoppingBag, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ShippingInfoModal from "./ShippingInfoModal";
+import { getReceiverInfoByUserIDAPI, PreviewOrderWithoutOrderCode } from "../../../utils/api";
+import { AuthContext } from "../../../contexts/auth.context";
 
 export default function PurchaseModal({
   isOpen,
@@ -11,11 +14,84 @@ export default function PurchaseModal({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState(null);
+  const [shippingFee, setShippingFee] = useState(0);
+  const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
   const modalRef = useRef(null);
+  const shippingModalRef = useRef(null);
+  const { auth } = useContext(AuthContext);
+  const token = "c3f24415-29b9-11f0-9b81-222185cb68c8";
+  const shop_id = 196506;
+
+  useEffect(() => {
+    async function fetchDefaultShipping() {
+      if (isOpen && auth.user?.id) {
+        try {
+          setIsLoadingShipping(true);
+          const response = await getReceiverInfoByUserIDAPI(auth.user.id);
+          if (response?.data?.length > 0) {
+            const defaultShipping = response.data.find((info) => info.is_default) || response.data[0];
+            setShippingInfo(defaultShipping);
+            await fetchShippingFee(defaultShipping);
+          }
+        } catch (error) {
+          console.error("Error fetching shipping info:", error);
+        } finally {
+          setIsLoadingShipping(false);
+        }
+      }
+    }
+    fetchDefaultShipping();
+  }, [isOpen, auth.user?.id, item?.id]);
+
+  const fetchShippingFee = async (selectedShipping) => {
+    try {
+      const orderData = {
+        to_name: selectedShipping.to_name,
+        to_phone: selectedShipping.to_phone,
+        to_address: selectedShipping.to_address,
+        to_ward_name: selectedShipping.to_ward_name,
+        to_district_name: selectedShipping.to_district_name,
+        service_type_id: 2,
+        payment_type_id: 2,
+        required_note: "CHOXEMHANGKHONGTHU",
+        weight: item.weight || 200,
+        length: item.length || 15,
+        width: item.width || 15,
+        height: item.height || 15,
+        items: [
+          {
+            name: item.name,
+            code: item.id.toString(),
+            quantity: quantity,
+            price: item.price,
+            weight: item.weight || 200,
+            length: item.length || 12,
+            width: item.width || 12,
+            height: item.height || 12,
+            category: {
+              level1: item.category || "Khác",
+            },
+          },
+        ],
+      };
+
+      const feeResponse = await PreviewOrderWithoutOrderCode(orderData, token, shop_id);
+      setShippingFee(feeResponse?.data?.total_fee || 0);
+    } catch (error) {
+      console.error("Error fetching shipping fee:", error);
+      setShippingFee(0);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target) &&
+        (!shippingModalRef.current || !shippingModalRef.current.contains(event.target))
+      ) {
         onClose();
       }
     }
@@ -35,12 +111,21 @@ export default function PurchaseModal({
     if (!isOpen) {
       setQuantity(1);
       setIsProcessing(false);
+      setShippingInfo(null);
+      setShippingFee(0);
+      setIsShippingModalOpen(false);
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (shippingInfo && isOpen) {
+      fetchShippingFee(shippingInfo);
+    }
+  }, [quantity, shippingInfo]);
+
   if (!item || !isOpen) return null;
 
-  const totalCost = item.price * quantity;
+  const totalCost = item.price * quantity + shippingFee;
   const canPurchase = userCoins >= totalCost && quantity <= item.stock;
   const maxQuantity = Math.min(Math.floor(userCoins / item.price), item.stock);
 
@@ -53,11 +138,39 @@ export default function PurchaseModal({
   };
 
   const handleConfirm = () => {
+    if (!shippingInfo) {
+      alert("Vui lòng chọn thông tin giao hàng!");
+      return;
+    }
+    if (!shippingInfo.to_ward_name || !shippingInfo.to_district_name) {
+      alert("Thông tin giao hàng thiếu phường/xã hoặc quận/huyện!");
+      return;
+    }
     setIsProcessing(true);
     setTimeout(() => {
-      onConfirm(quantity);
+      onConfirm(quantity, {
+        ...shippingInfo,
+        shippingFee,
+      });
       setIsProcessing(false);
     }, 800);
+  };
+
+  const handleChangeShipping = () => {
+    setIsShippingModalOpen(true);
+  };
+
+  const handleSelectShipping = async (selectedInfo) => {
+    try {
+      setIsLoadingShipping(true);
+      setShippingInfo(selectedInfo);
+      await fetchShippingFee(selectedInfo);
+      setIsShippingModalOpen(false);
+    } catch (error) {
+      console.error("Error fetching shipping fee:", error);
+    } finally {
+      setIsLoadingShipping(false);
+    }
   };
 
   return (
@@ -91,7 +204,37 @@ export default function PurchaseModal({
 
             {/* Content */}
             <div className="p-6">
-              {/* Item details */}
+              {/* Shipping Information */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-gray-800">Thông tin nhận hàng</h3>
+                  <button
+                    onClick={handleChangeShipping}
+                    className="text-emerald-600 hover:text-emerald-800 text-sm"
+                  >
+                    Thay đổi
+                  </button>
+                </div>
+                {isLoadingShipping ? (
+                  <div className="animate-pulse bg-gray-100 p-3 rounded-lg">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ) : shippingInfo ? (
+                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-800">{shippingInfo.to_name}</p>
+                    <p className="text-sm text-gray-600">{shippingInfo.to_address}</p>
+                    <p className="text-sm text-gray-600">
+                      {shippingInfo.to_ward_name}, {shippingInfo.to_district_name}, {shippingInfo.to_province_name}
+                    </p>
+                    <p className="text-sm text-gray-600">{shippingInfo.to_phone}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-600">Chưa có thông tin giao hàng</p>
+                )}
+              </div>
+
+              {/* Item Details */}
               <div className="flex items-center gap-4 py-2 border-b border-gray-100 pb-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                   <img
@@ -101,14 +244,11 @@ export default function PurchaseModal({
                   />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-800 text-lg">
-                    {item.name}
-                  </h3>
+                  <h3 className="font-medium text-gray-800 text-lg">{item.name}</h3>
+                  <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
                   <div className="flex items-center text-emerald-600 mt-1">
                     <Coins className="h-4 w-4 mr-1" />
-                    <span className="font-semibold">
-                      {item.price} xu / đơn vị
-                    </span>
+                    <span className="font-semibold">{item.price} xu / đơn vị</span>
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
                     Còn lại: {item.stock} sản phẩm
@@ -116,7 +256,7 @@ export default function PurchaseModal({
                 </div>
               </div>
 
-              {/* Quantity selector */}
+              {/* Quantity Selector */}
               <div className="flex justify-between items-center mt-5">
                 <span className="text-gray-700">Số lượng:</span>
                 <div className="flex items-center">
@@ -135,9 +275,7 @@ export default function PurchaseModal({
                     max={maxQuantity}
                   />
                   <button
-                    onClick={() =>
-                      setQuantity(Math.min(maxQuantity, quantity + 1))
-                    }
+                    onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                     className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
                   >
                     +
@@ -145,19 +283,25 @@ export default function PurchaseModal({
                 </div>
               </div>
 
-              {/* Transaction summary */}
+              {/* Transaction Summary */}
               <div className="bg-emerald-50 p-4 rounded-lg mt-5 border border-emerald-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Tổng giá:</span>
+                  <span className="text-gray-600">Giá sản phẩm:</span>
                   <span className="font-medium text-emerald-600">
-                    {totalCost} xu
+                    {item.price * quantity} xu
                   </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
+                  <span className="text-gray-600">Phí giao hàng:</span>
+                  <span className="font-medium text-emerald-600">{shippingFee} xu</span>
+                </div>
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
+                  <span className="text-gray-600">Tổng giá:</span>
+                  <span className="font-medium text-emerald-600">{totalCost} xu</span>
+                </div>
+                <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Số dư hiện tại:</span>
-                  <span className="font-medium text-emerald-600">
-                    {userCoins} xu
-                  </span>
+                  <span className="font-medium text-emerald-600">{userCoins} xu</span>
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
                   <span className="text-gray-600">Số dư sau giao dịch:</span>
@@ -171,7 +315,7 @@ export default function PurchaseModal({
                 </div>
               </div>
 
-              {/* Action buttons */}
+              {/* Action Buttons */}
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={onClose}
@@ -179,22 +323,21 @@ export default function PurchaseModal({
                 >
                   Hủy
                 </button>
-
                 <button
                   onClick={handleConfirm}
-                  disabled={!canPurchase || isProcessing}
+                  disabled={!canPurchase || isProcessing || !shippingInfo}
                   className={`flex-1 py-2.5 rounded-lg text-white font-medium flex items-center justify-center ${
-                    canPurchase && !isProcessing
+                    canPurchase && !isProcessing && shippingInfo
                       ? "bg-emerald-600 hover:bg-emerald-700"
                       : "bg-gray-400 cursor-not-allowed"
                   }`}
                 >
                   {isProcessing ? (
-                    <>
-                      <span className="animate-pulse">Đang xử lý...</span>
-                    </>
+                    <span className="animate-pulse">Đang xử lý...</span>
                   ) : !canPurchase ? (
                     "Không đủ điều kiện"
+                  ) : !shippingInfo ? (
+                    "Chọn thông tin giao hàng"
                   ) : (
                     <>
                       <CheckCircle className="h-4 w-4 mr-1" />
@@ -205,6 +348,16 @@ export default function PurchaseModal({
               </div>
             </div>
           </motion.div>
+
+          {/* Shipping Info Modal */}
+          {isShippingModalOpen && (
+            <ShippingInfoModal
+              isOpen={isShippingModalOpen}
+              onClose={() => setIsShippingModalOpen(false)}
+              onSelect={handleSelectShipping}
+              ref={shippingModalRef}
+            />
+          )}
         </div>
       )}
     </AnimatePresence>

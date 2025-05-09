@@ -126,7 +126,7 @@ export default function ExchangeMarket() {
           name: item.name,
           description: item.description,
           price: item.price,
-          category: item.category,
+          category: item.category || "other",
           postStatus: item.status === "available" ? "public" : item.status,
           condition: item.product_status || "new",
           createdAt: item.created_at,
@@ -135,6 +135,10 @@ export default function ExchangeMarket() {
           canPurchase: item.status === "available",
           seller: item.creator?.username || "Không xác định",
           purchaseLimitPerDay: item.purchase_limit_per_day,
+          weight: item.weight,
+          length: item.length,
+          width: item.width,
+          height: item.height,
         }));
         setItems(mappedItems);
       }
@@ -156,15 +160,19 @@ export default function ExchangeMarket() {
           name: item.name,
           description: item.description,
           price: item.price,
-          category: item.category,
+          category: item.category || "other",
           postStatus: item.post_status,
-          condition: item.product_status,
+          condition: item.product_status || "new",
           createdAt: item.created_at,
           image: item.images.length > 0 ? item.images[0] : null,
           stock: item.stock || 0,
           canPurchase: item.post_status === "public",
-          seller: item.seller_id || "Không xác định",
+          seller: item.creator?.username || "Không xác định",
           purchaseLimitPerDay: item.purchase_limit_per_day,
+          weight: item.weight,
+          length: item.length,
+          width: item.width,
+          height: item.height,
         }));
         setMyItems(mappedMyItems);
       }
@@ -185,15 +193,19 @@ export default function ExchangeMarket() {
           name: item.name,
           description: item.description,
           price: item.price,
-          category: item.category,
+          category: item.category || "other",
           postStatus: item.post_status,
-          condition: item.product_status,
+          condition: item.product_status || "new",
           createdAt: item.created_at,
           image: item.images.length > 0 ? item.images[0] : null,
-          stock: 0,
+          stock: item.stock || 0,
           canPurchase: item.post_status === "public",
-          seller: item.seller?.username || "Không xác định",
-          purchaseLimitPerDay: null,
+          seller: item.creator?.username || "Không xác định",
+          purchaseLimitPerDay: item.purchase_limit_per_day,
+          weight: item.weight,
+          length: item.length,
+          width: item.width,
+          height: item.height,
         }));
         setAllItems(mappedAllItems);
       }
@@ -223,10 +235,10 @@ export default function ExchangeMarket() {
   );
 
   const confirmPurchase = useCallback(
-    async (quantity) => {
+    async (quantity, shippingInfo) => {
       if (!selectedItem || !auth.user) return;
       const userCoins = auth.user.coins?.amount || 0;
-      const totalCost = selectedItem.price * quantity;
+      const totalCost = selectedItem.price * quantity + (shippingInfo.shippingFee || 0);
       if (userCoins < totalCost) {
         alert("Bạn không có đủ số coins để giao dịch!");
         return;
@@ -235,10 +247,20 @@ export default function ExchangeMarket() {
         const response = await purchaseItemApi(auth.user.id, selectedItem.id, {
           name: selectedItem.name,
           quantity: quantity,
+          shippingInfo: {
+            to_name: shippingInfo.to_name,
+            to_phone: shippingInfo.to_phone,
+            to_address: shippingInfo.to_address,
+            to_ward_name: shippingInfo.to_ward_name,
+            to_district_name: shippingInfo.to_district_name,
+            to_province_name: shippingInfo.to_province_name,
+            shipping_fee: shippingInfo.shippingFee,
+          },
         });
         if (response.data) {
           setIsModalOpen(false);
           alert(`Trao đổi thành công ${quantity} ${selectedItem.name}!`);
+          fetchRedeemItems(); // Refresh items after purchase
         } else {
           alert("Có lỗi xảy ra, vui lòng thử lại!");
         }
@@ -247,7 +269,7 @@ export default function ExchangeMarket() {
         alert("Có lỗi xảy ra, vui lòng thử lại!");
       }
     },
-    [selectedItem, auth.user]
+    [selectedItem, auth.user, fetchRedeemItems]
   );
 
   const handleAddItem = () => {
@@ -308,6 +330,10 @@ export default function ExchangeMarket() {
                     stock: response.stock || item.stock,
                     canPurchase: response.post_status === "public",
                     purchaseLimitPerDay: response.purchase_limit_per_day,
+                    weight: response.weight,
+                    length: response.length,
+                    width: response.width,
+                    height: response.height,
                   }
                 : item
             )
@@ -333,6 +359,10 @@ export default function ExchangeMarket() {
             canPurchase: response.data.post_status === "public",
             seller: auth.user?.username || "Không xác định",
             purchaseLimitPerDay: response.data.purchase_limit_per_day,
+            weight: response.data.weight,
+            length: response.data.length,
+            width: response.data.width,
+            height: response.data.height,
           };
           setMyItems((prev) => [...prev, newItem]);
           alert("Thêm sản phẩm mới thành công!");

@@ -451,6 +451,15 @@ export const updateShippingOrderApi = (data, token, shop_id) => {
   });
 };
 
+export const PreviewOrderWithoutOrderCode = (data, token, shop_id) => {
+  return axios.post("api/delivery/carrier/ghn/order/preview", {data}, {
+    headers: {
+      token: token,
+      shop_id: shop_id,
+    },
+  });
+};
+
 export const cancelShippingOrderApi = (order_code) => {
   return axios.post(`api/delivery/carrier/ghn/cancel/${order_code}`);
 };
@@ -514,10 +523,14 @@ export const getReceiverInfoByIdAPI = (id) => {
   return axios.get(`api/users/receiver/info/${id}`);
 };
 
+export const getReceiverInfoByUserIDAPI = (user_id) => {
+  return axios.get(`api/users/receiver/info/user/${user_id}`);
+};
+
 export const updateReceiverInfoByIdAPI = (id ,data) => {
   return axios.get(`api/users/receiver/update/${id}`, data);
 };
 
 export const deleteReceiverInfoByIdAPI = (id) => {
-  return axios.get(`api/users/receiver/update/${id}`);
+  return axios.delete(`api/users/receiver/update/${id}`);
 };

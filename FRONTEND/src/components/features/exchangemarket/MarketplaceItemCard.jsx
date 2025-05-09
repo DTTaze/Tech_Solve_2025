@@ -1,17 +1,9 @@
-import { useState } from "react";
-import {
-  CheckCircle,
-  EyeOff,
-  Clock,
-  FileWarning,
-  ClipboardEdit,
-  Eye,
-} from "lucide-react";
+import { useState, useContext } from "react";
+import { CheckCircle, EyeOff, Clock, FileWarning, ClipboardEdit, Eye } from "lucide-react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-import { format } from "date-fns"; // Added import for format
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
-import DetailsModal from "./DetailsModal";
+import { AuthContext } from "../../../contexts/auth.context";
 
 export const statusConfig = {
   public: { name: "Đang hiển thị", color: "text-green-600", Icon: CheckCircle },
@@ -48,12 +40,12 @@ const MarketplaceItemCard = ({
   onEdit,
   onDelete,
   onPurchase,
-  viewMode = "all_items",
+  viewMode = "all-items",
   fetchItems,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const { auth } = useContext(AuthContext);
 
   const handleEditClick = () => {
     onEdit(item);
@@ -73,18 +65,8 @@ const MarketplaceItemCard = ({
   };
 
   const handlePurchaseClick = () => {
-    if (onPurchase) {
-      onPurchase(item);
-    } else {
-      setShowPurchaseModal(true);
-    }
+    setShowPurchaseModal(true);
   };
-
-  const handleViewDetails = () => {
-    setShowDetailsModal(true);
-  };
-
-  const currentStatus = statusConfig[item.postStatus] || statusConfig.draft;
 
   return (
     <div
@@ -95,8 +77,8 @@ const MarketplaceItemCard = ({
       {/* Item Image */}
       <div
         className={`relative mb-3 h-48 w-full overflow-hidden rounded-md transition-all duration-200 ${
-          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
-        } ${showDetailsModal ? "blur-sm" : ""}`}
+          viewMode === "all-items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
+        } ${showPurchaseModal ? "blur-sm" : ""}`}
       >
         <img
           src={item.image || "/placeholder.svg"}
@@ -108,8 +90,8 @@ const MarketplaceItemCard = ({
       {/* Item Details */}
       <div
         className={`mb-4 transition-all duration-200 ${
-          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
-        } ${showDetailsModal ? "blur-sm" : ""}`}
+          viewMode === "all-items" || viewMode === "redeem" ? "group-hover:blur-sm" : ""
+        } ${showPurchaseModal ? "blur-sm" : ""}`}
       >
         <h3 className="text-lg font-semibold">{item.name}</h3>
         <p className="text-sm text-gray-600">
@@ -128,25 +110,24 @@ const MarketplaceItemCard = ({
         </div>
       </div>
 
-
-      {viewMode === "all_items" && (
+      {/* Action Button */}
+      {(viewMode === "all-items" || viewMode === "redeem") && (
         <button
-          onClick={handleViewDetails}
+          onClick={handlePurchaseClick}
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center rounded-md gap-1 border border-gray-300 p-3 text-sm bg-white hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
         >
           <Eye size={16} />
-          Xem chi tiết
+          Xem chi tiết & Mua
         </button>
       )}
 
       <div
         className={`mt-2 flex flex-wrap justify-between items-center transition-all duration-200 ${
-          viewMode !== "my_items" ? "group-hover:blur-sm" : ""
-        } ${showDetailsModal ? "blur-sm" : ""}`}
+          viewMode !== "redeem" ? "group-hover:blur-sm" : ""
+        } ${showPurchaseModal ? "blur-sm" : ""}`}
       >
-
         <div className="flex gap-2 mt-2 sm:mt-0">
-          {viewMode === "my_items" && (
+          {viewMode === "my-items" && (
             <>
               <button
                 onClick={handleEditClick}
@@ -182,19 +163,13 @@ const MarketplaceItemCard = ({
           isOpen={showPurchaseModal}
           onClose={() => setShowPurchaseModal(false)}
           item={item}
-          onSuccess={() => {
+          userCoins={auth.user?.coins?.amount || 0}
+          onConfirm={(quantity, shippingInfo) => {
+            onPurchase(item, quantity, shippingInfo);
             if (fetchItems) fetchItems();
           }}
         />
       )}
-
-      {/* Details Modal */}
-      <DetailsModal
-        isOpen={showDetailsModal}
-        onClose={() => setShowDetailsModal(false)}
-        item={item}
-        getCategoryDisplayName={getCategoryDisplayName}
-      />
     </div>
   );
 };
