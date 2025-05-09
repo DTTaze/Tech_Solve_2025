@@ -116,7 +116,20 @@ const getAllReceiverInfo = async () => {
   }
 };
 
-const getReceiverInfoByUserId = {}
+const getReceiverInfoByUserId = async (user_id) => {
+  try {
+    const allInfo = await getAllReceiverInfo();
+
+    // Filter the list by user_id
+    const userReceivers = allInfo.filter(item => item.user_id === user_id);
+
+    return userReceivers;
+  } catch (error) {
+    console.error("Error getting Receiver Info by user_id:", error.message);
+    throw error;
+  }
+};
+
 
 // UPDATE
 const updateReceiverInfoById = async (id, data) => {
