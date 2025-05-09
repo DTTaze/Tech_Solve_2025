@@ -456,7 +456,7 @@ export const updateShippingOrderApi = (data, token, shop_id) => {
 };
 
 export const PreviewOrderWithoutOrderCode = (data, token, shop_id) => {
-  return axios.post("api/delivery/carrier/ghn/order/preview", {data}, {
+  return axios.post("api/delivery/carrier/ghn/order/preview", data, {
     headers: {
       token: token,
       shop_id: shop_id,
