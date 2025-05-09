@@ -215,24 +215,21 @@ const deleteTransaction = async (transaction_id) => {
   }
 };
 
-const getTransactionByStatus = async (transaction_id, status) => {
+const getAllTransactionsByStatus = async (status) => {
   try {
-    if (!transaction_id || !status) {
+    if (!status) {
       throw new Error("Missing parameters");
     }
 
-    const transaction = await Transaction.findOne({
-      where: {
-        id: transaction_id,
-        status: status,
-      },
+    const transactions = await Transaction.findAll({
+      where: { status },
     });
 
-    if (!transaction) {
+    if (!transactions || transactions.length === 0) {
       throw new Error("Transaction not found with the specified status");
     }
 
-    return transaction;
+    return transactions;
   } catch (error) {
     throw error;
   }
@@ -249,7 +246,13 @@ const makeDecision = async (transaction_id, decision) => {
     if (!transaction) {
       throw new Error("Transaction not found");
     }
-
+    if (
+      decision !== "accepted" &&
+      decision !== "rejected" &&
+      decision !== "pending"
+    ) {
+      throw new Error("Wrong new status to make decision");
+    }
     transaction.status = decision;
     await transaction.save();
 
@@ -266,5 +269,5 @@ module.exports = {
   deleteTransaction,
   getAllTransactions,
   makeDecision,
-  getTransactionByStatus,
+  getAllTransactionsByStatus,
 };

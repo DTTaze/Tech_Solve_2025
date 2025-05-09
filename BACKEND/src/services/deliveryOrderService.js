@@ -4,6 +4,7 @@ const db = require("../models/index");
 const DeliveryOrder = db.DeliveryOrder;
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 const { response } = require("express");
+const { where } = require("sequelize");
 
 const buildHeaders = (token, shop_id) => ({
   "Content-Type": "application/json",
@@ -215,6 +216,23 @@ const getAllDeliveryOrders = async () => {
   }
 };
 
+const getAllDeliveryOrdersByStatus = async (status) => {
+  if (!status || typeof status !== "string") {
+    throw new Error("Invalid status parameter");
+  }
+
+  try {
+    const orders = await DeliveryOrder.findAll({ where: { status } });
+    return orders;
+  } catch (error) {
+    console.error(
+      `Error fetching delivery orders with status ${status}:`,
+      error
+    );
+    throw new Error(`Failed to fetch delivery orders: ${error.message}`);
+  }
+};
+
 const getDeliveryOrdersBySeller = async (seller_id) => {
   try {
     const cacheKey = `delivery:orders:seller:${seller_id}`;
@@ -271,4 +289,5 @@ module.exports = {
   getWardsByDistrict,
   previewOrderWithoutOrderCode,
   getDeliveryOrdersByBuyer,
+  getAllDeliveryOrdersByStatus,
 };

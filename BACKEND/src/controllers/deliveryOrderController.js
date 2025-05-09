@@ -176,6 +176,18 @@ const handleGetAllDeliveryOrders = async (req, res) => {
     return res.error(500, "Get all delivery orders failed", error.message);
   }
 };
+
+const handleGetAllDeliveryOrdersByStatus = async (req, res) => {
+  try {
+    const status = req.params.status;
+    const orders = await deliveryOrderService.getAllDeliveryOrdersByStatus(
+      status
+    );
+    return res.success("Get all delivery orders success", orders);
+  } catch (error) {
+    return res.error(500, "Get all delivery orders failed", error.message);
+  }
+};
 module.exports = {
   handleCreateDeliveryOrder,
   handleGetDeliveryOrderInfo,
@@ -188,4 +200,5 @@ module.exports = {
   handleGetAllWardsByDistrict,
   handlePreviewOrderWithoutOrderCode,
   handleGetAllDeliveryOrdersByBuyer,
+  handleGetAllDeliveryOrdersByStatus,
 };
