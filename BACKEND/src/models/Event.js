@@ -52,6 +52,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      coins: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       end_sign: {
         type: DataTypes.DATE,
         allowNull: false,

@@ -283,7 +283,7 @@ const getEventUserByEventId = async (event_id) => {
 
 const createEvent = async (Data, user_id, images) => {
   try {
-    const { title, description, location, capacity,end_sign, start_time, end_time } =
+    const { title, description, location, capacity,end_sign, start_time, end_time, coins } =
       Data;
 
     // Validate required fields
@@ -293,7 +293,8 @@ const createEvent = async (Data, user_id, images) => {
       !start_time ||
       !end_time ||
       !location ||
-      !capacity
+      !capacity ||
+      !coins
     ) {
       throw new Error("All fields are required");
     }
@@ -319,6 +320,7 @@ const createEvent = async (Data, user_id, images) => {
       end_sign: new Date(end_sign),
       start_time: new Date(start_time),
       end_time: new Date(end_time),
+      coins: Number(coins)
     });
 
     let uploadedImages = [];
@@ -408,6 +410,7 @@ const updateEvent = async (event_id, Data, images) => {
       start_time,
       end_time,
       status,
+      coins
     } = Data;
     let updateFields = {};
 
@@ -454,6 +457,12 @@ const updateEvent = async (event_id, Data, images) => {
         throw new Error("Invalid status value");
       }
       updateFields.status = status;
+    }
+
+    if (coins) {
+      if (typeof coins === "number" && !isNaN(coins)) {
+        updateFields.coins = coins;
+      }
     }
 
     const event = await Event.findByPk(event_id);
@@ -507,14 +516,7 @@ const deleteEvent = async (event_id) => {
 
     let listImagesBeforeDelete = await deleteImages(event_id, "event");
 
-    listImagesBeforeDelete = listImagesBeforeDelete.reduce((acc, image) => {
-      if (!acc[image.reference_id]) {
-        acc[image.reference_id] = [];
-      }
-      acc[image.reference_id].push(image.url);
-      return acc;
-    }
-    ,{});
+    listImagesBeforeDelete = listImagesBeforeDelete.map(image => image.url)
 
     //delete cache
     await deleteCache(`event:id:${event_id}`);
