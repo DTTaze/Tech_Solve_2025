@@ -10,7 +10,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { auth, setAuth } = useContext(AuthContext);
+  const { setAuth } = useContext(AuthContext);
   const { notify } = useNotification();
   const [identifier, setIdentifier] = useState("");
   const [showPassword, setShowPassword] = useState(false);

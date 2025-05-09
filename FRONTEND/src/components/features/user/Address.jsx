@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import InputField from "../../ui/InputField.jsx"; 
-import Button from "../../ui/Button.jsx"; 
+import InputField from "../../ui/InputField.jsx";
+import Button from "../../ui/Button.jsx";
+import { getAllProvincesApi, getAllDistrictsByProvinceApi, getAllWardsByDistrictApi } from "../../../utils/api.js";
 
 function Address() {
   const [addresses, setAddresses] = useState([]);
@@ -8,31 +9,118 @@ function Address() {
   const [newAddress, setNewAddress] = useState({
     fullName: "",
     phoneNumber: "",
-    address: "",
+    province: "", // Stores ProvinceID as integer
+    district: "", // Stores DistrictID as integer
+    ward: "",
     type: "home",
   });
   const [defaultAddressId, setDefaultAddressId] = useState(null);
   const [errors, setErrors] = useState({});
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [token] = useState("c3f24415-29b9-11f0-9b81-222185cb68c8"); // Replace with actual token or auth mechanism
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
+  // Fetch provinces on component mount
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        const response = await getAllProvincesApi(token);
+        if (response.code === 200) {
+          setProvinces(response.data);
+        } else {
+          setErrorMessage("Failed to fetch provinces. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error fetching provinces:", error);
+        setErrorMessage("Error fetching provinces. Please check your connection.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProvinces();
+  }, [token]);
+
+  // Fetch districts when province changes
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (newAddress.province && Number.isInteger(newAddress.province)) {
+        setIsLoading(true);
+        try {
+          const response = await getAllDistrictsByProvinceApi(newAddress.province, token);
+          if (response.code === 200) {
+            setDistricts(response.data);
+            setWards([]);
+            setNewAddress((prev) => ({ ...prev, district: "", ward: "" }));
+          } else {
+            setErrorMessage("Failed to fetch districts. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error fetching districts:", error);
+          setErrorMessage("Error fetching districts. Please check your connection.");
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setDistricts([]);
+        setWards([]);
+        setNewAddress((prev) => ({ ...prev, district: "", ward: "" }));
+      }
+    };
+    fetchDistricts();
+  }, [newAddress.province, token]);
+
+  // Fetch wards when district changes
+  useEffect(() => {
+    const fetchWards = async () => {
+      if (newAddress.district && Number.isInteger(newAddress.district)) {
+        setIsLoading(true);
+        try {
+          const response = await getAllWardsByDistrictApi(newAddress.district, token);
+          if (response.code === 200) {
+            setWards(response.data);
+            setNewAddress((prev) => ({ ...prev, ward: "" }));
+          } else {
+            setErrorMessage("Failed to fetch wards. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error fetching wards:", error);
+          setErrorMessage("Error fetching wards. Please check your connection.");
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setWards([]);
+        setNewAddress((prev) => ({ ...prev, ward: "" }));
+      }
+    };
+    fetchWards();
+  }, [newAddress.district, token]);
+
+  // Mock addresses for initial display
   useEffect(() => {
     const mockAddresses = [
       {
         id: 1,
         fullName: "Nguyễn Văn A",
         phoneNumber: "0123456789",
-        address: "123 Đường Láng, Hà Nội",
+        address: "Phường Bến Nghé, Quận 1, Hồ Chí Minh",
         type: "home",
       },
       {
         id: 2,
         fullName: "Trần Thị B",
         phoneNumber: "0987654321",
-        address: "456 Nguyễn Trãi, TP.HCM",
+        address: "Phường Thanh Xuân Bắc, Quận Thanh Xuân, Hà Nội",
         type: "office",
       },
     ];
     setAddresses(mockAddresses);
-    setDefaultAddressId(1); 
+    setDefaultAddressId(1);
   }, []);
 
   const validateField = (name, value) => {
@@ -48,8 +136,14 @@ function Address() {
         else if (!/^\d{10}$/.test(value))
           error = "Số điện thoại phải là 10 chữ số";
         break;
-      case "address":
-        if (!value) error = "Địa chỉ không được để trống";
+      case "province":
+        if (!value) error = "Vui lòng chọn Tỉnh/Thành phố";
+        break;
+      case "district":
+        if (!value) error = "Vui lòng chọn Quận/Huyện";
+        break;
+      case "ward":
+        if (!value) error = "Vui lòng chọn Phường/Xã";
         break;
       default:
         break;
@@ -59,9 +153,12 @@ function Address() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewAddress((prev) => ({ ...prev, [name]: value }));
+    // Convert province and district values to integers
+    const parsedValue =
+      name === "province" || name === "district" ? parseInt(value, 10) || "" : value;
+    setNewAddress((prev) => ({ ...prev, [name]: parsedValue }));
 
-    const error = validateField(name, value);
+    const error = validateField(name, parsedValue);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
@@ -71,7 +168,7 @@ function Address() {
 
   const handleAddAddress = () => {
     const newErrors = {};
-    ["fullName", "phoneNumber", "address"].forEach((field) => {
+    ["fullName", "phoneNumber", "province", "district", "ward"].forEach((field) => {
       const error = validateField(field, newAddress[field]);
       if (error) newErrors[field] = error;
     });
@@ -81,16 +178,23 @@ function Address() {
       return;
     }
 
+    // Construct full address string
+    const provinceName = provinces.find((p) => p.ProvinceID === newAddress.province)?.ProvinceName || "";
+    const districtName = districts.find((d) => d.DistrictID === newAddress.district)?.DistrictName || "";
+    const wardName = wards.find((w) => w.WardCode === newAddress.ward)?.WardName || "";
+
+    const fullAddress = `${wardName}, ${districtName}, ${provinceName}`;
+
     const newAddressEntry = {
       id: addresses.length + 1,
       fullName: newAddress.fullName,
       phoneNumber: newAddress.phoneNumber,
-      address: newAddress.address,
+      address: fullAddress,
       type: newAddress.type,
     };
 
     setAddresses([...addresses, newAddressEntry]);
-    setNewAddress({ fullName: "", phoneNumber: "", address: "", type: "home" });
+    setNewAddress({ fullName: "", phoneNumber: "", province: "", district: "", ward: "", type: "home" });
     setErrors({});
     setIsModalOpen(false);
   };
@@ -158,6 +262,7 @@ function Address() {
                   text="Thiết lập mặc định"
                   onClick={() => handleSetDefault(addr.id)}
                   className="bg-gray-500 hover:bg-gray-600 text-white text-sm"
+                  padding="10px"
                 />
               )}
             </div>
@@ -170,6 +275,8 @@ function Address() {
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-lg">
             <h4 className="font-semibold text-lg mb-4">Thêm địa chỉ mới</h4>
+            {isLoading && <p className="text-gray-500">Đang tải...</p>}
+            {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <InputField
                 id="fullName"
@@ -189,14 +296,70 @@ function Address() {
               />
             </div>
             <div className="mb-4">
-              <InputField
-                id="address"
-                label="Địa chỉ"
-                name="address"
-                value={newAddress.address}
+              <label htmlFor="province" className="text-sm font-semibold mb-2 block">
+                Tỉnh/Thành phố
+              </label>
+              <select
+                id="province"
+                name="province"
+                value={newAddress.province}
                 onChange={handleInputChange}
-                error={errors.address}
-              />
+                className="w-full p-2 border rounded-md"
+                disabled={isLoading}
+              >
+                <option value="">Chọn Tỉnh/Thành phố</option>
+                {provinces
+                  .filter((province) => province.Status === 1)
+                  .sort((a, b) => a.ProvinceName.localeCompare(b.ProvinceName))
+                  .map((province) => (
+                    <option key={province.ProvinceID} value={province.ProvinceID}>
+                      {province.ProvinceName}
+                    </option>
+                  ))}
+              </select>
+              {errors.province && <p className="text-red-500 text-sm">{errors.province}</p>}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="district" className="text-sm font-semibold mb-2 block">
+                Quận/Huyện
+              </label>
+              <select
+                id="district"
+                name="district"
+                value={newAddress.district}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-md"
+                disabled={!newAddress.province || isLoading}
+              >
+                <option value="">Chọn Quận/Huyện</option>
+                {districts.map((district) => (
+                  <option key={district.DistrictID} value={district.DistrictID}>
+                    {district.DistrictName}
+                  </option>
+                ))}
+              </select>
+              {errors.district && <p className="text-red-500 text-sm">{errors.district}</p>}
+            </div>
+            <div className="mb-4">
+              <label htmlFor="ward" className="text-sm font-semibold mb-2 block">
+                Phường/Xã
+              </label>
+              <select
+                id="ward"
+                name="ward"
+                value={newAddress.ward}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-md"
+                disabled={!newAddress.district || isLoading}
+              >
+                <option value="">Chọn Phường/Xã</option>
+                {wards.map((ward) => (
+                  <option key={ward.WardCode} value={ward.WardCode}>
+                    {ward.WardName}
+                  </option>
+                ))}
+              </select>
+              {errors.ward && <p className="text-red-500 text-sm">{errors.ward}</p>}
             </div>
             <div className="mb-4">
               <p className="text-sm font-semibold mb-2">Loại địa chỉ</p>
@@ -229,12 +392,13 @@ function Address() {
               <Button
                 text="Trở lại"
                 onClick={() => setIsModalOpen(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white"
+                padding="15px"
               />
               <Button
                 text="Hoàn thành"
                 onClick={handleAddAddress}
-                className="bg-green-500 hover:bg-green-600 text-white"
+                padding="15px"
+                disabled={isLoading}
               />
             </div>
           </div>
