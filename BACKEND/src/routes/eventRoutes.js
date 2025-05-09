@@ -27,7 +27,7 @@ router.get('/creator',
 );
 router.delete('/user/delete/:eventUser_id',
     // checkPermission('read', 'event'),
-    eventController.handlegetDeleteEventUserById
+    eventController.handleDeleteEventUserById
 );
 
 

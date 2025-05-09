@@ -57,7 +57,7 @@ const handGetEventsOfCreator = async (req, res) => {
   }
 };
 
-const handlegetDeleteEventUserById = async (req, res) => {
+const handleDeleteEventUserById = async (req, res) => {
   try {
     const eventUserId = Number(req.params.event_id);
     const result = await eventService.deleteEventUserById(eventUserId);
@@ -188,5 +188,5 @@ module.exports = {
   handleDeleteEvent,
   handleCheckInUserByUserId,
   handleCheckOutUserByUserId,
-  handlegetDeleteEventUserById
+  handleDeleteEventUserById
 };
