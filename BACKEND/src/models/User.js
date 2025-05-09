@@ -50,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "buyer_id",
         onDelete: "CASCADE",
       });
-      User.hasMany(models.ReceiverAccount, {
+      User.hasMany(models.ReceiverInformation, {
         foreignKey: "user_id",
         onDelete: "CASCADE",
       });

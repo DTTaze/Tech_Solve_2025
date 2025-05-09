@@ -2,20 +2,20 @@
 const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
-  class ReceiverAccount extends Model {
+  class ReceiverInformation extends Model {
     static associate(models) {
-      ReceiverAccount.belongsTo(models.User, {
+      ReceiverInformation.belongsTo(models.User, {
         foreignKey: "user_id",
         onDelete: "CASCADE",
       });
-      ReceiverAccount.hasMany(models.Transaction, {
-        foreignKey: "receiver_account_id",
+      ReceiverInformation.hasMany(models.Transaction, {
+        foreignKey: "receiver_information_id",
         onDelete: "CASCADE",
       });
     }
   }
 
-  ReceiverAccount.init(
+  ReceiverInformation.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -68,10 +68,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "ReceiverAccount",
-      tableName: "receiver_accounts",
+      modelName: "ReceiverInformation",
+      tableName: "receiver_informations",
     }
   );
 
-  return ReceiverAccount;
+  return ReceiverInformation;
 };
