@@ -5,14 +5,13 @@ import {
   getAllProvincesApi,
   getAllDistrictsByProvinceApi,
   getAllWardsByDistrictApi,
-} from "../../../utils/api.js";
-import {
   createReceiverInfoAPI,
-  getReceiverInfoByIdAPI,
+  getReceiverInfoByUserIDAPI,
   updateReceiverInfoByIdAPI,
   deleteReceiverInfoByIdAPI,
 } from "../../../utils/api.js";
 import { AuthContext } from "../../../contexts/auth.context.jsx";
+
 function Address() {
   const { auth } = useContext(AuthContext);
   const [addresses, setAddresses] = useState([]);
@@ -39,15 +38,19 @@ function Address() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
+      if (!auth.user?.id) return;
       setIsLoading(true);
       setErrorMessage("");
       try {
-        const response = await getReceiverInfoByIdAPI(auth.user.id);
-        if (response.data) {
-          setAddresses([response.data]);
-          if (response.data.is_default) {
-            setDefaultAddressId(response.data.id);
+        const response = await getReceiverInfoByUserIDAPI(auth.user.id);
+        if (response.status === 200 && response.data) {
+          setAddresses(response.data);
+          const defaultAddress = response.data.find((addr) => addr.is_default);
+          if (defaultAddress) {
+            setDefaultAddressId(defaultAddress.id);
           }
+        } else {
+          setErrorMessage("No addresses found.");
         }
       } catch (error) {
         console.error("Error fetching addresses:", error);
@@ -57,7 +60,7 @@ function Address() {
       }
     };
     fetchAddresses();
-  }, []);
+  }, [auth.user?.id]);
 
   // Fetch provinces
   useEffect(() => {
@@ -73,9 +76,7 @@ function Address() {
         }
       } catch (error) {
         console.error("Error fetching provinces:", error);
-        setErrorMessage(
-          "Error fetching provinces. Please check your connection."
-        );
+        setErrorMessage("Error fetching provinces. Please check your connection.");
       } finally {
         setIsLoading(false);
       }
@@ -102,9 +103,7 @@ function Address() {
           }
         } catch (error) {
           console.error("Error fetching districts:", error);
-          setErrorMessage(
-            "Error fetching districts. Please check your connection."
-          );
+          setErrorMessage("Error fetching districts. Please check your connection.");
         } finally {
           setIsLoading(false);
         }
@@ -135,9 +134,7 @@ function Address() {
           }
         } catch (error) {
           console.error("Error fetching wards:", error);
-          setErrorMessage(
-            "Error fetching wards. Please check your connection."
-          );
+          setErrorMessage("Error fetching wards. Please check your connection.");
         } finally {
           setIsLoading(false);
         }
@@ -222,11 +219,9 @@ function Address() {
     }
 
     const provinceName =
-      provinces.find((p) => p.ProvinceID === newAddress.province)
-        ?.ProvinceName || "";
+      provinces.find((p) => p.ProvinceID === newAddress.province)?.ProvinceName || "";
     const districtName =
-      districts.find((d) => d.DistrictID === newAddress.district)
-        ?.DistrictName || "";
+      districts.find((d) => d.DistrictID === newAddress.district)?.DistrictName || "";
     const wardName =
       wards.find((w) => w.WardCode === newAddress.ward)?.WardName || "";
 
@@ -245,31 +240,35 @@ function Address() {
     setIsLoading(true);
     try {
       if (editingAddressId) {
-        const response = await updateReceiverInfoByIdAPI(
-          editingAddressId,
-          addressData
-        );
+        const response = await updateReceiverInfoByIdAPI(editingAddressId, addressData);
         if (response.data) {
           setAddresses(
             addresses.map((addr) =>
-              addr.id === editingAddressId
-                ? { ...response.data, id: editingAddressId }
-                : addr
+              addr.id === editingAddressId ? { ...response.data, id: editingAddressId } : addr
             )
           );
           if (response.data.is_default) {
             setDefaultAddressId(editingAddressId);
+            setAddresses((prev) =>
+              prev.map((addr) => ({
+                ...addr,
+                is_default: addr.id === editingAddressId,
+              }))
+            );
           }
         }
       } else {
         const response = await createReceiverInfoAPI(addressData);
         if (response.data) {
-          setAddresses([
-            ...addresses,
-            { ...response.data, id: response.data.id },
-          ]);
+          setAddresses([...addresses, { ...response.data, id: response.data.id }]);
           if (newAddress.isDefault) {
             setDefaultAddressId(response.data.id);
+            setAddresses((prev) =>
+              prev.map((addr) => ({
+                ...addr,
+                is_default: addr.id === response.data.id,
+              }))
+            );
           }
         }
       }
@@ -296,16 +295,10 @@ function Address() {
 
   const handleUpdateAddress = async (id) => {
     try {
-      const response = await getReceiverInfoByIdAPI(id);
-      if (response.data) {
-        const address = response.data;
-        // Find matching province, district, and ward IDs
-        const province = provinces.find(
-          (p) => p.ProvinceName === address.to_province_name
-        );
-        const district = districts.find(
-          (d) => d.DistrictName === address.to_district_name
-        );
+      const address = addresses.find((addr) => addr.id === id);
+      if (address) {
+        const province = provinces.find((p) => p.ProvinceName === address.to_province_name);
+        const district = districts.find((d) => d.DistrictName === address.to_district_name);
         const ward = wards.find((w) => w.WardName === address.to_ward_name);
 
         setNewAddress({
@@ -333,7 +326,8 @@ function Address() {
       await deleteReceiverInfoByIdAPI(id);
       setAddresses(addresses.filter((addr) => addr.id !== id));
       if (defaultAddressId === id) {
-        setDefaultAddressId(addresses[0]?.id || null);
+        const newDefault = addresses.find((addr) => addr.id !== id && addr.is_default);
+        setDefaultAddressId(newDefault?.id || null);
       }
     } catch (error) {
       console.error("Error deleting address:", error);
@@ -351,11 +345,10 @@ function Address() {
       const response = await updateReceiverInfoByIdAPI(id, updatedData);
       if (response.data) {
         setAddresses(
-          addresses.map((addr) =>
-            addr.id === id
-              ? { ...addr, is_default: true }
-              : { ...addr, is_default: false }
-          )
+          addresses.map((addr) => ({
+            ...addr,
+            is_default: addr.id === id,
+          }))
         );
         setDefaultAddressId(id);
       }
@@ -395,6 +388,9 @@ function Address() {
       <div className="space-y-4">
         {isLoading && <p className="text-gray-500">Đang tải...</p>}
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {!isLoading && addresses.length === 0 && (
+          <p className="text-gray-500">Chưa có địa chỉ nào.</p>
+        )}
         {addresses.map((addr) => (
           <div
             key={addr.id}
@@ -413,11 +409,11 @@ function Address() {
                 <p className="text-sm text-green-600 font-semibold">Mặc định</p>
               )}
             </div>
-            <div className="flex flex-col space-x-2">
-              <div>
+            <div className="flex flex-col space-y-2">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => handleUpdateAddress(addr.id)}
-                  className="text-blue-500 text-sm font-medium py-4 px-4 rounded-md cursor-pointer"
+                  className="text-blue-500 text-sm font-medium py-2 px-4 rounded-md cursor-pointer"
                 >
                   Cập nhật
                 </button>
