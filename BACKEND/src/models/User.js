@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
         as: "ranks",
       });
-      
+
       User.hasMany(models.DeliveryAccount, {
         foreignKey: "user_id",
         onDelete: "CASCADE",
@@ -45,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
       });
       User.hasMany(models.DeliveryOrder, {
         foreignKey: "buyer_id",
+        onDelete: "CASCADE",
+      });
+      User.hasMany(models.ReceiverAccount, {
+        foreignKey: "user_id",
         onDelete: "CASCADE",
       });
       User.belongsTo(models.Role, { foreignKey: "role_id", as: "roles" });
@@ -100,10 +104,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
         unique: true,
-      },
-      address: {
-        type: DataTypes.JSON,
-        allowNull: true,
       },
       rank_id: {
         type: DataTypes.INTEGER,
