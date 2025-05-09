@@ -187,5 +187,6 @@ module.exports = {
   handleUpdateEvent,
   handleDeleteEvent,
   handleCheckInUserByUserId,
-  handleCheckOutUserByUserId
+  handleCheckOutUserByUserId,
+  handlegetDeleteEventUserById
 };
