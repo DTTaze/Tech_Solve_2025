@@ -115,7 +115,7 @@ const updateReceiverInfoById = async (id, data) => {
     const updated = await ReceiverInformation.findByPk(id);
 
     // delete cache
-    delete(`${KEY_PREFIX}${id}`, updated);
+    delete(`${KEY_PREFIX}${id}`);
     return updated;
   } catch (error) {
     console.error("Error update Receiver Info:", error.message);
