@@ -71,15 +71,11 @@ const handleTransactionMakeDicision = async (req, res) => {
   }
 };
 
-const handleGetTransactionByStatus = async (req, res) => {
+const handleGetAllTransactionsByStatus = async (req, res) => {
   try {
-    const transaction_id = req.params.id;
     const status = req.params.status;
 
-    const message = await transactionService.getTransactionByStatus(
-      transaction_id,
-      status
-    );
+    const message = await transactionService.getAllTransactionsByStatus(status);
     return res.success("Get transaction by status success", message);
   } catch (error) {
     return res.error(500, "Failed to get transaction by status", error.message);
@@ -91,6 +87,6 @@ module.exports = {
   handleGetTransactionByBuyerId,
   handleGetAllTransactions,
   handleTransactionMakeDicision,
-  handleGetTransactionByStatus,
+  handleGetAllTransactionsByStatus,
   handleGetTransactionBySellerId,
 };

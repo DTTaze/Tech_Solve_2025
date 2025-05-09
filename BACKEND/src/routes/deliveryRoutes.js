@@ -36,6 +36,10 @@ router.get(
   deliveryOrderController.handleGetAllDeliveryOrdersByBuyer
 );
 router.get(
+  "/carrier/ghn/orders/:status",
+  deliveryOrderController.handleGetAllDeliveryOrdersByStatus
+);
+router.get(
   "/carrier/ghn/master-data/province",
   deliveryOrderController.handleGetAllProvinces
 );
