@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       to_address: {
-        type: DataTypes.TEXT, //106 nguyen van dau, p7, binh thanh, tphcm
+        type: DataTypes.TEXT, //106 nguyen van dau
         allowNull: false,
       },
       //to_ward_name,to_district_name,to_province_name do ben ghn cần

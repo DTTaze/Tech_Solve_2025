@@ -1,6 +1,7 @@
 const express = require("express");
 const userController = require("../controllers/userController");
 const checkPermission = require("../middlewares/checkPermission");
+const receiverController = require("../controllers/receiverController");
 const router = express.Router();
 
 router.get("/", userController.handleGetAllUsers);
@@ -31,4 +32,9 @@ router.delete(
   // checkPermission("delete", "user_id"),
   userController.handleDeleteUser
 );
+
+router.post("/receiver/create", receiverController.handleCreateReceiverInfo);
+router.get("/receiver/info/:id", receiverController.handleGetReceiverInfoById);
+router.patch("/receiver/update/:id", receiverController.handleUpdateReceiverInfoById);
+router.delete("/receiver/info/:id", receiverController.handleDeleteReceiverInfoById);
 module.exports = router;
