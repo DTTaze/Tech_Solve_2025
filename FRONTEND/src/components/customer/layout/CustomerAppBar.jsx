@@ -103,22 +103,24 @@ export default function CustomerAppBar({
         width: { sm: `calc(100% - ${drawerWidth}px)` },
         ml: { sm: `${drawerWidth}px` },
         backgroundColor: "white",
-        boxShadow: "none",
-        borderBottom: "1px solid #e0e0e0",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
+        borderBottom: "1px solid var(--light-green)",
+        width: "100%",
+        zIndex: 1300,
       }}
     >
-      <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
-          sx={{ mr: 2, display: { sm: "none" } }}
-        >
-          <MenuIcon />
-        </IconButton>
+      <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, color: "var(--primary-green)" }}
+          >
+            <MenuIcon />
+          </IconButton>
 
-        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
           <Tooltip title="Go to Homepage">
             <IconButton
               color="inherit"
