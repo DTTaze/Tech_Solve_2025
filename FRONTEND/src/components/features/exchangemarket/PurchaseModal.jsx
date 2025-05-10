@@ -48,38 +48,58 @@ export default function PurchaseModal({
   const fetchShippingFee = async (selectedShipping) => {
     try {
       const orderData = {
+        payment_type_id: 2,
+        note: "ptquanh test",
+        required_note: "KHONGCHOXEMHANG",
+        from_name: "TinTest124",
+        from_phone: "0987654321",
+        from_address: "72 Thành Thái, Phường 14, Quận 10, Hồ Chí Minh, Vietnam",
+        from_ward_name: "Phường 14",
+        from_district_name: "Quận 10",
+        from_province_name: "HCM",
+        return_phone: "0332190444",
+        return_address: "39 NTT",
+        return_district_id: null,
+        return_ward_code: "",
+        client_order_code: "",
         to_name: selectedShipping.to_name,
         to_phone: selectedShipping.to_phone,
         to_address: selectedShipping.to_address,
         to_ward_name: selectedShipping.to_ward_name,
         to_district_name: selectedShipping.to_district_name,
         to_province_name: selectedShipping.to_province_name,
-        service_type_id: 2,
-        payment_type_id: 2,
-        required_note: "CHOXEMHANGKHONGTHU",
+        cod_amount: item.price * quantity,
+        content: "Theo New York Times",
         weight: item.weight || 200,
         length: item.length || 15,
         width: item.width || 15,
         height: item.height || 15,
+        pick_station_id: 1444,
+        deliver_station_id: null,
+        insurance_value: item.price * quantity,
+        service_id: 0,
+        service_type_id: 2,
+        coupon: null,
+        pick_shift: [2],
         items: [
           {
             name: item.name,
             code: item.id.toString(),
             quantity: quantity,
             price: item.price,
-            weight: item.weight || 200,
             length: item.length || 12,
             width: item.width || 12,
             height: item.height || 12,
+            weight: item.weight || 1200,
             category: {
-              level1: item.category || "Khác",
+              level1: item.category || "Áo",
             },
           },
         ],
       };
 
       const feeResponse = await PreviewOrderWithoutOrderCode(orderData, token, shop_id);
-      setShippingFee(feeResponse?.data?.total_fee || 0);
+      setShippingFee(feeResponse?.data?.data?.total_fee || 0);
     } catch (error) {
       console.error("Error fetching shipping fee:", error);
       setShippingFee(0);
@@ -126,7 +146,7 @@ export default function PurchaseModal({
 
   if (!item || !isOpen) return null;
 
-  const totalCost = item.price * quantity + shippingFee;
+  const totalCost = item.price * quantity; // Exclude shipping fee from total cost
   const canPurchase = userCoins >= totalCost && quantity <= item.stock;
   const maxQuantity = Math.min(Math.floor(userCoins / item.price), item.stock);
 
@@ -248,8 +268,8 @@ export default function PurchaseModal({
                   <h3 className="font-medium text-gray-800 text-lg">{item.name}</h3>
                   <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
                   <div className="flex items-center text-emerald-600 mt-1">
+                    <span className="font-semibold">{item.price} </span>
                     <Coins className="h-4 w-4 mr-1" />
-                    <span className="font-semibold">{item.price} xu / đơn vị</span>
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
                     Còn lại: {item.stock} sản phẩm
@@ -289,20 +309,20 @@ export default function PurchaseModal({
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Giá sản phẩm:</span>
                   <span className="font-medium text-emerald-600">
-                    {item.price * quantity} xu
+                    {item.price * quantity} 
                   </span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Phí giao hàng:</span>
-                  <span className="font-medium text-emerald-600">{shippingFee} xu</span>
+                  <span className="font-medium text-emerald-600">{shippingFee} VND</span>
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
-                  <span className="text-gray-600">Tổng giá:</span>
-                  <span className="font-medium text-emerald-600">{totalCost} xu</span>
+                  <span className="text-gray-600">Tổng giá sản phẩm:</span>
+                  <span className="font-medium text-emerald-600">{totalCost}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Số dư hiện tại:</span>
-                  <span className="font-medium text-emerald-600">{userCoins} xu</span>
+                  <span className="font-medium text-emerald-600">{userCoins}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
                   <span className="text-gray-600">Số dư sau giao dịch:</span>
@@ -311,7 +331,7 @@ export default function PurchaseModal({
                       canPurchase ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
-                    {userCoins - totalCost} xu
+                    {userCoins - totalCost}
                   </span>
                 </div>
               </div>
