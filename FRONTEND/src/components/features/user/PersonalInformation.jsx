@@ -1,31 +1,29 @@
-import { useState, useEffect, useCallback } from "react";
-import { getUserApi, updateUserPublicApi } from "../../../utils/api.js";
+import { useState, useEffect, useContext } from "react";
+import { updateUserPublicApi } from "../../../utils/api.js";
+import { AuthContext } from "../../../contexts/auth.context.jsx";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
 import PersonalInfomationSkeleton from "./PersonalInfomationSkeleton.jsx";
 
 function PersonalInformation() {
+  const { auth, setAuth } = useContext(AuthContext); 
   const [user, setUser] = useState(null);
   const [originalUser, setOriginalUser] = useState(null);
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
 
-  const fetchUser = useCallback(async () => {
-    try {
-      const response = await getUserApi({ params: { t: Date.now() } });
-      if (response.data) {
-        setUser(response.data);
-        setOriginalUser(response.data);
-      }
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error);
-      alert("Không thể tải thông tin người dùng");
-    }
-  }, []);
-
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    if (auth.user) {
+      setUser({
+        public_id: auth.user.public_id,
+        username: auth.user.username || "",
+        email: auth.user.email || "",
+        full_name: auth.user.full_name || "",
+        phone_number: auth.user.phone_number || "",
+      });
+      setOriginalUser(auth.user);
+    }
+  }, [auth.user]);
 
   const validateField = (name, value) => {
     let error = "";
@@ -82,8 +80,25 @@ function PersonalInformation() {
     }
 
     try {
-      const res = await updateUserPublicApi(user.public_id, user);
-      await fetchUser();
+      const payload = {
+        username: user.username,
+        email: user.email,
+        full_name: user.full_name,
+        phone_number: user.phone_number,
+      };
+      const res = await updateUserPublicApi(user.public_id, payload);
+      setAuth((prev) => ({
+        ...prev,
+        user: res.data,
+      }));
+      setOriginalUser(res.data);
+      setUser({
+        public_id: res.data.public_id,
+        username: res.data.username || "",
+        email: res.data.email || "",
+        full_name: res.data.full_name || "",
+        phone_number: res.data.phone_number || "",
+      });
       alert("Cập nhật thông tin thành công!");
       setIsEditing(false);
     } catch (error) {
@@ -97,12 +112,18 @@ function PersonalInformation() {
   };
 
   const handleCancel = () => {
-    setUser(originalUser);
+    setUser({
+      public_id: originalUser.public_id,
+      username: originalUser.username || "",
+      email: originalUser.email || "",
+      full_name: originalUser.full_name || "",
+      phone_number: originalUser.phone_number || "",
+    });
     setErrors({});
     setIsEditing(false);
   };
 
-  if (!user) return <PersonalInfomationSkeleton />;
+  if (!auth.isAuthenticated || !user) return <PersonalInfomationSkeleton />;
 
   const inputFields = [
     { id: "username", label: "Tên người dùng" },
@@ -128,7 +149,7 @@ function PersonalInformation() {
       <form className="space-y-4" onSubmit={handleUpdate}>
         <div className="grid grid-cols-2 gap-4">
           {inputFields.map(({ id, label }) => (
-            <div key={id} >
+            <div key={id}>
               <InputField
                 id={id}
                 label={label}

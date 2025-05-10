@@ -9,6 +9,7 @@ import {
   getReceiverInfoByUserIDAPI,
   updateReceiverInfoByIdAPI,
   deleteReceiverInfoByIdAPI,
+  SetDefaultReceiverInfoByIdAPI,
 } from "../../../utils/api.js";
 import { AuthContext } from "../../../contexts/auth.context.jsx";
 
@@ -62,7 +63,6 @@ function Address() {
     fetchAddresses();
   }, [auth.user?.id]);
 
-  // Fetch provinces
   useEffect(() => {
     const fetchProvinces = async () => {
       setIsLoading(true);
@@ -84,7 +84,6 @@ function Address() {
     fetchProvinces();
   }, [token]);
 
-  // Fetch districts
   useEffect(() => {
     const fetchDistricts = async () => {
       if (newAddress.province && Number.isInteger(newAddress.province)) {
@@ -116,7 +115,6 @@ function Address() {
     fetchDistricts();
   }, [newAddress.province, token]);
 
-  // Fetch wards
   useEffect(() => {
     const fetchWards = async () => {
       if (newAddress.district && Number.isInteger(newAddress.district)) {
@@ -239,6 +237,7 @@ function Address() {
 
     setIsLoading(true);
     try {
+      let newAddressId;
       if (editingAddressId) {
         const response = await updateReceiverInfoByIdAPI(editingAddressId, addressData);
         if (response.data) {
@@ -247,31 +246,29 @@ function Address() {
               addr.id === editingAddressId ? { ...response.data, id: editingAddressId } : addr
             )
           );
-          if (response.data.is_default) {
-            setDefaultAddressId(editingAddressId);
-            setAddresses((prev) =>
-              prev.map((addr) => ({
-                ...addr,
-                is_default: addr.id === editingAddressId,
-              }))
-            );
-          }
+          newAddressId = editingAddressId;
         }
       } else {
         const response = await createReceiverInfoAPI(addressData);
         if (response.data) {
-          setAddresses([...addresses, { ...response.data, id: response.data.id }]);
-          if (newAddress.isDefault) {
-            setDefaultAddressId(response.data.id);
-            setAddresses((prev) =>
-              prev.map((addr) => ({
-                ...addr,
-                is_default: addr.id === response.data.id,
-              }))
-            );
-          }
+          newAddressId = response.data.id;
+          setAddresses([...addresses, { ...response.data, id: newAddressId }]);
         }
       }
+
+      if (newAddress.isDefault && newAddressId) {
+        const defaultResponse = await SetDefaultReceiverInfoByIdAPI(newAddressId);
+        if (defaultResponse.data) {
+          setAddresses((prev) =>
+            prev.map((addr) => ({
+              ...addr,
+              is_default: addr.id === newAddressId,
+            }))
+          );
+          setDefaultAddressId(newAddressId);
+        }
+      }
+
       setNewAddress({
         fullName: "",
         phoneNumber: "",
@@ -326,8 +323,7 @@ function Address() {
       await deleteReceiverInfoByIdAPI(id);
       setAddresses(addresses.filter((addr) => addr.id !== id));
       if (defaultAddressId === id) {
-        const newDefault = addresses.find((addr) => addr.id !== id && addr.is_default);
-        setDefaultAddressId(newDefault?.id || null);
+        setDefaultAddressId(null);
       }
     } catch (error) {
       console.error("Error deleting address:", error);
@@ -340,9 +336,7 @@ function Address() {
   const handleSetDefault = async (id) => {
     setIsLoading(true);
     try {
-      const address = addresses.find((addr) => addr.id === id);
-      const updatedData = { ...address, is_default: true };
-      const response = await updateReceiverInfoByIdAPI(id, updatedData);
+      const response = await SetDefaultReceiverInfoByIdAPI(id);
       if (response.data) {
         setAddresses(
           addresses.map((addr) => ({
@@ -417,12 +411,14 @@ function Address() {
                 >
                   Cập nhật
                 </button>
-                <button
-                  onClick={() => handleDeleteAddress(addr.id)}
-                  className="text-blue-500 text-sm font-medium py-2 px-4 rounded-md cursor-pointer"
-                >
-                  Xóa
-                </button>
+                {defaultAddressId !== addr.id && (
+                  <button
+                    onClick={() => handleDeleteAddress(addr.id)}
+                    className="text-blue-500 text-sm font-medium py-2 px-4 rounded-md cursor-pointer"
+                  >
+                    Xóa
+                  </button>
+                )}
               </div>
               {defaultAddressId !== addr.id && (
                 <button

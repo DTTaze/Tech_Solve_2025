@@ -5,6 +5,7 @@ import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
 import DetailsModal from "./DetailsModal";
 import { AuthContext } from "../../../contexts/auth.context";
+import { MarketplaceContext } from "../../../pages/ExchangeMarket";
 
 export const statusConfig = {
   public: { name: "Đang hiển thị", color: "text-green-600", Icon: CheckCircle },
@@ -41,13 +42,14 @@ const MarketplaceItemCard = ({
   onEdit,
   onDelete,
   onPurchase,
-  viewMode = "all_items", // Updated default to match AllItemsTab
+  viewMode = "all_items",
   fetchItems,
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const { auth } = useContext(AuthContext);
+  const { confirmPurchase, handlePurchase } = useContext(MarketplaceContext);
 
   const handleEditClick = () => {
     setShowDetailsModal(true);
@@ -69,6 +71,11 @@ const MarketplaceItemCard = ({
 
   const handleDetailsClick = () => {
     if (viewMode === "redeem") {
+      if (!auth.user) {
+        alert("Vui lòng đăng nhập để thực hiện giao dịch!");
+        return;
+      }
+      handlePurchase(item); // Gọi handlePurchase để thiết lập selectedItem
       setShowPurchaseModal(true);
     } else {
       setShowDetailsModal(true);
@@ -173,7 +180,8 @@ const MarketplaceItemCard = ({
           item={item}
           userCoins={auth.user?.coins?.amount || 0}
           onConfirm={(quantity, shippingInfo) => {
-            onPurchase(item);
+            confirmPurchase(quantity, shippingInfo);
+            setShowPurchaseModal(false);
             if (fetchItems) fetchItems();
           }}
         />

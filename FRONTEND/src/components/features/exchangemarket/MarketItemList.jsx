@@ -11,7 +11,7 @@ function MarketItemList({
   getCategoryDisplayName,
   statusColors,
   statusConfig,
-  fetchItems, 
+  fetchItems,
 }) {
   return (
     <div
@@ -104,7 +104,7 @@ function MarketItemList({
                     {item.createdAt &&
                       new Date(item.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 Diorpy-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <ItemActions
                       marketView={marketView}
                       marketListView={marketListView}
@@ -128,7 +128,6 @@ function MarketItemList({
             onEdit={handleEditItem}
             onDelete={handleDeleteItem}
             onPurchase={handlePurchase}
-            showDetailedStatus={marketView === "my_items"}
             viewMode={marketView}
             fetchItems={fetchItems}
           />

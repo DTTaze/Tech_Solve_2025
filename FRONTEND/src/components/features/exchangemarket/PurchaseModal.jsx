@@ -43,7 +43,7 @@ export default function PurchaseModal({
       }
     }
     fetchDefaultShipping();
-  }, [isOpen, auth.user?.id, item?.id]);
+  }, [isOpen, auth.user?.id]);
 
   const fetchShippingFee = async (selectedShipping) => {
     try {
@@ -111,7 +111,7 @@ export default function PurchaseModal({
       if (
         modalRef.current &&
         !modalRef.current.contains(event.target) &&
-        (!shippingModalRef.current || !shippingModalRef.current.contains(event.target))
+        (!isShippingModalOpen || (shippingModalRef.current && !shippingModalRef.current.contains(event.target)))
       ) {
         onClose();
       }
@@ -126,7 +126,7 @@ export default function PurchaseModal({
       document.removeEventListener("mousedown", handleClickOutside);
       document.body.style.overflow = "auto";
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isShippingModalOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -146,7 +146,7 @@ export default function PurchaseModal({
 
   if (!item || !isOpen) return null;
 
-  const totalCost = item.price * quantity; // Exclude shipping fee from total cost
+  const totalCost = item.price * quantity;
   const canPurchase = userCoins >= totalCost && quantity <= item.stock;
   const maxQuantity = Math.min(Math.floor(userCoins / item.price), item.stock);
 
@@ -170,10 +170,10 @@ export default function PurchaseModal({
     setIsProcessing(true);
     onConfirm(quantity, {
       ...shippingInfo,
-      receiver_information_id: shippingInfo.id, // Ensure ID is included
+      receiver_information_id: shippingInfo.id,
       shippingFee,
     });
-    // Do not reset isProcessing here; let the parent handle modal closure
+    onClose(); // Đóng modal ngay sau khi xác nhận
   };
 
   const handleChangeShipping = () => {

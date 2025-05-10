@@ -96,7 +96,7 @@ export default function ExchangeMarket() {
           throw new Error("Không thể tải dữ liệu người dùng");
         }
       } catch (err) {
-        setError("Lỗi khi tải dữ liệu");
+        setError("Lỗi khi tải dữ liệu người dùng");
         console.error(err);
       } finally {
         setLoading(false);
@@ -206,6 +206,10 @@ export default function ExchangeMarket() {
         setError("Mặt hàng không hợp lệ");
         return;
       }
+      if (!auth.user) {
+        setError("Vui lòng đăng nhập để thực hiện giao dịch");
+        return;
+      }
       if (userCoins < item.price) {
         setError("Bạn không có đủ số coins để giao dịch");
         return;
@@ -214,14 +218,19 @@ export default function ExchangeMarket() {
       setIsModalOpen(true);
       setTransactionStatus(null);
     },
-    [auth.user?.coins?.amount]
+    [auth.user]
   );
 
   const confirmPurchase = useCallback(
     async (quantity, shippingInfo) => {
-      if (!selectedItem || !auth.user) {
-        setError("Thông tin giao dịch không hợp lệ");
-        setIsModalOpen(false); // Ensure modal closes on error
+      if (!selectedItem) {
+        setError("Không có sản phẩm được chọn");
+        setIsModalOpen(false);
+        return;
+      }
+      if (!auth.user) {
+        setError("Vui lòng đăng nhập để thực hiện giao dịch");
+        setIsModalOpen(false);
         return;
       }
 
@@ -230,11 +239,11 @@ export default function ExchangeMarket() {
 
       if (userCoins < totalCost) {
         setError("Bạn không có đủ số coins để thực hiện giao dịch");
-        setIsModalOpen(false); // Ensure modal closes on error
+        setIsModalOpen(false);
         return;
       }
 
-      setTransactionStatus('processing');
+      setTransactionStatus("processing");
       try {
         const purchaseData = {
           name: selectedItem.name,
@@ -245,7 +254,7 @@ export default function ExchangeMarket() {
         const response = await purchaseItemApi(auth.user.id, selectedItem.id, purchaseData);
 
         if (response.data?.job_id) {
-          setTransactionStatus('success');
+          setTransactionStatus("success");
           setIsModalOpen(false);
           setSelectedItem(null);
           setTransactionStatus(null);
@@ -255,10 +264,10 @@ export default function ExchangeMarket() {
           throw new Error("Không nhận được mã giao dịch");
         }
       } catch (error) {
-        setTransactionStatus('failed');
+        setTransactionStatus("failed");
         setError(`Giao dịch thất bại: ${error.message || "Vui lòng thử lại"}`);
         console.error("Lỗi khi xử lý giao dịch:", error);
-        setIsModalOpen(false); // Ensure modal closes on error
+        setIsModalOpen(false);
         setSelectedItem(null);
         setTransactionStatus(null);
       }
@@ -404,6 +413,7 @@ export default function ExchangeMarket() {
     itemToEdit,
     setItemToEdit,
     handlePurchase,
+    confirmPurchase,
     handleAddItem,
     handleEditItem,
     handleDeleteItem,
@@ -437,7 +447,7 @@ export default function ExchangeMarket() {
                 </button>
               </div>
             )}
-            {transactionStatus === 'processing' && (
+            {transactionStatus === "processing" && (
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-blue-600">Đang xử lý giao dịch...</p>
               </div>

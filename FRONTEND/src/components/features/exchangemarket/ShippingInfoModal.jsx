@@ -1,10 +1,11 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, forwardRef } from "react";
 import { X, Truck, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getReceiverInfoByUserIDAPI } from "../../../utils/api";
 import { AuthContext } from "../../../contexts/auth.context";
 
-export default function ShippingInfoModal({ isOpen, onClose, onSelect }) {
+// Sử dụng forwardRef để nhận ref từ PurchaseModal
+const ShippingInfoModal = forwardRef(({ isOpen, onClose, onSelect }, ref) => {
   const [shippingOptions, setShippingOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { auth } = useContext(AuthContext);
@@ -33,8 +34,13 @@ export default function ShippingInfoModal({ isOpen, onClose, onSelect }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50 p-4">
+        // Ngăn sự kiện mousedown lan truyền ra ngoài
+        <div
+          className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50 p-4"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           <motion.div
+            ref={ref} // Gắn ref vào div chính của modal
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -109,4 +115,6 @@ export default function ShippingInfoModal({ isOpen, onClose, onSelect }) {
       )}
     </AnimatePresence>
   );
-}
+});
+
+export default ShippingInfoModal;
