@@ -3,9 +3,9 @@ import DataTable from "./DataTable";
 import { productColumns } from "./HeaderColumn";
 import {
   getAllProductsApi,
-  deleteItemApi,
-  createItemApi,
-  updateItemApi,
+  deleteProductApi,
+  createProductApi,
+  updateProductApi,
 } from "../../utils/api";
 import { Box } from "@mui/material";
 import ProductForm from "./form/ProductForm";
@@ -36,46 +36,46 @@ export default function ProductsManagement() {
 
     fetchData();
   }, []);
-  const handleAddItem = () => {
+  const handleAddProduct = () => {
     setFormMode("add");
     setEditData(null);
     setFormOpen(true);
   };
 
-  const handleEditItem = (item) => {
+  const handleEditProduct = (item) => {
     setFormMode("edit");
     setEditData(item);
     setFormOpen(true);
   };
 
-  const handleDeleteItem = async (item) => {
-    const res = await deleteItemApi(item.id);
+  const handleDeleteProduct = async (item) => {
+    const res = await deleteProductApi(item.id);
     if (confirm("Bạn có chắc chắn muốn xóa không?")) {
       if (res.success) {
-        alert("Xóa vật phẩm thành công!");
-        setUsers((prev) => prev.filter((u) => u.id !== item.id));
+        alert("Xóa sản phẩm thành công!");
+        setProducts((prev) => prev.filter((u) => u.id !== item.id));
       }
     }
   };
-  const handleSubmitItem = async (data, mode) => {
+  const handleSubmitProduct = async (data, mode) => {
     if (mode === "add") {
       try {
-        const result = await createItemApi(data.id, data);
+        const result = await createProductApi(data);
         if (result.success) {
-          alert("Thêm vật phẩm thành công!");
+          alert("Thêm sản phẩm thành công!");
         } else {
-          alert("Thêm vật phẩm thất bại!");
+          alert("Thêm sản phẩm thất bại!");
         }
       } catch (e) {
         alert(e);
       }
     } else if (mode === "edit") {
       try {
-        const result = await updateItemApi(data.id, data);
+        const result = await updateProductApi(data.id, data);
         if (result.success) {
-          alert("Cập nhật vật phẩm thành công!");
+          alert("Cập nhật sản phẩm thành công!");
         } else {
-          alert("Cập nhật vật phẩm thất bại!");
+          alert("Cập nhật sản phẩm thất bại!");
         }
       } catch (e) {
         alert(e);
@@ -89,15 +89,15 @@ export default function ProductsManagement() {
         title="Products"
         columns={productColumns}
         rows={products}
-        onAdd={handleAddItem}
-        onEdit={handleEditItem}
-        onDelete={handleDeleteItem}
+        onAdd={handleAddProduct}
+        onEdit={handleEditProduct}
+        onDelete={handleDeleteProduct}
         loading={loading}
       />
       <ProductForm
         open={formOpen}
         handleClose={() => setFormOpen(false)}
-        handleSubmit={handleSubmitItem}
+        handleSubmit={handleSubmitProduct}
         initialData={editData}
         mode={formMode}
       />

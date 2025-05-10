@@ -251,6 +251,10 @@ const getTransactionById = async (id) => {
           model: ReceiverInformation,
           as: "receiver_information",
         },
+        {
+          model: Item,
+          as: "item",
+        },
       ],
     });
   } catch (e) {
