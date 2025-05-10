@@ -28,6 +28,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
     start_time: "",
     end_time: "",
     end_sign: "",
+    coins: "",
     status: "upcoming",
   });
   const [images, setImages] = useState([]);
@@ -48,6 +49,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
           ? new Date(event.end_time).toISOString().slice(0, 16)
           : "",
         end_sign: event.end_sign || "",
+        coins: event.coins,
         status: event.status || "upcoming",
       });
       // Ensure images is always an array
@@ -70,6 +72,7 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
       start_time: "",
       end_time: "",
       end_sign: "",
+      coins: "",
       status: "upcoming",
     });
     setImages([]);
@@ -263,6 +266,19 @@ const EventDialog = ({ open, onClose, onSave, event }) => {
               name="end_sign"
               type="datetime-local"
               value={formData.end_sign}
+              onChange={handleChange}
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Coins Reward"
+              name="coins"
+              type="number"
+              value={formData.coins}
               onChange={handleChange}
               InputLabelProps={{
                 shrink: true,

@@ -84,6 +84,7 @@ import {
   getTransactionByIdApi,
   transactionMakeDicisionApi,
   createDeliveryOrderFromTransactionApi,
+  getAllShippingOrdersByBuyerApi,
 } from "../../utils/api";
 
 const getStatusColor = (status) => {
@@ -1224,6 +1225,7 @@ export default function CustomerOrders() {
   const handleCreateOrderFromTransaction = async (transaction) => {
     try {
       const response = await getTransactionByIdApi(transaction.id);
+
       if (response && response.data) {
         const transactionDetails = response.data;
 
@@ -1231,8 +1233,37 @@ export default function CustomerOrders() {
         const orderData = {
           payment_type_id: 2,
           required_note: "KHONGCHOXEMHANG",
-          weight: 200, // Default weight in grams
+          weight: transactionDetails.item.weight || 200, // Default weight in grams
           transaction_id: transactionDetails.id,
+          to_name: transactionDetails.receiver_information?.to_name,
+          to_phone: transactionDetails.receiver_information?.to_phone,
+          to_address: transactionDetails.receiver_information?.to_address,
+          to_ward_name: transactionDetails.receiver_information?.to_ward_name,
+          to_district_name:
+            transactionDetails.receiver_information?.to_district_name,
+          to_province_name:
+            transactionDetails.receiver_information?.to_province_name,
+
+          content: transactionDetails.item_snapshot?.name,
+          cod_amount: transactionDetails.total_price,
+
+          length: transactionDetails.item.length || 10,
+          width: transactionDetails.item.width || 10,
+          height: transactionDetails.item.height || 10,
+
+          items: [
+            {
+              code: transactionDetails.public_id,
+              name: transactionDetails.item.name,
+              quantity: transactionDetails.quantity,
+              price:
+                transactionDetails.total_price / transactionDetails.quantity,
+              length: transactionDetails.item.length || 10,
+              width: transactionDetails.item.width || 10,
+              height: transactionDetails.item.height || 10,
+              weight: transactionDetails.item.weight || 200,
+            },
+          ],
           // Add any other necessary fields
         };
 
