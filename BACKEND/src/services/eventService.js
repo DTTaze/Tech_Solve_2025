@@ -198,7 +198,7 @@ const getEventUserById = async (id) => {
 
 const getAllEventUser = async () => {
   try {
-    const allEventUserIds = await getCache(cacheEventAll);
+    const allEventUserIds = await getCache(cacheEventUserAll);
     if (allEventUserIds){
       console.log("allEventUserIds",allEventUserIds);
       let result = [];
