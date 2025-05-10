@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getAllEventsApi, getEventSignedApi } from "../../../utils/api.js";
+import { getAllEventsApi, getEventSignedByUserIdApi } from "../../../utils/api.js";
 import { toast } from "react-toastify";
 import EventDetailsModal from "./EventDetailsModal";
 
@@ -22,7 +22,7 @@ const EventBanner = ({userInfo}) => {
         }
 
         // Fetch signed events
-        const signedEventsResponse = await getEventSignedApi();
+        const signedEventsResponse = await getEventSignedByUserIdApi(userInfo.id);
         const signedEventIds =
           signedEventsResponse?.data?.map((event) => event.event_id) || [];
 

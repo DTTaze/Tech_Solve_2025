@@ -79,24 +79,28 @@ const createUser = async (data) => {
 
     const hashPassword = bcrypt.hashSync(password, salt);
 
+    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
+    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
+    const newRank = await Rank.create({
+      amount: 0,
+      order: newOrder,
+      user_id: null,
+    });
+
     const newUser = await User.create({
       public_id: nanoid(),
       role_id,
+      rank_id: newRank.id,
       email,
       password: hashPassword,
       username,
       full_name,
     });
 
+    await newRank.update({user_id: newUser.id,});
+
     const newCoin = await Coin.create({
       amount: 0,
-      user_id: newUser.id,
-    });
-    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
-    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
-    const newRank = await Rank.create({
-      amount: 0,
-      order: newOrder,
       user_id: newUser.id,
     });
 
@@ -444,9 +448,18 @@ const findOrCreateUser = async (profile) => {
       return existingUser;
     }
 
+    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
+    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
+    const newRank = await Rank.create({
+      amount: 0,
+      order: newOrder,
+      user_id: null,
+    });
+
     const name = removeSpecialChars(profile.displayName);
     const newUser = await User.create({
       role_id: 2,
+      rank_id:newRank.id,
       public_id: nanoid(),
       google_id: profile.id,
       email: profile.emails[0].value,
@@ -455,15 +468,10 @@ const findOrCreateUser = async (profile) => {
       password: null,
     });
 
+    await newRank.update({user_id: newUser.id});
+
     const newCoin = await Coin.create({
       amount: 0,
-      user_id: newUser.id,
-    });
-    const maxOrderRank = await Rank.findOne({ order: [["order", "DESC"]] });
-    const newOrder = maxOrderRank ? maxOrderRank.order + 1 : 1;
-    const newRank = await Rank.create({
-      amount: 0,
-      order: newOrder,
       user_id: newUser.id,
     });
 
