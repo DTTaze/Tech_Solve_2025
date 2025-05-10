@@ -8,12 +8,11 @@ const { getDeliveryOrderInfo } = require("../services/deliveryOrderService");
 const worker = new Worker(
   "orderSync",
   async (job) => {
-    const { orderCode } = job.data;
-
+    const { orderCode, deliveryAccountId } = job.data;
     const apiRes = await getDeliveryOrderInfo(
       orderCode,
-      process.env.GHN_TOKEN_DEVELOPMENT,
-      process.env.GHN_SHOPID_DEVELOPMENT
+      deliveryAccountId.token,
+      deliveryAccountId.shop_id
     );
     console.log("check api res", apiRes);
     if (apiRes.message != "Success") {
@@ -26,17 +25,29 @@ const worker = new Worker(
       where: { order_code: orderCode },
     });
     if (!existing) return;
+    const updatedFields = {
+      status: data.status,
+      to_name: data.to_name,
+      to_phone: data.to_phone,
+      to_address: data.to_address,
+      is_printed: data.is_printed,
+      created_date: data.created_date,
+      cod_amount: data.cod_amount,
+      weight: data.weight,
+      payment_type_id: data.payment_type_id,
+      total_amount: data.total_fee,
+    };
 
-    if (existing.status !== data.status) {
-      await existing.update({
-        status: data.status,
-        to_name: data.to_name,
-        to_phone: data.to_phone,
-        to_address: data.to_address,
-        cod_amount: data.cod_amount,
-        weight: data.weight,
-        total_amount: data.total_fee,
-      });
+    let shouldUpdate = false;
+    for (const key in updatedFields) {
+      if (existing[key] !== updatedFields[key]) {
+        shouldUpdate = true;
+        break;
+      }
+    }
+
+    if (shouldUpdate) {
+      await existing.update(updatedFields);
     }
 
     return { updated: true, orderCode };

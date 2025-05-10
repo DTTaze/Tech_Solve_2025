@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "buyer_id",
         onDelete: "CASCADE",
       });
+      DeliveryOrder.belongsTo(models.DeliveryAccount, {
+        foreignKey: "delivery_account_id",
+        as: "delivery_account",
+        onDelete: "CASCADE",
+      });
     }
   }
 
@@ -35,6 +40,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         references: {
           model: "users",
+          key: "id",
+        },
+      },
+      delivery_account_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "delivery_accounts",
           key: "id",
         },
       },
