@@ -61,7 +61,6 @@ import CreateOrderForm from "./orders/forms/CreateOrderForm";
 import AddShippingAccountForm from "./orders/forms/AddShippingAccountForm";
 import ShippingAccountsList from "./orders/ShippingAccountsList";
 import OrderDetailsDialog from "./orders/dialogs/OrderDetailsDialog";
-import OrderTrackingDialog from "./orders/dialogs/OrderTrackingDialog";
 
 // Import mock data and utilities
 import {
@@ -1041,110 +1040,6 @@ export default function CustomerOrders() {
       );
     }
   };
-  const handleTrackOrder = async (order) => {
-    try {
-      setIsLoadingOrders(true);
-      const selectedAccount =
-        shippingAccounts.find((acc) => acc.is_default === true) ||
-        shippingAccounts[0];
-
-      const response = await getShippingOrderDetailApi(
-        order.orderCode,
-        selectedAccount.token,
-        selectedAccount.shop_id
-      );
-
-      if (response && response.data && response.data.data) {
-        const trackingData = response.data.data;
-        console.log("trackingData ", trackingData);
-        // Create timeline events from tracking data
-        let updatedTimeline = [
-          {
-            time: new Date(order.date).toLocaleString(),
-            status: "Order Created",
-          },
-        ];
-
-        // Add status logs if available
-        if (
-          trackingData.status_histories &&
-          trackingData.status_histories.length > 0
-        ) {
-          trackingData.status_histories.forEach((history) => {
-            updatedTimeline.push({
-              time: new Date(history.timestamp).toLocaleString(),
-              status: history.status_name || history.status || "Status Updated",
-            });
-          });
-        }
-
-        // Create location history from tracking data
-        let updatedLocationHistory = [
-          {
-            time: new Date(order.date).toLocaleString(),
-            location: order.to_address,
-            status: "Order Created",
-          },
-        ];
-
-        // Add location logs if available
-        if (trackingData.log && trackingData.log.length > 0) {
-          trackingData.log.forEach((logEntry) => {
-            updatedLocationHistory.push({
-              time: new Date(logEntry.timestamp).toLocaleString(),
-              location: logEntry.location || "Unknown",
-              status: logEntry.status || "Location Updated",
-            });
-          });
-        }
-
-        // // Update the order with current status and tracking info
-        const updatedOrder = {
-          ...order,
-          status:
-            trackingData.status === "cancel"
-              ? "cancel"
-              : trackingData.status === "delivered"
-              ? "delivered"
-              : trackingData.status === "storing" ||
-                trackingData.status === "picking" ||
-                trackingData.status === "delivering"
-              ? "In Progress"
-              : "Pending Confirmation",
-          timeline: updatedTimeline,
-          locationHistory: updatedLocationHistory,
-          expectedDelivery:
-            trackingData.expected_delivery_time || order.expectedDelivery,
-          // Update any other fields that might have changed
-        };
-
-        // // Update this order in our local state
-        const updatedOrders = orders.map((o) =>
-          o.id === order.id ? updatedOrder : o
-        );
-
-        setOrders(updatedOrders);
-        setSelectedOrder(updatedOrder);
-      } else {
-        // If no data returned from API, just show what we have
-        setSelectedOrder(order);
-      }
-
-      setIsLoadingOrders(false);
-
-      // Set a small timeout to resolve the aria-hidden focus issue
-      setTimeout(() => {
-        setTrackingDialogOpen(true);
-      }, 10);
-    } catch (error) {
-      console.error("Error fetching order tracking details:", error);
-      setIsLoadingOrders(false);
-      showAlert(
-        "Failed to load tracking information. Please try again.",
-        "error"
-      );
-    }
-  };
 
   const handleCancelOrder = async (transactionId) => {
     try {
@@ -1512,7 +1407,6 @@ export default function CustomerOrders() {
             <OrdersList
               orders={readyToPick}
               handleViewDetails={handleViewOrderDetails}
-              handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}
               handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
@@ -1527,7 +1421,6 @@ export default function CustomerOrders() {
             <OrdersList
               orders={confirmedOrders}
               handleViewDetails={handleViewOrderDetails}
-              handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}
               handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
@@ -1542,7 +1435,6 @@ export default function CustomerOrders() {
             <OrdersList
               orders={completedOrders}
               handleViewDetails={handleViewOrderDetails}
-              handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}
               handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
@@ -1555,7 +1447,6 @@ export default function CustomerOrders() {
             <OrdersList
               orders={cancelledOrders}
               handleViewDetails={handleViewDetails}
-              handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}
               handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
@@ -1661,16 +1552,6 @@ export default function CustomerOrders() {
           handleConfirmOrder={handleConfirmOrder}
           handleCancelOrder={handleCancelOrder}
           handleOpenEditBuyerInfo={handleOpenEditBuyerInfo}
-        />
-      )}
-
-      {/* Order Tracking Dialog */}
-      {selectedOrder && (
-        <OrderTrackingDialog
-          open={trackingDialogOpen}
-          onClose={() => setTrackingDialogOpen(false)}
-          order={selectedOrder}
-          handleViewDetails={handleViewDetails}
         />
       )}
 

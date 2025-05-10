@@ -312,33 +312,12 @@ const OrdersList = ({
                           <ReceiptIcon fontSize="small" />
                         </Button>
 
-                        {(order.status === "delivering" ||
-                          order.status === "delivered") && (
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => handleTrackOrder(order)}
-                            sx={{
-                              minWidth: 0,
-                              p: "4px 8px",
-                              borderColor: "var(--primary-green)",
-                              color: "var(--primary-green)",
-                              "&:hover": {
-                                borderColor: "var(--dark-green)",
-                                backgroundColor: "rgba(46, 125, 50, 0.08)",
-                              },
-                            }}
-                          >
-                            <LocationOnIcon fontSize="small" />
-                          </Button>
-                        )}
-
-                        {order.status === "Pending Confirmation" && (
-                          <>
+                        {order.status === "accepted" && handleCreateBasedOn && (
+                          <Tooltip title="Create new order based on this one">
                             <Button
                               size="small"
                               variant="outlined"
-                              onClick={() => handleEditOrder(order)}
+                              onClick={() => handleCreateBasedOn(order)}
                               sx={{
                                 minWidth: 0,
                                 p: "4px 8px",
@@ -350,56 +329,30 @@ const OrdersList = ({
                                 },
                               }}
                             >
-                              <EditIcon fontSize="small" />
+                              <ContentCopyIcon fontSize="small" />
                             </Button>
-                            {handleCreateBasedOn && (
-                              <Tooltip title="Create new order based on this one">
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  onClick={() => handleCreateBasedOn(order)}
-                                  sx={{
-                                    minWidth: 0,
-                                    p: "4px 8px",
-                                    borderColor: "var(--primary-green)",
-                                    color: "var(--primary-green)",
-                                    "&:hover": {
-                                      borderColor: "var(--dark-green)",
-                                      backgroundColor:
-                                        "rgba(46, 125, 50, 0.08)",
-                                    },
-                                  }}
-                                >
-                                  <ContentCopyIcon fontSize="small" />
-                                </Button>
-                              </Tooltip>
-                            )}
-                          </>
+                          </Tooltip>
                         )}
 
-                        {(order.status === "delivering" ||
-                          order.status === "delivered") &&
-                          handleCreateBasedOn && (
-                            <Tooltip title="Create new order based on this one">
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={() => handleCreateBasedOn(order)}
-                                sx={{
-                                  minWidth: 0,
-                                  p: "4px 8px",
-                                  borderColor: "var(--primary-green)",
-                                  color: "var(--primary-green)",
-                                  "&:hover": {
-                                    borderColor: "var(--dark-green)",
-                                    backgroundColor: "rgba(46, 125, 50, 0.08)",
-                                  },
-                                }}
-                              >
-                                <ContentCopyIcon fontSize="small" />
-                              </Button>
-                            </Tooltip>
-                          )}
+                        {order.status === "Pending Confirmation" && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleEditOrder(order)}
+                            sx={{
+                              minWidth: 0,
+                              p: "4px 8px",
+                              borderColor: "var(--primary-green)",
+                              color: "var(--primary-green)",
+                              "&:hover": {
+                                borderColor: "var(--dark-green)",
+                                backgroundColor: "rgba(46, 125, 50, 0.08)",
+                              },
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </Button>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -533,12 +486,11 @@ const OrdersList = ({
                       Details
                     </Button>
 
-                    {(order.status === "In Progress" ||
-                      order.status === "Completed") && (
+                    {order.status === "accepted" && handleCreateBasedOn && (
                       <Button
                         size="small"
                         variant="outlined"
-                        onClick={() => handleTrackOrder(order)}
+                        onClick={() => handleCreateBasedOn(order)}
                         sx={{
                           borderColor: "var(--primary-green)",
                           color: "var(--primary-green)",
@@ -548,70 +500,27 @@ const OrdersList = ({
                           },
                         }}
                       >
-                        Track
+                        Copy Order
                       </Button>
                     )}
 
                     {order.status === "Pending Confirmation" && (
-                      <>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleEditOrder(order)}
-                          sx={{
-                            borderColor: "var(--primary-green)",
-                            color: "var(--primary-green)",
-                            "&:hover": {
-                              borderColor: "var(--dark-green)",
-                              backgroundColor: "rgba(46, 125, 50, 0.08)",
-                            },
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        {handleCreateBasedOn && (
-                          <Tooltip title="Create new order based on this one">
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => handleCreateBasedOn(order)}
-                              sx={{
-                                minWidth: 0,
-                                p: "4px 8px",
-                                borderColor: "var(--primary-green)",
-                                color: "var(--primary-green)",
-                                "&:hover": {
-                                  borderColor: "var(--dark-green)",
-                                  backgroundColor: "rgba(46, 125, 50, 0.08)",
-                                },
-                              }}
-                            >
-                              <ContentCopyIcon fontSize="small" />
-                            </Button>
-                          </Tooltip>
-                        )}
-                      </>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleEditOrder(order)}
+                        sx={{
+                          borderColor: "var(--primary-green)",
+                          color: "var(--primary-green)",
+                          "&:hover": {
+                            borderColor: "var(--dark-green)",
+                            backgroundColor: "rgba(46, 125, 50, 0.08)",
+                          },
+                        }}
+                      >
+                        Edit
+                      </Button>
                     )}
-
-                    {(order.status === "In Progress" ||
-                      order.status === "Completed") &&
-                      handleCreateBasedOn && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleCreateBasedOn(order)}
-                          sx={{
-                            borderColor: "var(--primary-green)",
-                            color: "var(--primary-green)",
-                            "&:hover": {
-                              borderColor: "var(--dark-green)",
-                              backgroundColor: "rgba(46, 125, 50, 0.08)",
-                            },
-                          }}
-                        >
-                          Copy Order
-                        </Button>
-                      )}
                   </Box>
                 </Box>
               </AccordionDetails>
