@@ -14,8 +14,6 @@ router.get("/public/:public_id", userController.handleGetUserByPublicId);
 router.put("/public/:public_id", userController.handleUpdateUserByPublicId);
 router.delete("/public/:public_id", userController.handleDeleteUserByPublicId);
 
-router.patch("/add_address", userController.handleAddAddressById);
-router.patch("/delete_address", userController.handleDeleteAddressById);
 router.get(
   "/:id",
   // checkPermission("get", "user_id"),

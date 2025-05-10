@@ -16,6 +16,13 @@ const { nanoid } = require("nanoid");
 const rateLimitService = require("./rateLimitService");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 
+const removeSpecialChars = (str) => {
+  return str
+    .replace(/[^a-zA-Z0-9\u00C0-\u1EF9\s]/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+};
+
 const setUserCache = async (user) => {
   const userData =
     typeof user.toJSON === "function" ? user.toJSON() : { ...user };
@@ -335,59 +342,65 @@ const getUserByPublicID = async (public_id) => {
   }
 };
 
+
 const updateUser = async (user, data) => {
   try {
-    let { full_name, address, coins, phone_number, streak } = data;
-    data.username
-      ? (user.username = data.username)
-      : (user.username = user.username);
-    data.email ? (user.email = data.email) : (user.email = user.email);
+    let { full_name, username, phone_number, email } = data;
 
-    if (coins !== undefined) {
-      let coin = await Coin.findOne({ where: { id: user.coins_id } });
-      if (!coin) throw new Error("Coin not found");
-      const parsedCoins = Number(coins);
-      if (isNaN(parsedCoins) || parsedCoins < 0)
-        throw new Error("Coins must be a non-negative number");
-      coin.amount = parsedCoins;
-      await coin.save();
-      await setCache(`coin:id:${user.coins_id}`, coin);
+    if (username !== undefined) {
+      username = removeSpecialChars(username);
+      user.username = username;
     }
 
-    if (streak !== undefined) {
-      const parsedStreak = Number(streak);
-      if (isNaN(parsedStreak) || parsedStreak < 0)
-        throw new Error("Streak must be a non-negative number");
-      user.streak = parsedStreak;
+    if (email !== undefined) {
+      const existingUser = await User.findOne({
+        where: {
+          email,
+          id: { [Op.ne]: user.id }, 
+        },
+      });
+      if (existingUser) {
+        throw new Error("Email is already used by another user");
+      }
+      user.email = email;
     }
 
-    full_name
-      ? (user.full_name = full_name)
-      : (user.full_name = user.full_name);
-    address ? (user.address = address) : (user.address = user.address);
-    phone_number
-      ? (user.phone_number = phone_number)
-      : (user.phone_number = user.phone_number);
+    if (full_name !== undefined) {
+      full_name = removeSpecialChars(full_name);
+      user.full_name = full_name;
+    }
+
+    if (phone_number !== undefined) {
+      user.phone_number = phone_number;
+    }
+
     await user.save();
 
-    const roledata = await Role.findByPk(user.role_id);
+    const user_id = user.id;
+
+    const coindata = await Coin.findOne({ where: { user_id } });
+    if (!coindata) throw new Error("Coin does not exist");
+
+    const roledata = await Role.findOne({ where: { user_id } });
     if (!roledata) throw new Error("Role does not exist");
-    const rankdata = await Rank.findByPk(user.rank_id);
+
+    const rankdata = await Rank.findOne({ where: { user_id } });
     if (!rankdata) throw new Error("Rank does not exist");
 
     const updatedUser = {
       ...user.toJSON(),
+      coins: coindata,
       roles: roledata,
-      coins: await Coin.findByPk(user.coins_id),
       ranks: rankdata,
     };
-    await setUserCache(updatedUser);
 
+    await setUserCache(updatedUser);
     return user;
   } catch (e) {
     throw e;
   }
 };
+
 
 const updateUserById = async (id, data) => {
   try {
@@ -407,13 +420,6 @@ const updateUserByPublicID = async (public_id, data) => {
   } catch (e) {
     throw e;
   }
-};
-
-const removeSpecialChars = (str) => {
-  return str
-    .replace(/[^a-zA-Z0-9\u00C0-\u1EF9\s]/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
 };
 
 const findOrCreateUser = async (profile) => {
@@ -617,69 +623,6 @@ const getItemByIdUser = async (user_id) => {
   }
 };
 
-const addAddressById = async (user_id, newAddress) => {
-  try {
-    if (!newAddress) throw new Error("newAddress is required");
-
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Ensure user.address is an array
-    const currentAddresses = Array.isArray(user.address) ? user.address : [];
-
-    // Check if the user already has 3 addresses
-    if (currentAddresses.length >= 3) {
-      throw new Error("Maximum of 3 addresses allowed");
-    }
-
-    const updatedAddresses = [...currentAddresses, newAddress];
-
-    // Update the address field
-    await user.update({ address: updatedAddresses });
-
-    // Delete cache
-    await deleteCache(`user:id:${user_id}`);
-
-    return user;
-  } catch (e) {
-    throw e;
-  }
-};
-
-
-const addDeleteressById = async (user_id, indexOfAddress) => {
-  try {
-    const user = await User.findByPk(user_id);
-    
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    if (!Array.isArray(user.address)) {
-      throw new Error("Address field is not an array");
-    }
-
-    // If index is out of bounds
-    if (indexOfAddress < 0 || indexOfAddress >= user.address.length) {
-      throw new Error("Invalid address index");
-    }
-
-    // Remove the address at the given index
-    const updatedAddresses = user.address.filter((_, idx) => idx !== indexOfAddress);
-
-    await user.update({ address: updatedAddresses });
-
-    //delete cache user
-    await deleteCache(`user:id:${user_id}`);
-
-    return user;
-  } catch (e) {
-    throw e;
-  }
-};
-
 module.exports = {
   createUser,
   getAllUsers,
@@ -695,6 +638,4 @@ module.exports = {
   getAllTasksById,
   getItemByIdUser,
   refreshAccessToken,
-  addAddressById,
-  addDeleteressById
 };
