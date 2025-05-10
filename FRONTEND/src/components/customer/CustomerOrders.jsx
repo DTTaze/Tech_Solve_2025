@@ -372,7 +372,6 @@ function TransactionOrdersList({
             </TableHead>
             <TableBody>
               {filteredTransactions.map((transaction) => {
-                console.log("Transaction:", transaction);
                 return (
                   <TableRow key={transaction.id}>
                     <TableCell>{transaction.public_id}</TableCell>
