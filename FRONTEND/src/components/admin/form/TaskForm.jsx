@@ -106,7 +106,6 @@ export default function TaskForm({
               <MenuItem value="easy">Dễ</MenuItem>
               <MenuItem value="medium">Trung bình</MenuItem>
               <MenuItem value="hard">Khó</MenuItem>
-              <MenuItem value="event">Sự kiện</MenuItem>
             </Select>
           </FormControl>
           

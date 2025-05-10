@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "./DataTable";
-import { transactionsColumns } from "./HeaderColumn";
+import { ordersColumns } from "./HeaderColumn";
 import { Box, Typography } from "@mui/material";
-import { getAllShippingOrdersApi, deleteTransactionsApi } from "../../utils/api";
+import {
+  getAllShippingOrdersApi,
+  cancelShippingOrderApi,
+  updateShippingOrderApi,
+} from "../../utils/api";
+import OrderForm from "./form/OrderForm";
 
 export default function OrdersManagement() {
-  const [transactions, setTransactions] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [formMode, setFormMode] = useState("edit");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,14 +22,12 @@ export default function OrdersManagement() {
       try {
         const res = await getAllShippingOrdersApi();
         if (res.success) {
-          setTransactions(res.data);
+          setOrders(res.data);
         } else {
-          setError(res.error);
-          console.log(res.error);
+          console.error("Error fetching orders:", res.error);
         }
-      } catch (e) {
-        setError(e);
-        console.log(e);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
       } finally {
         setLoading(false);
       }
@@ -30,14 +35,52 @@ export default function OrdersManagement() {
     fetchData();
   }, []);
 
-  const handleDeleteTransaction = async (transaction) => {
-    const res = await deleteTransactionsApi(transaction.id);
-    console.log(transaction, transaction.id);
-    if (confirm("Bạn có chắc chắn muốn xóa không?")) {
-      if (res.success) {
-        alert("Xóa giao dịch thành công!");
-        setTransactions((prev) => prev.filter((u) => u.id !== transaction.id));
+  const handleEditOrder = (order) => {
+    setFormMode("edit");
+    setEditData(order);
+    setFormOpen(true);
+  };
+
+  const handleCancelOrder = async (order) => {
+    if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
+      try {
+        const res = await cancelShippingOrderApi(order.order_code);
+        if (res.success) {
+          alert("Hủy đơn hàng thành công!");
+          // Refresh orders list
+          const ordersRes = await getAllShippingOrdersApi();
+          if (ordersRes.success) {
+            setOrders(ordersRes.data);
+          }
+        } else {
+          alert("Hủy đơn hàng thất bại!");
+        }
+      } catch (error) {
+        console.error("Error canceling order:", error);
+        alert("Có lỗi xảy ra khi hủy đơn hàng!");
       }
+    }
+  };
+
+  const handleSubmitOrder = async (data, mode) => {
+    try {
+      if (mode === "edit") {
+        const result = await updateShippingOrderApi(data);
+        if (result.success) {
+          alert("Cập nhật đơn hàng thành công!");
+          // Refresh orders list
+          const res = await getAllShippingOrdersApi();
+          if (res.success) {
+            setOrders(res.data);
+          }
+        } else {
+          alert("Cập nhật đơn hàng thất bại!");
+        }
+      }
+      setFormOpen(false);
+    } catch (error) {
+      console.error("Error updating order:", error);
+      alert("Có lỗi xảy ra khi cập nhật đơn hàng!");
     }
   };
 
@@ -48,12 +91,19 @@ export default function OrdersManagement() {
       </Typography>
       <DataTable
         title="Orders"
-        columns={transactionsColumns}
-        rows={transactions}
+        columns={ordersColumns}
+        rows={orders}
         onAdd={false}
-        onEdit={false}
-        onDelete={handleDeleteTransaction}
+        onEdit={handleEditOrder}
+        onDelete={handleCancelOrder}
         loading={loading}
+      />
+      <OrderForm
+        open={formOpen}
+        handleClose={() => setFormOpen(false)}
+        handleSubmit={handleSubmitOrder}
+        initialData={editData}
+        mode={formMode}
       />
     </Box>
   );

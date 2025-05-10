@@ -48,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       difficulty: {
-        type: DataTypes.ENUM("easy", "medium", "hard", "event"),
+        type: DataTypes.ENUM("easy", "medium", "hard"),
         allowNull: false,
       },
       total: {

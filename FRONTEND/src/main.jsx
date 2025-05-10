@@ -1,5 +1,9 @@
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import { StrictMode } from "react";
 import { AuthProvider } from "./contexts/auth.context.jsx";
 import { NotificationProvider } from "./components/ui/NotificationProvider";
@@ -43,6 +47,7 @@ import CustomerEvents from "./components/customer/CustomerEvents/CustomerEvents.
 import App from "./App.jsx";
 import "./index.css";
 import OrdersManagement from "./components/admin/OrdersManagement.jsx";
+import EventsManagement from "./components/admin/EventsManagement.jsx";
 
 const router = createBrowserRouter([
   {
@@ -105,7 +110,7 @@ const router = createBrowserRouter([
               { path: "missions", element: <MissionsManagement /> },
               { path: "items", element: <ItemsManagement /> },
               { path: "products", element: <ProductsManagement /> },
-              { path: "events", element: <ProductsManagement /> },
+              { path: "events", element: <EventsManagement /> },
             ],
           },
           { path: "rbac", element: <RolesPermissions /> },
@@ -132,7 +137,6 @@ const router = createBrowserRouter([
           { index: true, element: <CustomerDashboard /> },
           { path: "profile", element: <CustomerProfile /> },
           { path: "orders", element: <CustomerOrders /> },
-          // { path: "rewards", element: <CustomerRewards /> },
           { path: "scanner", element: <CustomerQRScanner /> },
           { path: "users", element: <CustomerUsers /> },
           { path: "items", element: <CustomerItems /> },
