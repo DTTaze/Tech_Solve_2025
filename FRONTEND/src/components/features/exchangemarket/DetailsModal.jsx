@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { X } from "lucide-react";
+import { X, Coins } from "lucide-react";
 import { statusConfig } from "./MarketplaceItemCard";
 
 export default function DetailsModal({
@@ -55,11 +55,7 @@ export default function DetailsModal({
             <p className="text-sm text-gray-600">{item.description}</p>
             <div className="flex items-center">
               <span className="font-medium text-amber-600">{item.price}</span>
-              <img
-                src="/assets/icons/coin.png"
-                alt="coins"
-                className="ml-1 h-5 w-5"
-              />
+              <Coins className="ml-1 h-5 w-5 text-amber-600" />
             </div>
             {isEditMode && item.postStatus && (
               <div className="flex items-center gap-2">
