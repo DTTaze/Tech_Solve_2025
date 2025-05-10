@@ -542,3 +542,7 @@ export const updateReceiverInfoByIdAPI = (id ,data) => {
 export const deleteReceiverInfoByIdAPI = (id) => {
   return axios.delete(`api/users/receiver/info/${id}`);
 };
+
+export const SetDefaultReceiverInfoByIdAPI = (id) => {
+  return axios.patch(`api/users/receiver/set-default/${id}`);
+};
