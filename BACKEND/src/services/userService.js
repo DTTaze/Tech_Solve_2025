@@ -16,6 +16,16 @@ const { nanoid } = require("nanoid");
 const rateLimitService = require("./rateLimitService");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 
+const deleteCacheAll = async(id = null,public_id = null)=> {
+  if (public_id){
+    await deleteCache(`user:public_id:${public_id}`);
+  }
+  if (id){
+    await deleteCache(`user:id:${id}`);
+  }
+  await deleteCache()
+}
+
 const removeSpecialChars = (str) => {
   return str
     .replace(/[^a-zA-Z0-9\u00C0-\u1EF9\s]/g, " ")
@@ -391,7 +401,7 @@ const updateUser = async (user, data) => {
       ranks: rankdata,
     };
 
-    await setUserCache(updatedUser);
+    await deleteCacheAll(user.id, user.public_id);
     return user;
   } catch (e) {
     throw e;
@@ -439,7 +449,7 @@ const updateUserByPublicID = async (public_id, data) => {
       ranks: rankdata,
     };
 
-    await setUserCache(updatedUser);
+    await deleteCacheAll(user.id, user.public_id);
     return user;
   } catch (e) {
     throw e;
@@ -491,7 +501,7 @@ const findOrCreateUser = async (profile) => {
       coins: newCoin,
       ranks: newRank,
     };
-    await setUserCache(userWithIncludes);
+    await deleteCacheAll(newUser.id, newUser.public_id);
 
     //delete password
     delete newUser.password;
