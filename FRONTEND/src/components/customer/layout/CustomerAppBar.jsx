@@ -22,6 +22,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LogoutIcon from "@mui/icons-material/Logout";
+import HomeIcon from "@mui/icons-material/Home";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logoutUserApi } from "../../../utils/api";
 import { useNotification } from "../../ui/NotificationProvider";
@@ -41,7 +42,7 @@ export default function CustomerAppBar({
   const [notificationAnchor, setNotificationAnchor] = React.useState(null);
   const [loggingOut, setLoggingOut] = React.useState(false);
   const { notify } = useNotification();
-  const { auth, setAuth } = React.useContext(AuthContext);  
+  const { auth, setAuth } = React.useContext(AuthContext);
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -75,9 +76,6 @@ export default function CustomerAppBar({
 
       // Immediately navigate to home page
       window.location.href = "/";
-
-      
-
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
       notify("error", "Đã xảy ra lỗi khi đăng xuất. Vui lòng thử lại.");
@@ -102,24 +100,34 @@ export default function CustomerAppBar({
     <AppBar
       position="fixed"
       sx={{
+        width: { sm: `calc(100% - ${drawerWidth}px)` },
+        ml: { sm: `${drawerWidth}px` },
         backgroundColor: "white",
-        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
-        borderBottom: "1px solid var(--light-green)",
-        width: "100%",
-        zIndex: 1300,
+        boxShadow: "none",
+        borderBottom: "1px solid #e0e0e0",
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between" }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, color: "var(--primary-green)" }}
-          >
-            <MenuIcon />
-          </IconButton>
+      <Toolbar>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleDrawerToggle}
+          sx={{ mr: 2, display: { sm: "none" } }}
+        >
+          <MenuIcon />
+        </IconButton>
+
+        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+          <Tooltip title="Go to Homepage">
+            <IconButton
+              color="inherit"
+              onClick={() => navigate("/")}
+              sx={{ mr: 2, color: "var(--primary-green)" }}
+            >
+              <HomeIcon />
+            </IconButton>
+          </Tooltip>
 
           {!isMobile && (
             <Breadcrumbs aria-label="breadcrumb">

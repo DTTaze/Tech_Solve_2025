@@ -49,11 +49,11 @@ function UserHeader() {
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-      fetchUser(); 
-      fetchAvatar(); 
+      fetchUser();
+      fetchAvatar();
 
       const handleFocus = () => {
-        fetchUser(); 
+        fetchUser();
       };
 
       window.addEventListener("focus", handleFocus);
@@ -95,6 +95,11 @@ function UserHeader() {
     { key: "missions", label: "Nhiệm vụ" },
     { key: "exchange-market", label: "Trao đổi" },
   ];
+
+  // Add customer page link if user has customer role
+  if (auth.isAuthenticated && auth.user?.roles?.id === 3) {
+    pages.push({ key: "customer", label: "Trang khách hàng" });
+  }
 
   const avatarUrl =
     (auth.user?.avatar_url || "../src/assets/images/default-avatar.jpg") +
