@@ -687,71 +687,34 @@ export default function CustomerOrders() {
 
     try {
       const selectedAccount = shippingAccounts[0];
-      console.log("check newOrder from creating order", newOrder);
-      console.log("check selectedAccount from creating order", selectedAccount);
-      const response = await createShippingOrderApi(
-        newOrder,
-        selectedAccount.token,
-        selectedAccount.shop_id
-      );
 
-      console.log("check response from creating order", response);
+      let response;
+      if (isCreatingBasedOn && selectedOrder) {
+        // If creating based on a transaction, use createDeliveryOrderFromTransactionApi
+        response = await createDeliveryOrderFromTransactionApi(
+          selectedOrder.id,
+          newOrder,
+          selectedAccount.token,
+          selectedAccount.shop_id
+        );
+      } else {
+        // Normal order creation
+        response = await createShippingOrderApi(
+          newOrder,
+          selectedAccount.token,
+          selectedAccount.shop_id
+        );
+      }
 
-      const order = {
-        payment_type_id: 2,
-        note: newOrder.note,
-        required_note: newOrder.deliveryNote,
-        return_phone: newOrder.from_phone,
-        return_address: newOrder.from_address,
-        return_district_id: null,
-        return_ward_code: "",
-        client_order_code: newOrder.customerOrderCode || "",
-        from_name: "TinTest124",
-        from_phone: newOrder.from_phone,
-        from_address: newOrder.from_address,
-        from_ward_name: newOrder.from_ward_name,
-        from_district_name: newOrder.from_district_name,
-        from_province_name: "HCM",
-        to_name: newOrder.to_name,
-        to_phone: newOrder.to_phone,
-        to_address: newOrder.to_address,
-        to_ward_name: newOrder.to_ward_name,
-        to_district_name: newOrder.to_district_name,
-        to_province_name: "HCM",
-        cod_amount: parseInt(newOrder.codAmount),
-        content: "Theo New York Times",
-        length: parseInt(newOrder.length),
-        width: parseInt(newOrder.width),
-        height: parseInt(newOrder.height),
-        weight: parseInt(newOrder.weight),
-        cod_failed_amount: parseInt(newOrder.failureCharge) || 0,
-        pick_station_id: 1444,
-        deliver_station_id: null,
-        insurance_value: parseInt(newOrder.totalValue),
-        service_type_id: 2,
-        coupon: null,
-        pickup_time: Math.floor(Date.now() / 1000), // Unix timestamp
-        pick_shift: [2],
-        items: [
-          {
-            name: newOrder.productName,
-            code: newOrder.productCode,
-            quantity: parseInt(newOrder.productQuantity),
-            price: parseInt(newOrder.cod_amount),
-            length: parseInt(newOrder.length),
-            width: parseInt(newOrder.width),
-            height: parseInt(newOrder.height),
-            weight: parseInt(newOrder.weight),
-            category: {
-              level1: "Áo", // hardcode hoặc để user chọn category
-            },
-          },
-        ],
-      };
-      setOrders([order, ...orders]);
-      setCreateDialogOpen(false);
-      showAlert("Order created successfully!");
-      setNewOrder(initialOrderPayload);
+      if (response && response.data) {
+        setOrders([response.data, ...orders]);
+        setCreateDialogOpen(false);
+        showAlert("Order created successfully!");
+        setNewOrder(initialOrderPayload);
+        setIsCreatingBasedOn(false);
+        setSelectedOrder(null);
+        fetchOrders(); // Refresh orders list
+      }
     } catch (error) {
       console.error("Error creating order:", error);
       showAlert("Failed to create order. Please try again.", "error");
@@ -996,7 +959,27 @@ export default function CustomerOrders() {
     try {
       const response = await getTransactionByIdApi(transaction.id);
       if (response && response.data) {
-        setSelectedOrder(response.data);
+        const transactionDetails = {
+          ...response.data,
+          timeline: [
+            {
+              time: new Date(response.data.created_at).toLocaleString(),
+              status: "Transaction Created",
+            },
+            {
+              time: new Date(response.data.updated_at).toLocaleString(),
+              status: `Status: ${response.data.status}`,
+            },
+          ],
+          locationHistory: [
+            {
+              time: new Date(response.data.created_at).toLocaleString(),
+              location: "Transaction Created",
+              status: response.data.status,
+            },
+          ],
+        };
+        setSelectedOrder(transactionDetails);
         setTimeout(() => {
           setDetailsDialogOpen(true);
         }, 10);
@@ -1292,43 +1275,28 @@ export default function CustomerOrders() {
   // Function to handle creating order from transaction
   const handleCreateOrderFromTransaction = async (transaction) => {
     try {
-      if (!hasLinkedShippingAccounts()) {
-        showAlert(
-          "Please link at least one shipping account before creating orders.",
-          "error"
-        );
-        setShippingAccountsDialogOpen(true);
-        return;
-      }
-      const selectedAccount =
-        shippingAccounts.find((acc) => acc.is_default) || shippingAccounts[0];
-
-      if (!selectedAccount) {
-        throw new Error("No shipping account available");
-      }
-
-      // Prepare order data
-      const orderData = {
-        payment_type_id: 2,
-        required_note: "KHONGCHOXEMHANG",
-        weight: 200, // Default weight in grams
-      };
-
-      const response = await createDeliveryOrderFromTransactionApi(
-        transaction.id,
-        orderData,
-        selectedAccount.token,
-        selectedAccount.shop_id
-      );
-
+      const response = await getTransactionByIdApi(transaction.id);
       if (response && response.data) {
-        showAlert("Order created successfully from transaction!");
-        fetchOrders(); // Refresh orders list
+        const transactionDetails = response.data;
+
+        // Prepare order data based on transaction details
+        const orderData = {
+          payment_type_id: 2,
+          required_note: "KHONGCHOXEMHANG",
+          weight: 200, // Default weight in grams
+          transaction_id: transactionDetails.id,
+          // Add any other necessary fields
+        };
+
+        setSelectedOrder(transactionDetails);
+        setNewOrder(orderData);
+        setIsCreatingBasedOn(true);
+        setCreateDialogOpen(true);
       }
     } catch (error) {
-      console.error("Error creating order from transaction:", error);
+      console.error("Error fetching transaction details:", error);
       showAlert(
-        "Failed to create order from transaction. Please try again.",
+        "Failed to load transaction details. Please try again.",
         "error"
       );
     }
