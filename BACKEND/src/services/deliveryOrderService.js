@@ -221,6 +221,7 @@ const createDeliveryOrderFromTransaction = async (
       weight: shipmentData.weight,
       payment_type_id: shipmentData.payment_type_id,
       total_amount: total_amount,
+      item_snapshot: transaction.item_snapshot,
     });
     await deleteCache(`delivery:orders:seller:${seller_id}`);
     return response.data;

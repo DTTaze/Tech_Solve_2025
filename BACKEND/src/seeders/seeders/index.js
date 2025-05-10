@@ -17,6 +17,7 @@ const eventSeeder = require("./seeder-event");
 const eventuserSeeder = require("./seeder-eventuser");
 const deliveryAccount = require("./seeder-delivery_account");
 const deliveryOrder = require("./seeder-delivery_order");
+const imageSeeder = require("./seeder-images");
 
 const receiverInfo = require("./seeder-receiver_info");
 
@@ -43,6 +44,8 @@ const seeders = [
   { model: require("../../models").EventUser, seeder: eventuserSeeder },
   { model: require("../../models").DeliveryAccount, seeder: deliveryAccount },
   { model: require("../../models").DeliveryOrder, seeder: deliveryOrder },
+  { model: require("../../models").Image, seeder: imageSeeder },
+
 ];
 
 (async () => {

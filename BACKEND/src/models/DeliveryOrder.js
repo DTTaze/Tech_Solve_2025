@@ -120,6 +120,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      item_snapshot: {
+        type: DataTypes.JSON,
+        allowNull: null,
+      },
     },
     {
       sequelize,
