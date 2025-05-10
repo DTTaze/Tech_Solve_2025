@@ -6,7 +6,6 @@ import { Coins } from "lucide-react";
 const OrderItem = ({ transaction, onClick, onCancel }) => {
   const item = transaction.item_snapshot;
 
-  // Map statuses to colors for UI display
   const statusStyles = {
     ready_to_pick: "bg-blue-100 text-blue-800",
     picking: "bg-blue-100 text-blue-800",
@@ -80,7 +79,7 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
           )}
           {transaction.status === "pending" && (
             <button
-              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
               onClick={() => onCancel(transaction.id)}
             >
               Hủy đơn hàng
@@ -161,7 +160,6 @@ const PurchaseOrder = () => {
     damage: "Hàng hư hỏng",
   };
 
-  // Map DeliveryOrder statuses to tab categories
   const statusToTab = {
     pending: "pending",
     ready_to_pick: "shipping",
@@ -188,11 +186,10 @@ const PurchaseOrder = () => {
     damage: "cancelled",
   };
 
-  // Normalize data from APIs
   const normalizeTransaction = (tx, source) => {
     if (source === "transaction") {
       return {
-        id: `transaction-${tx.id}`, // Prefix to avoid ID conflicts
+        id: `transaction-${tx.id}`,
         public_id: tx.public_id,
         status: tx.status === "accepted" ? "pending" : tx.status === "rejected" ? "cancel" : tx.status,
         status_label: statusLabels[tx.status === "accepted" ? "pending" : tx.status === "rejected" ? "cancel" : tx.status] || tx.status,
@@ -204,7 +201,7 @@ const PurchaseOrder = () => {
       };
     } else {
       return {
-        id: `shipping-${tx.id}`, // Prefix to avoid ID conflicts
+        id: `shipping-${tx.id}`,
         public_id: tx.order_code,
         status: tx.status,
         status_label: statusLabels[tx.status] || tx.status,
@@ -247,31 +244,26 @@ const PurchaseOrder = () => {
         let normalized = [];
 
         if (activeTab === "all") {
-          // Fetch from both APIs for "all" tab
           const [transactionResponse, shippingResponse] = await Promise.all([
             getBuyerTransactionHistory(auth.user.id),
             getAllShippingOrdersByBuyerApi(auth.user.id),
           ]);
 
-          // Normalize transaction history
           if (transactionResponse.success && Array.isArray(transactionResponse.data)) {
             normalized = [...normalized, ...transactionResponse.data.map((tx) => normalizeTransaction(tx, "transaction"))];
           }
 
-          // Normalize shipping orders
           if (shippingResponse.success && Array.isArray(shippingResponse.data)) {
             normalized = [...normalized, ...shippingResponse.data.map((tx) => normalizeTransaction(tx, "shipping"))];
           }
         } else if (activeTab === "pending") {
-          // Fetch only transaction history for "pending" tab
           const response = await getBuyerTransactionHistory(auth.user.id);
           if (response.success && Array.isArray(response.data)) {
             normalized = response.data
-              .filter((tx) => tx.status === "accepted") // Only pending (accepted) transactions
+              .filter((tx) => tx.status === "pending" || tx.status === "accepted")
               .map((tx) => normalizeTransaction(tx, "transaction"));
           }
         } else {
-          // Fetch only shipping orders for other tabs
           const response = await getAllShippingOrdersByBuyerApi(auth.user.id);
           if (response.success && Array.isArray(response.data)) {
             normalized = response.data
@@ -315,7 +307,6 @@ const PurchaseOrder = () => {
           }
         }
 
-        // Sort by created_at (newest first)
         normalized.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         setTransactionList(normalized);
       } catch (error) {
@@ -333,10 +324,9 @@ const PurchaseOrder = () => {
 
   const handleCancelOrder = async (transactionId) => {
     try {
-      // Extract the actual transaction ID by removing the "transaction-" prefix
       const actualId = transactionId.replace("transaction-", "");
       const response = await CancelTransactionByIdAPI(actualId);
-      
+
       if (response.success) {
         setTransactionList((prev) =>
           prev.map((tx) =>
@@ -345,8 +335,9 @@ const PurchaseOrder = () => {
               : tx
           )
         );
+        setError(null);
       } else {
-        throw new Error(response.message || "Không thể hủy đơn hàng.");
+        throw new Error(response.data.message || "Không thể hủy đơn hàng.");
       }
     } catch (error) {
       setError("Không thể hủy đơn hàng. Vui lòng thử lại.");
