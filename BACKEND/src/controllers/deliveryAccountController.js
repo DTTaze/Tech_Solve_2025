@@ -57,10 +57,8 @@ const handleDeleteDeliveryAccount = async (req, res) => {
 
 const handleSetDefaultDeliveryAccount = async (req, res) => {
   try {
-    const userId = req.user.id;
     const id = req.params.id;
     const account = await deliveryAccountService.setDefaultDeliveryAccount(
-      userId,
       id
     );
     return res.success("Set default delivery account success", account);

@@ -78,29 +78,38 @@ const deleteDeliveryAccount = async (id) => {
   }
 };
 
-const setDefaultDeliveryAccount = async (userId, id) => {
+const setDefaultDeliveryAccount = async (id) => {
   try {
     const account = await DeliveryAccount.findOne({
-      where: { id, user_id: userId },
+      where: { id },
     });
     if (!account)
       throw new Error("Delivery account not found or not owned by user");
 
     await DeliveryAccount.update(
       { is_default: false },
-      { where: { user_id: userId } }
+      { where: { user_id: account.user_id } }
     );
+
+    const allAccounts = await DeliveryAccount.findAll({
+      where: { user_id: account.user_id },
+      attributes: ['id'], 
+    });
 
     await account.update({ is_default: true });
 
-    await deleteCache(`delivery:user:${userId}`);
-    await deleteCache(`delivery:id:${id}`);
+    for (const acc of allAccounts) {
+      await deleteCache(`delivery:id:${acc.id}`);
+    }
+
+    await deleteCache(`delivery:user:${account.user_id}`);
 
     return account;
   } catch (err) {
     throw err;
   }
 };
+
 
 module.exports = {
   getAllDeliveryAccounts,

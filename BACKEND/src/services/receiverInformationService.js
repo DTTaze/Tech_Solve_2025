@@ -179,6 +179,40 @@ const updateReceiverInfoById = async (id, data) => {
   }
 };
 
+const setDefaultReceiverInfoById = async (id) => {
+  try {
+    const info = await ReceiverInformation.findOne({
+      where: { id },
+    });
+    if (!info)
+      throw new Error("Receiver information not found");
+
+    const user_id = info.user_id;
+
+    const allAccounts = await ReceiverInformation.findAll({
+      where: { user_id },
+      attributes: ['id'],
+    });
+
+    await ReceiverInformation.update(
+      { is_default: false },
+      { where: { user_id } }
+    );
+
+    await info.update({ is_default: true });
+
+    await Promise.all(
+      allAccounts.map(acc => deleteCache(`${KEY_PREFIX}${acc.id}`))
+    );
+
+    await deleteCache(`receiverInfo:all`);
+
+    return info;
+  } catch (err) {
+    throw err;
+  }
+};
+
 
 // DELETE
 const deleteReceiverInfoById = async (id) => {
@@ -205,5 +239,6 @@ module.exports = {
   getReceiverInfoById,
   getReceiverInfoByUserId,
   updateReceiverInfoById,
+  setDefaultReceiverInfoById,
   deleteReceiverInfoById,
 };
