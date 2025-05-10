@@ -79,7 +79,7 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
           )}
           {transaction.status === "pending" && (
             <button
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm mt-2"
               onClick={() => onCancel(transaction.id)}
             >
               Hủy đơn hàng
@@ -109,6 +109,25 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
               ? new Date(transaction.shipping_info.estimated_delivery).toLocaleDateString("vi-VN")
               : "Không xác định"}
           </p>
+          {transaction.shipping_info?.to_name && (
+            <>
+              <p className="text-sm text-gray-600">
+                Người nhận: {transaction.shipping_info.to_name}
+              </p>
+              <p className="text-sm text-gray-600">
+                Số điện thoại: {transaction.shipping_info.to_phone}
+              </p>
+              <p className="text-sm text-gray-600">
+                Địa chỉ: {transaction.shipping_info.to_address}
+              </p>
+              <p className="text-sm text-gray-600">
+                Phí COD: {transaction.shipping_info.cod_amount?.toLocaleString()} VNĐ
+              </p>
+              <p className="text-sm text-gray-600">
+                Cân nặng: {transaction.shipping_info.weight} gram
+              </p>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -206,32 +225,26 @@ const PurchaseOrder = () => {
         status: tx.status,
         status_label: statusLabels[tx.status] || tx.status,
         item_snapshot: {
-          name: "Sản phẩm không xác định",
+          name: "Đơn hàng vận chuyển",
           price: tx.total_amount,
           creator: { full_name: "Không xác định" },
-          public_id: "N/A",
-          description: "Không có thông tin sản phẩm",
+          public_id: tx.order_code,
+          description: `Địa chỉ giao hàng: ${tx.to_address}`,
           image_url: "/placeholder-image.jpg",
         },
         quantity: 1,
         total_price: tx.total_amount,
         created_at: tx.created_date,
-        shipping_info: [
-          "ready_to_pick",
-          "picking",
-          "money_collect_picking",
-          "picked",
-          "storing",
-          "transporting",
-          "sorting",
-          "delivering",
-        ].includes(tx.status)
-          ? {
-              carrier: "Không xác định",
-              tracking_number: "N/A",
-              estimated_delivery: tx.created_date,
-            }
-          : null,
+        shipping_info: {
+          carrier: "Không xác định",
+          tracking_number: tx.order_code,
+          estimated_delivery: tx.created_date,
+          to_name: tx.to_name,
+          to_phone: tx.to_phone,
+          to_address: tx.to_address,
+          cod_amount: tx.cod_amount,
+          weight: tx.weight,
+        },
       };
     }
   };
