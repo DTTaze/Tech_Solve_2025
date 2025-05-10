@@ -173,6 +173,7 @@ export default function PurchaseModal({
       receiver_information_id: shippingInfo.id,
       shippingFee,
     });
+    onClose(); // Đóng modal ngay sau khi xác nhận
   };
 
   const handleChangeShipping = () => {
