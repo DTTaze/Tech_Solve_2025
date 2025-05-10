@@ -4,6 +4,7 @@ const db = require("../models/index");
 const DeliveryOrder = db.DeliveryOrder;
 const Transaction = db.Transaction;
 const ReceiverInformation = db.ReceiverInformation;
+const User = db.User;
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 
 const buildHeaders = (token, shop_id) => ({
@@ -304,7 +305,14 @@ const cancelDeliveryOrder = async (order_code, token, shop_id, seller_id) => {
 
 const getAllDeliveryOrders = async () => {
   try {
-    return await DeliveryOrder.findAll();
+    return await DeliveryOrder.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ["id", "username", "email"],
+        },
+      ],
+    });
   } catch (err) {
     console.error("DB Error (getAllOrders):", err);
     throw err;

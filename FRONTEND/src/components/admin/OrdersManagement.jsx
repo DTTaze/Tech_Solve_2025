@@ -36,30 +36,32 @@ export default function OrdersManagement() {
   }, []);
 
   const handleEditOrder = (order) => {
-    setFormMode("edit");
-    setEditData(order);
-    setFormOpen(true);
+    alert(`Vui lòng liên hệ người tạo đơn hàng: ${order.User.email}`);
+    // setFormMode("edit");
+    // setEditData(order);
+    // setFormOpen(true);
   };
 
   const handleCancelOrder = async (order) => {
-    if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
-      try {
-        const res = await cancelShippingOrderApi(order.order_code);
-        if (res.success) {
-          alert("Hủy đơn hàng thành công!");
-          // Refresh orders list
-          const ordersRes = await getAllShippingOrdersApi();
-          if (ordersRes.success) {
-            setOrders(ordersRes.data);
-          }
-        } else {
-          alert("Hủy đơn hàng thất bại!");
-        }
-      } catch (error) {
-        console.error("Error canceling order:", error);
-        alert("Có lỗi xảy ra khi hủy đơn hàng!");
-      }
-    }
+    alert(`Vui lòng liên hệ người tạo đơn hàng: ${order.User.email}`);
+    // if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
+    //   try {
+    //     const res = await cancelShippingOrderApi(order.order_code);
+    //     if (res.success) {
+    //       alert("Hủy đơn hàng thành công!");
+    //       // Refresh orders list
+    //       const ordersRes = await getAllShippingOrdersApi();
+    //       if (ordersRes.success) {
+    //         setOrders(ordersRes.data);
+    //       }
+    //     } else {
+    //       alert("Hủy đơn hàng thất bại!");
+    //     }
+    //   } catch (error) {
+    //     console.error("Error canceling order:", error);
+    //     alert("Có lỗi xảy ra khi hủy đơn hàng!");
+    //   }
+    // }
   };
 
   const handleSubmitOrder = async (data, mode) => {
