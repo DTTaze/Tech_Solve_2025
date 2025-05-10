@@ -342,7 +342,7 @@ const getDeliveryOrdersBySeller = async (seller_id) => {
       where: { seller_id: seller_id },
     });
 
-    await setCache(cacheKey, orders, 60 * 60); // TTL 1h
+    await setCache(cacheKey, orders, 60 * 60);
     return orders;
   } catch (err) {
     console.error("DB Error (getOrdersBySeller):", err);
@@ -364,7 +364,7 @@ const getDeliveryOrdersByBuyer = async (buyer_id) => {
       where: { buyer_id: buyer_id },
     });
 
-    await setCache(cacheKey, orders, 60 * 60); // TTL 1h
+    await setCache(cacheKey, orders, 60 * 60); 
     return orders;
   } catch (err) {
     console.error("DB Error (getOrdersByBuyer):", err);

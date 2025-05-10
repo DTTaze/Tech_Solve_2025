@@ -156,38 +156,12 @@ const worker = new Worker(
         );
 
         const buyerCacheKey = `buyer:transaction:id:${user.id}`;
-        let buyerTransactionIds = await getCache(buyerCacheKey);
-        if (!buyerTransactionIds || !Array.isArray(buyerTransactionIds)) {
-          console.warn(
-            `Invalid or missing buyer cache for ${buyerCacheKey}, initializing as []`
-          );
-          buyerTransactionIds = [];
-        }
-        if (!buyerTransactionIds.includes(transaction.id)) {
-          buyerTransactionIds.push(transaction.id);
-          await setCache(buyerCacheKey, buyerTransactionIds, 300);
-          console.log(
-            `Updated buyer cache ${buyerCacheKey}:`,
-            buyerTransactionIds
-          );
-        }
+        await deleteCache(buyerCacheKey);
 
         const sellerCacheKey = `seller:transaction:id:${item.creator.dataValues.id}`;
-        let sellerTransactionIds = await getCache(sellerCacheKey);
-        if (!sellerTransactionIds || !Array.isArray(sellerTransactionIds)) {
-          console.warn(
-            `Invalid or missing seller cache for ${sellerCacheKey}, initializing as []`
-          );
-          sellerTransactionIds = [];
-        }
-        if (!sellerTransactionIds.includes(transaction.id)) {
-          sellerTransactionIds.push(transaction.id);
-          await setCache(sellerCacheKey, sellerTransactionIds, 300);
-          console.log(
-            `Updated seller cache ${sellerCacheKey}:`,
-            sellerTransactionIds
-          );
-        }
+        await deleteCache(sellerCacheKey);
+
+        await deleteCache(`coin:id:${user.coins.id}`);
 
         return transaction;
       });

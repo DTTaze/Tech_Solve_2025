@@ -1,6 +1,6 @@
 const db = require("../models/index.js");
 const { redisClient } = require("../config/configRedis.js");
-
+const { getCache, setCache, deleteCache } = require("../utils/cache");
 const Transaction = db.Transaction;
 const Item = db.Item;
 const User = db.User;
@@ -227,7 +227,7 @@ const cancelTransactionById = async (id) => {
     transaction.status = "cancelled";
     await transaction.save();
 
-    await setCache(`transaction:id:${id}`, transaction.toJSON(), 3600);
+    await deleteCache(`transaction:id:${id}`);
 
     return transaction;
   } catch (e) {
@@ -246,38 +246,12 @@ const deleteTransaction = async (transaction_id) => {
     if (!transaction) {
       throw new Error("Transaction not found.");
     }
-
     const buyerCacheKey = `buyer:transaction:id:${transaction.buyer_id}`;
-    let buyerTransactionIds = await getCache(buyerCacheKey);
-    if (buyerTransactionIds) {
-      buyerTransactionIds = JSON.parse(buyerTransactionIds);
-      buyerTransactionIds = buyerTransactionIds.filter(
-        (id) => id !== transaction_id
-      );
-      if (buyerTransactionIds.length > 0) {
-        await setCache(buyerCacheKey, JSON.stringify(buyerTransactionIds), 300);
-      } else {
-        await deleteCache(buyerCacheKey);
-      }
-    }
+    await deleteCache(buyerCacheKey);
 
     const sellerCacheKey = `seller:transaction:id:${transaction.seller_id}`;
-    let sellerTransactionIds = await getCache(sellerCacheKey);
-    if (sellerTransactionIds) {
-      sellerTransactionIds = JSON.parse(sellerTransactionIds);
-      sellerTransactionIds = sellerTransactionIds.filter(
-        (id) => id !== transaction_id
-      );
-      if (sellerTransactionIds.length > 0) {
-        await setCache(
-          sellerCacheKey,
-          JSON.stringify(sellerTransactionIds),
-          300
-        );
-      } else {
-        await deleteCache(sellerCacheKey);
-      }
-    }
+    await deleteCache(sellerCacheKey);
+
     return "Transaction deleted successfully.";
   } catch (error) {
     throw error;
@@ -325,11 +299,7 @@ const makeDecision = async (transaction_id, decision) => {
     transaction.status = decision;
     await transaction.save();
 
-    await setCache(
-      `transaction:id:${transaction_id}`,
-      transaction.toJSON(),
-      3600
-    );
+    await deleteCache(`transaction:id:${transaction_id}`);
 
     return transaction;
   } catch (error) {
