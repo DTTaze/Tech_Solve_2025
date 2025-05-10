@@ -434,12 +434,16 @@ export const getShippingOrderDetailApi = (order_code) => {
   return axios.get(`api/delivery/carrier/ghn/detail/${order_code}`);
 };
 
-export const getAllShippingOrdersBySeller = () => {
+export const getAllShippingOrdersBySellerApi = () => {
   return axios.get("api/delivery/carrier/ghn/orders/seller");
 };
 
-export const getAllShippingOrdersByBuyer = () => {
+export const getAllShippingOrdersByBuyerApi = () => {
   return axios.get("api/delivery/carrier/ghn/orders/buyer");
+};
+
+export const getAllShippingOrdersApi = () => {
+  return axios.get("api/delivery/carrier/ghn/orders");
 };
 
 export const updateShippingOrderApi = (data, token, shop_id) => {
@@ -452,7 +456,7 @@ export const updateShippingOrderApi = (data, token, shop_id) => {
 };
 
 export const PreviewOrderWithoutOrderCode = (data, token, shop_id) => {
-  return axios.post("api/delivery/carrier/ghn/order/preview", {data}, {
+  return axios.post("api/delivery/carrier/ghn/order/preview", data, {
     headers: {
       token: token,
       shop_id: shop_id,
@@ -528,9 +532,9 @@ export const getReceiverInfoByUserIDAPI = (user_id) => {
 };
 
 export const updateReceiverInfoByIdAPI = (id ,data) => {
-  return axios.get(`api/users/receiver/update/${id}`, data);
+  return axios.patch(`api/users/receiver/update/${id}`, data);
 };
 
 export const deleteReceiverInfoByIdAPI = (id) => {
-  return axios.delete(`api/users/receiver/update/${id}`);
+  return axios.delete(`api/users/receiver/info/${id}`);
 };

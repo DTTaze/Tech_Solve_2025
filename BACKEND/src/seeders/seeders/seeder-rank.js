@@ -67,6 +67,38 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        id: 9,
+        user_id: null,
+        amount: 9000,
+        order: 9,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 10,
+        user_id: null,
+        amount: 10000,
+        order: 10,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 11,
+        user_id: null,
+        amount: 11000,
+        order: 11,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: 12,
+        user_id: null,
+        amount: 12000,
+        order: 12,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
 
   },

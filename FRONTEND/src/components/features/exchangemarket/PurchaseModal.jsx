@@ -53,6 +53,7 @@ export default function PurchaseModal({
         to_address: selectedShipping.to_address,
         to_ward_name: selectedShipping.to_ward_name,
         to_district_name: selectedShipping.to_district_name,
+        to_province_name: selectedShipping.to_province_name,
         service_type_id: 2,
         payment_type_id: 2,
         required_note: "CHOXEMHANGKHONGTHU",

@@ -42,6 +42,7 @@ import CustomerItems from "./components/customer/CustomerItems/index.jsx";
 import CustomerEvents from "./components/customer/CustomerEvents/CustomerEvents.jsx";
 import App from "./App.jsx";
 import "./index.css";
+import OrdersManagement from "./components/admin/OrdersManagement.jsx";
 
 const router = createBrowserRouter([
   {
@@ -54,8 +55,7 @@ const router = createBrowserRouter([
       },
       {
         path: "missions",
-        element:
-          <MissionPage />
+        element: <MissionPage />,
       },
       {
         path: "exchange-market/*",
@@ -110,6 +110,7 @@ const router = createBrowserRouter([
           },
           { path: "rbac", element: <RolesPermissions /> },
           { path: "transactions", element: <TransactionsManagement /> },
+          { path: "orders", element: <OrdersManagement /> },
           {
             path: "queues",
             element: <AdminQueue />,

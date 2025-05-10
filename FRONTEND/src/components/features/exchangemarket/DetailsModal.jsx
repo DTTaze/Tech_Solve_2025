@@ -1,7 +1,32 @@
 import { format } from "date-fns";
+import CreateItemModal from "./CreateItemModal";
 
-const DetailsModal = ({ isOpen, onClose, item, getCategoryDisplayName }) => {
+const DetailsModal = ({
+  isOpen,
+  onClose,
+  item,
+  getCategoryDisplayName,
+  onPurchase,
+  isEditMode = false,
+  onEdit,
+  fetchItems,
+}) => {
   if (!isOpen) return null;
+
+  if (isEditMode) {
+    return (
+      <CreateItemModal
+        isOpen={isOpen}
+        item={item}
+        onSubmit={(formData, isEditing) => {
+          onEdit(formData);
+          onClose(); 
+          if (fetchItems) fetchItems(); 
+        }}
+        onCancel={onClose}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
@@ -40,12 +65,18 @@ const DetailsModal = ({ isOpen, onClose, item, getCategoryDisplayName }) => {
           </p>
         </div>
 
-        <div className="flex justify-begin gap-2 mt-6">
+        <div className="flex justify-between gap-2 mt-6">
           <button
             onClick={onClose}
             className="border px-4 py-2 rounded hover:bg-gray-100"
           >
             Đóng
+          </button>
+          <button
+            onClick={onPurchase}
+            className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700"
+          >
+            Mua
           </button>
         </div>
       </div>

@@ -9,13 +9,13 @@
  */
 export const getStatusColor = (status) => {
   switch (status) {
-    case "Completed":
+    case "delivered":
       return "success";
-    case "In Progress":
+    case "delivering":
       return "warning";
     case "Pending Confirmation":
       return "info";
-    case "Cancelled":
+    case "cancel":
       return "error";
     default:
       return "default";

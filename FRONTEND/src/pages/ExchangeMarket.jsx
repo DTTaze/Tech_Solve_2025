@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useState,
-  useCallback,
-  createContext,
-  useContext,
-} from "react";
+import { useEffect, useState, useCallback, createContext, useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import {
   getUserApi,
@@ -23,14 +17,7 @@ import RedeemTab from "../components/features/exchangemarket/RedeemTab";
 import UserItemsTab from "../components/features/exchangemarket/UserItemsTab";
 import AllItemsTab from "../components/features/exchangemarket/AllItemsTab";
 import PurchaseModal from "../components/features/exchangemarket/PurchaseModal";
-import {
-  Filter,
-  CheckCircle,
-  Clock,
-  FileWarning,
-  EyeOff,
-  ClipboardEdit,
-} from "lucide-react";
+import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
 
 export const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
@@ -84,6 +71,7 @@ export const MarketplaceContext = createContext();
 export default function ExchangeMarket() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [transactionStatus, setTransactionStatus] = useState(null);
   const { auth } = useContext(AuthContext);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -144,9 +132,7 @@ export default function ExchangeMarket() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy sản phẩm cho tab đổi quà:", error);
-      alert(
-        "Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà, vui lòng thử lại sau!"
-      );
+      setError("Có lỗi xảy ra khi tải danh sách sản phẩm đổi quà");
     }
   }, []);
 
@@ -178,9 +164,7 @@ export default function ExchangeMarket() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy sản phẩm của người dùng:", error);
-      alert(
-        "Có lỗi xảy ra khi tải danh sách sản phẩm của bạn, vui lòng thử lại sau!"
-      );
+      setError("Có lỗi xảy ra khi tải danh sách sản phẩm của bạn");
     }
   }, [auth.user?.id]);
 
@@ -211,9 +195,7 @@ export default function ExchangeMarket() {
       }
     } catch (error) {
       console.error("Lỗi khi lấy tất cả sản phẩm:", error);
-      alert(
-        "Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi, vui lòng thử lại sau!"
-      );
+      setError("Có lỗi xảy ra khi tải danh sách sản phẩm chợ trao đổi");
     }
   }, []);
 
@@ -221,28 +203,36 @@ export default function ExchangeMarket() {
     (item) => {
       const userCoins = auth.user?.coins?.amount || 0;
       if (!item) {
-        alert("Mặt hàng không hợp lệ!");
+        setError("Mặt hàng không hợp lệ");
         return;
       }
       if (userCoins < item.price) {
-        alert("Bạn không có đủ số coins để giao dịch!");
+        setError("Bạn không có đủ số coins để giao dịch");
         return;
       }
       setSelectedItem(item);
       setIsModalOpen(true);
+      setTransactionStatus(null);
     },
     [auth.user?.coins?.amount]
   );
 
   const confirmPurchase = useCallback(
     async (quantity, shippingInfo) => {
-      if (!selectedItem || !auth.user) return;
-      const userCoins = auth.user.coins?.amount || 0;
-      const totalCost = selectedItem.price * quantity + (shippingInfo.shippingFee || 0);
-      if (userCoins < totalCost) {
-        alert("Bạn không có đủ số coins để giao dịch!");
+      if (!selectedItem || !auth.user) {
+        setError("Thông tin giao dịch không hợp lệ");
         return;
       }
+
+      const userCoins = auth.user.coins?.amount || 0;
+      const totalCost = selectedItem.price * quantity + (shippingInfo.shippingFee || 0);
+
+      if (userCoins < totalCost) {
+        setError("Bạn không có đủ số coins để thực hiện giao dịch");
+        return;
+      }
+
+      setTransactionStatus('processing');
       try {
         const response = await purchaseItemApi(auth.user.id, selectedItem.id, {
           name: selectedItem.name,
@@ -257,16 +247,20 @@ export default function ExchangeMarket() {
             shipping_fee: shippingInfo.shippingFee,
           },
         });
-        if (response.data) {
+
+        if (response.data?.job_id) {
+          setTransactionStatus('success');
           setIsModalOpen(false);
-          alert(`Trao đổi thành công ${quantity} ${selectedItem.name}!`);
-          fetchRedeemItems(); // Refresh items after purchase
+          alert(`Giao dịch ${quantity} ${selectedItem.name} đã được khởi tạo thành công!`);
+          await fetchRedeemItems();
+          setSelectedItem(null);
         } else {
-          alert("Có lỗi xảy ra, vui lòng thử lại!");
+          throw new Error("Không nhận được mã giao dịch");
         }
       } catch (error) {
-        console.error("Lỗi khi mua hàng:", error);
-        alert("Có lỗi xảy ra, vui lòng thử lại!");
+        setTransactionStatus('failed');
+        setError(`Giao dịch thất bại: ${error.message || "Vui lòng thử lại"}`);
+        console.error("Lỗi khi xử lý giao dịch:", error);
       }
     },
     [selectedItem, auth.user, fetchRedeemItems]
@@ -282,7 +276,7 @@ export default function ExchangeMarket() {
     setShowCreateModal(true);
   };
 
-  const handleDeleteItem = (itemId) => {
+  const  handleDeleteItem = (itemId) => {
     setMyItems((prev) => prev.filter((item) => item.id !== itemId));
     alert("Sản phẩm đã được xóa thành công!");
   };
@@ -297,9 +291,7 @@ export default function ExchangeMarket() {
         !productData.category ||
         !productData.product_status
       ) {
-        alert(
-          "Vui lòng điền đầy đủ các trường bắt buộc: tên, giá, số lượng, danh mục, tình trạng sản phẩm!"
-        );
+        alert("Vui lòng điền đầy đủ các trường bắt buộc!");
         return;
       }
       if (productData.price < 1) {
@@ -340,7 +332,7 @@ export default function ExchangeMarket() {
           );
           alert("Cập nhật sản phẩm thành công!");
         } else {
-          alert("Cập nhật sản phẩm thất bại, vui lòng thử lại!");
+          alert("Cập nhật sản phẩm thất bại!");
         }
       } else {
         const response = await createProductApi(
@@ -367,14 +359,14 @@ export default function ExchangeMarket() {
           setMyItems((prev) => [...prev, newItem]);
           alert("Thêm sản phẩm mới thành công!");
         } else {
-          alert("Thêm sản phẩm thất bại, vui lòng thử lại!");
+          alert("Thêm sản phẩm thất bại!");
         }
       }
       setShowCreateModal(false);
       setItemToEdit(null);
     } catch (error) {
       console.error("Lỗi khi xử lý sản phẩm:", error);
-      alert(error.message || "Có lỗi xảy ra, vui lòng thử lại!");
+      setError(error.message || "Có lỗi xảy ra khi xử lý sản phẩm");
     }
   };
 
@@ -421,25 +413,6 @@ export default function ExchangeMarket() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md text-center">
-          <h3 className="text-lg font-medium text-red-800 mb-2">
-            Lỗi đã xảy ra
-          </h3>
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg transition-colors"
-          >
-            Thử lại
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <MarketplaceContext.Provider value={contextValue}>
@@ -447,6 +420,22 @@ export default function ExchangeMarket() {
           <CatalogHeader userCoins={auth.user?.coins?.amount || 0} />
           <MarketViewNavigation />
           <div className="flex flex-col bg-white rounded-lg shadow-sm p-4">
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded"
+                >
+                  Đóng
+                </button>
+              </div>
+            )}
+            {transactionStatus === 'processing' && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-600">Đang xử lý giao dịch...</p>
+              </div>
+            )}
             <Routes>
               <Route
                 path="redeem"
@@ -465,10 +454,15 @@ export default function ExchangeMarket() {
             {selectedItem && (
               <PurchaseModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                  setIsModalOpen(false);
+                  setSelectedItem(null);
+                  setTransactionStatus(null);
+                }}
                 item={selectedItem}
                 userCoins={auth.user?.coins?.amount || 0}
                 onConfirm={confirmPurchase}
+                transactionStatus={transactionStatus}
               />
             )}
           </div>

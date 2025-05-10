@@ -33,6 +33,36 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        role_id: 3,
+        permission_id: 4,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        role_id: 3,
+        permission_id: 5,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        role_id: 4,
+        permission_id: 6,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        role_id: 4,
+        permission_id: 7,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        role_id: 5,
+        permission_id: 8,
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ]);
   },
 
