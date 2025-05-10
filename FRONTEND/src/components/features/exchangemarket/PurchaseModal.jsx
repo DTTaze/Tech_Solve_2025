@@ -163,18 +163,17 @@ export default function PurchaseModal({
       alert("Vui lòng chọn thông tin giao hàng!");
       return;
     }
-    if (!shippingInfo.to_ward_name || !shippingInfo.to_district_name) {
-      alert("Thông tin giao hàng thiếu phường/xã hoặc quận/huyện!");
+    if (!shippingInfo.to_ward_name || !shippingInfo.to_district_name || !shippingInfo.id) {
+      alert("Thông tin giao hàng thiếu phường/xã, quận/huyện hoặc ID!");
       return;
     }
     setIsProcessing(true);
-    setTimeout(() => {
-      onConfirm(quantity, {
-        ...shippingInfo,
-        shippingFee,
-      });
-      setIsProcessing(false);
-    }, 800);
+    onConfirm(quantity, {
+      ...shippingInfo,
+      receiver_information_id: shippingInfo.id, // Ensure ID is included
+      shippingFee,
+    });
+    // Do not reset isProcessing here; let the parent handle modal closure
   };
 
   const handleChangeShipping = () => {
@@ -268,8 +267,8 @@ export default function PurchaseModal({
                   <h3 className="font-medium text-gray-800 text-lg">{item.name}</h3>
                   <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
                   <div className="flex items-center text-emerald-600 mt-1">
-                    <span className="font-semibold">{item.price} </span>
-                    <Coins className="h-4 w-4 mr-1" />
+                    <span className="font-semibold">{item.price}</span>
+                    <Coins className="h-4 w-4 ml-1" />
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
                     Còn lại: {item.stock} sản phẩm
@@ -308,9 +307,10 @@ export default function PurchaseModal({
               <div className="bg-emerald-50 p-4 rounded-lg mt-5 border border-emerald-100">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Giá sản phẩm:</span>
-                  <span className="font-medium text-emerald-600">
-                    {item.price * quantity} 
-                  </span>
+                  <div className="flex items-center font-medium text-emerald-600">
+                    <span>{item.price * quantity}</span>
+                    <Coins className="h-4 w-4 ml-1" />
+                  </div>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Phí giao hàng:</span>
@@ -318,21 +318,28 @@ export default function PurchaseModal({
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
                   <span className="text-gray-600">Tổng giá sản phẩm:</span>
-                  <span className="font-medium text-emerald-600">{totalCost}</span>
+                  <div className="flex items-center font-medium text-emerald-600">
+                    <span>{totalCost}</span>
+                    <Coins className="h-4 w-4 ml-1" />
+                  </div>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Số dư hiện tại:</span>
-                  <span className="font-medium text-emerald-600">{userCoins}</span>
+                  <div className="flex items-center font-medium text-emerald-600">
+                    <span>{userCoins}</span>
+                    <Coins className="h-4 w-4 ml-1" />
+                  </div>
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
                   <span className="text-gray-600">Số dư sau giao dịch:</span>
-                  <span
-                    className={`font-medium ${
+                  <div
+                    className={`flex items-center font-medium ${
                       canPurchase ? "text-emerald-600" : "text-red-500"
                     }`}
                   >
-                    {userCoins - totalCost}
-                  </span>
+                    <span>{userCoins - totalCost}</span>
+                    <Coins className="h-4 w-4 ml-1" />
+                  </div>
                 </div>
               </div>
 

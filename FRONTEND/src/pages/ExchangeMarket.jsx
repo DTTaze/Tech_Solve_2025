@@ -221,39 +221,36 @@ export default function ExchangeMarket() {
     async (quantity, shippingInfo) => {
       if (!selectedItem || !auth.user) {
         setError("Thông tin giao dịch không hợp lệ");
+        setIsModalOpen(false); // Ensure modal closes on error
         return;
       }
 
       const userCoins = auth.user.coins?.amount || 0;
-      const totalCost = selectedItem.price * quantity + (shippingInfo.shippingFee || 0);
+      const totalCost = selectedItem.price * quantity;
 
       if (userCoins < totalCost) {
         setError("Bạn không có đủ số coins để thực hiện giao dịch");
+        setIsModalOpen(false); // Ensure modal closes on error
         return;
       }
 
       setTransactionStatus('processing');
       try {
-        const response = await purchaseItemApi(auth.user.id, selectedItem.id, {
+        const purchaseData = {
           name: selectedItem.name,
           quantity: quantity,
-          shippingInfo: {
-            to_name: shippingInfo.to_name,
-            to_phone: shippingInfo.to_phone,
-            to_address: shippingInfo.to_address,
-            to_ward_name: shippingInfo.to_ward_name,
-            to_district_name: shippingInfo.to_district_name,
-            to_province_name: shippingInfo.to_province_name,
-            shipping_fee: shippingInfo.shippingFee,
-          },
-        });
+          receiver_information_id: shippingInfo.receiver_information_id,
+        };
+
+        const response = await purchaseItemApi(auth.user.id, selectedItem.id, purchaseData);
 
         if (response.data?.job_id) {
           setTransactionStatus('success');
           setIsModalOpen(false);
+          setSelectedItem(null);
+          setTransactionStatus(null);
           alert(`Giao dịch ${quantity} ${selectedItem.name} đã được khởi tạo thành công!`);
           await fetchRedeemItems();
-          setSelectedItem(null);
         } else {
           throw new Error("Không nhận được mã giao dịch");
         }
@@ -261,10 +258,19 @@ export default function ExchangeMarket() {
         setTransactionStatus('failed');
         setError(`Giao dịch thất bại: ${error.message || "Vui lòng thử lại"}`);
         console.error("Lỗi khi xử lý giao dịch:", error);
+        setIsModalOpen(false); // Ensure modal closes on error
+        setSelectedItem(null);
+        setTransactionStatus(null);
       }
     },
     [selectedItem, auth.user, fetchRedeemItems]
   );
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+    setTransactionStatus(null);
+  };
 
   const handleAddItem = () => {
     setItemToEdit(null);
@@ -276,7 +282,7 @@ export default function ExchangeMarket() {
     setShowCreateModal(true);
   };
 
-  const  handleDeleteItem = (itemId) => {
+  const handleDeleteItem = (itemId) => {
     setMyItems((prev) => prev.filter((item) => item.id !== itemId));
     alert("Sản phẩm đã được xóa thành công!");
   };
@@ -451,14 +457,10 @@ export default function ExchangeMarket() {
               />
               <Route path="/" element={<Navigate to="redeem" replace />} />
             </Routes>
-            {selectedItem && (
+            {selectedItem && isModalOpen && (
               <PurchaseModal
                 isOpen={isModalOpen}
-                onClose={() => {
-                  setIsModalOpen(false);
-                  setSelectedItem(null);
-                  setTransactionStatus(null);
-                }}
+                onClose={handleCloseModal}
                 item={selectedItem}
                 userCoins={auth.user?.coins?.amount || 0}
                 onConfirm={confirmPurchase}
