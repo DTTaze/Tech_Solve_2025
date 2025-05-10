@@ -55,7 +55,7 @@ function Ranking() {
               (rank) => rank.user?.full_name || "Unknown"
             ),
             values: filteredRanks.map((rank) => rank.amount),
-            avatars: filteredRanks.map((rank) => rank.user?.id || 0),
+            avatars: filteredRanks.map((rank) => rank.user.avatar_url),
           };
 
           setRankData(transformedData);
