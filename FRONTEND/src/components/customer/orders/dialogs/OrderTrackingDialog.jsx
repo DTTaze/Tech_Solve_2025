@@ -16,6 +16,12 @@ import LocationHistory from "../LocationHistory";
 const OrderTrackingDialog = ({ open, onClose, order, handleViewDetails }) => {
   if (!order) return null;
 
+  // Get the latest status and time safely
+  const latestTimeline =
+    order.timeline && order.timeline.length > 0
+      ? order.timeline[order.timeline.length - 1]
+      : { status: "Unknown", time: "N/A" };
+
   return (
     <Dialog
       open={open}
@@ -37,7 +43,7 @@ const OrderTrackingDialog = ({ open, onClose, order, handleViewDetails }) => {
       <DialogContent dividers>
         {/* Enhanced location tracking history */}
         <LocationHistory
-          locationHistory={order.locationHistory}
+          locationHistory={order.locationHistory || []}
           status={order.status}
         />
 
@@ -51,11 +57,9 @@ const OrderTrackingDialog = ({ open, onClose, order, handleViewDetails }) => {
           >
             Current Status
           </Typography>
-          <Typography variant="body1">
-            {order.timeline[order.timeline.length - 1].status}
-          </Typography>
+          <Typography variant="body1">{latestTimeline.status}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Last updated: {order.timeline[order.timeline.length - 1].time}
+            Last updated: {latestTimeline.time}
           </Typography>
         </Box>
 

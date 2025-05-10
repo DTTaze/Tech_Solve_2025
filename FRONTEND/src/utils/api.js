@@ -146,10 +146,6 @@ export const submitTaskApi = (task_user_id, data) => {
   });
 };
 
-// export const getBuyerTransactionHistory = () => {
-//   return axios.get(`api/transactions/user`);
-// };
-
 export const increaseProgressCountApi = (task_user_id) => {
   return axios.post(`api/tasks/progress/increase/${task_user_id}`);
 };
@@ -222,13 +218,21 @@ export const getBuyerTransactionHistory = () => {
   return axios.get(`api/transactions/buyer`);
 };
 
+export const getTransactionByIdApi = (id) => {
+  return axios.get(`api/transactions/${id}`);
+};
+
+export const transactionMakeDicisionApi = (id, decision) => {
+  return axios.patch(`api/transactions/decision/${id}/${decision}`);
+};
+
 export const getSellerTransactionHistory = () => {
   return axios.get(`api/transactions/seller`);
 };
 
 export const CancelTransactionByIdAPI = (id) => {
   return axios.patch(`/api/transactions/cancel/${id}`);
-}
+};
 
 export const deleteTransactionsApi = (id) => {
   return axios.delete(`api/transactions/${id}`);
@@ -430,8 +434,13 @@ export const createShippingOrderApi = (data, token, shop_id) => {
   });
 };
 
-export const getShippingOrderDetailApi = (order_code) => {
-  return axios.get(`api/delivery/carrier/ghn/detail/${order_code}`);
+export const getShippingOrderDetailApi = (order_code, token, shop_id) => {
+  return axios.get(`api/delivery/carrier/ghn/detail/${order_code}`, {
+    headers: {
+      token: token,
+      shop_id: shop_id,
+    },
+  });
 };
 
 export const getAllShippingOrdersBySellerApi = () => {
@@ -474,6 +483,24 @@ export const getShippingAccountsByUserApi = () => {
 
 export const createShippingAccountApi = (data) => {
   return axios.post("api/delivery/accounts/create", data);
+};
+
+export const createDeliveryOrderFromTransactionApi = (
+  transaction_id,
+  data,
+  token,
+  shop_id
+) => {
+  return axios.post(
+    `api/delivery/carrier/ghn/create-order-from-transaction/${transaction_id}`,
+    data,
+    {
+      headers: {
+        token: token,
+        shop_id: shop_id,
+      },
+    }
+  );
 };
 
 export const updateShippingAccountApi = (id, data) => {
@@ -531,7 +558,7 @@ export const getReceiverInfoByUserIDAPI = (user_id) => {
   return axios.get(`api/users/receiver/info/user/${user_id}`);
 };
 
-export const updateReceiverInfoByIdAPI = (id ,data) => {
+export const updateReceiverInfoByIdAPI = (id, data) => {
   return axios.patch(`api/users/receiver/update/${id}`, data);
 };
 

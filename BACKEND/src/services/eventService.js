@@ -11,10 +11,14 @@ const {getImageById} = require("./imageService");
 const { getUserByID } = require("./userService");
 const { get } = require("../routes/eventRoutes");
 
+const cacheEventId = (id) => `event:id:${id}`;
+const cacheEventAll = "event:all";
+const cacheEventUserId = (id) => `eventuser:id:${id}`;
+const cacheEventUserAll = "eventuser:all";
 
 const getEventById = async (eventId) => {
   try {
-    const cachedEvent = await getCache(`event:id:${eventId}`);
+    const cachedEvent = await getCache(cacheEventId(eventId));
     if (cachedEvent) {
       console.log("cachedEvent", cachedEvent);
       console.log("imageIds:",cachedEvent.imagesId)
@@ -77,7 +81,7 @@ const getEventById = async (eventId) => {
     }
     delete cachedEventFormat.images;
     delete cachedEventFormat.creator;
-    await setCache(`event:id:${eventId}`, cachedEventFormat);
+    await setCache(cacheEventId(eventId), cachedEventFormat);
 
     return {
       ...event.toJSON(),
@@ -91,7 +95,7 @@ const getEventById = async (eventId) => {
 
 const getAllEvents = async () => {
   try {
-    const cachedEventIds = await getCache(`event:all`);
+    const cachedEventIds = await getCache(cacheEventAll);
     if (cachedEventIds) {
       console.log("cachedEventIds", cachedEventIds);
       const events = [];
@@ -134,7 +138,7 @@ const getAllEvents = async () => {
     }
 
     // Cache all events
-    await setCache(`event:all`, eventIds);
+    await setCache(cacheEventAll, eventIds);
 
     return eventsWithImages;
   } catch (error) {
@@ -146,7 +150,7 @@ const getAllEvents = async () => {
 const getEventUserById = async (id) => {
   try{
     if (!id) throw new Error (`eventuser id is required`);
-    const eventuserCache = await getCache(`eventuser:id:${id}`);
+    const eventuserCache = await getCache(cacheEventUserId(id));
     if (eventuserCache) {
       console.log("eventuserCache",eventuserCache)
       const User = await getUserByID(eventuserCache.user_id);
@@ -183,7 +187,7 @@ const getEventUserById = async (id) => {
     }
     delete eventuserFormat.events;
     delete eventuserFormat.users;
-    await setCache(`eventuser:id:${id}`,eventuserFormat);
+    await setCache(cacheEventUserId(id),eventuserFormat);
 
     return eventuser;
   } catch (error){
@@ -194,7 +198,7 @@ const getEventUserById = async (id) => {
 
 const getAllEventUser = async () => {
   try {
-    const allEventUserIds = await getCache('eventuser:all');
+    const allEventUserIds = await getCache(cacheEventAll);
     if (allEventUserIds){
       console.log("allEventUserIds",allEventUserIds);
       let result = [];
@@ -218,7 +222,7 @@ const getAllEventUser = async () => {
 
     //Cache eventuser
     let eventUserIds = allEventUsers.map((eventUser) => eventUser.id );
-    await setCache("eventuser:all",eventUserIds);
+    await setCache(cacheEventUserAll,eventUserIds);
 
     return allEventUsers;
   } catch (error){
@@ -342,8 +346,10 @@ const createEvent = async (Data, user_id, images) => {
       ...event.toJSON(),
       imagesId: uploadedImages.map((image) => image.id),
     };
-    await setCache(`event:id:${event.id}`, eventCacheFormat);
-    await deleteCache('event:all')
+
+    //delete cache
+    await setCache(cacheEventId(event.id), eventCacheFormat);
+    await deleteCache(cacheEventAll)
     return {
       ...event.toJSON(),
       creator: {
@@ -367,8 +373,8 @@ const createEventUser = async (eventId, userId) => {
     });
 
     //Cache eventuser
-    await setCache(`eventuser:id:${eventUser.id}`);
-    await deleteCache("eventuser:all");
+    await setCache(cacheEventUserId(eventUser.id));
+    await deleteCache(cacheEventUserAll);
 
     return eventUser;
   }catch (error) {
@@ -472,9 +478,20 @@ const updateEvent = async (event_id, Data, images) => {
     }
 
     await event.update(updateFields);
+
     //delete cache
     await deleteCache(`event:id:${event_id}`);
     await deleteCache('event:all')
+    const eventuserByEventId = await EventUser.findAll({
+      where: {
+        event_id,
+      },
+      attributes: ["id"]
+    });
+
+    for (const eventUser of eventuserByEventId){
+      await deleteCache(cacheEventUserId(eventUser.id));
+    };
 
     let uploadedImages = [];
 
@@ -519,8 +536,19 @@ const deleteEvent = async (event_id) => {
     listImagesBeforeDelete = listImagesBeforeDelete.map(image => image.url)
 
     //delete cache
-    await deleteCache(`event:id:${event_id}`);
-    await deleteCache(`event:all`);
+    await deleteCache(cacheEventId(event_id));
+    await deleteCache(cacheEventAll);
+    await deleteCache(cacheEventUserAll);
+const eventuserByEventId = await EventUser.findAll({
+      where: {
+        event_id,
+      },
+      attributes: ["id"]
+    });
+
+    for (const eventUser of eventuserByEventId){
+      await deleteCache(cacheEventUserId(eventUser.id));
+    };
 
     await event.destroy();
 
@@ -561,8 +589,7 @@ const checkInUserByUserId = async (event_id, user_id) => {
     await eventUser.update({ joined_at: new Date() });
 
     //del cache eventuser id
-    await deleteCache(`event:id:${event_id}`)
-    await deleteCache('eventuser:all')
+    await deleteCache(cacheEventUserId(eventUser.id))
 
     return eventUser;
   } catch (error) {
@@ -600,8 +627,8 @@ const checkOutUserByUserId = async (event_id, user_id) => {
     await eventUser.update({ completed_at: new Date() });
 
     //del cache eventuser id
-    await deleteCache(`event:id:${event_id}`)
-    await deleteCache('eventuser:all')
+    await deleteCache(cacheEventUserId(eventUser.id))
+
 
     return eventUser;
   } catch (error) {
@@ -622,8 +649,8 @@ const deleteEventUserById = async (eventUserId) => {
       throw new Error(`No event user found with the given event UserId : ${eventUserId}`)
     } 
 
-    await deleteCache(`eventuser:id:${eventUserId}`);
-    await deleteCache("eventuser:all");
+    await deleteCache(cacheEventUserId(eventUserId))
+    await deleteCache(cacheEventUserAll);
     return result;
   } catch (error) {
     console.error("Error deleting event user:", error);

@@ -40,22 +40,6 @@ const jwtAuth = async (req, res, next) => {
     const userId = decoded.id;
     const user = await getUserByID(userId);
     if (!user) return res.error(401, "User not found");
-    const userFormat = {
-      id: user.id,
-      public_id: user.public_id,
-      avatar_url: user.avatar_url,
-      google_id: user.google_id,
-      email: user.email,
-      username: user.username,
-      full_name: user.full_name,
-      phone_number: user.phone_number,
-      address: user.address,
-      streak: user.streak,
-      last_completed_task: user.last_completed_task,
-      roles: user.roles,
-      coins: user.coins,
-      ranks: user.ranks,
-    };
     req.user = user;
     next();
   } catch (e) {

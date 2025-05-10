@@ -364,7 +364,7 @@ const getDeliveryOrdersByBuyer = async (buyer_id) => {
       where: { buyer_id: buyer_id },
     });
 
-    await setCache(cacheKey, orders, 60 * 60); 
+    await setCache(cacheKey, orders, 60 * 60);
     return orders;
   } catch (err) {
     console.error("DB Error (getOrdersByBuyer):", err);
