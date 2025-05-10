@@ -60,7 +60,7 @@ module.exports = {
         id: 5,
         public_id: nanoid(),
         seller_id: 2,
-        name: "Bình tưới cây mini",
+        name: "Bình tưới cây ",
         description: "Không còn dùng đến nên pass lại, ai cần lấy liền.",
         price: 25000,
         category: "other",
