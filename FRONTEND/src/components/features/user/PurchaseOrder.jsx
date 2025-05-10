@@ -1,36 +1,49 @@
-import { getBuyerTransactionHistory } from "../../../utils/api";
+import { getBuyerTransactionHistory, getAllShippingOrdersByBuyerApi, CancelTransactionByIdAPI } from "../../../utils/api";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../contexts/auth.context";
 import { Coins } from "lucide-react";
 
-const OrderItem = ({ transaction, onClick }) => {
+const OrderItem = ({ transaction, onClick, onCancel }) => {
   const item = transaction.item_snapshot;
+
+  // Map statuses to colors for UI display
+  const statusStyles = {
+    ready_to_pick: "bg-blue-100 text-blue-800",
+    picking: "bg-blue-100 text-blue-800",
+    money_collect_picking: "bg-blue-100 text-blue-800",
+    picked: "bg-blue-100 text-blue-800",
+    storing: "bg-blue-100 text-blue-800",
+    transporting: "bg-blue-100 text-blue-800",
+    sorting: "bg-blue-100 text-blue-800",
+    delivering: "bg-blue-100 text-blue-800",
+    delivered: "bg-purple-100 text-purple-800",
+    money_collect_delivering: "bg-purple-100 text-purple-800",
+    delivery_fail: "bg-red-100 text-red-800",
+    waiting_to_return: "bg-yellow-100 text-yellow-800",
+    return: "bg-yellow-100 text-yellow-800",
+    return_transporting: "bg-yellow-100 text-yellow-800",
+    return_sorting: "bg-yellow-100 text-yellow-800",
+    returning: "bg-yellow-100 text-yellow-800",
+    return_fail: "bg-red-100 text-red-800",
+    returned: "bg-yellow-100 text-yellow-800",
+    cancel: "bg-red-100 text-red-800",
+    exception: "bg-red-100 text-red-800",
+    lost: "bg-red-100 text-red-800",
+    damage: "bg-red-100 text-red-800",
+    pending: "bg-yellow-100 text-yellow-800",
+  };
 
   return (
     <div className="rounded-lg p-4 mb-4 bg-white shadow-sm hover:shadow-md transition">
       <div className="flex justify-between items-start">
         <div className="text-sm font-semibold text-gray-700">
-          Người bán: {item.creator.full_name}
+          Người bán: {item.creator?.full_name || "Không xác định"}
         </div>
         <div className="text-right mb-2">
           <span
-            className={`px-2 py-1 rounded text-sm ${
-              transaction.status === "completed"
-                ? "bg-green-100 text-green-800"
-                : transaction.status === "pending"
-                ? "bg-yellow-100 text-yellow-800"
-                : transaction.status === "shipping"
-                ? "bg-blue-100 text-blue-800"
-                : transaction.status === "delivered"
-                ? "bg-purple-100 text-purple-800"
-                : transaction.status === "cancelled"
-                ? "bg-red-100 text-red-800"
-                : transaction.status === "returned"
-                ? "bg-orange-100 text-orange-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
+            className={`px-2 py-1 rounded text-sm ${statusStyles[transaction.status] || "bg-gray-100 text-gray-800"}`}
           >
-            {transaction.status.replace("_", " ").toUpperCase()}
+            {transaction.status_label.toUpperCase()}
           </span>
         </div>
       </div>
@@ -44,10 +57,10 @@ const OrderItem = ({ transaction, onClick }) => {
         <div className="flex-1">
           <h3 className="font-semibold">{item.name}</h3>
           <p className="text-sm text-gray-600">
-            Số lượng: {transaction.quantity}
+            Số lượng: {transaction.quantity || 1}
           </p>
           <p className="text-sm text-gray-600 flex items-center">
-            Đơn giá: {item.price.toLocaleString()}{" "}
+            Đơn giá: {(item.price || transaction.total_price).toLocaleString()}{" "}
             <Coins className="h-5 w-5 text-emerald-600 ml-1" />
           </p>
         </div>
@@ -56,31 +69,19 @@ const OrderItem = ({ transaction, onClick }) => {
       <div className="flex justify-between items-center">
         <div className="space-x-2">
           {transaction.status === "delivered" && (
-            <>
-              <button
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
-                onClick={() => {
-                  /* Handle confirm receipt */
-                }}
-              >
-                Xác nhận đã nhận
-              </button>
-              <button
-                className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 text-sm"
-                onClick={() => {
-                  /* Handle return/refunded request */
-                }}
-              >
-                Trả hàng/Hoàn tiền
-              </button>
-            </>
+            <button
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+              onClick={() => {
+                /* Handle confirm receipt */
+              }}
+            >
+              Xác nhận đã nhận
+            </button>
           )}
           {transaction.status === "pending" && (
             <button
               className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
-              onClick={() => {
-                /* Handle cancel order */
-              }}
+              onClick={() => onCancel(transaction.id)}
             >
               Hủy đơn hàng
             </button>
@@ -94,20 +95,20 @@ const OrderItem = ({ transaction, onClick }) => {
         </div>
       </div>
 
-      {transaction.shipping_info && transaction.status === "shipping" && (
+      {(transaction.shipping_info || ["ready_to_pick", "picking", "picked", "storing", "transporting", "sorting", "delivering"].includes(transaction.status)) && (
         <div className="mt-4 pt-4 border-t">
           <h4 className="font-semibold text-sm">Thông tin vận chuyển</h4>
           <p className="text-sm text-gray-600">
-            Đơn vị vận chuyển: {transaction.shipping_info.carrier}
+            Đơn vị vận chuyển: {transaction.shipping_info?.carrier || "Không xác định"}
           </p>
           <p className="text-sm text-gray-600">
-            Mã vận đơn: {transaction.shipping_info.tracking_number}
+            Mã vận đơn: {transaction.shipping_info?.tracking_number || "Không có"}
           </p>
           <p className="text-sm text-gray-600">
             Dự kiến giao:{" "}
-            {new Date(
-              transaction.shipping_info.estimated_delivery
-            ).toLocaleDateString("vi-VN")}
+            {transaction.shipping_info?.estimated_delivery
+              ? new Date(transaction.shipping_info.estimated_delivery).toLocaleDateString("vi-VN")
+              : "Không xác định"}
           </p>
         </div>
       )}
@@ -132,29 +133,191 @@ const PurchaseOrder = () => {
     { id: "delivered", label: "Chờ giao hàng" },
     { id: "completed", label: "Hoàn thành" },
     { id: "cancelled", label: "Đã hủy" },
-    { id: "returned", label: "Trả hàng/Hoàn tiền" },
   ];
 
   const statusLabels = {
     pending: "Chờ xác nhận",
-    shipping: "Vận chuyển",
-    delivered: "Chờ giao hàng",
-    completed: "Hoàn thành",
-    cancelled: "Đã hủy",
-    returned: "Trả hàng/Hoàn tiền",
+    ready_to_pick: "Chờ lấy hàng",
+    picking: "Đang lấy hàng",
+    money_collect_picking: "Đang tương tác với người gửi",
+    picked: "Lấy hàng thành công",
+    storing: "Nhập kho",
+    transporting: "Đang trung chuyển",
+    sorting: "Đang phân loại",
+    delivering: "Đang giao hàng",
+    delivered: "Giao hàng thành công",
+    money_collect_delivering: "Đang tương tác với người nhận",
+    delivery_fail: "Giao hàng không thành công",
+    waiting_to_return: "Chờ xác nhận giao lại",
+    return: "Chuyển hoàn",
+    return_transporting: "Đang trung chuyển hàng hoàn",
+    return_sorting: "Đang phân loại hàng hoàn",
+    returning: "Đang hoàn hàng",
+    return_fail: "Hoàn hàng không thành công",
+    returned: "Hoàn hàng thành công",
+    cancel: "Đơn hủy",
+    exception: "Hàng ngoại lệ",
+    lost: "Hàng thất lạc",
+    damage: "Hàng hư hỏng",
+  };
+
+  // Map DeliveryOrder statuses to tab categories
+  const statusToTab = {
+    pending: "pending",
+    ready_to_pick: "shipping",
+    picking: "shipping",
+    money_collect_picking: "shipping",
+    picked: "shipping",
+    storing: "shipping",
+    transporting: "shipping",
+    sorting: "shipping",
+    delivering: "delivered",
+    delivered: "completed",
+    money_collect_delivering: "delivered",
+    delivery_fail: "delivered",
+    waiting_to_return: "delivered",
+    return: "cancelled",
+    return_transporting: "cancelled",
+    return_sorting: "cancelled",
+    returning: "cancelled",
+    return_fail: "cancelled",
+    returned: "cancelled",
+    cancel: "cancelled",
+    exception: "cancelled",
+    lost: "cancelled",
+    damage: "cancelled",
+  };
+
+  // Normalize data from APIs
+  const normalizeTransaction = (tx, source) => {
+    if (source === "transaction") {
+      return {
+        id: `transaction-${tx.id}`, // Prefix to avoid ID conflicts
+        public_id: tx.public_id,
+        status: tx.status === "accepted" ? "pending" : tx.status === "rejected" ? "cancel" : tx.status,
+        status_label: statusLabels[tx.status === "accepted" ? "pending" : tx.status === "rejected" ? "cancel" : tx.status] || tx.status,
+        item_snapshot: tx.item_snapshot,
+        quantity: tx.quantity,
+        total_price: tx.total_price,
+        created_at: tx.created_at,
+        shipping_info: tx.shipping_info || null,
+      };
+    } else {
+      return {
+        id: `shipping-${tx.id}`, // Prefix to avoid ID conflicts
+        public_id: tx.order_code,
+        status: tx.status,
+        status_label: statusLabels[tx.status] || tx.status,
+        item_snapshot: {
+          name: "Sản phẩm không xác định",
+          price: tx.total_amount,
+          creator: { full_name: "Không xác định" },
+          public_id: "N/A",
+          description: "Không có thông tin sản phẩm",
+          image_url: "/placeholder-image.jpg",
+        },
+        quantity: 1,
+        total_price: tx.total_amount,
+        created_at: tx.created_date,
+        shipping_info: [
+          "ready_to_pick",
+          "picking",
+          "money_collect_picking",
+          "picked",
+          "storing",
+          "transporting",
+          "sorting",
+          "delivering",
+        ].includes(tx.status)
+          ? {
+              carrier: "Không xác định",
+              tracking_number: "N/A",
+              estimated_delivery: tx.created_date,
+            }
+          : null,
+      };
+    }
   };
 
   useEffect(() => {
-    const fetchUserTransactionHistory = async () => {
+    const fetchTransactions = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getBuyerTransactionHistory(auth.user.id);
-        if (response.success && Array.isArray(response.data)) {
-          setTransactionList(response.data);
+        let normalized = [];
+
+        if (activeTab === "all") {
+          // Fetch from both APIs for "all" tab
+          const [transactionResponse, shippingResponse] = await Promise.all([
+            getBuyerTransactionHistory(auth.user.id),
+            getAllShippingOrdersByBuyerApi(auth.user.id),
+          ]);
+
+          // Normalize transaction history
+          if (transactionResponse.success && Array.isArray(transactionResponse.data)) {
+            normalized = [...normalized, ...transactionResponse.data.map((tx) => normalizeTransaction(tx, "transaction"))];
+          }
+
+          // Normalize shipping orders
+          if (shippingResponse.success && Array.isArray(shippingResponse.data)) {
+            normalized = [...normalized, ...shippingResponse.data.map((tx) => normalizeTransaction(tx, "shipping"))];
+          }
+        } else if (activeTab === "pending") {
+          // Fetch only transaction history for "pending" tab
+          const response = await getBuyerTransactionHistory(auth.user.id);
+          if (response.success && Array.isArray(response.data)) {
+            normalized = response.data
+              .filter((tx) => tx.status === "accepted") // Only pending (accepted) transactions
+              .map((tx) => normalizeTransaction(tx, "transaction"));
+          }
         } else {
-          setTransactionList([]);
+          // Fetch only shipping orders for other tabs
+          const response = await getAllShippingOrdersByBuyerApi(auth.user.id);
+          if (response.success && Array.isArray(response.data)) {
+            normalized = response.data
+              .filter((tx) => {
+                if (activeTab === "shipping") {
+                  return [
+                    "ready_to_pick",
+                    "picking",
+                    "money_collect_picking",
+                    "picked",
+                    "storing",
+                    "transporting",
+                    "sorting",
+                  ].includes(tx.status);
+                } else if (activeTab === "delivered") {
+                  return [
+                    "delivering",
+                    "money_collect_delivering",
+                    "delivery_fail",
+                    "waiting_to_return",
+                  ].includes(tx.status);
+                } else if (activeTab === "completed") {
+                  return tx.status === "delivered";
+                } else if (activeTab === "cancelled") {
+                  return [
+                    "return",
+                    "return_transporting",
+                    "return_sorting",
+                    "returning",
+                    "return_fail",
+                    "returned",
+                    "cancel",
+                    "exception",
+                    "lost",
+                    "damage",
+                  ].includes(tx.status);
+                }
+                return false;
+              })
+              .map((tx) => normalizeTransaction(tx, "shipping"));
+          }
         }
+
+        // Sort by created_at (newest first)
+        normalized.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setTransactionList(normalized);
       } catch (error) {
         setError("Không thể tải lịch sử giao dịch. Vui lòng thử lại.");
         console.error("Lỗi khi tải dữ liệu:", error);
@@ -164,17 +327,38 @@ const PurchaseOrder = () => {
     };
 
     if (auth.user?.id) {
-      fetchUserTransactionHistory();
+      fetchTransactions();
     }
-  }, [auth.user?.id]);
+  }, [auth.user?.id, activeTab]);
+
+  const handleCancelOrder = async (transactionId) => {
+    try {
+      // Extract the actual transaction ID by removing the "transaction-" prefix
+      const actualId = transactionId.replace("transaction-", "");
+      const response = await CancelTransactionByIdAPI(actualId);
+      
+      if (response.success) {
+        setTransactionList((prev) =>
+          prev.map((tx) =>
+            tx.id === transactionId
+              ? { ...tx, status: "cancel", status_label: statusLabels["cancel"] }
+              : tx
+          )
+        );
+      } else {
+        throw new Error(response.message || "Không thể hủy đơn hàng.");
+      }
+    } catch (error) {
+      setError("Không thể hủy đơn hàng. Vui lòng thử lại.");
+      console.error("Lỗi khi hủy đơn hàng:", error);
+    }
+  };
 
   const filteredTransactions = transactionList
-    .filter((tx) => activeTab === "all" || tx.status === activeTab)
+    .filter((tx) => activeTab === "all" || statusToTab[tx.status] === activeTab)
     .filter(
       (tx) =>
-        tx.item_snapshot.name
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
+        tx.item_snapshot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tx.public_id.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -183,13 +367,13 @@ const PurchaseOrder = () => {
     setTransaction({
       "Mã giao dịch": tx.public_id,
       "Mã sản phẩm": item.public_id,
-      "Nhà cung cấp sản phẩm": item.creator.full_name,
+      "Nhà cung cấp sản phẩm": item.creator?.full_name || "Không xác định",
       "Tên sản phẩm": item.name,
       "Mô tả sản phẩm": item.description,
-      "Giá tại thời điểm mua": item.price.toLocaleString(),
-      "Số lượng": tx.quantity,
+      "Giá tại thời điểm mua": (item.price || tx.total_price).toLocaleString(),
+      "Số lượng": tx.quantity || 1,
       "Tổng số xu": tx.total_price.toLocaleString(),
-      "Trạng thái giao dịch": statusLabels[tx.status] || tx.status,
+      "Trạng thái giao dịch": tx.status_label,
       "Thời gian giao dịch":
         new Date(tx.created_at).toLocaleDateString("vi-VN") +
         " lúc " +
@@ -235,6 +419,7 @@ const PurchaseOrder = () => {
               key={tx.id}
               transaction={tx}
               onClick={() => openModal(tx)}
+              onCancel={handleCancelOrder}
             />
           ))}
         </div>
