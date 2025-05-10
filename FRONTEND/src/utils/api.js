@@ -146,14 +146,6 @@ export const submitTaskApi = (task_user_id, data) => {
   });
 };
 
-export const getBuyerTransactionHistory = () => {
-  return axios.get(`api/transactions/buyer`);
-};
-
-export const getSellerTransactionHistory = () => {
-  return axios.get(`api/transactions/seller`);
-};
-
 // export const getBuyerTransactionHistory = () => {
 //   return axios.get(`api/transactions/user`);
 // };
@@ -225,6 +217,18 @@ export const updateRolePermissionApi = (id, data) => {
 export const acceptTaskByIdApi = (task_id) => {
   return axios.post(`api/tasks/accept/${task_id}`);
 };
+
+export const getBuyerTransactionHistory = () => {
+  return axios.get(`api/transactions/buyer`);
+};
+
+export const getSellerTransactionHistory = () => {
+  return axios.get(`api/transactions/seller`);
+};
+
+export const CancelTransactionByIdAPI = (id) => {
+  return axios.patch(`/api/transactions/cancel/${id}`);
+}
 
 export const deleteTransactionsApi = (id) => {
   return axios.delete(`api/transactions/${id}`);

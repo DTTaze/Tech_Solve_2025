@@ -1,4 +1,4 @@
-import { getBuyerTransactionHistory, getAllShippingOrdersByBuyerApi } from "../../../utils/api";
+import { getBuyerTransactionHistory, getAllShippingOrdersByBuyerApi, CancelTransactionByIdAPI } from "../../../utils/api";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../contexts/auth.context";
 import { Coins } from "lucide-react";
@@ -333,13 +333,21 @@ const PurchaseOrder = () => {
 
   const handleCancelOrder = async (transactionId) => {
     try {
-      // Implement API call to cancel the transaction
-      // Example: await cancelTransactionApi(transactionId);
-      setTransactionList((prev) =>
-        prev.map((tx) =>
-          tx.id === transactionId ? { ...tx, status: "cancel", status_label: statusLabels["cancel"] } : tx
-        )
-      );
+      // Extract the actual transaction ID by removing the "transaction-" prefix
+      const actualId = transactionId.replace("transaction-", "");
+      const response = await CancelTransactionByIdAPI(actualId);
+      
+      if (response.success) {
+        setTransactionList((prev) =>
+          prev.map((tx) =>
+            tx.id === transactionId
+              ? { ...tx, status: "cancel", status_label: statusLabels["cancel"] }
+              : tx
+          )
+        );
+      } else {
+        throw new Error(response.message || "Không thể hủy đơn hàng.");
+      }
     } catch (error) {
       setError("Không thể hủy đơn hàng. Vui lòng thử lại.");
       console.error("Lỗi khi hủy đơn hàng:", error);
