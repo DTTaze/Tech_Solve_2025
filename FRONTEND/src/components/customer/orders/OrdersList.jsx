@@ -312,8 +312,8 @@ const OrdersList = ({
                           <ReceiptIcon fontSize="small" />
                         </Button>
 
-                        {(order.status === "In Progress" ||
-                          order.status === "Completed") && (
+                        {(order.status === "delivering" ||
+                          order.status === "delivered") && (
                           <Button
                             size="small"
                             variant="outlined"
@@ -352,37 +352,33 @@ const OrdersList = ({
                             >
                               <EditIcon fontSize="small" />
                             </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="success"
-                              onClick={() => handleConfirmOrder(order.id)}
-                              sx={{
-                                minWidth: 0,
-                                p: "4px 8px",
-                                bgcolor: "var(--primary-green)",
-                                "&:hover": { bgcolor: "var(--dark-green)" },
-                              }}
-                            >
-                              <CheckCircleIcon fontSize="small" />
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="error"
-                              onClick={() => handleCancelOrder(order.id)}
-                              sx={{
-                                minWidth: 0,
-                                p: "4px 8px",
-                              }}
-                            >
-                              <CancelIcon fontSize="small" />
-                            </Button>
+                            {handleCreateBasedOn && (
+                              <Tooltip title="Create new order based on this one">
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => handleCreateBasedOn(order)}
+                                  sx={{
+                                    minWidth: 0,
+                                    p: "4px 8px",
+                                    borderColor: "var(--primary-green)",
+                                    color: "var(--primary-green)",
+                                    "&:hover": {
+                                      borderColor: "var(--dark-green)",
+                                      backgroundColor:
+                                        "rgba(46, 125, 50, 0.08)",
+                                    },
+                                  }}
+                                >
+                                  <ContentCopyIcon fontSize="small" />
+                                </Button>
+                              </Tooltip>
+                            )}
                           </>
                         )}
 
-                        {(order.status === "In Progress" ||
-                          order.status === "Completed") &&
+                        {(order.status === "delivering" ||
+                          order.status === "delivered") &&
                           handleCreateBasedOn && (
                             <Tooltip title="Create new order based on this one">
                               <Button
@@ -573,26 +569,27 @@ const OrdersList = ({
                         >
                           Edit
                         </Button>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="success"
-                          onClick={() => handleConfirmOrder(order.id)}
-                          sx={{
-                            bgcolor: "var(--primary-green)",
-                            "&:hover": { bgcolor: "var(--dark-green)" },
-                          }}
-                        >
-                          Confirm
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="error"
-                          onClick={() => handleCancelOrder(order.id)}
-                        >
-                          Cancel
-                        </Button>
+                        {handleCreateBasedOn && (
+                          <Tooltip title="Create new order based on this one">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => handleCreateBasedOn(order)}
+                              sx={{
+                                minWidth: 0,
+                                p: "4px 8px",
+                                borderColor: "var(--primary-green)",
+                                color: "var(--primary-green)",
+                                "&:hover": {
+                                  borderColor: "var(--dark-green)",
+                                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                                },
+                              }}
+                            >
+                              <ContentCopyIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                        )}
                       </>
                     )}
 

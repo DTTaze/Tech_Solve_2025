@@ -21,36 +21,48 @@ const OrderDetailsDialog = ({
   // Transform the order data structure to match the newOrder structure expected by CreateOrderForm
   const formattedOrder = {
     ...order,
-    senderPhone: order.senderPhone || "",
-    senderAddress: order.senderAddress || "",
-    receiverPhone: order.receiverPhone || "",
-    receiverAddress: order.receiverAddress || "",
-    receiverName: order.receiverName || "",
-    receiverDistrict: order.receiverDistrict || "",
-    receiverWard: order.receiverWard || "",
-    productName: order.productName || "Áo Polo",
-    productWeight: order.weight || order.productWeight || "1,200",
-    productQuantity: order.productQuantity || "1",
-    productCode: order.productCode || "Polo123",
-    packageWeight: order.packageWeight || order.weight || "200",
-    packageLength: order.packageLength || "1",
-    packageWidth: order.packageWidth || "19",
-    packageHeight: order.packageHeight || "10",
-    packageVolumeWeight: order.packageVolumeWeight || "76",
+    // Sender information
+    from_phone: order.from_phone || "",
+    from_address: order.from_address || "",
+
+    // Receiver information
+    to_name: order.to_name || "",
+    to_phone: order.to_phone || "",
+    to_address: order.to_address || "",
+    to_district_name: order.to_district_name || "",
+    to_ward_name: order.to_ward_name || "",
+
+    // Product information
+    productName: order.items?.[0]?.name || "Áo Polo",
+    productWeight: order.weight || "1,200",
+    productQuantity: order.items?.[0]?.quantity || "1",
+    productCode: order.items?.[0]?.code || "Polo123",
+
+    // Package information
+    packageWeight: order.weight || "200",
+    packageLength: order.length || "1",
+    packageWidth: order.width || "19",
+    packageHeight: order.height || "10",
+    packageVolumeWeight: order.volume_weight || "76",
+
+    // Payment information
     codAmount: order.codAmount || "0",
-    totalValue: order.totalValue || order.shippingFee || "0",
+    totalValue: order.totalAmount || order.shippingFee || "0",
     cashOnDeliveryFailure: order.cashOnDeliveryFailure || false,
     failureCharge: order.failureCharge || "0",
+
+    // Order details
     customerOrderCode: order.orderCode || "",
-    deliveryNote: order.deliveryNote || "no_view",
-    notes: order.notes || "",
-    servicePackage: "light",
+    deliveryNote: order.required_note || "no_view",
+    notes: order.note || "",
+
+    // Service information
+    servicePackage: order.service_type_id === 2 ? "light" : "standard",
     pickupOption: "pickup",
     pickupLocation: "",
     packages: [],
     paymentParty: "receiver",
     promotionCode: "",
-    // Add any additional fields needed by the form
   };
 
   return (

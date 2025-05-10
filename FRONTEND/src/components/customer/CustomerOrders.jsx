@@ -52,6 +52,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import SearchIcon from "@mui/icons-material/Search";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 // Import extracted components
 import OrdersList from "./orders/OrdersList";
@@ -134,6 +135,10 @@ function a11yProps(index) {
 function TransactionOrdersList({
   transactions,
   handleCreateOrderFromTransaction,
+  handleViewDetails,
+  handleEditOrder,
+  handleConfirmOrder,
+  handleCancelOrder,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -222,16 +227,89 @@ function TransactionOrdersList({
                     />
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Create Order">
-                      <IconButton
-                        onClick={() =>
-                          handleCreateOrderFromTransaction(transaction)
-                        }
-                        color="primary"
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleViewDetails(transaction)}
+                        sx={{
+                          minWidth: 0,
+                          p: "4px 8px",
+                          borderColor: "var(--primary-green)",
+                          color: "var(--primary-green)",
+                          "&:hover": {
+                            borderColor: "var(--dark-green)",
+                            backgroundColor: "rgba(46, 125, 50, 0.08)",
+                          },
+                        }}
                       >
-                        <ShoppingCartIcon />
-                      </IconButton>
-                    </Tooltip>
+                        <ReceiptIcon fontSize="small" />
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleEditOrder(transaction)}
+                        sx={{
+                          minWidth: 0,
+                          p: "4px 8px",
+                          borderColor: "var(--primary-green)",
+                          color: "var(--primary-green)",
+                          "&:hover": {
+                            borderColor: "var(--dark-green)",
+                            backgroundColor: "rgba(46, 125, 50, 0.08)",
+                          },
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        onClick={() => handleConfirmOrder(transaction.id)}
+                        sx={{
+                          minWidth: 0,
+                          p: "4px 8px",
+                          bgcolor: "var(--primary-green)",
+                          "&:hover": { bgcolor: "var(--dark-green)" },
+                        }}
+                      >
+                        <CheckCircleIcon fontSize="small" />
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="error"
+                        onClick={() => handleCancelOrder(transaction.id)}
+                        sx={{
+                          minWidth: 0,
+                          p: "4px 8px",
+                        }}
+                      >
+                        <CancelIcon fontSize="small" />
+                      </Button>
+                      <Tooltip title="Create new order based on this one">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() =>
+                            handleCreateOrderFromTransaction(transaction)
+                          }
+                          sx={{
+                            minWidth: 0,
+                            p: "4px 8px",
+                            borderColor: "var(--primary-green)",
+                            color: "var(--primary-green)",
+                            "&:hover": {
+                              borderColor: "var(--dark-green)",
+                              backgroundColor: "rgba(46, 125, 50, 0.08)",
+                            },
+                          }}
+                        >
+                          <ContentCopyIcon fontSize="small" />
+                        </Button>
+                      </Tooltip>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
@@ -375,18 +453,18 @@ export default function CustomerOrders() {
           let status;
           switch (order.status) {
             case "ready_to_pick":
-              status = "Pending Confirmation";
+              status = "ready_to_pick";
               break;
             case "picking":
             case "storing":
             case "transporting":
-              status = "In Progress";
+              status = "delivering";
               break;
             case "delivered":
-              status = "Completed";
+              status = "delivered";
               break;
             case "cancel":
-              status = "Cancelled";
+              status = "cancel";
               break;
             default:
               status = "Pending Confirmation";
@@ -877,12 +955,12 @@ export default function CustomerOrders() {
           ...order,
           status:
             trackingData.status === "cancel"
-              ? "Cancelled"
+              ? "cancel"
               : trackingData.status === "delivered"
-              ? "Completed"
+              ? "delivered"
               : trackingData.status === "storing" ||
                 trackingData.status === "picking" ||
-                trackingData.status === "transporting"
+                trackingData.status === "delivering"
               ? "In Progress"
               : "Pending Confirmation",
           timeline: updatedTimeline,
@@ -1030,18 +1108,16 @@ export default function CustomerOrders() {
   const pendingTransactions = transactions.filter(
     (transaction) => transaction.status === "pending"
   );
-  const pendingOrders = orders.filter(
-    (order) => order.status === "Pending Confirmation"
+  const readyToPick = orders.filter(
+    (order) => order.status === "ready_to_pick"
   );
   const confirmedOrders = orders.filter(
-    (order) => order.status === "In Progress"
+    (order) => order.status === "delivering"
   );
   const completedOrders = orders.filter(
-    (order) => order.status === "Completed"
+    (order) => order.status === "delivered"
   );
-  const cancelledOrders = orders.filter(
-    (order) => order.status === "Cancelled"
-  );
+  const cancelledOrders = orders.filter((order) => order.status === "cancel");
 
   const handleCreateBasedOn = (order) => {
     // Create a new order based on the selected order
@@ -1322,11 +1398,11 @@ export default function CustomerOrders() {
               }}
             >
               <Tab
-                label={`Pending Requests (${pendingTransactions.length})`}
+                label={`Pending Orders (${pendingTransactions.length})`}
                 {...a11yProps(0)}
               />
               <Tab
-                label={`Pending Orders (${pendingOrders.length})`}
+                label={`Ready To Pick (${readyToPick.length})`}
                 {...a11yProps(1)}
               />
               <Tab
@@ -1345,23 +1421,21 @@ export default function CustomerOrders() {
           </Box>
 
           <TabPanel value={tabValue} index={0}>
-            {isLoadingTransactions ? (
-              <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-                <CircularProgress color="success" />
-              </Box>
-            ) : (
-              <TransactionOrdersList
-                transactions={pendingTransactions}
-                handleCreateOrderFromTransaction={
-                  handleCreateOrderFromTransaction
-                }
-              />
-            )}
+            <TransactionOrdersList
+              transactions={pendingTransactions}
+              handleCreateOrderFromTransaction={
+                handleCreateOrderFromTransaction
+              }
+              handleViewDetails={handleViewDetails}
+              handleEditOrder={handleEditOrder}
+              handleConfirmOrder={handleConfirmOrder}
+              handleCancelOrder={handleCancelOrder}
+            />
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
             <OrdersList
-              orders={pendingOrders}
+              orders={readyToPick}
               handleViewDetails={handleViewDetails}
               handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
@@ -1370,6 +1444,7 @@ export default function CustomerOrders() {
               handleEditOrder={handleEditOrder}
               handleCreateBasedOn={handleCreateBasedOn}
               withFilters={true}
+              isReadyToPick={true}
             />
           </TabPanel>
 
@@ -1384,6 +1459,7 @@ export default function CustomerOrders() {
               handleEditOrder={handleEditOrder}
               handleCreateBasedOn={handleCreateBasedOn}
               withFilters={true}
+              isInProgress={true}
             />
           </TabPanel>
 
