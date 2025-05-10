@@ -80,8 +80,8 @@ const router = createBrowserRouter([
         path: "user",
         element: (
           <ProtectedRoute>
-            <User />,
-          </ProtectedRoute>
+            <User />
+          </ProtectedRoute>       
         ),
         children: [
           { index: true, element: <PersonalInformation /> },

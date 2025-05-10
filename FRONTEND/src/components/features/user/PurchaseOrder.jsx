@@ -5,6 +5,7 @@ import { Coins } from "lucide-react";
 
 const OrderItem = ({ transaction, onClick, onCancel }) => {
   const item = transaction.item_snapshot;
+  const [showShippingInfo, setShowShippingInfo] = useState(false);
 
   const statusStyles = {
     ready_to_pick: "bg-blue-100 text-blue-800",
@@ -33,7 +34,10 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
   };
 
   return (
-    <div className="rounded-lg p-4 mb-4 bg-white shadow-sm hover:shadow-md transition">
+    <div 
+      className="rounded-lg p-4 mb-4 bg-white shadow-sm hover:shadow-md transition cursor-pointer" 
+      onClick={() => onClick(transaction)}
+    >
       <div className="flex justify-between items-start">
         <div className="text-sm font-semibold text-gray-700">
           Người bán: {item.creator?.full_name || "Không xác định"}
@@ -48,11 +52,6 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
       </div>
       <hr className="text-gray-300"></hr>
       <div className="flex items-center my-4">
-        <img
-          src={item.image_url || "/placeholder-image.jpg"}
-          alt={item.name}
-          className="w-16 h-16 object-cover rounded mr-4"
-        />
         <div className="flex-1">
           <h3 className="font-semibold">{item.name}</h3>
           <p className="text-sm text-gray-600">
@@ -70,7 +69,8 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
           {transaction.status === "delivered" && (
             <button
               className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 /* Handle confirm receipt */
               }}
             >
@@ -80,7 +80,10 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
           {transaction.status === "pending" && (
             <button
               className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm mt-2"
-              onClick={() => onCancel(transaction.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCancel(transaction.id);
+              }}
             >
               Hủy đơn hàng
             </button>
@@ -95,38 +98,60 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
       </div>
 
       {(transaction.shipping_info || ["ready_to_pick", "picking", "picked", "storing", "transporting", "sorting", "delivering"].includes(transaction.status)) && (
-        <div className="mt-4 pt-4 border-t">
-          <h4 className="font-semibold text-sm">Thông tin vận chuyển</h4>
-          <p className="text-sm text-gray-600">
-            Đơn vị vận chuyển: {transaction.shipping_info?.carrier || "Không xác định"}
-          </p>
-          <p className="text-sm text-gray-600">
-            Mã vận đơn: {transaction.shipping_info?.tracking_number || "Không có"}
-          </p>
-          <p className="text-sm text-gray-600">
-            Dự kiến giao:{" "}
-            {transaction.shipping_info?.estimated_delivery
-              ? new Date(transaction.shipping_info.estimated_delivery).toLocaleDateString("vi-VN")
-              : "Không xác định"}
-          </p>
-          {transaction.shipping_info?.to_name && (
-            <>
+        <div className="mt-4">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowShippingInfo(!showShippingInfo);
+            }}
+            className="text-emerald-600 hover:text-emerald-800 text-sm font-medium flex items-center"
+          >
+            {showShippingInfo ? "Ẩn thông tin vận chuyển" : "Xem thông tin vận chuyển"}
+            <svg
+              className={`w-4 h-4 ml-1 transform transition-transform ${showShippingInfo ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {showShippingInfo && (
+            <div className="mt-2 pt-2 border-t">
+              <h4 className="font-semibold text-sm">Thông tin vận chuyển</h4>
               <p className="text-sm text-gray-600">
-                Người nhận: {transaction.shipping_info.to_name}
+                Đơn vị vận chuyển: {transaction.shipping_info?.carrier || "Không xác định"}
               </p>
               <p className="text-sm text-gray-600">
-                Số điện thoại: {transaction.shipping_info.to_phone}
+                Mã vận đơn: {transaction.shipping_info?.tracking_number || "Không có"}
               </p>
               <p className="text-sm text-gray-600">
-                Địa chỉ: {transaction.shipping_info.to_address}
+                Dự kiến giao:{" "}
+                {transaction.shipping_info?.estimated_delivery
+                  ? new Date(transaction.shipping_info.estimated_delivery).toLocaleDateString("vi-VN")
+                  : "Không xác định"}
               </p>
-              <p className="text-sm text-gray-600">
-                Phí COD: {transaction.shipping_info.cod_amount?.toLocaleString()} VNĐ
-              </p>
-              <p className="text-sm text-gray-600">
-                Cân nặng: {transaction.shipping_info.weight} gram
-              </p>
-            </>
+              {transaction.shipping_info?.to_name && (
+                <>
+                  <p className="text-sm text-gray-600">
+                    Người nhận: {transaction.shipping_info.to_name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Số điện thoại: {transaction.shipping_info.to_phone}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Địa chỉ: {transaction.shipping_info.to_address}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Phí COD: {transaction.shipping_info.cod_amount?.toLocaleString()} VNĐ
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Cân nặng: {transaction.shipping_info.weight} gram
+                  </p>
+                </>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -137,6 +162,7 @@ const OrderItem = ({ transaction, onClick, onCancel }) => {
 const PurchaseOrder = () => {
   const [transaction, setTransaction] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showShippingInfo, setShowShippingInfo] = useState(false);
   const [transactionList, setTransactionList] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -422,7 +448,7 @@ const PurchaseOrder = () => {
             <OrderItem
               key={tx.id}
               transaction={tx}
-              onClick={() => openModal(tx)}
+              onClick={openModal}
               onCancel={handleCancelOrder}
             />
           ))}
@@ -444,7 +470,7 @@ const PurchaseOrder = () => {
 
       {showModal && transaction && (
         <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          className="fixed inset-0 flex items-center justify-center bg-opacity-50 p-4"
           role="dialog"
           aria-labelledby="modal-title"
           onKeyDown={(e) => e.key === "Escape" && setShowModal(false)}
