@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { CalendarIcon, MapPin } from "lucide-react";
+import { CalendarIcon, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { getEventSignedByUserIdApi, getAllEventsApi } from "../../../utils/api";
 import { toast } from "react-toastify";
 import EventDetailsModal from "./EventDetailsModal";
+import Pagination from "./Pagination";
 
 const EventList = ({ userInfo }) => {
   const [activeTab, setActiveTab] = useState("hot");
@@ -13,6 +14,8 @@ const EventList = ({ userInfo }) => {
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 2;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,6 +75,38 @@ const EventList = ({ userInfo }) => {
   const isEventParticipated = (eventId) => {
     return eventUser.some((eventUser) => eventUser.Event.id === eventId);
   };
+
+  const getCurrentEvents = () => {
+    switch (activeTab) {
+      case "hot":
+        return hotEvents;
+      case "current":
+        return nowEvents;
+      case "completed":
+        return eventsSigned;
+      default:
+        return [];
+    }
+  };
+
+  const totalPages = Math.ceil(getCurrentEvents().length / eventsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const getPaginatedEvents = () => {
+    const events = getCurrentEvents();
+    const startIndex = (currentPage - 1) * eventsPerPage;
+    return events.slice(startIndex, startIndex + eventsPerPage);
+  };
+
+  // Reset current page when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const renderEventCard = (event) => (
     <div
@@ -235,12 +270,17 @@ const EventList = ({ userInfo }) => {
       {/* Event Cards */}
       <div className="p-3">
         <div className="space-y-3">
-          {activeTab === "hot" && hotEvents.slice(0, 2).map(renderEventCard)}
-          {activeTab === "current" &&
-            nowEvents.slice(0, 2).map(renderEventCard)}
-          {activeTab === "completed" &&
-            eventsSigned.slice(0, 2).map(renderEventCard)}
+          {getPaginatedEvents().map(renderEventCard)}
         </div>
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          goToNextPage={() => handlePageChange(currentPage + 1)}
+          goToPreviousPage={() => handlePageChange(currentPage - 1)}
+          goToPage={handlePageChange}
+        />
       </div>
 
       {/* Event Details Modal */}

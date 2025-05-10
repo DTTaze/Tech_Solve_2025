@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { getAllEventsApi, getEventSignedByUserIdApi } from "../../../utils/api.js";
+import {
+  getAllEventsApi,
+  getEventSignedByUserIdApi,
+} from "../../../utils/api.js";
 import { toast } from "react-toastify";
 import EventDetailsModal from "./EventDetailsModal";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const EventBanner = ({userInfo}) => {
+const EventBanner = ({ userInfo }) => {
   const [events, setEvents] = useState([]);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [participatedEvents, setParticipatedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -22,7 +25,9 @@ const EventBanner = ({userInfo}) => {
         }
 
         // Fetch signed events
-        const signedEventsResponse = await getEventSignedByUserIdApi(userInfo.id);
+        const signedEventsResponse = await getEventSignedByUserIdApi(
+          userInfo.id
+        );
         const signedEventIds =
           signedEventsResponse?.data?.map((event) => event.event_id) || [];
 
@@ -51,6 +56,28 @@ const EventBanner = ({userInfo}) => {
       return () => clearInterval(interval);
     }
   }, [events, isModalOpen]);
+
+  const handlePreviousEvent = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Previous button clicked");
+    setCurrentEventIndex((prevIndex) => {
+      const newIndex = prevIndex === 0 ? events.length - 1 : prevIndex - 1;
+      console.log("Changing index from", prevIndex, "to", newIndex);
+      return newIndex;
+    });
+  };
+
+  const handleNextEvent = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Next button clicked");
+    setCurrentEventIndex((prevIndex) => {
+      const newIndex = prevIndex === events.length - 1 ? 0 : prevIndex + 1;
+      console.log("Changing index from", prevIndex, "to", newIndex);
+      return newIndex;
+    });
+  };
 
   const handleOpenModal = (event) => {
     setSelectedEvent(event);
@@ -82,14 +109,33 @@ const EventBanner = ({userInfo}) => {
           <div className="absolute inset-0 bg-gradient-to-r from-green-600/90 to-blue-600/90" />
         </div>
 
+        {/* Navigation Buttons - Positioned at edges */}
+        <button
+          onClick={handlePreviousEvent}
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 cursor-pointer z-10 rounded-r-xl group"
+          aria-label="Previous event"
+        >
+          <ChevronLeft className="w-6 h-6 text-white transform transition-transform duration-300 group-hover:scale-125" />
+        </button>
+
+        <button
+          onClick={handleNextEvent}
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-white/10 hover:bg-white/30 backdrop-blur-sm transition-all duration-300 cursor-pointer z-10 rounded-l-xl group"
+          aria-label="Next event"
+        >
+          <ChevronRight className="w-6 h-6 text-white transform transition-transform duration-300 group-hover:scale-125" />
+        </button>
+
         {/* Content */}
-        <div className="relative h-full flex items-center justify-between px-8">
-          <div className="text-white">
-            <h2 className="text-2xl font-bold mb-2">{currentEvent.title}</h2>
-            <p className="text-sm mb-4 line-clamp-2">
+        <div className="relative h-full flex items-center justify-between px-16 pointer-events-none">
+          <div className="text-white max-w-2xl">
+            <h2 className="text-2xl font-bold mb-2 drop-shadow-lg">
+              {currentEvent.title}
+            </h2>
+            <p className="text-sm mb-4 line-clamp-2 drop-shadow-md">
               {currentEvent.description}
             </p>
-            <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-4 text-sm drop-shadow-sm">
               <div className="flex items-center">
                 <svg
                   className="w-4 h-4 mr-1"
@@ -135,7 +181,7 @@ const EventBanner = ({userInfo}) => {
 
           {/* Join Button */}
           <button
-            className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-green-50 hover:scale-105 hover:shadow-xl transition-all duration-300 shadow-lg transform active:scale-95"
+            className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-green-50 hover:scale-105 hover:shadow-xl transition-all duration-300 shadow-lg transform active:scale-95 pointer-events-auto"
             onClick={() => handleOpenModal(currentEvent)}
           >
             {isParticipated ? "Xem chi tiết" : "Tham gia ngay!"}
@@ -143,12 +189,14 @@ const EventBanner = ({userInfo}) => {
         </div>
 
         {/* Event Indicators */}
-        <div className="absolute bottom-4 left-8 flex space-x-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3">
           {events.map((_, index) => (
             <button
               key={index}
-              className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                index === currentEventIndex ? "bg-white" : "bg-white/50"
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 transform ${
+                index === currentEventIndex
+                  ? "bg-white scale-125 shadow-lg"
+                  : "bg-white/50 hover:bg-white/70"
               }`}
               onClick={() => setCurrentEventIndex(index)}
             />
