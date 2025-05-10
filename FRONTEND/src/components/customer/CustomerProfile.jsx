@@ -106,7 +106,6 @@ export default function CustomerProfile() {
     fetchUserData();
   }, [notify]);
 
-  // Fetch transaction history when tab changes to history
   useEffect(() => {
     if (tabValue === 1 && userInfo?.id) {
       const fetchTransactions = async () => {
@@ -217,7 +216,7 @@ export default function CustomerProfile() {
   const handleLogout = async () => {
     try {
       const response = await logoutUserApi();
-      if (response?.data?.success) {
+      if (response?.success) {
         notify("success", "Đăng xuất thành công");
         window.location.href = "/";
       }
@@ -500,7 +499,7 @@ export default function CustomerProfile() {
                   }}
                 >
                   <Tab icon={<AccountCircleIcon />} label="Profile" />
-                  <Tab icon={<HistoryIcon />} label="Transaction History" />
+                  {/* <Tab icon={<HistoryIcon />} label="Transaction History" /> */}
                 </Tabs>
 
                 {tabValue === 0 &&

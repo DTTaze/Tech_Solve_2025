@@ -53,9 +53,13 @@ export const itemColumns = [
   { field: "price", headerName: "Giá (xu)", width: 120 },
   { field: "stock", headerName: "Tồn kho", width: 120 },
   { field: "status", headerName: "Trạng thái", width: 120 },
+  { field: "weight", headerName: "Cân nặng (g)", width: 120 },
+  { field: "length", headerName: "Chiều dài (cm)", width: 120 },
+  { field: "width", headerName: "Chiều rộng (cm)", width: 120 },
+  { field: "height", headerName: "Chiều cao (cm)", width: 120 },
   {
-    field: "User",
-    headerName: "Bên cung cấp",
+    field: "creator",
+    headerName: "Tài khoản cung cấp",
     width: 150,
     valueGetter: (params) => params?.username || "Unknown",
   },
@@ -97,8 +101,8 @@ export const productColumns = [
   { field: "product_status", headerName: "Tình trạng sản phẩm", width: 150 },
   { field: "post_status", headerName: "Trạng thái bài đăng", width: 150 },
   {
-    field: "User",
-    headerName: "Người bán",
+    field: "seller",
+    headerName: "Tài khoản người bán",
     width: 150,
     valueGetter: (params) => params?.username || "Unknown",
   },
@@ -123,6 +127,7 @@ export const productColumns = [
     },
   },
 ];
+
 export const videoColumns = [
   { field: "id", headerName: "ID", width: 70 },
   { field: "title", headerName: "Title", width: 230 },
@@ -150,19 +155,19 @@ export const userColumns = [
   { field: "public_id", headerName: "ID công khai", width: 200 },
   { field: "full_name", headerName: "Họ tên", width: 250 },
   { field: "username", headerName: "Tên người dùng", width: 200 },
+  { field: "phone_number", headerName: "SĐT", width: 200 },
   { field: "email", headerName: "Email", width: 250 },
+  { field: "streak", headerName: "Chuỗi", width: 100 },
+  {
+    field: "avatar_url",
+    headerName: "Avatar URL",
+    width: 250,
+  },
   {
     field: "roles",
     headerName: "Vai trò",
     width: 120,
     valueGetter: (params) => params?.name || "Unknown",
-  },
-  { field: "status", headerName: "Trạng thái", width: 120 },
-  {
-    field: "coins",
-    headerName: "Số xu",
-    width: 120,
-    valueGetter: (params) => params?.amount || "Unknown",
   },
   {
     field: "updated_at",
@@ -185,6 +190,7 @@ export const userColumns = [
     },
   },
 ];
+
 export const roleColumns = [
   { field: "id", headerName: "ID", width: 100 },
   { field: "name", headerName: "Tên vai trò", width: 230 },
@@ -236,6 +242,7 @@ export const permissionColumns = [
     },
   },
 ];
+
 export const rolesPermissionsColumns = [
   { field: "id", headerName: "ID", width: 100 },
 
@@ -284,10 +291,10 @@ export const transactionsColumns = [
     valueGetter: (params) => params?.username || "Unknown",
   },
   {
-    field: "item",
-    headerName: "Tên vật phẩm",
+    field: "item_snapshot",
+    headerName: "Tên tài khoản người bán",
     width: 200,
-    valueGetter: (params) => params?.name || "Unknown",
+    valueGetter: (params) => params?.creator?.username || "Unknown",
   },
   { field: "total_price", headerName: "Tổng giá trị (xu)", width: 150 },
   { field: "quantity", headerName: "Số lượng sản phẩm", width: 150 },
@@ -316,22 +323,29 @@ export const transactionsColumns = [
 
 export const ordersColumns = [
   { field: "id", headerName: "ID", width: 100 },
-  { field: "public_id", headerName: "ID công khai", width: 200 },
-  { field: "name", headerName: "Tên giao dịch", width: 200 },
+  { field: "order_code", headerName: "Mã vận chuyển", width: 200 },
   {
-    field: "buyer",
-    headerName: "Tên tài khoản người mua",
+    field: "to_name",
+    headerName: "Tên người nhận",
     width: 200,
-    valueGetter: (params) => params?.username || "Unknown",
   },
   {
-    field: "item",
-    headerName: "Tên vật phẩm",
+    field: "to_phone",
+    headerName: "SĐT người nhận",
     width: 200,
-    valueGetter: (params) => params?.name || "Unknown",
   },
-  { field: "total_price", headerName: "Tổng giá trị (xu)", width: 150 },
-  { field: "quantity", headerName: "Số lượng sản phẩm", width: 150 },
+  {
+    field: "to_address",
+    headerName: "Địa chỉ người nhận",
+    width: 200,
+  },
+  {
+    field: "cod_amount",
+    headerName: "Phí COD",
+    width: 200,
+  },
+  { field: "weight", headerName: "Tổng cân nặng (g)", width: 150 },
+  { field: "total_amount", headerName: "Tổng phí (VNĐ)", width: 150 },
   { field: "status", headerName: "Trạng thái", width: 150 },
   {
     field: "updated_at",
@@ -372,7 +386,8 @@ export const eventsColumns = [
     width: 200,
   },
   { field: "capacity", headerName: "Hạn mức tham gia", width: 150 },
-  { field: "coins", headerName: "Số xu nhận được", width: 200 },
+  { field: "coins", headerName: "Số xu nhận được", width: 150 },
+  { field: "status", headerName: "Trạng thái", width: 200 },
   {
     field: "end_sign",
     headerName: "Hạn chót đăng kí",
@@ -429,133 +444,3 @@ export const eventsColumns = [
     },
   },
 ];
-
-// export const orderColumns = [
-//   {
-//     field: "order_code",
-//     headerName: "Mã đơn hàng",
-//     width: 150,
-//   },
-//   {
-//     field: "shipping_order_status",
-//     headerName: "Trạng thái",
-//     width: 150,
-//     renderCell: (params) => {
-//       const status = params.value;
-//       let displayText = "";
-//       let color = "";
-
-//       switch (status) {
-//         case "ready_to_pick":
-//           displayText = "Sẵn sàng lấy hàng";
-//           color = "primary";
-//           break;
-//         case "picking":
-//           displayText = "Đang lấy hàng";
-//           color = "info";
-//           break;
-//         case "picked":
-//           displayText = "Đã lấy hàng";
-//           color = "secondary";
-//           break;
-//         case "delivering":
-//           displayText = "Đang giao hàng";
-//           color = "warning";
-//           break;
-//         case "delivered":
-//           displayText = "Đã giao hàng";
-//           color = "success";
-//           break;
-//         case "delivery_failed":
-//           displayText = "Giao hàng thất bại";
-//           color = "error";
-//           break;
-//         case "cancelled":
-//           displayText = "Đã hủy";
-//           color = "error";
-//           break;
-//         default:
-//           displayText = status;
-//           color = "default";
-//       }
-
-//       return (
-//         <div
-//           style={{
-//             padding: "5px 10px",
-//             borderRadius: "4px",
-//             backgroundColor: getStatusColor(color),
-//             color: "white",
-//             display: "inline-block",
-//           }}
-//         >
-//           {displayText}
-//         </div>
-//       );
-//     },
-//   },
-//   {
-//     field: "total_fee",
-//     headerName: "Tổng phí",
-//     width: 120,
-//     valueFormatter: (params) => {
-//       return new Intl.NumberFormat("vi-VN", {
-//         style: "currency",
-//         currency: "VND",
-//       }).format(params.value);
-//     },
-//   },
-//   // {
-//   //   field: "buyer_id",
-//   //   headerName: "Người mua",
-//   //   width: 200,
-//   //   valueGetter: (params) => params?.buyer_id || "",
-//   // },
-//   // {
-//   //   field: "buyer_phone",
-//   //   headerName: "SĐT người mua",
-//   //   width: 150,
-//   //   valueGetter: (params) => params.buyer?.phone || "",
-//   // },
-//   {
-//     field: "seller",
-//     headerName: "Người bán",
-//     width: 200,
-//     valueGetter: (params) => params.row.seller?.name || "",
-//   },
-//   {
-//     field: "seller_phone",
-//     headerName: "SĐT người bán",
-//     width: 150,
-//     valueGetter: (params) => params.row.seller?.phone || "",
-//   },
-//   {
-//     field: "created_at",
-//     headerName: "Ngày tạo",
-//     width: 180,
-//     valueFormatter: (params) => {
-//       if (!params.value) return "";
-//       return new Date(params.value).toLocaleString("vi-VN");
-//     },
-//   },
-// ];
-
-// Helper function to get status color
-// function getStatusColor(color) {
-//   switch (color) {
-//     case "primary":
-//       return "#1976d2";
-//     case "secondary":
-//       return "#9c27b0";
-//     case "info":
-//       return "#0288d1";
-//     case "success":
-//       return "#2e7d32";
-//     case "warning":
-//       return "#ed6c02";
-//     case "error":
-//       return "#d32f2f";
-//     default:
-//       return "#757575";
-//   }
-// }
