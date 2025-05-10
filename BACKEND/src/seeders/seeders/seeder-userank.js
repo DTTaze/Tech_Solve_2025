@@ -2,7 +2,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Update ranks with corresponding user_ids
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 12; i++) {
       await queryInterface.sequelize.query(
         `UPDATE ranks SET user_id = ${i} WHERE id = ${i}`
       );
