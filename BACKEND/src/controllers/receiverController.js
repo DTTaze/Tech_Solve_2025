@@ -71,10 +71,27 @@ const handleDeleteReceiverInfoById = async (req, res) => {
   }
 };
 
+const handleSetDefaultReceiverInfoById = async (req, res) => {
+  try {
+    const id = req.params.id || req.body.id;
+
+    if (!id) return res.error(400, "Missing receiver ID");
+
+    const result = await ReceiverInformationService.setDefaultReceiverInfoById(Number(id));
+    if (!result) return res.error(404, "Receiver information not found");
+
+    return res.success("Receiver information set default successfully", result);
+  } catch (error) {
+    console.error("Error update Receiver information:", error);
+    return res.error(500, "Error update Receiver information", error.message || error);
+  }
+};
+
 module.exports = {
   handleCreateReceiverInfo,
   handleGetReceiverInfoById,
   handleGetReceiverInfoByUserId,
   handleUpdateReceiverInfoById,
-  handleDeleteReceiverInfoById
+  handleDeleteReceiverInfoById,
+  handleSetDefaultReceiverInfoById
 };
