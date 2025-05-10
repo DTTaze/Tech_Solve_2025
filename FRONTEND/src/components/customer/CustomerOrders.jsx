@@ -372,46 +372,49 @@ function TransactionOrdersList({
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{transaction.public_id}</TableCell>
-                  <TableCell>
-                    {new Date(transaction.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    {transaction.buyer
-                      ? transaction.buyer.full_name ||
-                        transaction.buyer.username
-                      : "Unknown"}
-                  </TableCell>
-                  <TableCell>
-                    {transaction.item_snapshot?.name || "Unknown Product"}
-                  </TableCell>
-                  <TableCell>{transaction.quantity}</TableCell>
-                  <TableCell>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(transaction.total_price)}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={transaction.status}
-                      color={
-                        transaction.status === "pending"
-                          ? "warning"
-                          : transaction.status === "accepted"
-                          ? "success"
-                          : transaction.status === "rejected"
-                          ? "error"
-                          : "default"
-                      }
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>{renderActionButtons(transaction)}</TableCell>
-                </TableRow>
-              ))}
+              {filteredTransactions.map((transaction) => {
+                console.log("Transaction:", transaction);
+                return (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.public_id}</TableCell>
+                    <TableCell>
+                      {new Date(transaction.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      {transaction.buyer
+                        ? transaction.buyer.full_name ||
+                          transaction.buyer.username
+                        : "Unknown"}
+                    </TableCell>
+                    <TableCell>
+                      {transaction.item_snapshot?.name || "Unknown Product"}
+                    </TableCell>
+                    <TableCell>{transaction.quantity}</TableCell>
+                    <TableCell>
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(transaction.total_price)}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={transaction.status}
+                        color={
+                          transaction.status === "pending"
+                            ? "warning"
+                            : transaction.status === "accepted"
+                            ? "success"
+                            : transaction.status === "rejected"
+                            ? "error"
+                            : "default"
+                        }
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>{renderActionButtons(transaction)}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -993,16 +996,67 @@ export default function CustomerOrders() {
     }
   };
 
+  const handleViewOrderDetails = async (transaction) => {
+    try {
+      const selectedAccount =
+        shippingAccounts.find((acc) => acc.is_default === true) ||
+        shippingAccounts[0];
+
+      const response = await getShippingOrderDetailApi(
+        transaction.orderCode,
+        selectedAccount.token,
+        selectedAccount.shop_id
+      );
+      if (response && response.data) {
+        const transactionDetails = {
+          ...response.data,
+          timeline: [
+            {
+              time: new Date(response.data.created_at).toLocaleString(),
+              status: "Transaction Created",
+            },
+            {
+              time: new Date(response.data.updated_at).toLocaleString(),
+              status: `Status: ${response.data.status}`,
+            },
+          ],
+          locationHistory: [
+            {
+              time: new Date(response.data.created_at).toLocaleString(),
+              location: "Transaction Created",
+              status: response.data.status,
+            },
+          ],
+        };
+        setSelectedOrder(transactionDetails);
+        setTimeout(() => {
+          setDetailsDialogOpen(true);
+        }, 10);
+      }
+    } catch (error) {
+      console.error("Error fetching transaction details:", error);
+      showAlert(
+        "Failed to load transaction details. Please try again.",
+        "error"
+      );
+    }
+  };
   const handleTrackOrder = async (order) => {
     try {
       setIsLoadingOrders(true);
+      const selectedAccount =
+        shippingAccounts.find((acc) => acc.is_default === true) ||
+        shippingAccounts[0];
 
-      // Fetch the latest tracking information from GHN using the order code
-      const response = await getShippingOrderDetailApi(order.orderCode);
+      const response = await getShippingOrderDetailApi(
+        order.orderCode,
+        selectedAccount.token,
+        selectedAccount.shop_id
+      );
 
       if (response && response.data && response.data.data) {
         const trackingData = response.data.data;
-
+        console.log("trackingData ", trackingData);
         // Create timeline events from tracking data
         let updatedTimeline = [
           {
@@ -1044,7 +1098,7 @@ export default function CustomerOrders() {
           });
         }
 
-        // Update the order with current status and tracking info
+        // // Update the order with current status and tracking info
         const updatedOrder = {
           ...order,
           status:
@@ -1064,7 +1118,7 @@ export default function CustomerOrders() {
           // Update any other fields that might have changed
         };
 
-        // Update this order in our local state
+        // // Update this order in our local state
         const updatedOrders = orders.map((o) =>
           o.id === order.id ? updatedOrder : o
         );
@@ -1457,7 +1511,7 @@ export default function CustomerOrders() {
           <TabPanel value={tabValue} index={1}>
             <OrdersList
               orders={readyToPick}
-              handleViewDetails={handleViewDetails}
+              handleViewDetails={handleViewOrderDetails}
               handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}
@@ -1472,7 +1526,7 @@ export default function CustomerOrders() {
           <TabPanel value={tabValue} index={2}>
             <OrdersList
               orders={confirmedOrders}
-              handleViewDetails={handleViewDetails}
+              handleViewDetails={handleViewOrderDetails}
               handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}
@@ -1487,7 +1541,7 @@ export default function CustomerOrders() {
           <TabPanel value={tabValue} index={3}>
             <OrdersList
               orders={completedOrders}
-              handleViewDetails={handleViewDetails}
+              handleViewDetails={handleViewOrderDetails}
               handleTrackOrder={handleTrackOrder}
               handleConfirmOrder={handleConfirmOrder}
               handleCancelOrder={handleCancelOrder}

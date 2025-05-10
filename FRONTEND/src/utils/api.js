@@ -438,8 +438,13 @@ export const createShippingOrderApi = (data, token, shop_id) => {
   });
 };
 
-export const getShippingOrderDetailApi = (order_code) => {
-  return axios.get(`api/delivery/carrier/ghn/detail/${order_code}`);
+export const getShippingOrderDetailApi = (order_code, token, shop_id) => {
+  return axios.get(`api/delivery/carrier/ghn/detail/${order_code}`, {
+    headers: {
+      token: token,
+      shop_id: shop_id,
+    },
+  });
 };
 
 export const getAllShippingOrdersBySellerApi = () => {

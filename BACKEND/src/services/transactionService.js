@@ -2,6 +2,7 @@ const db = require("../models/index.js");
 const { redisClient } = require("../config/configRedis.js");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 const Transaction = db.Transaction;
+const ReceiverInformation = db.ReceiverInformation;
 const Item = db.Item;
 const User = db.User;
 
@@ -106,6 +107,15 @@ const getTransactionByBuyerId = async (buyer_id) => {
           as: "buyer",
           attributes: ["id", "full_name", "username"],
         },
+        {
+          model: User,
+          as: "seller",
+          attributes: ["id", "full_name", "username"],
+        },
+        {
+          model: ReceiverInformation,
+          as: "receiver_information",
+        },
       ],
     });
     if (!transaction) {
@@ -118,7 +128,17 @@ const getTransactionByBuyerId = async (buyer_id) => {
       "EX",
       3600
     );
-    return transaction;
+    for (const newTransaction of transaction) {
+      const transactionData = newTransaction.toJSON();
+      await redisClient.set(
+        `transaction:id:${newTransaction.id}`,
+        JSON.stringify(transactionData),
+        "EX",
+        3600
+      );
+    }
+
+    return transaction.map((t) => t.toJSON());
   } catch (error) {
     throw error;
   }
@@ -167,6 +187,15 @@ const getTransactionBySellerId = async (seller_id) => {
           as: "seller",
           attributes: ["id", "full_name", "username"],
         },
+        {
+          model: User,
+          as: "buyer",
+          attributes: ["id", "full_name", "username"],
+        },
+        {
+          model: ReceiverInformation,
+          as: "receiver_information",
+        },
       ],
     });
     if (!transaction || transaction.length === 0) {
@@ -179,7 +208,17 @@ const getTransactionBySellerId = async (seller_id) => {
       "EX",
       3600
     );
-    return transaction;
+    for (const newTransaction of transaction) {
+      const transactionData = newTransaction.toJSON();
+      await redisClient.set(
+        `transaction:id:${newTransaction.id}`,
+        JSON.stringify(transactionData),
+        "EX",
+        3600
+      );
+    }
+
+    return transaction.map((t) => t.toJSON());
   } catch (error) {
     throw error;
   }
@@ -206,7 +245,14 @@ const getTransactionById = async (id) => {
     if (!id) {
       throw new Error("Missing parameters");
     }
-    return await Transaction.findByPk(id);
+    return await Transaction.findByPk(id, {
+      include: [
+        {
+          model: ReceiverInformation,
+          as: "receiver_information",
+        },
+      ],
+    });
   } catch (e) {
     throw e;
   }
