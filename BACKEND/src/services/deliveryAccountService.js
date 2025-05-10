@@ -56,7 +56,7 @@ const updateDeliveryAccount = async (id, data) => {
     if (!account) throw new Error("Delivery account not found");
 
     await account.update(data);
-    await setCache(`delivery:id:${id}`, account, 60 * 60);
+    await deleteCache(`delivery:id:${id}`);
     await deleteCache(`delivery:user:${account.user_id}`);
     return account;
   } catch (err) {
