@@ -3,7 +3,6 @@ const authRoutes = require("../routes/authRoutes.js");
 const userRoutes = require("../routes/userRoutes.js");
 const taskRoutes = require("../routes/taskRoutes.js");
 const itemRoutes = require("../routes/itemRoutes.js");
-const videoRoutes = require("../routes/videoRoutes.js");
 const imageRoutes = require("../routes/imageRoutes.js");
 const avatarRoutes = require("../routes/avatarRoutes.js");
 const jwtAuth = require("../middlewares/jwtAuth.js");
@@ -36,7 +35,6 @@ const initWebRoutes = (app) => {
   app.use("/api/tasks", taskRoutes);
   app.use("/api/items", itemRoutes);
   app.use("/api/products", productRoutes);
-  app.use("/api/videos", videoRoutes);
   app.use("/api/avatars", avatarRoutes);
   app.use("/api/images", imageRoutes);
   app.use("/api/transactions", transactionRoutes);
