@@ -5,6 +5,8 @@ const Transaction = db.Transaction;
 const ReceiverInformation = db.ReceiverInformation;
 const Item = db.Item;
 const User = db.User;
+const { updateIncreaseCoin } = require("./coinService.js");
+const { getUserByID } = require("./userService.js");
 
 const createTransaction = async (transactionData) => {
   try {
@@ -263,24 +265,48 @@ const getTransactionById = async (id) => {
 };
 
 const cancelTransactionById = async (id) => {
+  if (typeof id !== "number" && typeof id !== "string") {
+    throw new Error("Invalid id type");
+  }
+  if (!id) {
+    throw new Error("Missing parameters");
+  }
+
+  const t = await Transaction.sequelize.transaction();
   try {
-    if (!id) {
-      throw new Error("Missing parameters");
-    }
-
-    const transaction = await Transaction.findByPk(id);
-
+    const transaction = await Transaction.findByPk(id, { transaction: t });
     if (!transaction) {
       throw new Error("Transaction not found");
     }
+    if (transaction.status === "cancelled") {
+      throw new Error("Transaction is already cancelled");
+    }
+    if (transaction.status === "completed") {
+      throw new Error("Cannot cancel completed transaction");
+    }
+    if (
+      !transaction.item_snapshot ||
+      typeof transaction.item_snapshot.price !== "number"
+    ) {
+      throw new Error("Invalid transaction price");
+    }
 
     transaction.status = "cancelled";
-    await transaction.save();
-
+    await transaction.save({ transaction: t });
     await deleteCache(`transaction:id:${id}`);
 
+    const data = await getUserByID(transaction.buyer_id);
+    if (!data || !data.coins.id) {
+      throw new Error("Invalid user or coin_id");
+    }
+    await updateIncreaseCoin(data.coins.id, transaction.item_snapshot.price, {
+      transaction: t,
+    });
+
+    await t.commit();
     return transaction;
   } catch (e) {
+    await t.rollback();
     throw e;
   }
 };
@@ -329,34 +355,66 @@ const getAllTransactionsByStatus = async (status) => {
 };
 
 const makeDecision = async (transaction_id, decision) => {
+  if (
+    typeof transaction_id !== "number" &&
+    typeof transaction_id !== "string"
+  ) {
+    throw new Error("Invalid transaction_id type");
+  }
+  if (typeof decision !== "string") {
+    throw new Error("Invalid decision type");
+  }
+  if (!transaction_id || !decision) {
+    throw new Error("Missing parameters");
+  }
+  if (!["accepted", "rejected", "pending"].includes(decision)) {
+    throw new Error("Wrong new status to make decision");
+  }
+
+  const t = await Transaction.sequelize.transaction();
   try {
-    if (!transaction_id || !decision) {
-      throw new Error("Missing parameters");
-    }
-
-    const transaction = await Transaction.findByPk(transaction_id);
-
+    const transaction = await Transaction.findByPk(transaction_id, {
+      transaction: t,
+    });
     if (!transaction) {
       throw new Error("Transaction not found");
     }
-    if (
-      decision !== "accepted" &&
-      decision !== "rejected" &&
-      decision !== "pending"
-    ) {
-      throw new Error("Wrong new status to make decision");
+
+    if (transaction.status === decision) {
+      throw new Error("Transaction is already in this status");
     }
+    if (transaction.status === "accepted" && decision === "pending") {
+      throw new Error("Cannot revert accepted transaction to pending");
+    }
+    if (
+      !transaction.item_snapshot ||
+      typeof transaction.item_snapshot.price !== "number"
+    ) {
+      throw new Error("Invalid transaction price");
+    }
+
     transaction.status = decision;
-    await transaction.save();
+    await transaction.save({ transaction: t });
 
     await deleteCache(`transaction:id:${transaction_id}`);
 
+    if (decision === "rejected") {
+      const data = await getUserByID(transaction.buyer_id);
+      if (!data || !data.coins.id) {
+        throw new Error("Invalid user or coin_id");
+      }
+      await updateIncreaseCoin(data.coins.id, transaction.item_snapshot.price, {
+        transaction: t,
+      });
+    }
+
+    await t.commit();
     return transaction;
   } catch (error) {
+    await t.rollback();
     throw error;
   }
 };
-
 module.exports = {
   createTransaction,
   getTransactionByBuyerId,
