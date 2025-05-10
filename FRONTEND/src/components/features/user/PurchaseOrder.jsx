@@ -229,6 +229,7 @@ const PurchaseOrder = () => {
     exception: "cancelled",
     lost: "cancelled",
     damage: "cancelled",
+    cancelled: "cancelled",
   };
 
   const normalizeTransaction = (tx, source) => {
@@ -302,6 +303,13 @@ const PurchaseOrder = () => {
               .filter((tx) => tx.status === "pending" || tx.status === "accepted")
               .map((tx) => normalizeTransaction(tx, "transaction"));
           }
+        } else if (activeTab === "cancelled") {
+          const response = await getBuyerTransactionHistory(auth.user.id);
+          if (response.success && Array.isArray(response.data)) {
+            normalized = response.data
+              .filter((tx) => tx.status === "cancelled")
+              .map((tx) => normalizeTransaction(tx, "transaction"));
+          }
         } else {
           const response = await getAllShippingOrdersByBuyerApi(auth.user.id);
           if (response.success && Array.isArray(response.data)) {
@@ -326,19 +334,6 @@ const PurchaseOrder = () => {
                   ].includes(tx.status);
                 } else if (activeTab === "completed") {
                   return tx.status === "delivered";
-                } else if (activeTab === "cancelled") {
-                  return [
-                    "return",
-                    "return_transporting",
-                    "return_sorting",
-                    "returning",
-                    "return_fail",
-                    "returned",
-                    "cancel",
-                    "exception",
-                    "lost",
-                    "damage",
-                  ].includes(tx.status);
                 }
                 return false;
               })
