@@ -11,6 +11,11 @@ const cloudinary = require("cloudinary").v2;
 const { emitStockUpdate } = require("./socketService");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 
+const cacheItemAll = "items:all";
+const cacheItemId = (id) => `item:${id}` ;
+const cacheItemPublicId = (id) => `item:public_id:${id}`;
+const cacheItemUserId = (id) => `items:user:${id}`;
+
 const createItem = async (itemData, user_id, images) => {
   try {
     const {
@@ -69,8 +74,11 @@ const createItem = async (itemData, user_id, images) => {
       }
       return newItem;
     });
-    await deleteCache("items:all");
-    await deleteCache(`items:user:${user_id}`);
+
+    //cache 
+    await deleteCache(cacheItemAll);
+    await deleteCache(cacheItemUserId(user_id));
+
     return result;
   } catch (error) {
     console.error("Error creating item:", error);
@@ -79,8 +87,7 @@ const createItem = async (itemData, user_id, images) => {
 };
 
 const getAllItems = async () => {
-  const cacheKey = "items:all";
-  let items = await getCache(cacheKey);
+  let items = await getCache(cacheItemAll);
 
   if (!items) {
     const dbItems = await Item.findAll({
@@ -111,14 +118,13 @@ const getAllItems = async () => {
       images: imagesByItemId[item.id] || [],
     }));
 
-    await setCache(cacheKey, items);
+    await setCache(cacheItemAll, items);
   }
   return items;
 };
 
 const getItemByIdItem = async (item_id) => {
-  const cacheKey = `item:${item_id}`;
-  let item = await getCache(cacheKey);
+  let item = await getCache(cacheItemId(item_id));
 
   if (!item) {
     const dbItem = await Item.findByPk(item_id);
@@ -132,15 +138,14 @@ const getItemByIdItem = async (item_id) => {
       ...dbItem.toJSON(),
       images: images.map((img) => img.url),
     };
-    await setCache(cacheKey, item);
+    await setCache(cacheItemId(item_id), item);
   }
 
   return item;
 };
 
 const getItemByIdUser = async (user_id) => {
-  const cacheKey = `items:user:${user_id}`;
-  let items = await getCache(cacheKey);
+  let items = await getCache(cacheItemUserId(user_id));
 
   if (!items) {
     const dbItems = await Item.findAll({ where: { creator_id: user_id } });
@@ -155,7 +160,7 @@ const getItemByIdUser = async (user_id) => {
         .filter((img) => img.reference_id === item.id)
         .map((img) => img.url),
     }));
-    await setCache(cacheKey, items);
+    await setCache(cacheItemUserId(user_id), items);
   }
 
   return items;
@@ -237,10 +242,11 @@ const updateItem = async (id, data, images) => {
     }
 
     await item.save();
-    await deleteCache(`item:${id}`);
-    await deleteCache("items:all");
-    await deleteCache(`items:user:${item.creator_id}`);
-    await deleteCache(`item:public_id:${item.public_id}`);
+
+    //cache 
+    await deleteCache(cacheItemId(item.id));
+    await deleteCache(cacheItemUserId(item.creator_id));
+
     return {
       ...item.toJSON(),
       images: uploadedImages.map((image) => image.url),
@@ -311,8 +317,8 @@ const purchaseItem = async (user_id, item_id, data) => {
 };
 
 const getItemByPublicId = async (public_id) => {
-  const cacheKey = `item:public_id:${public_id}`;
-  let item = await getCache(cacheKey);
+  const itemId = await getCache(cacheItemPublicId(public_id));
+  let item = getItemByIdItem(itemId);
 
   if (!item) {
     const dbItem = await Item.findOne({ where: { public_id } });
@@ -326,7 +332,7 @@ const getItemByPublicId = async (public_id) => {
       ...dbItem.toJSON(),
       images: images.map((img) => img.url),
     };
-    await setCache(cacheKey, item);
+    await setCache(cacheItemPublicId(public_id), item.id);
   }
 
   return item;
@@ -382,10 +388,9 @@ const updateItemByPublicId = async (public_id, data, images) => {
     }
 
     await item.save();
-    await deleteCache(`item:${id}`);
+    await deleteCache(`item:${item.id}`);
     await deleteCache("items:all");
     await deleteCache(`items:user:${item.creator_id}`);
-    await deleteCache(`item:public_id:${item.public_id}`);
     return {
       ...item.toJSON(),
       images: uploadedImages.map((image) => image.url),
