@@ -246,6 +246,7 @@ const updateItem = async (id, data, images) => {
     //cache 
     await deleteCache(cacheItemId(item.id));
     await deleteCache(cacheItemUserId(item.creator_id));
+    await deleteCache(cacheItemAll);
 
     return {
       ...item.toJSON(),
