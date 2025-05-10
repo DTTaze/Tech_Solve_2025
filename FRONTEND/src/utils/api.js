@@ -303,10 +303,6 @@ export const acceptEventApi = (event_id) => {
   return axios.post(`api/events/accept/${event_id}`);
 };
 
-export const getEventSignedApi = () => {
-  return axios.get("api/events/signed");
-};
-
 export const getEventSignedByUserIdApi = (user_id) => {
   return axios.get(`api/events/signed/${user_id}`);
 };
