@@ -263,8 +263,12 @@ export const getAdminQueueApi = () => {
   return axios.get("api/admin/queues");
 };
 
-export const createProductApi = (data) => {
-  return axios.post("api/products/upload", data);
+export const createProductApi = (formData) => {
+  return axios.post("api/products/upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 
 export const getAllAvailableProductsApi = () => {
@@ -279,8 +283,12 @@ export const getProductByIdUser = (id) => {
   return axios.get(`api/products/users/${id}`);
 };
 
-export const updateProductApi = (id, data) => {
-  return axios.put(`api/products/${id}`, data);
+export const updateProductApi = (id, formData) => {
+  return axios.put(`api/products/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 
 export const deleteProductApi = (id) => {

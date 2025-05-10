@@ -1,4 +1,10 @@
-import { useEffect, useState, useCallback, createContext, useContext } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  createContext,
+  useContext,
+} from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import {
   getUserApi,
@@ -8,6 +14,7 @@ import {
   getProductByIdUser,
   getAllAvailableProductsApi,
   getAllItemsApi,
+  deleteProductApi,
 } from "../utils/api";
 import { AuthContext } from "../contexts/auth.context";
 import ItemCatalogSkeleton from "../components/features/exchangemarket/ItemCatalogSkeleton";
@@ -17,7 +24,14 @@ import RedeemTab from "../components/features/exchangemarket/RedeemTab";
 import UserItemsTab from "../components/features/exchangemarket/UserItemsTab";
 import AllItemsTab from "../components/features/exchangemarket/AllItemsTab";
 import PurchaseModal from "../components/features/exchangemarket/PurchaseModal";
-import { Filter, CheckCircle, Clock, FileWarning, EyeOff, ClipboardEdit } from "lucide-react";
+import {
+  Filter,
+  CheckCircle,
+  Clock,
+  FileWarning,
+  EyeOff,
+  ClipboardEdit,
+} from "lucide-react";
 
 export const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
@@ -251,14 +265,20 @@ export default function ExchangeMarket() {
           receiver_information_id: shippingInfo.receiver_information_id,
         };
 
-        const response = await purchaseItemApi(auth.user.id, selectedItem.id, purchaseData);
+        const response = await purchaseItemApi(
+          auth.user.id,
+          selectedItem.id,
+          purchaseData
+        );
 
         if (response.data?.job_id) {
           setTransactionStatus("success");
           setIsModalOpen(false);
           setSelectedItem(null);
           setTransactionStatus(null);
-          alert(`Giao dịch ${quantity} ${selectedItem.name} đã được khởi tạo thành công!`);
+          alert(
+            `Giao dịch ${quantity} ${selectedItem.name} đã được khởi tạo thành công!`
+          );
           await fetchRedeemItems();
         } else {
           throw new Error("Không nhận được mã giao dịch");
@@ -287,13 +307,36 @@ export default function ExchangeMarket() {
   };
 
   const handleEditItem = (item) => {
+    if (!item || !item.id) {
+      console.error("Invalid item or item ID:", item);
+      alert("Không thể sửa sản phẩm do thiếu thông tin!");
+      return;
+    }
     setItemToEdit(item);
+    setSelectedItem(item);
     setShowCreateModal(true);
   };
 
-  const handleDeleteItem = (itemId) => {
-    setMyItems((prev) => prev.filter((item) => item.id !== itemId));
-    alert("Sản phẩm đã được xóa thành công!");
+  const handleDeleteItem = async (itemId) => {
+    if (!itemId) {
+      console.error("Invalid item ID:", itemId);
+      alert("Không thể xóa sản phẩm do thiếu thông tin!");
+      return;
+    }
+    try {
+      const response = await deleteProductApi(itemId);
+      if (response?.data) {
+        setMyItems((prev) => prev.filter((item) => item.id !== itemId));
+        setSelectedItem(null);
+        setItemToEdit(null);
+        alert("Sản phẩm đã được xóa thành công!");
+      } else {
+        alert("Xóa sản phẩm thất bại!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa sản phẩm:", error);
+      alert(error.message || "Có lỗi xảy ra khi xóa sản phẩm");
+    }
   };
 
   const handleSubmitItem = async (formData, isEditing) => {
@@ -318,31 +361,49 @@ export default function ExchangeMarket() {
         return;
       }
 
+      // Create FormData object to handle file uploads
+      const formDataToSend = new FormData();
+
+      // Append all product data fields
+      Object.keys(productData).forEach((key) => {
+        formDataToSend.append(key, productData[key]);
+      });
+
+      // Append images if they exist
+      if (images && images.length > 0) {
+        images.forEach((image) => {
+          formDataToSend.append("images", image);
+        });
+      }
+
       if (isEditing) {
-        const response = await updateProductApi(
-          itemToEdit.id,
-          productData,
-          images || []
-        );
-        if (response) {
+        if (!itemToEdit || !itemToEdit.id) {
+          console.error("Missing item ID for update");
+          alert("Không thể cập nhật sản phẩm do thiếu thông tin!");
+          return;
+        }
+
+        const response = await updateProductApi(itemToEdit.id, formDataToSend);
+        if (response?.data) {
+          const updatedProduct = {
+            ...itemToEdit,
+            ...productData,
+            id: itemToEdit.id,
+            postStatus: response.data.post_status || itemToEdit.postStatus,
+            image: response.data.images?.[0] || itemToEdit.image,
+            createdAt: response.data.created_at || itemToEdit.createdAt,
+            stock: response.data.stock || itemToEdit.stock,
+            canPurchase: response.data.post_status === "public",
+            purchaseLimitPerDay: response.data.purchase_limit_per_day,
+            weight: response.data.weight,
+            length: response.data.length,
+            width: response.data.width,
+            height: response.data.height,
+          };
+
           setMyItems((prev) =>
             prev.map((item) =>
-              item.id === itemToEdit.id
-                ? {
-                    ...item,
-                    ...productData,
-                    postStatus: response.post_status || item.postStatus,
-                    image: response.images?.[0] || item.image,
-                    createdAt: response.created_at || item.createdAt,
-                    stock: response.stock || item.stock,
-                    canPurchase: response.post_status === "public",
-                    purchaseLimitPerDay: response.purchase_limit_per_day,
-                    weight: response.weight,
-                    length: response.length,
-                    width: response.width,
-                    height: response.height,
-                  }
-                : item
+              item.id === itemToEdit.id ? updatedProduct : item
             )
           );
           alert("Cập nhật sản phẩm thành công!");
@@ -350,19 +411,15 @@ export default function ExchangeMarket() {
           alert("Cập nhật sản phẩm thất bại!");
         }
       } else {
-        const response = await createProductApi(
-          productData,
-          auth.user?.id,
-          images || []
-        );
-        if (response) {
+        const response = await createProductApi(formDataToSend);
+        if (response?.data) {
           const newItem = {
-            id: response.data.id,
             ...productData,
+            id: response.data.id,
             postStatus: response.data.post_status || "draft",
             image: response.data.images?.[0] || null,
             createdAt: response.data.created_at || new Date().toISOString(),
-            stock: response.data.stock || null,
+            stock: response.data.stock || 0,
             canPurchase: response.data.post_status === "public",
             seller: auth.user?.username || "Không xác định",
             purchaseLimitPerDay: response.data.purchase_limit_per_day,
@@ -379,9 +436,10 @@ export default function ExchangeMarket() {
       }
       setShowCreateModal(false);
       setItemToEdit(null);
+      setSelectedItem(null);
     } catch (error) {
       console.error("Lỗi khi xử lý sản phẩm:", error);
-      setError(error.message || "Có lỗi xảy ra khi xử lý sản phẩm");
+      alert(error.message || "Có lỗi xảy ra khi xử lý sản phẩm");
     }
   };
 
