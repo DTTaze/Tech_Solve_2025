@@ -133,6 +133,23 @@ module.exports = {
         created_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
         updated_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
       },
+      {
+        id: 9,
+        public_id: nanoid(),
+        creator_id: 2,
+        title: "[37 ĐỘ SỰ KIỆN] -  “ĐỔI RÁC LẤY QUÀ XINH",
+        description:
+          "Đổi rác lấy quà xinh” là một sự kiện “xanh” được CLB 37 Độ Sinh Viên tổ chức với mục đích thu gom những “rác thải” thường ngày của các bạn sinh viên như: chai nhựa, lon nước, giấy,…đổi lấy những món quà xinh xắn và thân thiện với môi trường. Với mong muốn mang lại một sự kiện ý nghĩa, lan tỏa thông điệp bảo vệ môi trường, hành trình “đổi rác” của 37 Độ Sinh Viên đã diễn ra được ba mùa. Với lần quay trở lại này hứa hẹn sẽ không phụ lòng các PTIT-ers với nhiều món quà xinh xắn và những hoạt động truyền cảm hứng! Các bạn chỉ cần mang theo những loại rác thải thường ngày như: chai nhựa, lon nước, giấy,...đến sự kiện để đổi lấy 30 bánh xà phòng hữu cơ đến từ HTX Sinh Dược hoặc sen đá và nhận điểm rèn luyện. ",
+        location:
+          "Sảnh chính văn phòng Đoàn (Trước Hội trường D tại Học viện Công nghệ Bưu chính Viễn thông TP.HCM)",
+        capacity: 100,
+        coins: 7000,
+        end_sign: new Date("2025-04-25"),
+        start_time: new Date("2025-05-06"),
+        end_time: new Date("2025-05-07"),
+        created_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
+        updated_at: Sequelize.literal("CURDATE() - INTERVAL 18 DAY"),
+      },
     ]);
   },
 
