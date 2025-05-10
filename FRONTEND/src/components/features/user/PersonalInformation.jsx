@@ -1,16 +1,27 @@
 import { useState, useEffect, useContext } from "react";
-import { updateUserPublicApi } from "../../../utils/api.js";
+import { updateUserPublicApi, getQRApi } from "../../../utils/api.js";
 import { AuthContext } from "../../../contexts/auth.context.jsx";
 import InputField from "../../ui/InputField.jsx";
 import Button from "../../ui/Button.jsx";
 import PersonalInfomationSkeleton from "./PersonalInfomationSkeleton.jsx";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import QrCodeIcon from "@mui/icons-material/QrCode";
 
 function PersonalInformation() {
-  const { auth, setAuth } = useContext(AuthContext); 
+  const { auth, setAuth } = useContext(AuthContext);
   const [user, setUser] = useState(null);
   const [originalUser, setOriginalUser] = useState(null);
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+  const [qrCode, setQrCode] = useState(null);
+  const [showQrDialog, setShowQrDialog] = useState(false);
 
   useEffect(() => {
     if (auth.user) {
@@ -123,6 +134,24 @@ function PersonalInformation() {
     setIsEditing(false);
   };
 
+  const generateQRCode = async () => {
+    try {
+      const response = await getQRApi(user?.public_id || "");
+      if (response?.data) {
+        setQrCode(response.data);
+        setShowQrDialog(true);
+      }
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+      alert("Could not generate QR code. Please try again later.");
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  };
+
   if (!auth.isAuthenticated || !user) return <PersonalInfomationSkeleton />;
 
   const inputFields = [
@@ -136,13 +165,22 @@ function PersonalInformation() {
     <div className="p-4 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center">
         <h4 className="font-semibold text-lg">Thông tin cá nhân</h4>
-        {!isEditing && (
+        <div className="flex gap-2">
           <Button
-            text="Chỉnh sửa hồ sơ"
-            onClick={handleEdit}
+            text="QR Code"
+            onClick={generateQRCode}
             padding="15px"
+            icon={<QrCodeIcon />}
+            className="bg-green-100 text-green-600 hover:bg-green-200"
           />
-        )}
+          {!isEditing && (
+            <Button
+              text="Chỉnh sửa hồ sơ"
+              onClick={handleEdit}
+              padding="15px"
+            />
+          )}
+        </div>
       </div>
       <hr className="my-2 border-gray-300" />
 
@@ -181,6 +219,96 @@ function PersonalInformation() {
           </div>
         )}
       </form>
+
+      {/* QR Code Dialog */}
+      <Dialog
+        open={showQrDialog}
+        onClose={() => setShowQrDialog(false)}
+        aria-labelledby="qr-code-dialog-title"
+        PaperProps={{
+          sx: {
+            borderRadius: "16px",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <DialogTitle
+          id="qr-code-dialog-title"
+          sx={{
+            bgcolor: "#f0fdf4",
+            color: "#166534",
+            fontWeight: "bold",
+          }}
+        >
+          Your Personal QR Code
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mt: 2 }}>
+            Scan this QR code to quickly access your profile or register for
+            events.
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              my: 2,
+              p: 3,
+              border: "2px dashed #bbf7d0",
+              borderRadius: "12px",
+              bgcolor: "rgba(22, 101, 52, 0.02)",
+            }}
+          >
+            {qrCode ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src={qrCode}
+                  alt="QR Code"
+                  style={{ maxWidth: "100%", height: "auto" }}
+                />
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 1,
+                    cursor: "pointer",
+                    color: "#166534",
+                    bgcolor: "#f0fdf4",
+                    p: 1,
+                    borderRadius: "8px",
+                    "&:hover": {
+                      bgcolor: "#bbf7d0",
+                    },
+                  }}
+                  onClick={() => copyToClipboard(user?.public_id)}
+                >
+                  <Typography variant="body2" fontWeight="medium">
+                    Public ID: {user?.public_id}
+                  </Typography>
+                  <ContentCopyIcon fontSize="small" />
+                </Box>
+              </Box>
+            ) : (
+              <CircularProgress sx={{ color: "#166534" }} />
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            text="Close"
+            onClick={() => setShowQrDialog(false)}
+            className="bg-green-600 hover:bg-green-700 text-white"
+            padding="15px"
+          />
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
