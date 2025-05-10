@@ -36,13 +36,7 @@ const setUserCache = async (user) => {
 
 const createUser = async (data) => {
   try {
-    let {
-      username,
-      full_name,
-      role_id,
-      email,
-      password,
-    } = data;
+    let { username, full_name, role_id, email, password } = data;
 
     role_id = Number(role_id);
 
@@ -68,7 +62,7 @@ const createUser = async (data) => {
     }
 
     const hashPassword = bcrypt.hashSync(password, salt);
-    
+
     const newUser = await User.create({
       public_id: nanoid(),
       role_id,
@@ -77,8 +71,8 @@ const createUser = async (data) => {
       username,
       full_name,
     });
-    
-    const newCoin = await Coin.create({ 
+
+    const newCoin = await Coin.create({
       amount: 0,
       user_id: newUser.id,
     });
@@ -231,7 +225,8 @@ const getUserBycacheId = async (id) => {
       });
       if (dataRole) await setCache(`role:id:${data_user.role_id}`, dataRole);
     }
-    if (!dataRole) throw new Error(`Role not found for role_id ${data_user.role_id}`);
+    if (!dataRole)
+      throw new Error(`Role not found for role_id ${data_user.role_id}`);
 
     // Coin
     let dataCoin = await getCache(`coin:id:${data_user.coin_id}`);
@@ -241,7 +236,8 @@ const getUserBycacheId = async (id) => {
       });
       if (dataCoin) await setCache(`coin:id:${data_user.coin_id}`, dataCoin);
     }
-    if (!dataCoin) throw new Error(`Coin not found for coin_id ${data_user.coin_id}`);
+    if (!dataCoin)
+      throw new Error(`Coin not found for coin_id ${data_user.coin_id}`);
 
     // Rank
     let dataRank = await getCache(`rank:id:${data_user.rank_id}`);
@@ -251,7 +247,8 @@ const getUserBycacheId = async (id) => {
       });
       if (dataRank) await setCache(`rank:id:${data_user.rank_id}`, dataRank);
     }
-    if (!dataRank) throw new Error(`Rank not found for rank_id ${data_user.rank_id}`);
+    if (!dataRank)
+      throw new Error(`Rank not found for rank_id ${data_user.rank_id}`);
 
     const user = {
       id: data_user.id,
@@ -337,11 +334,9 @@ const getUserByPublicID = async (public_id) => {
 
 const updateUser = async (user, data) => {
   try {
-    let { full_name, address, coins, phone_number, streak } = data;
-    data.username
-      ? (user.username = data.username)
-      : (user.username = user.username);
-    data.email ? (user.email = data.email) : (user.email = user.email);
+    let { full_name, username, email, coins, phone_number, streak } = data;
+    username ? (user.username = username) : (user.username = user.username);
+    email ? (user.email = email) : (user.email = user.email);
 
     if (coins !== undefined) {
       let coin = await Coin.findOne({ where: { id: user.coins_id } });
@@ -364,7 +359,6 @@ const updateUser = async (user, data) => {
     full_name
       ? (user.full_name = full_name)
       : (user.full_name = user.full_name);
-    address ? (user.address = address) : (user.address = user.address);
     phone_number
       ? (user.phone_number = phone_number)
       : (user.phone_number = user.phone_number);
@@ -401,9 +395,36 @@ const updateUserById = async (id, data) => {
 
 const updateUserByPublicID = async (public_id, data) => {
   try {
-    let user = await User.findOne({ where: { public_id } });
+    const user = await User.findOne({ where: { public_id } });
     if (!user) throw new Error("User not found");
-    return await updateUser(user, data);
+
+    const { full_name, username, email, phone_number } = data;
+
+    if (username !== undefined) user.username = username;
+    if (email !== undefined) user.email = email;
+    if (full_name !== undefined) user.full_name = full_name;
+    if (phone_number !== undefined) user.phone_number = phone_number;
+
+    await user.save();
+
+    const [roledata, rankdata, coin] = await Promise.all([
+      Role.findByPk(user.role_id),
+      Rank.findByPk(user.rank_id),
+      Coin.findByPk(user.coins_id),
+    ]);
+
+    if (!roledata) throw new Error("Role does not exist");
+    if (!rankdata) throw new Error("Rank does not exist");
+
+    const updatedUser = {
+      ...user.toJSON(),
+      roles: roledata,
+      coins: coin,
+      ranks: rankdata,
+    };
+
+    await setUserCache(updatedUser);
+    return user;
   } catch (e) {
     throw e;
   }
@@ -422,16 +443,15 @@ const findOrCreateUser = async (profile) => {
       where: { email: profile.emails[0].value },
       include: [
         { model: Role, as: "roles" },
-        { model: Coin, as: "coins" }, 
-        { model: Rank, as: "ranks" }  
-      ]
+        { model: Coin, as: "coins" },
+        { model: Rank, as: "ranks" },
+      ],
     });
-    
+
     if (existingUser) {
       await setUserCache(existingUser);
       return existingUser;
     }
-    
 
     const name = removeSpecialChars(profile.displayName);
     const newUser = await User.create({
@@ -444,7 +464,7 @@ const findOrCreateUser = async (profile) => {
       password: null,
     });
 
-    const newCoin = await Coin.create({ 
+    const newCoin = await Coin.create({
       amount: 0,
       user_id: newUser.id,
     });
@@ -648,11 +668,10 @@ const addAddressById = async (user_id, newAddress) => {
   }
 };
 
-
 const addDeleteressById = async (user_id, indexOfAddress) => {
   try {
     const user = await User.findByPk(user_id);
-    
+
     if (!user) {
       throw new Error("User not found");
     }
@@ -667,7 +686,9 @@ const addDeleteressById = async (user_id, indexOfAddress) => {
     }
 
     // Remove the address at the given index
-    const updatedAddresses = user.address.filter((_, idx) => idx !== indexOfAddress);
+    const updatedAddresses = user.address.filter(
+      (_, idx) => idx !== indexOfAddress
+    );
 
     await user.update({ address: updatedAddresses });
 
@@ -696,5 +717,5 @@ module.exports = {
   getItemByIdUser,
   refreshAccessToken,
   addAddressById,
-  addDeleteressById
+  addDeleteressById,
 };
