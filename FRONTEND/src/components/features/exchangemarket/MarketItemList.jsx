@@ -1,5 +1,6 @@
 import MarketplaceItemCard from "./MarketplaceItemCard";
 import ItemActions from "./ItemActions";
+import { Coins } from "lucide-react";
 
 function MarketItemList({
   marketListView,
@@ -78,11 +79,7 @@ function MarketItemList({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm font-medium text-amber-600">
                       {item.price}
-                      <img
-                        src="/assets/icons/coin.png"
-                        alt="coins"
-                        className="ml-1 h-4 w-4"
-                      />
+                      <Coins className="ml-1 h-4 w-4 text-amber-600" />
                     </div>
                   </td>
                   {marketView === "my_items" && (

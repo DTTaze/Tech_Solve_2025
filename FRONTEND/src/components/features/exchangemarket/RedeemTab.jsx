@@ -53,15 +53,6 @@ function RedeemTab({ fetchItems }) {
           marketListView={marketListView}
           setMarketListView={setMarketListView}
         />
-        <MarketFilterButtons
-          marketView="redeem"
-          marketCategory={marketCategory}
-          setMarketCategory={setMarketCategory}
-          filteredMarketItems={filteredMarketItems}
-          marketplaceCategories={marketplaceCategories}
-          userItemStatuses={[]}
-          statusColors={statusColors}
-        />
       </div>
       {filteredMarketItems.length === 0 ? (
         <MarketEmptyState marketView="redeem" />

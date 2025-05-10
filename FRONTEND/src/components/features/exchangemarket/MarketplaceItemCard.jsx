@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { CheckCircle, EyeOff, Clock, FileWarning, ClipboardEdit, Eye } from "lucide-react";
+import { CheckCircle, EyeOff, Clock, FileWarning, ClipboardEdit, Eye, Coins } from "lucide-react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 import PurchaseModal from "./PurchaseModal";
@@ -116,11 +116,7 @@ const MarketplaceItemCard = ({
         </p>
         <div className="mt-2 flex items-center">
           <span className="font-medium text-amber-600">{item.price}</span>
-          <img
-            src="/assets/icons/coin.png"
-            alt="coins"
-            className="ml-1 h-5 w-5"
-          />
+          <Coins className="ml-1 h-5 w-5 text-amber-600" />
         </div>
       </div>
 
