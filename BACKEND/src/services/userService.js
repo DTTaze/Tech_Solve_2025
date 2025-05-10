@@ -23,7 +23,6 @@ const deleteCacheAll = async(id = null,public_id = null)=> {
   if (id){
     await deleteCache(`user:id:${id}`);
   }
-  await deleteCache()
 }
 
 const removeSpecialChars = (str) => {
@@ -388,7 +387,7 @@ const updateUser = async (user, data) => {
     const coindata = await Coin.findOne({ where: { user_id } });
     if (!coindata) throw new Error("Coin does not exist");
 
-    const roledata = await Role.findOne({ where: { user_id } });
+    const roledata = await Role.findByPk(user.role_id);
     if (!roledata) throw new Error("Role does not exist");
 
     const rankdata = await Rank.findOne({ where: { user_id } });
@@ -402,7 +401,7 @@ const updateUser = async (user, data) => {
     };
 
     await deleteCacheAll(user.id, user.public_id);
-    return user;
+    return updatedUser;
   } catch (e) {
     throw e;
   }
@@ -423,34 +422,7 @@ const updateUserByPublicID = async (public_id, data) => {
   try {
     const user = await User.findOne({ where: { public_id } });
     if (!user) throw new Error("User not found");
-
-    const { full_name, username, email, phone_number } = data;
-
-    if (username !== undefined) user.username = username;
-    if (email !== undefined) user.email = email;
-    if (full_name !== undefined) user.full_name = full_name;
-    if (phone_number !== undefined) user.phone_number = phone_number;
-
-    await user.save();
-
-    const [roledata, rankdata, coin] = await Promise.all([
-      Role.findByPk(user.role_id),
-      Rank.findByPk(user.rank_id),
-      Coin.findByPk(user.coins_id),
-    ]);
-
-    if (!roledata) throw new Error("Role does not exist");
-    if (!rankdata) throw new Error("Rank does not exist");
-
-    const updatedUser = {
-      ...user.toJSON(),
-      roles: roledata,
-      coins: coin,
-      ranks: rankdata,
-    };
-
-    await deleteCacheAll(user.id, user.public_id);
-    return user;
+    return await updateUser(user, data);
   } catch (e) {
     throw e;
   }

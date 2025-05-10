@@ -11,6 +11,11 @@ const cloudinary = require("cloudinary").v2;
 const { emitStockUpdate } = require("./socketService");
 const { getCache, setCache, deleteCache } = require("../utils/cache");
 
+const cacheItemAll = "items:all";
+const cacheItemId = (id) => `item:${id}` ;
+const cacheItemPublicId = (id) => `item:public_id:${id}`;
+const cacheItemUserId = (id) => `items:user:${id}`;
+
 const createItem = async (itemData, user_id, images) => {
   try {
     const {
