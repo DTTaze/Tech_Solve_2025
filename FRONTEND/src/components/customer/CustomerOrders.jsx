@@ -82,6 +82,9 @@ import {
   deleteShippingAccountApi,
   setDefaultShippingAccountApi,
   getSellerTransactionHistory,
+  getTransactionByIdApi,
+  transactionMakeDicisionApi,
+  createDeliveryOrderFromTransactionApi,
 } from "../../utils/api";
 
 const getStatusColor = (status) => {
@@ -154,6 +157,180 @@ function TransactionOrdersList({
         .includes(searchTerm.toLowerCase())
   );
 
+  const renderActionButtons = (transaction) => {
+    switch (transaction.status) {
+      case "pending":
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleViewDetails(transaction)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                borderColor: "var(--primary-green)",
+                color: "var(--primary-green)",
+                "&:hover": {
+                  borderColor: "var(--dark-green)",
+                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              onClick={() => handleConfirmOrder(transaction.id)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                bgcolor: "var(--primary-green)",
+                "&:hover": { bgcolor: "var(--dark-green)" },
+              }}
+            >
+              <CheckCircleIcon fontSize="small" />
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              onClick={() => handleCancelOrder(transaction.id)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+              }}
+            >
+              <CancelIcon fontSize="small" />
+            </Button>
+          </Box>
+        );
+      case "accepted":
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleViewDetails(transaction)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                borderColor: "var(--primary-green)",
+                color: "var(--primary-green)",
+                "&:hover": {
+                  borderColor: "var(--dark-green)",
+                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </Button>
+            <Tooltip title="Create new order based on this transaction">
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => handleCreateOrderFromTransaction(transaction)}
+                sx={{
+                  minWidth: 0,
+                  p: "4px 8px",
+                  borderColor: "var(--primary-green)",
+                  color: "var(--primary-green)",
+                  "&:hover": {
+                    borderColor: "var(--dark-green)",
+                    backgroundColor: "rgba(46, 125, 50, 0.08)",
+                  },
+                }}
+              >
+                <ContentCopyIcon fontSize="small" />
+              </Button>
+            </Tooltip>
+          </Box>
+        );
+      case "rejected":
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleViewDetails(transaction)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                borderColor: "var(--primary-green)",
+                color: "var(--primary-green)",
+                "&:hover": {
+                  borderColor: "var(--dark-green)",
+                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              onClick={() => handleConfirmOrder(transaction.id)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                bgcolor: "var(--primary-green)",
+                "&:hover": { bgcolor: "var(--dark-green)" },
+              }}
+            >
+              <CheckCircleIcon fontSize="small" />
+            </Button>
+          </Box>
+        );
+      case "cancelled":
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleViewDetails(transaction)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                borderColor: "var(--primary-green)",
+                color: "var(--primary-green)",
+                "&:hover": {
+                  borderColor: "var(--dark-green)",
+                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </Button>
+          </Box>
+        );
+      default:
+        return (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => handleViewDetails(transaction)}
+              sx={{
+                minWidth: 0,
+                p: "4px 8px",
+                borderColor: "var(--primary-green)",
+                color: "var(--primary-green)",
+                "&:hover": {
+                  borderColor: "var(--dark-green)",
+                  backgroundColor: "rgba(46, 125, 50, 0.08)",
+                },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </Button>
+          </Box>
+        );
+    }
+  };
+
   return (
     <>
       <Box sx={{ mb: 2, display: "flex", alignItems: "center" }}>
@@ -176,7 +353,7 @@ function TransactionOrdersList({
       {filteredTransactions.length === 0 ? (
         <Paper sx={{ p: 3, textAlign: "center" }}>
           <Typography variant="body1" color="text.secondary">
-            No pending purchase requests found.
+            No transactions found.
           </Typography>
         </Paper>
       ) : (
@@ -221,96 +398,18 @@ function TransactionOrdersList({
                     <Chip
                       label={transaction.status}
                       color={
-                        transaction.status === "pending" ? "warning" : "success"
+                        transaction.status === "pending"
+                          ? "warning"
+                          : transaction.status === "accepted"
+                          ? "success"
+                          : transaction.status === "rejected"
+                          ? "error"
+                          : "default"
                       }
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleViewDetails(transaction)}
-                        sx={{
-                          minWidth: 0,
-                          p: "4px 8px",
-                          borderColor: "var(--primary-green)",
-                          color: "var(--primary-green)",
-                          "&:hover": {
-                            borderColor: "var(--dark-green)",
-                            backgroundColor: "rgba(46, 125, 50, 0.08)",
-                          },
-                        }}
-                      >
-                        <ReceiptIcon fontSize="small" />
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleEditOrder(transaction)}
-                        sx={{
-                          minWidth: 0,
-                          p: "4px 8px",
-                          borderColor: "var(--primary-green)",
-                          color: "var(--primary-green)",
-                          "&:hover": {
-                            borderColor: "var(--dark-green)",
-                            backgroundColor: "rgba(46, 125, 50, 0.08)",
-                          },
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="success"
-                        onClick={() => handleConfirmOrder(transaction.id)}
-                        sx={{
-                          minWidth: 0,
-                          p: "4px 8px",
-                          bgcolor: "var(--primary-green)",
-                          "&:hover": { bgcolor: "var(--dark-green)" },
-                        }}
-                      >
-                        <CheckCircleIcon fontSize="small" />
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleCancelOrder(transaction.id)}
-                        sx={{
-                          minWidth: 0,
-                          p: "4px 8px",
-                        }}
-                      >
-                        <CancelIcon fontSize="small" />
-                      </Button>
-                      <Tooltip title="Create new order based on this one">
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() =>
-                            handleCreateOrderFromTransaction(transaction)
-                          }
-                          sx={{
-                            minWidth: 0,
-                            p: "4px 8px",
-                            borderColor: "var(--primary-green)",
-                            color: "var(--primary-green)",
-                            "&:hover": {
-                              borderColor: "var(--dark-green)",
-                              backgroundColor: "rgba(46, 125, 50, 0.08)",
-                            },
-                          }}
-                        >
-                          <ContentCopyIcon fontSize="small" />
-                        </Button>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
+                  <TableCell>{renderActionButtons(transaction)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -541,11 +640,13 @@ export default function CustomerOrders() {
       setErrorMessage("");
 
       const response = await getSellerTransactionHistory();
+      console.log("check get by seller", response);
       if (response && response.data) {
         // Filter only pending transactions
-        const pendingTransactions = response.data.filter(
-          (transaction) => transaction.status === "pending"
-        );
+        const pendingTransactions = response.data;
+        // const pendingTransactions = response.data.filter(
+        //   (transaction) => transaction.status === "pending"
+        // );
         setTransactions(pendingTransactions);
       }
       setIsLoadingTransactions(false);
@@ -891,12 +992,22 @@ export default function CustomerOrders() {
     }
   };
 
-  const handleViewDetails = (order) => {
-    setSelectedOrder(order);
-    // Set a small timeout to resolve the aria-hidden focus issue
-    setTimeout(() => {
-      setDetailsDialogOpen(true);
-    }, 10);
+  const handleViewDetails = async (transaction) => {
+    try {
+      const response = await getTransactionByIdApi(transaction.id);
+      if (response && response.data) {
+        setSelectedOrder(response.data);
+        setTimeout(() => {
+          setDetailsDialogOpen(true);
+        }, 10);
+      }
+    } catch (error) {
+      console.error("Error fetching transaction details:", error);
+      showAlert(
+        "Failed to load transaction details. Please try again.",
+        "error"
+      );
+    }
   };
 
   const handleTrackOrder = async (order) => {
@@ -998,104 +1109,35 @@ export default function CustomerOrders() {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelOrder = async (transactionId) => {
     try {
-      const orderToCancel = orders.find((order) => order.id === orderId);
-      if (!orderToCancel) {
-        throw new Error("Order not found");
+      const response = await transactionMakeDicisionApi(
+        transactionId,
+        "rejected"
+      );
+      if (response && response.data) {
+        showAlert("Transaction has been rejected successfully!");
+        fetchTransactions(); // Refresh the transactions list
       }
-
-      // Call the API to cancel the order using the GHN order code
-      await cancelShippingOrderApi(orderToCancel.orderCode);
-
-      // Update the local state with the cancelled order
-      const updatedOrders = orders.map((order) => {
-        if (order.id === orderId) {
-          const newTimeline = [
-            ...order.timeline,
-            {
-              time: new Date().toLocaleString(),
-              status: "Cancelled by User",
-            },
-          ];
-
-          const newLocationHistory = [
-            ...(order.locationHistory || []),
-            {
-              time: new Date().toLocaleString(),
-              location: order.to_address,
-              status: "Order Cancelled",
-            },
-          ];
-
-          return {
-            ...order,
-            status: "Cancelled",
-            timeline: newTimeline,
-            locationHistory: newLocationHistory,
-          };
-        }
-        return order;
-      });
-      setOrders(updatedOrders);
-      showAlert("Order has been cancelled successfully.");
-
-      // Refresh orders from the server to get updated status
-      fetchOrders();
     } catch (error) {
-      console.error("Error cancelling order:", error);
-      showAlert("Failed to cancel order. Please try again.", "error");
+      console.error("Error rejecting transaction:", error);
+      showAlert("Failed to reject transaction. Please try again.", "error");
     }
   };
 
-  const handleConfirmOrder = async (orderId) => {
+  const handleConfirmOrder = async (transactionId) => {
     try {
-      const orderToConfirm = orders.find((order) => order.id === orderId);
-      if (!orderToConfirm) {
-        throw new Error("Order not found");
+      const response = await transactionMakeDicisionApi(
+        transactionId,
+        "accepted"
+      );
+      if (response && response.data) {
+        showAlert("Transaction has been accepted successfully!");
+        fetchTransactions(); // Refresh the transactions list
       }
-
-      // In GHN's API, we don't actually need to confirm an order as it's automatically confirmed
-      // This is mainly for the UI state management
-      // For demonstration, we'll update the order status in our local state
-
-      const updatedOrders = orders.map((order) => {
-        if (order.id === orderId) {
-          const timestamp = new Date().toLocaleString();
-          const newTimeline = [
-            ...order.timeline,
-            {
-              time: timestamp,
-              status: "Confirmed by User",
-            },
-          ];
-
-          const newLocationHistory = [
-            ...(order.locationHistory || []),
-            {
-              time: timestamp,
-              location: order.to_address,
-              status: "Order Confirmed",
-            },
-          ];
-
-          return {
-            ...order,
-            status: "In Progress",
-            timeline: newTimeline,
-            locationHistory: newLocationHistory,
-          };
-        }
-        return order;
-      });
-      setOrders(updatedOrders);
-      showAlert("Order confirmed. The delivery carrier has been notified.");
-
-      // In a real implementation, you might want to refresh the orders to get updated status
-      // fetchOrders();
     } catch (error) {
-      console.error("Error confirming order:", error);
-      showAlert("Failed to confirm order. Please try again.", "error");
+      console.error("Error accepting transaction:", error);
+      showAlert("Failed to accept transaction. Please try again.", "error");
     }
   };
 
@@ -1105,9 +1147,7 @@ export default function CustomerOrders() {
   };
 
   // Filter orders by status for each tab
-  const pendingTransactions = transactions.filter(
-    (transaction) => transaction.status === "pending"
-  );
+  const pendingTransactions = transactions; // Show all transactions, not just pending ones
   const readyToPick = orders.filter(
     (order) => order.status === "ready_to_pick"
   );
@@ -1250,35 +1290,48 @@ export default function CustomerOrders() {
   };
 
   // Function to handle creating order from transaction
-  const handleCreateOrderFromTransaction = (transaction) => {
-    // Create a new order based on the transaction data
-    setIsCreatingBasedOn(false);
+  const handleCreateOrderFromTransaction = async (transaction) => {
+    try {
+      if (!hasLinkedShippingAccounts()) {
+        showAlert(
+          "Please link at least one shipping account before creating orders.",
+          "error"
+        );
+        setShippingAccountsDialogOpen(true);
+        return;
+      }
+      const selectedAccount =
+        shippingAccounts.find((acc) => acc.is_default) || shippingAccounts[0];
 
-    // Create a prepopulated order form based on transaction data
-    const newOrderFromTransaction = {
-      ...initialOrderPayload,
-      from_phone: userInfo?.phone || "",
-      from_address: userInfo?.address || "",
-      to_name:
-        transaction.buyer?.full_name || transaction.buyer?.username || "",
-      to_phone: transaction.buyer?.phone || "",
-      to_address: transaction.buyer?.address || "",
-      productName: transaction.item_snapshot?.name || "",
-      productQuantity: transaction.quantity || 1,
-      productCode: transaction.item_snapshot?.public_id || "",
-      length: 10, // Default value
-      width: 10, // Default value
-      height: 10, // Default value
-      weight: 200, // Default value
-      packageVolumeWeight: "76",
-      codAmount: transaction.total_price || 0,
-      totalValue: transaction.total_price || 0,
-      notes: `Order created from transaction ${transaction.public_id}`,
-      // Add other default values as needed
-    };
+      if (!selectedAccount) {
+        throw new Error("No shipping account available");
+      }
 
-    setNewOrder(newOrderFromTransaction);
-    setCreateDialogOpen(true);
+      // Prepare order data
+      const orderData = {
+        payment_type_id: 2,
+        required_note: "KHONGCHOXEMHANG",
+        weight: 200, // Default weight in grams
+      };
+
+      const response = await createDeliveryOrderFromTransactionApi(
+        transaction.id,
+        orderData,
+        selectedAccount.token,
+        selectedAccount.shop_id
+      );
+
+      if (response && response.data) {
+        showAlert("Order created successfully from transaction!");
+        fetchOrders(); // Refresh orders list
+      }
+    } catch (error) {
+      console.error("Error creating order from transaction:", error);
+      showAlert(
+        "Failed to create order from transaction. Please try again.",
+        "error"
+      );
+    }
   };
 
   return (
