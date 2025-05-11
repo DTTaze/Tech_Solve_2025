@@ -32,6 +32,7 @@ import {
   EyeOff,
   ClipboardEdit,
 } from "lucide-react";
+import { socket } from "../config/socket";
 
 export const marketplaceCategories = [
   { key: "all", name: "Tất cả" },
@@ -143,6 +144,22 @@ export default function ExchangeMarket() {
           height: item.height,
         }));
         setItems(mappedItems);
+
+        // Join socket room for real-time updates
+        itemsResponse.data.forEach((item) => {
+          socket.emit("join-item-room", item.id);
+        });
+
+        // Listen for stock updates
+        socket.on("stock-update", (data) => {
+          setItems((prevItems) =>
+            prevItems.map((prevItem) =>
+              prevItem.id === data.itemId
+                ? { ...prevItem, stock: data.stock, postStatus: data.status }
+                : prevItem
+            )
+          );
+        });
       }
     } catch (error) {
       console.error("Lỗi khi lấy sản phẩm cho tab đổi quà:", error);

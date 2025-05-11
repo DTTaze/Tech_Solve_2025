@@ -2,8 +2,12 @@ import { useState, useEffect, useRef, useContext } from "react";
 import { Coins, X, ShoppingBag, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ShippingInfoModal from "./ShippingInfoModal";
-import { getReceiverInfoByUserIDAPI, PreviewOrderWithoutOrderCode } from "../../../utils/api";
+import {
+  getReceiverInfoByUserIDAPI,
+  PreviewOrderWithoutOrderCode,
+} from "../../../utils/api";
 import { AuthContext } from "../../../contexts/auth.context";
+import { socket } from "../../../config/socket";
 
 export default function PurchaseModal({
   isOpen,
@@ -23,6 +27,8 @@ export default function PurchaseModal({
   const { auth } = useContext(AuthContext);
   const token = "c3f24415-29b9-11f0-9b81-222185cb68c8";
   const shop_id = 196506;
+  const [currentStock, setCurrentStock] = useState(item.stock);
+  const [currentStatus, setCurrentStatus] = useState(item.status);
 
   useEffect(() => {
     async function fetchDefaultShipping() {
@@ -31,7 +37,8 @@ export default function PurchaseModal({
           setIsLoadingShipping(true);
           const response = await getReceiverInfoByUserIDAPI(auth.user.id);
           if (response?.data?.length > 0) {
-            const defaultShipping = response.data.find((info) => info.is_default) || response.data[0];
+            const defaultShipping =
+              response.data.find((info) => info.is_default) || response.data[0];
             setShippingInfo(defaultShipping);
             await fetchShippingFee(defaultShipping);
           }
@@ -44,6 +51,26 @@ export default function PurchaseModal({
     }
     fetchDefaultShipping();
   }, [isOpen, auth.user?.id]);
+
+  useEffect(() => {
+    // Join the item's room when component mounts
+    socket.emit("join-item-room", item.id);
+
+    // Listen for stock updates
+    socket.on("stock-update", (data) => {
+      if (data.itemId === item.id) {
+        console.log("Stock update received:", data);
+        setCurrentStock(data.stock);
+        setCurrentStatus(data.status);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.emit("leave-item-room", item.id);
+      socket.off("stock-update");
+    };
+  }, [item.id]);
 
   const fetchShippingFee = async (selectedShipping) => {
     try {
@@ -98,7 +125,11 @@ export default function PurchaseModal({
         ],
       };
 
-      const feeResponse = await PreviewOrderWithoutOrderCode(orderData, token, shop_id);
+      const feeResponse = await PreviewOrderWithoutOrderCode(
+        orderData,
+        token,
+        shop_id
+      );
       setShippingFee(feeResponse?.data?.data?.total_fee || 0);
     } catch (error) {
       console.error("Error fetching shipping fee:", error);
@@ -111,7 +142,9 @@ export default function PurchaseModal({
       if (
         modalRef.current &&
         !modalRef.current.contains(event.target) &&
-        (!isShippingModalOpen || (shippingModalRef.current && !shippingModalRef.current.contains(event.target)))
+        (!isShippingModalOpen ||
+          (shippingModalRef.current &&
+            !shippingModalRef.current.contains(event.target)))
       ) {
         onClose();
       }
@@ -147,8 +180,11 @@ export default function PurchaseModal({
   if (!item || !isOpen) return null;
 
   const totalCost = item.price * quantity;
-  const canPurchase = userCoins >= totalCost && quantity <= item.stock;
-  const maxQuantity = Math.min(Math.floor(userCoins / item.price), item.stock);
+  const canPurchase = userCoins >= totalCost && quantity <= currentStock;
+  const maxQuantity = Math.min(
+    Math.floor(userCoins / item.price),
+    currentStock
+  );
 
   const handleQuantityChange = (e) => {
     const value = Math.max(
@@ -163,7 +199,11 @@ export default function PurchaseModal({
       alert("Vui lòng chọn thông tin giao hàng!");
       return;
     }
-    if (!shippingInfo.to_ward_name || !shippingInfo.to_district_name || !shippingInfo.id) {
+    if (
+      !shippingInfo.to_ward_name ||
+      !shippingInfo.to_district_name ||
+      !shippingInfo.id
+    ) {
       alert("Thông tin giao hàng thiếu phường/xã, quận/huyện hoặc ID!");
       return;
     }
@@ -227,7 +267,9 @@ export default function PurchaseModal({
               {/* Shipping Information */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium text-gray-800">Thông tin nhận hàng</h3>
+                  <h3 className="font-medium text-gray-800">
+                    Thông tin nhận hàng
+                  </h3>
                   <button
                     onClick={handleChangeShipping}
                     className="text-emerald-600 hover:text-emerald-800 text-sm"
@@ -242,15 +284,25 @@ export default function PurchaseModal({
                   </div>
                 ) : shippingInfo ? (
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-800">{shippingInfo.to_name}</p>
-                    <p className="text-sm text-gray-600">{shippingInfo.to_address}</p>
-                    <p className="text-sm text-gray-600">
-                      {shippingInfo.to_ward_name}, {shippingInfo.to_district_name}, {shippingInfo.to_province_name}
+                    <p className="text-sm text-gray-800">
+                      {shippingInfo.to_name}
                     </p>
-                    <p className="text-sm text-gray-600">{shippingInfo.to_phone}</p>
+                    <p className="text-sm text-gray-600">
+                      {shippingInfo.to_address}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {shippingInfo.to_ward_name},{" "}
+                      {shippingInfo.to_district_name},{" "}
+                      {shippingInfo.to_province_name}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {shippingInfo.to_phone}
+                    </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-red-600">Chưa có thông tin giao hàng</p>
+                  <p className="text-sm text-red-600">
+                    Chưa có thông tin giao hàng
+                  </p>
                 )}
               </div>
 
@@ -264,14 +316,18 @@ export default function PurchaseModal({
                   />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-800 text-lg">{item.name}</h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                  <h3 className="font-medium text-gray-800 text-lg">
+                    {item.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {item.description}
+                  </p>
                   <div className="flex items-center text-emerald-600 mt-1">
                     <span className="font-semibold">{item.price}</span>
                     <Coins className="h-4 w-4 ml-1" />
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                    Còn lại: {item.stock} sản phẩm
+                    Còn lại: {currentStock} sản phẩm
                   </div>
                 </div>
               </div>
@@ -295,7 +351,9 @@ export default function PurchaseModal({
                     max={maxQuantity}
                   />
                   <button
-                    onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                    onClick={() =>
+                      setQuantity(Math.min(maxQuantity, quantity + 1))
+                    }
                     className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
                   >
                     +
@@ -314,7 +372,9 @@ export default function PurchaseModal({
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-gray-600">Phí giao hàng:</span>
-                  <span className="font-medium text-emerald-600">{shippingFee} VND</span>
+                  <span className="font-medium text-emerald-600">
+                    {shippingFee} VND
+                  </span>
                 </div>
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-emerald-100">
                   <span className="text-gray-600">Tổng giá sản phẩm:</span>

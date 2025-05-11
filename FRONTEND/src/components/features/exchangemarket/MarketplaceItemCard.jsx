@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { CheckCircle, EyeOff, Clock, FileWarning, ClipboardEdit, Eye, Coins } from "lucide-react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
@@ -6,6 +6,7 @@ import PurchaseModal from "./PurchaseModal";
 import DetailsModal from "./DetailsModal";
 import { AuthContext } from "../../../contexts/auth.context";
 import { MarketplaceContext } from "../../../pages/ExchangeMarket";
+import { socket } from "../../../config/socket";
 
 export const statusConfig = {
   public: { name: "Đang hiển thị", color: "text-green-600", Icon: CheckCircle },
@@ -48,8 +49,29 @@ const MarketplaceItemCard = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [currentStock, setCurrentStock] = useState(item.stock);
+  const [currentStatus, setCurrentStatus] = useState(item.postStatus);
   const { auth } = useContext(AuthContext);
   const { confirmPurchase, handlePurchase } = useContext(MarketplaceContext);
+
+  useEffect(() => {
+    // Join the item's room when component mounts
+    socket.emit("join-item-room", item.id);
+
+    // Listen for stock updates
+    socket.on("stock-update", (data) => {
+      if (data.itemId === item.id) {
+        setCurrentStock(data.stock);
+        setCurrentStatus(data.status);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.emit("leave-item-room", item.id);
+      socket.off("stock-update");
+    };
+  }, [item.id]);
 
   const handleEditClick = () => {
     setShowDetailsModal(true);
@@ -85,7 +107,7 @@ const MarketplaceItemCard = ({
   return (
     <div
       className={`relative rounded-lg border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${getStatusClass(
-        item.postStatus
+        currentStatus
       )} group`}
     >
       {/* Item Image */}
@@ -117,6 +139,9 @@ const MarketplaceItemCard = ({
         <div className="mt-2 flex items-center">
           <span className="font-medium text-amber-600">{item.price}</span>
           <Coins className="ml-1 h-5 w-5 text-amber-600" />
+        </div>
+        <div className="text-sm text-gray-500 mt-1">
+          Còn lại: {currentStock} sản phẩm
         </div>
       </div>
 
