@@ -203,7 +203,6 @@ const updateItem = async (id, data, images) => {
         throw new Error("Stock cannot be negative");
       }
       item.stock = stock;
-      item.status = stock > 0 ? "available" : "sold_out";
     }
     if (weight !== undefined) item.weight = weight;
     if (length !== undefined) item.length = length;

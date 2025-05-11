@@ -88,14 +88,16 @@ const ItemTable = ({ items, onEdit, onDelete, onAdd }) => {
                     color={getStatusColor(item.status)}
                   />
                 </TableCell>
+                
                 <TableCell align="right">
+                {item.status === "available" && 
                   <IconButton
                     size="small"
                     onClick={() => onEdit(item)}
                     sx={{ color: "var(--primary-green)" }}
                   >
                     <EditIcon fontSize="small" />
-                  </IconButton>
+                  </IconButton>}
                   <IconButton
                     size="small"
                     onClick={() => onDelete(item.id)}
