@@ -135,7 +135,7 @@ const EventList = ({ userInfo }) => {
 
           <div className="flex items-center gap-1.5">
             <div className="flex items-center text-amber-600 font-medium text-xs">
-              <span>+{event.points}</span>
+              <span>+{event.coins}</span>
               <svg
                 className="ml-0.5 h-3.5 w-3.5"
                 xmlns="http://www.w3.org/2000/svg"

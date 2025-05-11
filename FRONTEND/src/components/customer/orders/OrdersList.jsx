@@ -294,23 +294,25 @@ const OrdersList = ({
                     <TableCell>{formatCurrency(order.shippingFee)}</TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => handleViewDetails(order)}
-                          sx={{
-                            minWidth: 0,
-                            p: "4px 8px",
-                            borderColor: "var(--primary-green)",
-                            color: "var(--primary-green)",
-                            "&:hover": {
-                              borderColor: "var(--dark-green)",
-                              backgroundColor: "rgba(46, 125, 50, 0.08)",
-                            },
-                          }}
-                        >
-                          <ReceiptIcon fontSize="small" />
-                        </Button>
+                        {order.status === "rejected" &&
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleViewDetails(order)}
+                            sx={{
+                              minWidth: 0,
+                              p: "4px 8px",
+                              borderColor: "var(--primary-green)",
+                              color: "var(--primary-green)",
+                              "&:hover": {
+                                borderColor: "var(--dark-green)",
+                                backgroundColor: "rgba(46, 125, 50, 0.08)",
+                              },
+                            }}
+                          >
+                            <ReceiptIcon fontSize="small" />
+                          </Button>
+                        }
 
                         {order.status === "accepted" && handleCreateBasedOn && (
                           <Tooltip title="Create new order based on this one">

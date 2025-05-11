@@ -100,7 +100,7 @@ function Ranking() {
         <div className="place-2 flex flex-col items-center mx-3">
           <div className="avatar w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-gray-300 overflow-hidden mb-2">
             <img
-              src="../../../src/assets/images/anh-tho.jpg"
+              src={rankData.avatars[1]}
               alt={rankData.labels[1]}
               className="w-full h-full object-cover"
             />
@@ -121,7 +121,7 @@ function Ranking() {
           <div className="crown text-yellow-500 -mb-3">👑</div>
           <div className="avatar w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center border-2 border-yellow-400 overflow-hidden mb-2">
             <img
-              src="../../../src/assets/images/anh-tho.jpg"
+              src={rankData.avatars[0]}
               alt={rankData.labels[0]}
               className="w-full h-full object-cover"
             />
@@ -141,7 +141,7 @@ function Ranking() {
         <div className="place-3 flex flex-col items-center mx-3">
           <div className="avatar w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-yellow-700 overflow-hidden mb-2">
             <img
-              src="../../../src/assets/images/anh-tho.jpg"
+              src={rankData.avatars[2]}
               alt={rankData.labels[2]}
               className="w-full h-full object-cover"
             />
@@ -172,7 +172,7 @@ function Ranking() {
               </div>
               <div className="avatar w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mr-3">
                 <img
-                  src="../../../src/assets/images/anh-tho.jpg"
+                  src={rankData.avatars[position - 1]}
                   alt={name}
                   className="w-full h-full object-cover"
                 />

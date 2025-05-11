@@ -179,20 +179,22 @@ function TransactionOrdersList({
             >
               <VisibilityIcon fontSize="small" />
             </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              onClick={() => handleConfirmOrder(transaction.id)}
-              sx={{
-                minWidth: 0,
-                p: "4px 8px",
-                bgcolor: "var(--primary-green)",
-                "&:hover": { bgcolor: "var(--dark-green)" },
-              }}
-            >
-              <CheckCircleIcon fontSize="small" />
-            </Button>
+            {transaction.status !== "rejected" && 
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                onClick={() => handleConfirmOrder(transaction.id)}
+                sx={{
+                  minWidth: 0,
+                  p: "4px 8px",
+                  bgcolor: "var(--primary-green)",
+                  "&:hover": { bgcolor: "var(--dark-green)" },
+                }}
+              >
+                <CheckCircleIcon fontSize="small" />
+              </Button>
+            }
             <Button
               size="small"
               variant="contained"
@@ -268,20 +270,22 @@ function TransactionOrdersList({
             >
               <VisibilityIcon fontSize="small" />
             </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              onClick={() => handleConfirmOrder(transaction.id)}
-              sx={{
-                minWidth: 0,
-                p: "4px 8px",
-                bgcolor: "var(--primary-green)",
-                "&:hover": { bgcolor: "var(--dark-green)" },
-              }}
-            >
-              <CheckCircleIcon fontSize="small" />
-            </Button>
+            {transaction.status !== "rejected" && 
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                onClick={() => handleConfirmOrder(transaction.id)}
+                sx={{
+                  minWidth: 0,
+                  p: "4px 8px",
+                  bgcolor: "var(--primary-green)",
+                  "&:hover": { bgcolor: "var(--dark-green)" },
+                }}
+              >
+                <CheckCircleIcon fontSize="small" />
+              </Button>
+            }
           </Box>
         );
       case "cancelled":
