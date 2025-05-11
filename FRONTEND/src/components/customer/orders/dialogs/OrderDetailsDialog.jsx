@@ -591,19 +591,7 @@ const OrderDetailsDialog = ({
             </Button>
           </>
         )}
-        {order.status === "rejected" && (
-          <Button
-            onClick={() => handleConfirmOrder(order.id)}
-            className="customer-button"
-            startIcon={<CheckCircleIcon />}
-            sx={{
-              fontWeight: 500,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            Accept
-          </Button>
-        )}
+        
         {order.status === "accepted" && handleCreateBasedOn && (
           <Button
             onClick={handleCopy}
