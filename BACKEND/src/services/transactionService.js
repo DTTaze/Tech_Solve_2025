@@ -7,6 +7,11 @@ const Item = db.Item;
 const User = db.User;
 const { updateIncreaseCoin } = require("./coinService.js");
 const { getUserByID } = require("./userService.js");
+const { emitStockUpdate } = require("./socketService");
+
+const cacheItemAll = "items:all";
+const cacheItemId = (id) => `item:${id}`;
+const cacheItemUserId = (id) => `items:user:${id}`;
 
 const createTransaction = async (transactionData) => {
   try {
@@ -281,8 +286,8 @@ const cancelTransactionById = async (id) => {
     if (transaction.status === "cancelled") {
       throw new Error("Transaction is already cancelled");
     }
-    if (transaction.status === "completed") {
-      throw new Error("Cannot cancel completed transaction");
+    if (transaction.status === "accepted") {
+      throw new Error("Cannot cancel accepted transaction");
     }
     if (
       !transaction.item_snapshot ||
@@ -302,6 +307,30 @@ const cancelTransactionById = async (id) => {
     await updateIncreaseCoin(data.coins.id, transaction.item_snapshot.price, {
       transaction: t,
     });
+    const item = await Item.findByPk(transaction.item_id, { transaction: t });
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    const originalStock = item.stock;
+    const originalStatus = item.status;
+
+    item.stock += transaction.quantity;
+    item.status = item.stock > 0 ? "available" : "sold_out";
+
+    if (originalStock !== item.stock || originalStatus !== item.status) {
+      emitStockUpdate(item.id, item.stock, {
+        name: item.name,
+        price: item.price,
+        status: item.status,
+      });
+    }
+
+    await item.save({ transaction: t });
+
+    await deleteCache(cacheItemId(item.id));
+    await deleteCache(cacheItemUserId(item.creator_id));
+    await deleteCache(cacheItemAll);
 
     await t.commit();
     return transaction;
@@ -379,7 +408,6 @@ const makeDecision = async (transaction_id, decision) => {
     if (!transaction) {
       throw new Error("Transaction not found");
     }
-
     if (transaction.status === decision) {
       throw new Error("Transaction is already in this status");
     }
@@ -397,6 +425,9 @@ const makeDecision = async (transaction_id, decision) => {
     await transaction.save({ transaction: t });
 
     await deleteCache(`transaction:id:${transaction_id}`);
+    const item = await Item.findByPk(transaction.dataValues.item_id, {
+      transaction: t,
+    });
 
     if (decision === "rejected") {
       const data = await getUserByID(transaction.buyer_id);
@@ -406,6 +437,21 @@ const makeDecision = async (transaction_id, decision) => {
       await updateIncreaseCoin(data.coins.id, transaction.item_snapshot.price, {
         transaction: t,
       });
+      const originalStock = item.stock;
+      const originalStatus = item.status;
+      item.stock += transaction.dataValues.quantity;
+      item.status = item.stock > 0 ? "available" : "sold_out";
+      if (originalStock !== item.stock || originalStatus !== item.status) {
+        emitStockUpdate(item.id, item.stock, {
+          name: item.name,
+          price: item.price,
+          status: item.status,
+        });
+      }
+      await item.save({ transaction: t });
+      await deleteCache(cacheItemId(item.id));
+      await deleteCache(cacheItemUserId(item.creator_id));
+      await deleteCache(cacheItemAll);
     }
 
     await t.commit();
@@ -415,6 +461,7 @@ const makeDecision = async (transaction_id, decision) => {
     throw error;
   }
 };
+
 module.exports = {
   createTransaction,
   getTransactionByBuyerId,
